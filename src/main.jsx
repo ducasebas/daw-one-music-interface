@@ -109,19 +109,6 @@ function App() {
     const id = setInterval(() => setClock(Date.now()), 250);
     return () => clearInterval(id);
   }, []);
-  useEffect(() => {
-    const replay = (event) => {
-      if (
-        event.origin === location.origin &&
-        event.source === window.parent &&
-        window.parent !== window &&
-        event.data?.type === "daw:startup-preview"
-      )
-        setStartupPreview((v) => v + 1);
-    };
-    window.addEventListener("message", replay);
-    return () => window.removeEventListener("message", replay);
-  }, []);
   async function send(e) {
     if (offline) {
       setNotice("Offline preview · command not sent");
@@ -271,7 +258,7 @@ function App() {
             ["playing", "◉", "Now playing"],
             ["queue", "≋", "Queue"],
             ["settings", "⚙", "Settings"],
-            ...(!embedded ? [["lab", "⌘", "Test bench"]] : []),
+            ...(!embedded && !lab ? [["lab", "⌘", "Test bench"]] : []),
           ].map(([id, icon, label]) => (
             <button
               key={id}
@@ -488,6 +475,8 @@ function App() {
       now={clock}
       onClose={closeLab}
       simulatorProps={simulatorProps}
+      product={product}
+      onReplayStartup={() => setStartupPreview((v) => v + 1)}
     />
   ) : (
     product

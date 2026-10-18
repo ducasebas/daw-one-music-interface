@@ -76,7 +76,10 @@ test("workbench controls and embedded product use one runtime", async ({
   await page.getByLabel("Automated scenario").selectOption("Playback");
   await page.getByRole("button", { name: "Run scenario", exact: true }).tap();
   await expect(page.getByLabel("Left speaker driven")).toBeVisible();
-  const screen = page.frameLocator('iframe[title="DAW ONE product display"]');
+  const screen = page.getByRole("region", {
+    name: "DAW ONE product display",
+    exact: true,
+  });
   await expect(
     screen.getByRole("heading", { name: "Weightless" }),
   ).toBeVisible();
@@ -380,7 +383,10 @@ test("workbench replays branding without resetting device state", async ({
 }) => {
   await reset(page);
   await page.goto("/?lab=1");
-  const screen = page.frameLocator('iframe[title="DAW ONE product display"]');
+  const screen = page.getByRole("region", {
+    name: "DAW ONE product display",
+    exact: true,
+  });
   await expect(screen.getByLabel("Startup animation")).toHaveCount(0, {
     timeout: 6000,
   });
@@ -411,4 +417,41 @@ test("branding holds at boot and gives fault state priority", async ({
   await page.request.post("/api/event", { data: { type: "thermal-alarm" } });
   await expect(page.getByLabel("Startup animation")).toHaveCount(0);
   await expect(page.locator(".status")).toContainText("FAULT");
+});
+
+test("virtual display works when nested browser frames are blocked", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.route("**/*", async (route) => {
+    if (route.request().resourceType() !== "document") return route.continue();
+    const response = await route.fetch();
+    await route.fulfill({
+      response,
+      headers: {
+        ...response.headers(),
+        "x-frame-options": "DENY",
+        "content-security-policy": "frame-src 'none'",
+      },
+    });
+  });
+  await page.goto("/?lab=1");
+  const display = page.getByRole("region", {
+    name: "DAW ONE product display",
+    exact: true,
+  });
+  await expect(
+    display.getByRole("heading", { name: "Weightless" }),
+  ).toBeVisible();
+  await expect(page.locator("iframe")).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect
+    .poll(() =>
+      display
+        .locator("main")
+        .evaluate((el) => [el.offsetWidth, el.offsetHeight]),
+    )
+    .toEqual([1280, 400]);
+  await display.getByRole("button", { name: "Next track" }).click();
+  await expect(display.getByRole("heading", { name: "A Walk" })).toBeVisible();
 });

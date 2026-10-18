@@ -9,6 +9,8 @@ export function TestWorkbench({
   now,
   onClose,
   simulatorProps,
+  product,
+  onReplayStartup,
 }) {
   const [tab, setTab] = useState("Controls"),
     [selected, setSelected] = useState("amplifier"),
@@ -17,7 +19,6 @@ export function TestWorkbench({
   const scene = useRef(null),
     top = useRef(null);
   const [caseWidth, setCaseWidth] = useState(1100);
-  const display = useRef(null);
   const frame = useRef(null),
     view = devicePresentation(snapshot, {
       offline,
@@ -100,12 +101,7 @@ export function TestWorkbench({
         </span>
         <button
           disabled={offline || !view.displayAwake || d.mode === "fault"}
-          onClick={() =>
-            display.current?.contentWindow?.postMessage(
-              { type: "daw:startup-preview" },
-              location.origin,
-            )
-          }
+          onClick={onReplayStartup}
         >
           Replay startup
         </button>
@@ -160,14 +156,14 @@ export function TestWorkbench({
                   ref={frame}
                   style={{ height: 400 * scale + 4 }}
                 >
-                  <iframe
-                    ref={display}
-                    title="DAW ONE product display"
-                    src="/?screen=1"
-                    width="1280"
-                    height="400"
+                  <div
+                    className="virtual-display-surface"
+                    role="region"
+                    aria-label="DAW ONE product display"
                     style={{ transform: `scale(${scale})` }}
-                  />
+                  >
+                    {product}
+                  </div>
                   {!view.displayAwake && !live && (
                     <button
                       className="screen-sleep"
