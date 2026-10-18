@@ -87,3 +87,11 @@ See [setup and first real test](docs/music-assistant.md). Server-only `.env` con
 The uploaded `01_reference_hifi.jpg` shows horizontal volume next to VU meters. The control now follows that direction; percentage is reported honestly instead of inventing a dB calibration. L/R meters show unavailable until a real audio-level source exists. The six references now guide distinct shared-component layouts; exact artwork content and unmeasured audio readouts are not fabricated.
 
 Typography now follows the canonical brand guide: self-hosted Manrope variable font (SIL OFL, license in `public/fonts/`), shared starter palette from `design/brand-tokens.css`, and a compatible saved-token schema. Nerd Mode can inherit the selected palette. Startup is reduced-motion aware; a ready screen responds immediately to input, dismissing branding rather than waiting for the clip.
+
+### A blank or white display
+
+Use the forwarded **5173** browser preview when running `npm run dev`. Stop an existing server with Ctrl+C, run `git pull --ff-only`, restart `npm run dev`, and reload the preview. The test toolbar must show **display-r3**; if it does not, the latest frontend is not loaded. The 3001 port is the backend and can serve an older production build from `dist`.
+
+The startup shell now reports module/network failures, and a React error boundary provides a reload action for rendering failures. Settings are retained. Display brightness uses a non-interactive dim layer instead of a CSS filter around the scaled video surface. A white screen on a physical iPhone/iPad remains unconfirmed locally; report whether the entire page or only the case display is blank, the visible version, and a screenshot.
+
+For a second browser engine: `npx playwright install --with-deps webkit`, then `npm run test:webkit`. WebKit tests run in Linux and do not replace physical Safari testing. Chromium exercises native touch injection; WebKit exercises the same swipe handlers with synthetic touch events because Playwright has no equivalent CDP touch injection there.

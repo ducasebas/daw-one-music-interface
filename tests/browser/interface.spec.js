@@ -9,10 +9,27 @@ const settings = async (page, index = 0) => {
 };
 async function swipe(page, direction = "left") {
   const b = await page.locator(".page-body").boundingBox(),
-    client = await page.context().newCDPSession(page),
     x = b.x + b.width * (direction === "left" ? 0.85 : 0.15),
     end = b.x + b.width * (direction === "left" ? 0.15 : 0.85),
     y = b.y + b.height - 10;
+  if (page.context().browser().browserType().name() !== "chromium") {
+    // WebKit has no CDP touch injection; exercise the same React touch handlers.
+    await page.locator(".page-body").evaluate(
+      (el, { x, end, y }) => {
+        for (const [type, touches, changedTouches] of [
+          ["touchstart", [{ clientX: x, clientY: y }], []],
+          ["touchend", [], [{ clientX: end, clientY: y }]],
+        ]) {
+          const event = new Event(type, { bubbles: true });
+          Object.assign(event, { touches, changedTouches });
+          el.dispatchEvent(event);
+        }
+      },
+      { x, end, y },
+    );
+    return;
+  }
+  const client = await page.context().newCDPSession(page);
   await client.send("Input.dispatchTouchEvent", {
     type: "touchStart",
     touchPoints: [{ x, y }],
@@ -104,11 +121,21 @@ test("power button and LED ring sit on top, modules and events stay outside case
   await page.goto("/?lab=1");
   await expect(page.getByLabel("Left speaker driven")).toBeVisible();
   expect(await page.locator(".physical-device [data-module]").count()).toBe(0);
-  const power = await page
-      .getByRole("button", { name: "Case power button", exact: true })
-      .boundingBox(),
-    front = await page.locator(".physical-front").boundingBox();
-  expect(power.y + power.height).toBeLessThanOrEqual(front.y + 1);
+  // ResizeObserver can update the case between separate protocol reads.
+  // Compare both rectangles in the same layout frame after it settles.
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const power = document
+          .querySelector(".top-power")
+          .getBoundingClientRect();
+        const front = document
+          .querySelector(".physical-front")
+          .getBoundingClientRect();
+        return power.bottom <= front.top + 1;
+      }),
+    )
+    .toBe(true);
   await page
     .getByRole("button", { name: "Case power button", exact: true })
     .tap();
@@ -454,4 +481,26 @@ test("virtual display works when nested browser frames are blocked", async ({
     .toEqual([1280, 400]);
   await display.getByRole("button", { name: "Next track" }).click();
   await expect(display.getByRole("heading", { name: "A Walk" })).toBeVisible();
+});
+
+test("module loading failures show a readable startup message", async ({
+  page,
+}) => {
+  await page.route("**/src/main.jsx", (route) => route.abort());
+  await page.goto("/");
+  await expect(page.locator("#boot-status")).toContainText("kon niet laden");
+  await expect(page.locator("#boot-status")).toContainText("display-r3");
+});
+test("render failures show a recovery action instead of an empty page", async ({
+  page,
+}) => {
+  await page.route("**/api/events", (route) => route.abort());
+  await page.route("**/api/state", (route) => route.fulfill({ json: null }));
+  await page.goto("/?lab=1");
+  await expect(page.getByRole("alert")).toContainText(
+    "kon het scherm niet tekenen",
+  );
+  await expect(
+    page.getByRole("button", { name: "Opnieuw laden" }),
+  ).toBeVisible();
 });

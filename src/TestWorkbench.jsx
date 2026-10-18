@@ -106,6 +106,7 @@ export function TestWorkbench({
           Replay startup
         </button>
         <button onClick={onClose}>Open product</button>
+        <small className="bench-build">display-r3</small>
       </div>
       <div className="bench-layout">
         <section className="bench-preview" aria-label="Physical device preview">

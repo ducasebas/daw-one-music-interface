@@ -5,9 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#101311" />
     <title>DAW ONE · Intelligent Streaming Amplifier</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #111417;
+        color: #f2efe9;
+        font-family: Arial, sans-serif;
+      }
+      #boot-status {
+        padding: 24px;
+        line-height: 1.6;
+      }
+    </style>
+    <script src="/boot-status.js"></script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <p id="boot-status" role="status">DAW ONE wordt geladen… · display-r3</p>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

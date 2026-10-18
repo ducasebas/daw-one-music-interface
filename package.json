@@ -10,7 +10,8 @@
     "test": "node --test --test-isolation=none tests/*.test.js",
     "test:ui": "playwright test",
     "check": "npm test && npm run build",
-    "test:offline": "playwright test -c playwright.production.config.js"
+    "test:offline": "playwright test -c playwright.production.config.js",
+    "test:webkit": "playwright test -c playwright.webkit.config.js"
   },
   "dependencies": {
     "express": "^5.1.0",

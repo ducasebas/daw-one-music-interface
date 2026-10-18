@@ -482,6 +482,32 @@ function App() {
     product
   );
 }
-createRoot(document.getElementById("root")).render(<App />);
+class AppBoundary extends React.Component {
+  state = { error: false };
+  static getDerivedStateFromError() {
+    return { error: true };
+  }
+  componentDidCatch(error) {
+    console.error("DAW ONE display-r3", error);
+  }
+  render() {
+    return this.state.error ? (
+      <section role="alert" style={{ padding: 24 }}>
+        <h1>DAW ONE kon het scherm niet tekenen</h1>
+        <p>
+          Versie display-r3. Herlaad de pagina; je instellingen blijven bewaard.
+        </p>
+        <button onClick={() => location.reload()}>Opnieuw laden</button>
+      </section>
+    ) : (
+      this.props.children
+    );
+  }
+}
+createRoot(document.getElementById("root")).render(
+  <AppBoundary>
+    <App />
+  </AppBoundary>,
+);
 if (import.meta.env.PROD && "serviceWorker" in navigator)
   navigator.serviceWorker.register("/sw.js").catch(() => {});
