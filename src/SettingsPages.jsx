@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Pager } from "./Pager.jsx";
+import { MusicConnection } from "./MusicConnection.jsx";
 import { ThemeSettings } from "./Themes.jsx";
 const pages = [
   "General",
@@ -12,8 +13,11 @@ const pages = [
   "Schedule",
   "State mapping",
   "Save theme",
+  "Connection",
 ];
 export function SettingsPages({
+  snapshot,
+  onSnapshot,
   prefs,
   update,
   themePreferences,
@@ -64,6 +68,8 @@ export function SettingsPages({
             Swipe left or use arrows to explore appearance settings.
           </p>
         </div>
+      ) : pages[index] === "Connection" ? (
+        <MusicConnection snapshot={snapshot} onSnapshot={onSnapshot} />
       ) : (
         <ThemeSettings
           section={pages[index]}

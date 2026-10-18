@@ -1,6 +1,6 @@
 # DAW ONE — Intelligent Streaming Amplifier
 
-A runnable React virtual device designed for a 1280 × 400 display, with a shared Node service, hardware simulator, fail-safe state model and Raspberry Pi 4 deployment scaffold. **All hardware and audio are simulated.** No GPIO is written, no amplifier is physically enabled and no real audio/video service is configured.
+A runnable React virtual device designed for a 1280 × 400 display, with a shared Node service, hardware simulator, fail-safe state model and Raspberry Pi 4 deployment scaffold. **Hardware is always simulated; audio defaults to simulation.** No GPIO is written and no amplifier is physically enabled. Simulation is the default; the optional Music Assistant mode connects the interface to a real external player. See [live connection setup](docs/music-assistant.md).
 
 ## Start in GitHub Codespaces
 
@@ -44,7 +44,7 @@ Node tests cover safety invariants, all fault classes, boot/reboot, standby, pre
 ```text
 src/                 React product UI, settings and simulator dashboard
 shared/              Device/runtime, safety protocol, playback, settings, End-Sync
-server/              Simulation API and transport-injected Music Assistant adapter
+server/              Simulation API and live Music Assistant transport/service
 tests/               Node domain/integration/scenario tests and browser tests
 deploy/              Pi installer, systemd units, health probe, inert hardware config
 docs/                API, hardware verification, Pi operations, validation
@@ -54,7 +54,7 @@ docs/                API, hardware verification, Pi operations, validation
 
 ## Delivery status and continuation
 
-Phase 1: implemented virtual product foundation. Phase 2: simulated safety/controller foundation; physical firmware/transport unimplemented. Phase 3: End-Sync, mock video and MA adapter boundary; live MA/Squeezelite/video integrations not yet implemented. Phase 4: documented Pi installation scaffold, untested on device. **Phase 5: not complete; requires real hardware.** Prompt sections 1–15 were not supplied, so no missing electrical/API requirements have been invented.
+Phase 1: implemented virtual product foundation. Phase 2: simulated safety/controller foundation; physical firmware/transport unimplemented. Phase 3: End-Sync, mock video and Music Assistant WebSocket transport/service implemented with protocol-fixture tests; the owner’s real MA server, Squeezelite audio and video integrations remain unverified. Phase 4: documented Pi installation scaffold, untested on device. **Phase 5: not complete; requires real hardware.** Prompt sections 1–15 were not supplied, so no missing electrical/API requirements have been invented.
 
 Read [hardware blockers](docs/hardware.md), [Pi deployment](docs/raspberry-pi.md), and [API/protocol](docs/protocol-and-api.md). Next: validate this release in Safari/Codespaces; obtain exact component documentation; pin a Music Assistant server/client version and implement its transport; validate real Pi kiosk/audio resources; design and bench-test RP2040 fail-safe hardware before adding any physical enable driver.
 
@@ -72,4 +72,10 @@ Open **Device** to see the conceptual case, illuminated power-button ring, statu
 
 Speaker movement requires the same verified amplifier gate as the backend, fresh controller heartbeat, power-good, connected source, active playback and nonzero preview volume. Display sleep preserves safe audio. Faults, standby, network loss or stale/offline telemetry stop the speaker-drive indication; offline modules become **unknown** rather than displaying stale green lights. Animation respects reduced-motion settings.
 
-Settings has ten short pages: General, Skins, Palette, Accents, Typography, Finish, Automation, Schedule, State mapping and Save theme. The simulator has five: Scenarios, Sensors, Connections, Safety and Timeline. Swipe horizontally on empty page space, use previous/next arrows, or select a page directly. Keyboard users can focus the page region and press left/right. Gestures starting on controls are ignored so sliders, selectors and buttons retain their normal behaviour. Timeline history is also paginated (three events per page). Pages are bounded, without vertical scrolling at the tested 1280 × 400 and 390 × 844 layouts; Now Playing can still reflow on narrow screens.
+Settings has eleven short pages: General, Skins, Palette, Accents, Typography, Finish, Automation, Schedule, State mapping, Save theme and Connection. The simulator has five: Scenarios, Sensors, Connections, Safety and Timeline. Swipe horizontally on empty page space, use previous/next arrows, or select a page directly. Keyboard users can focus the page region and press left/right. Gestures starting on controls are ignored so sliders, selectors and buttons retain their normal behaviour. Timeline history is also paginated (three events per page). Pages are bounded, without vertical scrolling at the tested 1280 × 400 and 390 × 844 layouts; Now Playing can still reflow on narrow screens.
+
+## Optional live Music Assistant mode
+
+See [setup and first real test](docs/music-assistant.md). Server-only `.env` configuration selects simulation or live music. The Connection settings page lists available players; control defaults to read-only, with an explicit player choice and a configurable volume ceiling. The reference-style horizontal volume control shows actual server-reported volume in live mode; it supports horizontal touch drag, plus/minus, mute and keyboard controls. SSE pushes metadata/volume changes to the browser. Connecting never auto-starts playback or changes the player volume. The live server and audible output are not yet validated.
+
+The uploaded `01_reference_hifi.jpg` shows horizontal volume next to VU meters. The control now follows that direction; percentage is reported honestly instead of inventing a dB calibration. L/R meters show unavailable until a real audio-level source exists. Full visual matching of all six reference layouts remains a separate design task.

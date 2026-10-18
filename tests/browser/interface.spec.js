@@ -314,3 +314,96 @@ test("all simulator pages and phone settings fit without vertical scrolling", as
     390,
   );
 });
+test("reference volume supports fine keyboard and touch buttons and connection page", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const dial = page.getByRole("slider", { name: "Volume", exact: true });
+  await dial.focus();
+  await page.keyboard.press("Home");
+  await expect(dial).toHaveAttribute("aria-valuenow", "0");
+  await page
+    .getByRole("button", { name: "Increase volume", exact: true })
+    .tap();
+  await expect(dial).toHaveAttribute("aria-valuenow", "1");
+  await dial.focus();
+  await page.keyboard.press("PageUp");
+  await expect(dial).toHaveAttribute("aria-valuenow", "6");
+  await page.getByRole("button", { name: "Mute", exact: true }).tap();
+  await expect(
+    page.getByRole("button", { name: "Unmute", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.reload();
+  await expect(dial).toHaveAttribute("aria-valuenow", "6");
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByLabel("Settings page", { exact: true }).selectOption("10");
+  await expect(page.getByLabel("Music Assistant connection")).toContainText(
+    "SIMULATION",
+  );
+  expect(
+    await page
+      .locator(".page-body")
+      .evaluate((e) => e.scrollHeight <= e.clientHeight + 1),
+  ).toBeTruthy();
+});
+test("live metadata and actual volume render without presenting simulator as connected music", async ({
+  page,
+}) => {
+  const real = {
+    device: {
+      mode: "ready",
+      faults: [],
+      amplifierEnabled: false,
+      verified: false,
+      displayAwake: true,
+    },
+    playback: {
+      connected: true,
+      playing: true,
+      index: 0,
+      queue: [
+        {
+          id: "real",
+          title: "Actual player track",
+          artist: "Real artist",
+          album: "",
+          duration: 200,
+        },
+      ],
+      position: 25,
+      observedAt: Date.now(),
+      volume: 18,
+      muted: false,
+      capabilities: ["volume_set", "volume_mute", "seek"],
+    },
+    mode: "music-assistant",
+    musicAssistant: {
+      controlEnabled: false,
+      connected: true,
+      status: "connected",
+      serverVersion: "protocol-fixture",
+      players: [],
+      volumeLimit: 40,
+    },
+  };
+  await page.route("**/api/events", (r) => r.abort());
+  await page.route("**/api/state", (r) => r.fulfill({ json: real }));
+  await page.goto("/");
+  await expect(
+    page.getByRole("heading", { name: "Actual player track" }),
+  ).toBeVisible();
+  await expect(page.locator(".status")).toContainText("LIVE MUSIC");
+  await expect(
+    page.getByRole("slider", { name: "Volume", exact: true }),
+  ).toHaveAttribute("aria-valuenow", "18");
+  await expect(
+    page.getByRole("button", { name: "Increase volume", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Pause", exact: true }),
+  ).toBeDisabled();
+  await page.getByRole("button", { name: "Device", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Hardware is simulated" }),
+  ).toBeVisible();
+});

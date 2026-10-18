@@ -12,6 +12,7 @@ import {
 import { SettingsPages } from "./SettingsPages.jsx";
 import { SimulatorPages } from "./SimulatorPages.jsx";
 import { DeviceView } from "./DeviceView.jsx";
+import { VolumeControl } from "./VolumeControl.jsx";
 import "./style.css";
 function load() {
   try {
@@ -21,7 +22,9 @@ function load() {
   }
 }
 const time = (n) =>
-  `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, "0")}`;
+  Number.isFinite(n)
+    ? `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, "0")}`
+    : "—";
 function loadThemes() {
   try {
     return normalizeThemePreferences(
@@ -45,7 +48,8 @@ function App() {
     [notice, setNotice] = useState(""),
     [videoAvailable, setVideoAvailable] = useState(true),
     [matched, setMatched] = useState(true),
-    [scenario, setScenario] = useState("Cold boot");
+    [scenario, setScenario] = useState("Cold boot"),
+    [previewMuted, setPreviewMuted] = useState(false);
   useEffect(() => {
     try {
       localStorage.setItem("daw-settings", JSON.stringify(prefs));
@@ -77,11 +81,23 @@ function App() {
         .catch(() => {
           if (live) setOffline(true);
         });
+    const stream = new EventSource("/api/events");
+    stream.onmessage = (e) => {
+      if (!live) return;
+      try {
+        setSnapshot(JSON.parse(e.data));
+        setOffline(false);
+      } catch {}
+    };
+    stream.onerror = () => {
+      if (live) setOffline(true);
+    };
     poll();
     const id = setInterval(poll, 1500);
     return () => {
       live = false;
       clearInterval(id);
+      stream.close();
     };
   }, []);
   useEffect(() => {
@@ -99,8 +115,12 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(e),
       });
-      if (!r.ok) throw Error();
-      setSnapshot(await r.json());
+      const data = await r.json();
+      if (!r.ok) {
+        setNotice(data.error || "Command rejected");
+        return;
+      }
+      setSnapshot(data);
       setNotice("");
     } catch {
       setOffline(true);
@@ -136,6 +156,17 @@ function App() {
       playing: playback.playing,
     }),
     update = (key, value) => setPrefs((p) => normalize({ ...p, [key]: value }));
+  const liveMusic = snapshot.mode === "music-assistant";
+  const writable =
+    !offline &&
+    (!liveMusic ||
+      (snapshot.musicAssistant?.controlEnabled && playback.connected));
+  const playerVolume = liveMusic ? playback.volume : prefs.volume;
+  const volumeEnabled =
+    writable &&
+    (!liveMusic ||
+      (playback.capabilities?.includes("volume_set") &&
+        Number.isFinite(playerVolume)));
   const theme = resolveTheme(
     themePreferences,
     { device, playback, offline },
@@ -165,12 +196,17 @@ function App() {
         </a>
         <div className="status">
           <i className={offline ? "amber" : ""} />
-          {offline ? "OFFLINE PREVIEW" : "SIMULATED SYSTEM"}
+          {offline
+            ? "OFFLINE PREVIEW"
+            : liveMusic
+              ? "LIVE MUSIC · MOCK HARDWARE"
+              : "SIMULATED SYSTEM"}
           <span className="divider" /> {device.mode.toUpperCase()}
         </div>
         <button
           className="power"
           aria-label="Standby"
+          disabled={liveMusic}
           onClick={() => send({ type: "standby" })}
         >
           ⏻
@@ -198,15 +234,25 @@ function App() {
           ))}
         </nav>
         {page === "device" ? (
-          <DeviceView
-            snapshot={snapshot}
-            offline={offline}
-            prefs={prefs}
-            send={send}
-            now={clock}
-            onDemo={() => run("Playback")}
-            onOpenDisplay={() => setPage("playing")}
-          />
+          liveMusic ? (
+            <section className="panel">
+              <h1>Hardware is simulated</h1>
+              <p>
+                Live Music Assistant controls the external player. Case
+                simulation is available in simulation mode.
+              </p>
+            </section>
+          ) : (
+            <DeviceView
+              snapshot={snapshot}
+              offline={offline}
+              prefs={prefs}
+              send={send}
+              now={clock}
+              onDemo={() => run("Playback")}
+              onOpenDisplay={() => setPage("playing")}
+            />
+          )
         ) : page === "playing" ? (
           <section className="now" aria-label="Now playing">
             <div
@@ -227,8 +273,12 @@ function App() {
             </div>
             <div className="track">
               <div className="eyebrow">
-                {playback.connected ? "MUSIC LIBRARY" : "SERVER UNAVAILABLE"}{" "}
-                <span>•</span> LOSSLESS EXPERIENCE
+                {playback.connected
+                  ? liveMusic
+                    ? "MUSIC ASSISTANT"
+                    : "MUSIC LIBRARY"
+                  : "SERVER UNAVAILABLE"}{" "}
+                <span>•</span> {liveMusic ? "PLAYER METADATA" : "MOCK LIBRARY"}
               </div>
               <h1>{track.title}</h1>
               <p>
@@ -241,8 +291,13 @@ function App() {
                   aria-label="Playback position"
                   type="range"
                   min="0"
-                  max={track.duration}
-                  value={position}
+                  max={track.duration ?? 1}
+                  disabled={
+                    !writable ||
+                    !track.duration ||
+                    (liveMusic && !playback.capabilities?.includes("seek"))
+                  }
+                  value={track.duration ? position : 0}
                   onChange={(e) =>
                     send({ type: "seek", position: +e.target.value })
                   }
@@ -254,6 +309,7 @@ function App() {
               </div>
               <div className="transport">
                 <button
+                  disabled={!writable}
                   aria-label="Previous track"
                   onClick={() => send({ type: "previous" })}
                 >
@@ -261,6 +317,7 @@ function App() {
                 </button>
                 <button
                   className="play"
+                  disabled={!writable}
                   aria-label={playback.playing ? "Pause" : "Play"}
                   onClick={() =>
                     send({ type: playback.playing ? "pause" : "play" })
@@ -269,6 +326,7 @@ function App() {
                   {playback.playing ? "Ⅱ" : "▶"}
                 </button>
                 <button
+                  disabled={!writable}
                   aria-label="Next track"
                   onClick={() => send({ type: "next" })}
                 >
@@ -291,26 +349,26 @@ function App() {
             </div>
             <aside className="volume">
               <div className="eyebrow">VOLUME</div>
-              <strong>
-                {prefs.volume}
-                <small>%</small>
-              </strong>
-              <input
-                aria-label="Volume"
-                type="range"
-                min="0"
-                max="100"
-                value={prefs.volume}
-                onChange={(e) => update("volume", +e.target.value)}
+              <VolumeControl
+                value={playerVolume}
+                muted={liveMusic ? playback.muted : previewMuted}
+                live={liveMusic}
+                limit={
+                  liveMusic ? (snapshot.musicAssistant?.volumeLimit ?? 40) : 100
+                }
+                disabled={!volumeEnabled}
+                muteDisabled={
+                  liveMusic && !playback.capabilities?.includes("volume_mute")
+                }
+                onValue={(value) => {
+                  if (liveMusic) send({ type: "volume", value });
+                  else update("volume", value);
+                }}
+                onMute={() => {
+                  if (liveMusic) send({ type: "mute", value: !playback.muted });
+                  else setPreviewMuted((v) => !v);
+                }}
               />
-              <span>SIMULATED OUTPUT</span>
-              <div className="signal" aria-label="Simulated level meter">
-                {theme.tokens.meter === "dots"
-                  ? "● ● ◉ ● ◉ ●"
-                  : theme.tokens.meter === "line"
-                    ? "━━━━━━╸"
-                    : "▂ ▅ ▃ ▇ ▄ ▂ ▅ ▃ ▆ ▂"}
-              </div>
               {theme.diagnostics && (
                 <dl
                   className="diagnostic-widgets"
@@ -360,6 +418,8 @@ function App() {
             </div>
             {page === "settings" ? (
               <SettingsPages
+                snapshot={snapshot}
+                onSnapshot={setSnapshot}
                 prefs={prefs}
                 update={update}
                 themePreferences={themePreferences}
@@ -383,6 +443,12 @@ function App() {
                   </article>
                 ))}
               </div>
+            ) : liveMusic ? (
+              <p className="live-notice">
+                Simulation scenarios are disabled while controlling Music
+                Assistant. View live connection details on the Connection
+                settings page.
+              </p>
             ) : (
               <SimulatorPages
                 snapshot={snapshot}
@@ -405,7 +471,9 @@ function App() {
           {offline
             ? "BACKEND OFFLINE"
             : playback.connected
-              ? "MOCK SOURCE CONNECTED"
+              ? liveMusic
+                ? "MUSIC ASSISTANT CONNECTED"
+                : "MOCK SOURCE CONNECTED"
               : "MUSIC SERVER DISCONNECTED"}
         </span>
         <span role="status">

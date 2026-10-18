@@ -51,7 +51,7 @@ USB touch should enumerate as input hardware; identify device and test all four 
 
 Current audio is simulated metadata and controls; no sound is emitted. Verify vendor-supported HAT overlay and ALSA device while amplifier physically disabled. Only after verification, install distro `squeezelite` if available (`apt-cache policy squeezelite`), inspect `squeezelite -?`, and use `squeezelite -l` / `aplay -l` to identify the exact ALSA device. Configure the distribution's Squeezelite service using its documented config, unique player name and verified Music Assistant server address. Do not assume a mixer, GPIO mute or power control option. Register/enable the Squeezelite player in the installed Music Assistant version. Confirm audio routing and volume limits on a bench before connecting speakers.
 
-`server/music-assistant.js` defines a transport injection boundary, not a live wire client. Implement it against a pinned, documented Music Assistant client/server version with credential storage outside Git. No token belongs in browser storage. No real integration is advertised as working.
+`server/ma-transport.js` and `server/ma-service.js` implement the opt-in live WebSocket connection. See [setup](music-assistant.md) for backend-only credentials and read-only first testing. The actual installed server version, Squeezelite audio path and real sound output still require validation.
 
 ## GPIO / UART / I²C and permissions
 

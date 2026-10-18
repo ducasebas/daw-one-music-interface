@@ -16,6 +16,9 @@ UTF-8 JSON lines, maximum 1024 characters per frame. Fields `v:1`, monotonically
 
 ## Music and video
 
-Transport-injected MA adapter supports connect, snapshot, event subscription, controls, explicit reconnect and close. Live client, automatic retry/backoff, token handling and supported-version validation remain unimplemented. Tests use a fake transport; mock library is not a real streaming service.
+The server-side MA WebSocket transport supports token auth, player/queue snapshots, commands, event refresh and automatic reconnect/backoff. Credentials stay on the backend. See [live Music Assistant setup](music-assistant.md) for source references and compatibility limits. Protocol tests use a fake WebSocket; actual server compatibility and sound output remain unverified.
 
 End-Sync: `offset = videoDuration - audioDuration + manualCorrection`; `videoPosition = audioPosition + offset`. Negative offset waits for audio to catch up. Clamp to valid video range; missing durations, wrong match or unavailable embed fall back. Intro is a verified minimum useful video time. Pause/seek recompute from audio clock. UI's local animated artwork is a mock video with duration 360 s and intro 10 s. There is no external video search, embed or guaranteed content matching. Duration/intro values are labelled demonstration inputs, not track metadata. Safari autoplay restrictions must be handled by a later real media adapter using an explicit user gesture.
+
+
+Live music additions: `GET /api/events` streams snapshots with SSE; `POST /api/player` accepts `{id}` for an explicitly selected available player. `GET /api/state` includes redacted `musicAssistant` connection/player/control status. Live `/api/event` allows playback commands plus `volume` (numeric `value`) and `mute` (boolean `value`); simulator actions and `/api/scenario` reject with 409 in live mode. Commands rejected by the service show a notice without falsely labelling the entire backend offline.

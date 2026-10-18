@@ -33,7 +33,9 @@ export function initialPlayback() {
 }
 export function positionAt(s, now) {
   return Math.min(
-    s.queue[s.index].duration,
+    Number.isFinite(s.queue[s.index].duration)
+      ? s.queue[s.index].duration
+      : Infinity,
     Math.max(0, s.position + (s.playing ? (now - s.observedAt) / 1000 : 0)),
   );
 }
