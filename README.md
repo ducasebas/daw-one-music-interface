@@ -95,3 +95,7 @@ Use the forwarded **5173** browser preview when running `npm run dev`. Stop an e
 The startup shell now reports module/network failures, and a React error boundary provides a reload action for rendering failures. Settings are retained. Display brightness uses a non-interactive dim layer instead of a CSS filter around the scaled video surface. A white screen on a physical iPhone/iPad remains unconfirmed locally; report whether the entire page or only the case display is blank, the visible version, and a screenshot.
 
 For a second browser engine: `npx playwright install --with-deps webkit`, then `npm run test:webkit`. WebKit tests run in Linux and do not replace physical Safari testing. Chromium exercises native touch injection; WebKit exercises the same swipe handlers with synthetic touch events because Playwright has no equivalent CDP touch injection there.
+
+### Node 22.16 startup
+
+The development backend runs without Node watch mode: Node 22.16 can crash when `--watch` is combined with a missing `--env-file-if-exists=.env`. A `.env` file is optional for simulation. Vite still hot-reloads frontend changes; restart `npm run dev` after backend or environment changes. If the backend exits, concurrently stops Vite too, so a blank/unavailable preview can mean the development processes have stopped.
