@@ -1,0 +1,41 @@
+/* DAW ONE design tokens v1.0 — starter design values, not sampled from concept images. */
+:root {
+  --daw-bg: #111417;
+  --daw-panel: #1C2125;
+  --daw-text: #F2EFE9;
+  --daw-muted: #9DA3A6;
+  --daw-accent: #C9A674;
+  --daw-divider: #343436;
+  --daw-success: #71B28C;
+  --daw-fault: #DB5D5A;
+  --daw-info: #659BD3;
+  --daw-warning: #D6A04D;
+  --daw-font: "Manrope", "Helvetica Neue", Arial, sans-serif;
+  --daw-logo-tracking: .26em;
+  --daw-ui-radius: 12px;
+  --daw-animation-scale: 1;
+}
+[data-daw-theme="minimal-dark"] {
+  --daw-accent: #83B69A;
+}
+[data-daw-theme="bronze-vu"] {
+  --daw-accent: #C58B5C;
+  --daw-panel: #201B18;
+}
+[data-daw-theme="champagne-gold"] {
+  --daw-accent: #E1BE7D;
+}
+[data-daw-theme="cinematic"] {
+  --daw-accent: #D9A578;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --daw-animation-scale: 0; }
+}
+/* Font must be self-hosted by production UI. Example:
+@font-face {
+  font-family: "Manrope";
+  src: url("/fonts/Manrope-Variable.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+}
+*/
