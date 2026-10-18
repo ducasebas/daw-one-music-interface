@@ -7,7 +7,6 @@ export function TestWorkbench({
   prefs,
   send,
   now,
-  onClose,
   simulatorProps,
   product,
   onReplayStartup,
@@ -105,7 +104,14 @@ export function TestWorkbench({
         >
           Replay startup
         </button>
-        <button onClick={onClose}>Open product</button>
+        <a
+          className="bench-product-link"
+          href="/?screen=1"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Product only ↗
+        </a>
         <small className="bench-build">display-r3</small>
       </div>
       <div className="bench-layout">
@@ -197,9 +203,30 @@ export function TestWorkbench({
               <small>R · {view.driven ? "SIGNAL" : "SILENT"}</small>
             </div>
           </div>
-          <div className="bench-caption">
-            Concept enclosure · top-mounted illuminated button · dimensions and
-            electrical behaviour unverified
+          <div className="bench-caption" aria-label="Safety explanation">
+            {d.faults.length ? (
+              <>
+                <span>
+                  SIMULATED · Latched: {d.faults.join(", ")}. Output inhibited.
+                </span>
+                <button
+                  disabled={offline || live}
+                  onClick={() => send({ type: "acknowledge" })}
+                >
+                  Acknowledge faults
+                </button>
+              </>
+            ) : !d.verified && d.mode === "standby" ? (
+              <span>
+                Safe standby · amplifier remains unverified and off. Restore
+                sensors, then run Playback to verify the simulation.
+              </span>
+            ) : (
+              <span>
+                Concept enclosure · top-mounted illuminated button · dimensions
+                and electrical behaviour unverified
+              </span>
+            )}
           </div>
           <section
             className="bench-live-events"

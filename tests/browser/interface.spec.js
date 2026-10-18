@@ -48,7 +48,7 @@ test("reference product fits 1280x400 with working playback and persistent setti
   page,
 }) => {
   await reset(page);
-  await page.goto("/");
+  await page.goto("/?product=1");
   await page.getByRole("button", { name: "Play", exact: true }).tap();
   await expect(
     page.getByRole("button", { name: "Pause", exact: true }),
@@ -75,7 +75,7 @@ test("offline settings remain available and show backend loss", async ({
   page,
 }) => {
   await reset(page);
-  await page.goto("/");
+  await page.goto("/?product=1");
   await page.request.post("/api/event", { data: { type: "thermal-alarm" } });
   await page.route("**/api/**", (r) => r.abort());
   await expect(page.locator(".status")).toContainText("OFFLINE PREVIEW");
@@ -184,7 +184,7 @@ test("six reference layouts, theme customization and state automation persist", 
   page,
 }) => {
   await reset(page);
-  await page.goto("/");
+  await page.goto("/?product=1");
   for (const id of [
     "reference-dark",
     "minimal-dark",
@@ -232,7 +232,7 @@ test("all settings pages swipe without scroll and support arrows", async ({
   page,
 }) => {
   await reset(page);
-  await page.goto("/");
+  await page.goto("/?product=1");
   await settings(page);
   await swipe(page);
   await expect(page.getByLabel("Settings page", { exact: true })).toHaveValue(
@@ -291,7 +291,7 @@ test("phone product settings and separate workbench remain usable", async ({
 }) => {
   await reset(page);
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/?product=1");
   await settings(page);
   for (let i = 0; i < 11; i++) {
     await page
@@ -318,7 +318,7 @@ test("phone product settings and separate workbench remain usable", async ({
 test("reference volume supports keyboard mute and connection settings", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/?product=1");
   const v = page.getByRole("slider", { name: "Volume", exact: true });
   await v.focus();
   await page.keyboard.press("Home");
@@ -378,7 +378,7 @@ test("live source displays actual metadata and read-only controls", async ({
   };
   await page.route("**/api/events", (r) => r.abort());
   await page.route("**/api/state", (r) => r.fulfill({ json: data }));
-  await page.goto("/");
+  await page.goto("/?product=1");
   await expect(
     page.getByRole("heading", { name: "Actual player track" }),
   ).toBeVisible();
@@ -394,7 +394,7 @@ test("startup media falls back to supplied still and never stalls a ready device
 }) => {
   await reset(page);
   await page.route("**/media/startup.mp4", (r) => r.abort());
-  await page.goto("/");
+  await page.goto("/?product=1");
   await expect(page.getByLabel("Startup animation")).toBeVisible();
   await expect(page.getByAltText("ONE · DUTCHAUDIOWORKS")).toBeVisible();
   await expect(page.getByLabel("Startup animation")).toHaveCount(0, {
@@ -432,7 +432,7 @@ test("branding holds at boot and gives fault state priority", async ({
   page,
 }) => {
   await reset(page);
-  await page.goto("/");
+  await page.goto("/?product=1");
   await expect(page.getByLabel("Startup animation")).toHaveCount(0, {
     timeout: 6000,
   });
@@ -487,7 +487,7 @@ test("module loading failures show a readable startup message", async ({
   page,
 }) => {
   await page.route("**/src/main.jsx", (route) => route.abort());
-  await page.goto("/");
+  await page.goto("/?product=1");
   await expect(page.locator("#boot-status")).toContainText("kon niet laden");
   await expect(page.locator("#boot-status")).toContainText("display-r3");
 });
@@ -503,4 +503,39 @@ test("render failures show a recovery action instead of an empty page", async ({
   await expect(
     page.getByRole("button", { name: "Opnieuw laden" }),
   ).toBeVisible();
+});
+
+test("default browser keeps test bench visible during navigation and fault acknowledgement", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.goto("/");
+  const display = page.getByRole("region", {
+    name: "DAW ONE product display",
+    exact: true,
+  });
+  await expect(page.getByLabel("Separate hardware test panel")).toBeVisible();
+  await display.getByRole("button", { name: "Settings", exact: true }).click();
+  await expect(page.getByLabel("Separate hardware test panel")).toBeVisible();
+  await display.getByRole("button", { name: "Queue", exact: true }).click();
+  await expect(
+    page.getByRole("link", { name: "Product only" }),
+  ).toHaveAttribute("target", "_blank");
+  await page.request.post("/api/event", { data: { type: "amplifier-fault" } });
+  await expect(page.getByLabel("Safety explanation")).toContainText(
+    "amplifier-fault",
+  );
+  await page.reload();
+  await expect(page.getByLabel("Safety explanation")).toContainText(
+    "amplifier-fault",
+  );
+  await page.getByRole("button", { name: "Acknowledge faults" }).click();
+  await expect(page.getByLabel("Safety explanation")).toContainText(
+    "Safe standby",
+  );
+  const state = await (await page.request.get("/api/state")).json();
+  expect(state.device.faults).toEqual([]);
+  expect(state.device.amplifierEnabled).toBe(false);
+  expect(state.device.verified).toBe(false);
+  await expect(page.getByLabel("Left speaker silent")).toBeVisible();
 });

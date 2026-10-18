@@ -47,7 +47,9 @@ function App() {
     [page, setPage] = useState("playing"),
     [startupPreview, setStartupPreview] = useState(0),
     [lab, setLab] = useState(
-      new URLSearchParams(location.search).get("lab") === "1",
+      !["screen", "product"].some(
+        (key) => new URLSearchParams(location.search).get(key) === "1",
+      ),
     ),
     [offline, setOffline] = useState(false),
     [clock, setClock] = useState(Date.now()),
@@ -188,10 +190,6 @@ function App() {
   const openLab = () => {
     setLab(true);
     history.replaceState(null, "", "?lab=1");
-  };
-  const closeLab = () => {
-    setLab(false);
-    history.replaceState(null, "", location.pathname);
   };
   const simulatorProps = {
     snapshot,
@@ -473,7 +471,6 @@ function App() {
       prefs={prefs}
       send={send}
       now={clock}
-      onClose={closeLab}
       simulatorProps={simulatorProps}
       product={product}
       onReplayStartup={() => setStartupPreview((v) => v + 1)}

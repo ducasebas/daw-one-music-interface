@@ -3,7 +3,7 @@ test("production shell reloads offline and settings remain editable", async ({
   page,
   context,
 }) => {
-  await page.goto("/");
+  await page.goto("/?screen=1");
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
   await context.setOffline(true);

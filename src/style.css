@@ -3442,3 +3442,41 @@ main[data-diagnostics="true"] .vu-unavailable b {
   color: #9da9ac;
   white-space: nowrap;
 }
+
+.bench-product-link {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 10px;
+  white-space: nowrap;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 8px 12px;
+}
+.bench-caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.bench-caption button {
+  min-height: 28px;
+  border: 1px solid var(--daw-warning);
+  border-radius: 4px;
+  color: var(--daw-warning);
+  padding: 3px 8px;
+  font-size: 8px;
+  white-space: nowrap;
+}
+@media (max-width: 800px) {
+  .bench-product-link {
+    font-size: 8px;
+    padding: 7px;
+  }
+  .bench-caption button {
+    font-size: 7px;
+    padding: 3px 5px;
+  }
+  .bench-caption {
+    gap: 5px;
+  }
+}
