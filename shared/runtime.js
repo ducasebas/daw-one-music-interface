@@ -7,6 +7,8 @@ export const policy = {
   thermalLimitC: 75,
 }; // Simulation policy only; not electrical specifications.
 export const eventTypes = [
+  "volume",
+  "mute",
   "play",
   "pause",
   "next",
@@ -47,6 +49,7 @@ export class DeviceRuntime {
       heartbeatEnabled: true,
       lastHeartbeat: now,
     };
+    this.audio = { volume: 32, muted: false };
     this.lastActivity = now;
     this.log = [];
     this.sequence = 0;
@@ -84,6 +87,17 @@ export class DeviceRuntime {
       throw Error("Boolean sensor value required");
     if (e.type === "seek" && !Number.isFinite(e.position))
       throw Error("Finite seek position required");
+    if (e.type === "volume") {
+      if (!Number.isFinite(e.value)) throw Error("Finite volume required");
+      this.audio = {
+        ...this.audio,
+        volume: Math.max(0, Math.min(100, Math.round(e.value))),
+      };
+    }
+    if (e.type === "mute") {
+      if (typeof e.value !== "boolean") throw Error("Boolean mute required");
+      this.audio = { ...this.audio, muted: e.value };
+    }
     const before = this.device;
     let events = [e];
     if (e.type === "boot") {
@@ -211,7 +225,11 @@ export class DeviceRuntime {
         now,
         action.type,
         this.device.mode,
-        `${before.mode} → ${this.device.mode}; ${action.type}`,
+        action.type === "volume"
+          ? `Preview volume ${this.audio.volume}%`
+          : action.type === "mute"
+            ? `Preview mute ${this.audio.muted}`
+            : `${before.mode} → ${this.device.mode}; ${action.type}`,
       );
     }
     if (!this.device.playing || !this.playback.connected)
@@ -234,6 +252,7 @@ export class DeviceRuntime {
   }
   snapshot(now = Date.now()) {
     return {
+      audio: this.audio,
       device: this.device,
       playback: {
         ...this.playback,

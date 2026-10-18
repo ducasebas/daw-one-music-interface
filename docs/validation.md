@@ -4,16 +4,19 @@ Executed in the implementation cloud environment (Node.js 24.19.0, Linux):
 
 | Check | Observed result |
 | --- | --- |
-| `npm test` | 54 domain, safety, MA protocol/service, scenario, enclosure and theme tests passed |
+| `npm test` | 56 domain, safety, MA protocol/service, scenario, enclosure and theme tests passed |
 | `npm run build` | Passed; Vite production assets generated |
-| `npm run test:ui` | 10 Chromium tests passed: 1280 × 400 geometry/touch/navigation, offline settings, all dashboard scenarios, 390 px phone layout/keyboard navigation, theme customization/persistence/Nerd widgets/state switching, swipe navigation, all settings/simulator pages without scrolling, case power/display/module actions and safety-linked speaker indication, reference volume/Connection page and live read-only metadata fixture |
+| `npm run test:ui` | 14 Chromium tests passed: 1280 × 400 geometry/touch/navigation, offline settings, workbench and shared iframe state, 390 px phone layout/keyboard navigation, theme customization/persistence/Nerd widgets/state switching, swipe navigation, all settings/simulator pages without scrolling, case power/display/module actions and safety-linked speaker indication, reference volume/Connection page and live read-only metadata fixture |
 | `npm run test:offline` | 1 Chromium production test passed: full network outage, cached app reload and persistent editable settings |
 | `bash -n deploy/install.sh deploy/health.sh` | Passed; syntax only, not a real Pi install |
 
-Production JS bundle is approximately 260 kB uncompressed / 81 kB gzip, CSS approximately 28 kB / 6 kB gzip. These are build sizes, not measured Pi CPU/memory. Backend keeps at most 500 timeline entries. No hardware control module or driver is enabled.
+Production JS bundle is approximately 267 kB uncompressed / 83 kB gzip, CSS approximately 52 kB / 11 kB gzip. These are build sizes, not measured Pi CPU/memory. Backend keeps at most 500 timeline entries. No hardware control module or driver is enabled.
 
 Browser tests use Chromium with touch emulation, not an iPhone/iPad. WebKit downloaded but runtime dependencies are unavailable; no WebKit/Safari pass is claimed. Codespaces config is supplied, but a real GitHub Codespace session was not created from this environment. The same npm startup and private-port proxy flow was tested locally by Playwright. Pi package installation, kiosk seat/display/touch, Squeezelite playback, actual MA server compatibility/audio, physical thermal/power/controller protection and phase 5 require target access.
 
 Safety coverage explicitly tests denied amplifier enable for unverified hardware and every simulated latched fault. These tests certify software simulation behaviour only; they cannot establish electrical safety or firmware operation.
 
 Music Assistant protocol tests use injected WebSocket fixtures: handshake/auth, partial results, timeouts, disconnect cleanup, commands/volume ceiling, read-only mode, explicit player selection, queue events and reconnect. No real MA endpoint or access token was supplied during implementation; no actual audio test is claimed.
+
+
+The latest revision separates the product at `/?screen=1` from the browser workbench at `/?lab=1`. Tests verify top-surface button geometry, shared iframe/backend controls, modules outside the case, state/event pages, speaker mute/volume gating, all six layouts and user-supplied startup fallback/replay. Startup file metadata was inspected with ffprobe: H.264, 1280 × 400, 30 fps, 2.800 seconds, no audio. Hardware boot, actual LED wiring/driver and target Safari decoding remain unverified.

@@ -3,7 +3,12 @@ import { policy } from "./runtime.js";
 /** Logical simulation projection, never a claim about measured electrical rails. */
 export function devicePresentation(
   snapshot,
-  { offline = false, volume = 32, now = Date.now() } = {},
+  {
+    offline = false,
+    volume = snapshot.audio?.volume ?? 32,
+    muted = snapshot.audio?.muted ?? false,
+    now = Date.now(),
+  } = {},
 ) {
   const { device: d, playback: p, sensors: s = {} } = snapshot;
   const heartbeat =
@@ -13,7 +18,7 @@ export function devicePresentation(
   const running = d.mode !== "shutting-down";
   const enabled =
     !offline && amplifierAllowed(d) && s.powerGood === true && heartbeat;
-  const driven = enabled && p.connected && p.playing && volume > 0;
+  const driven = enabled && p.connected && p.playing && volume > 0 && !muted;
   const led = offline
     ? "unknown"
     : d.mode === "fault"

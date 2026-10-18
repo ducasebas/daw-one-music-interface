@@ -101,15 +101,6 @@ app.post("/api/event", async (q, r) => {
         runtime.device.mode,
         `Music Assistant ${q.body.type} completed`,
       );
-    } else if (q.body.type === "volume" || q.body.type === "mute") {
-      if (q.body.type === "volume" && !Number.isFinite(q.body.value))
-        throw Error("Invalid volume");
-      runtime.record(
-        Date.now(),
-        "preview-volume",
-        runtime.device.mode,
-        "Local volume preview only",
-      );
     } else runtime.dispatch(q.body);
     broadcast();
     r.json(snapshot());

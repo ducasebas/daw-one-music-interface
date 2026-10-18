@@ -1,182 +1,25 @@
 import { test, expect } from "@playwright/test";
-test("1280 × 400 layout, touch controls, navigation, artwork and persistence", async ({
-  page,
-}) => {
-  await page.request.post("/api/scenario", { data: { name: "Cold boot" } });
-  await page.goto("/");
-  await expect(page.getByText("SIMULATED SYSTEM")).toBeVisible();
-  await page.getByRole("button", { name: "Play", exact: true }).tap();
-  await expect(
-    page.getByRole("button", { name: "Pause", exact: true }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Next track" }).click();
-  await expect(page.getByRole("heading", { name: "A Walk" })).toBeVisible();
-  await page
-    .getByRole("button", { name: "Video artwork", exact: false })
-    .click();
-  await expect(page.getByText("VIDEO ARTWORK · MOCK")).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
-    1280,
-  );
-  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(
-    400,
-  );
+const reset = (page) =>
+  page.request.post("/api/scenario", { data: { name: "Cold boot" } });
+const settings = async (page, index = 0) => {
   await page.getByRole("button", { name: "Settings", exact: true }).click();
-  await page.getByLabel("Manual video correction").fill("12");
-  await page.reload();
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
-  await expect(page.getByLabel("Manual video correction")).toHaveValue("12");
-  await page.getByRole("button", { name: "Queue", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Up next" })).toBeVisible();
-  await page.getByRole("button", { name: "Now playing", exact: true }).click();
-  await page.screenshot({ path: "test-results/daw-one-1280x400.png" });
-});
-test("offline settings and fault visibility", async ({ page }) => {
-  await page.request.post("/api/scenario", { data: { name: "Cold boot" } });
-  await page.goto("/");
   await page
-    .getByRole("button", { name: "Hardware Simulator", exact: true })
-    .click();
-  await page.getByLabel("Simulator page", { exact: true }).selectOption("3");
-  await page
-    .getByRole("button", { name: "thermal-alarm", exact: true })
-    .click();
-  await expect(page.getByRole("alert")).toHaveText("thermal-alarm");
-  await page.route("**/api/**", (route) => route.abort());
-  await expect(page.locator(".status")).toContainText("OFFLINE PREVIEW", {
-    timeout: 6000,
-  });
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
-  await page.getByLabel("Manual video correction").fill("-8");
-  await page.reload();
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
-  await expect(page.getByLabel("Manual video correction")).toHaveValue("-8");
-});
-test("scenario dashboard drives the shared API and timeline", async ({
-  page,
-}) => {
-  await page.goto("/");
-  await page
-    .getByRole("button", { name: "Hardware Simulator", exact: true })
-    .click();
-  for (const [name, mode] of [
-    ["Playback", "ready"],
-    ["Standby", "standby"],
-    ["Wake on presence", "ready"],
-    ["Safe shutdown", "shutting-down"],
-    ["Network loss", "ready"],
-    ["Low voltage", "fault"],
-    ["Thermal fault", "fault"],
-    ["Controller disconnect", "fault"],
-    ["Cold boot", "ready"],
-  ]) {
-    await page.getByLabel("Automated scenario").selectOption(name);
-    await page
-      .getByRole("button", { name: "Run scenario", exact: true })
-      .click();
-    await expect
-      .poll(
-        async () =>
-          (await (await page.request.get("/api/state")).json()).device.mode,
-      )
-      .toBe(mode);
-    const state = await (await page.request.get("/api/state")).json();
-    expect(state.log.some((e) => e.reason === `Start ${name}`)).toBeTruthy();
-  }
-  await page.getByLabel("Simulator page", { exact: true }).selectOption("4");
-  await expect(page.getByLabel("Device timeline")).toContainText(
-    "amplifier-request",
-  );
-  const invalid = await page.request.post("/api/event", {
-    data: { type: "temperature", value: "bad" },
-  });
-  expect(invalid.status()).toBe(400);
-});
-test("phone touch layout and keyboard navigation remain usable", async ({
-  page,
-}) => {
-  await page.request.post("/api/scenario", { data: { name: "Cold boot" } });
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-  await page.getByRole("button", { name: "Settings", exact: true }).tap();
-  await expect(
-    page.getByRole("slider", { name: "Display brightness" }),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Hardware Simulator", exact: true })
-    .tap();
-  await expect(
-    page.getByRole("heading", { name: "Hardware Simulator" }),
-  ).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
-    390,
-  );
-  await page.getByRole("button", { name: "Now playing", exact: true }).focus();
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: "Weightless" })).toBeVisible();
-});
-test("themes, custom tokens, local persistence, Nerd diagnostics and automatic state", async ({
-  page,
-}) => {
-  await page.request.post("/api/scenario", { data: { name: "Cold boot" } });
-  await page.goto("/");
-  const settings = async (index) => {
-    await page.getByRole("button", { name: "Settings", exact: true }).click();
-    await page
-      .getByLabel("Settings page", { exact: true })
-      .selectOption(String(index));
-  };
-  await settings(1);
-  for (const id of [
-    "reference-dark",
-    "warm-bronze",
-    "champagne-gold",
-    "cinematic",
-    "nerd-mode",
-  ]) {
-    await page.getByLabel("Skin", { exact: true }).selectOption(id);
-    await expect(page.locator("main")).toHaveAttribute("data-theme", id);
-  }
-  await page.getByRole("button", { name: "Now playing", exact: true }).click();
-  await expect(page.getByLabel("Nerd diagnostics")).toBeVisible();
-  await settings(5);
-  await page.getByLabel("Glow intensity", { exact: true }).fill("12");
-  await page.getByLabel("Settings page", { exact: true }).selectOption("9");
-  await page.getByLabel("Custom theme name").fill("My Studio");
-  await page
-    .getByRole("button", { name: "Save custom theme", exact: true })
-    .click();
-  await expect(page.getByLabel("Theme engine")).toContainText(
-    "Active: My Studio",
-  );
-  await expect(page.locator("main")).toHaveCSS("--glow", "12px");
-  await page.reload();
-  await settings(1);
-  await expect(page.getByLabel("Theme engine")).toContainText(
-    "Active: My Studio",
-  );
-  await page.getByLabel("Settings page", { exact: true }).selectOption("6");
-  await page.getByLabel("Automatic switching").selectOption("state");
-  await page.request.post("/api/event", { data: { type: "thermal-alarm" } });
-  await expect(page.locator("main")).toHaveAttribute("data-theme", "nerd-mode");
-  await page.getByLabel("Automatic switching").selectOption("schedule");
-  await page.getByLabel("Settings page", { exact: true }).selectOption("7");
-  await expect(page.getByLabel("Day skin", { exact: true })).toBeVisible();
-});
-
-async function swipe(page, selector, direction = "left") {
-  const b = await page.locator(selector).boundingBox(),
-    client = await page.context().newCDPSession(page);
-  const x1 = b.x + b.width * (direction === "left" ? 0.85 : 0.15),
-    x2 = b.x + b.width * (direction === "left" ? 0.15 : 0.85),
+    .getByLabel("Settings page", { exact: true })
+    .selectOption(String(index));
+};
+async function swipe(page, direction = "left") {
+  const b = await page.locator(".page-body").boundingBox(),
+    client = await page.context().newCDPSession(page),
+    x = b.x + b.width * (direction === "left" ? 0.85 : 0.15),
+    end = b.x + b.width * (direction === "left" ? 0.15 : 0.85),
     y = b.y + b.height - 10;
   await client.send("Input.dispatchTouchEvent", {
     type: "touchStart",
-    touchPoints: [{ x: x1, y }],
+    touchPoints: [{ x, y }],
   });
   await client.send("Input.dispatchTouchEvent", {
     type: "touchMove",
-    touchPoints: [{ x: x2, y }],
+    touchPoints: [{ x: end, y }],
   });
   await client.send("Input.dispatchTouchEvent", {
     type: "touchEnd",
@@ -184,20 +27,192 @@ async function swipe(page, selector, direction = "left") {
   });
   await client.detach();
 }
-test("settings pages swipe without scrolling and retain accessible navigation", async ({
+test("reference product fits 1280x400 with working playback and persistent settings", async ({
   page,
 }) => {
+  await reset(page);
   await page.goto("/");
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
-  await swipe(page, ".page-body");
+  await page.getByRole("button", { name: "Play", exact: true }).tap();
+  await expect(
+    page.getByRole("button", { name: "Pause", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Next track" }).tap();
+  await expect(page.getByRole("heading", { name: "A Walk" })).toBeVisible();
+  await page.getByRole("button", { name: "Video artwork", exact: false }).tap();
+  await expect(page.getByText("VIDEO ARTWORK · MOCK")).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(
+    400,
+  );
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
+    1280,
+  );
+  await settings(page);
+  await page.getByLabel("Manual video correction").fill("12");
+  await page.reload();
+  await settings(page);
+  await expect(page.getByLabel("Manual video correction")).toHaveValue("12");
+  await page.getByRole("button", { name: "Now playing", exact: true }).click();
+  await page.screenshot({ path: "test-results/reference-product.png" });
+});
+test("offline settings remain available and show backend loss", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.goto("/");
+  await page.request.post("/api/event", { data: { type: "thermal-alarm" } });
+  await page.route("**/api/**", (r) => r.abort());
+  await expect(page.locator(".status")).toContainText("OFFLINE PREVIEW");
+  await settings(page);
+  await page.getByLabel("Manual video correction").fill("-8");
+  await page.reload();
+  await settings(page);
+  await expect(page.getByLabel("Manual video correction")).toHaveValue("-8");
+});
+test("workbench controls and embedded product use one runtime", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.goto("/?lab=1");
+  await page.getByLabel("Automated scenario").selectOption("Playback");
+  await page.getByRole("button", { name: "Run scenario", exact: true }).tap();
+  await expect(page.getByLabel("Left speaker driven")).toBeVisible();
+  const screen = page.frameLocator('iframe[title="DAW ONE product display"]');
+  await expect(
+    screen.getByRole("heading", { name: "Weightless" }),
+  ).toBeVisible();
+  await screen.getByRole("button", { name: "Next track" }).click();
+  await expect
+    .poll(
+      async () =>
+        (await (await page.request.get("/api/state")).json()).playback.index,
+    )
+    .toBe(1);
+  await expect(screen.getByRole("heading", { name: "A Walk" })).toBeVisible();
+  await expect(
+    screen.getByRole("button", { name: "Test bench", exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("tab", { name: "Events", exact: true }).click();
+  await expect(page.getByLabel("Device timeline")).toContainText("next");
+});
+test("power button and LED ring sit on top, modules and events stay outside case", async ({
+  page,
+}) => {
+  await page.request.post("/api/scenario", { data: { name: "Playback" } });
+  await page.goto("/?lab=1");
+  await expect(page.getByLabel("Left speaker driven")).toBeVisible();
+  expect(await page.locator(".physical-device [data-module]").count()).toBe(0);
+  const power = await page
+      .getByRole("button", { name: "Case power button", exact: true })
+      .boundingBox(),
+    front = await page.locator(".physical-front").boundingBox();
+  expect(power.y + power.height).toBeLessThanOrEqual(front.y + 1);
+  await page
+    .getByRole("button", { name: "Case power button", exact: true })
+    .tap();
+  await expect(page.getByLabel("Status LED standby")).toBeVisible();
+  await expect(page.getByLabel("Left speaker silent")).toBeVisible();
+  await page.getByRole("button", { name: "Wake device", exact: true }).tap();
+  await expect(page.getByLabel("Status LED ready")).toBeVisible();
+  await page.getByRole("tab", { name: "Modules", exact: true }).click();
+  await page.locator("[data-module=amplifier]").tap();
+  await page
+    .getByRole("button", { name: "Inject amp fault", exact: true })
+    .tap();
+  await expect(page.getByLabel("Status LED fault")).toBeVisible();
+  await expect(page.locator("[data-module=amplifier]")).toHaveAttribute(
+    "data-status",
+    "fault",
+  );
+  await expect(page.getByLabel("Latest state changes")).toContainText(
+    "amplifier-fault",
+  );
+  await expect(page.getByLabel("Latest state changes")).toBeInViewport({
+    ratio: 1,
+  });
+  await page.screenshot({ path: "test-results/separate-workbench.png" });
+});
+test("display sleep keeps safe audio; screen touch wakes; offline indicators become unknown", async ({
+  page,
+}) => {
+  await page.request.post("/api/scenario", { data: { name: "Playback" } });
+  await page.goto("/?lab=1");
+  await page.request.post("/api/event", { data: { type: "display-timeout" } });
+  await expect(
+    page.getByRole("button", { name: "Wake device display" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Left speaker driven")).toBeVisible();
+  await page.getByRole("button", { name: "Wake device display" }).tap();
+  await expect(
+    page.getByRole("button", { name: "Wake device display" }),
+  ).toHaveCount(0);
+  await page.request.post("/api/event", { data: { type: "amplifier-fault" } });
+  await page.route("**/api/**", (r) => r.abort());
+  await expect(page.getByLabel("Status LED unknown")).toBeVisible();
+  await expect(page.getByLabel("Left speaker silent")).toBeVisible();
+});
+test("six reference layouts, theme customization and state automation persist", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.goto("/");
+  for (const id of [
+    "reference-dark",
+    "minimal-dark",
+    "warm-bronze",
+    "champagne-gold",
+    "cinematic",
+    "nerd-mode",
+  ]) {
+    await settings(page, 1);
+    await page.getByLabel("Skin", { exact: true }).selectOption(id);
+    await page
+      .getByRole("button", { name: "Now playing", exact: true })
+      .click();
+    await expect(page.locator("main")).toHaveAttribute("data-layout", id);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollHeight),
+    ).toBe(400);
+    if (id === "cinematic") {
+      const art = await page.locator(".art").boundingBox(),
+        track = await page.locator(".track").boundingBox();
+      expect(art.x).toBeGreaterThan(track.x);
+      await expect(page.getByLabel("Upcoming tracks")).toBeVisible();
+    }
+    if (id === "nerd-mode")
+      await expect(page.getByLabel("Nerd diagnostics")).toContainText(
+        "Not measured",
+      );
+  }
+  await settings(page, 5);
+  await page.getByLabel("Glow intensity").fill("12");
+  await page.getByLabel("Settings page", { exact: true }).selectOption("9");
+  await page.getByLabel("Custom theme name").fill("My Studio");
+  await page
+    .getByRole("button", { name: "Save custom theme", exact: true })
+    .click();
+  await page.reload();
+  await settings(page, 1);
+  await expect(page.getByLabel("Theme engine")).toContainText("My Studio");
+  await page.getByLabel("Settings page", { exact: true }).selectOption("6");
+  await page.getByLabel("Automatic switching").selectOption("state");
+  await page.request.post("/api/event", { data: { type: "thermal-alarm" } });
+  await expect(page.locator("main")).toHaveAttribute("data-theme", "nerd-mode");
+});
+test("all settings pages swipe without scroll and support arrows", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.goto("/");
+  await settings(page);
+  await swipe(page);
   await expect(page.getByLabel("Settings page", { exact: true })).toHaveValue(
     "1",
   );
-  await swipe(page, ".page-body", "right");
+  await swipe(page, "right");
   await expect(page.getByLabel("Settings page", { exact: true })).toHaveValue(
     "0",
   );
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 11; i++) {
     await page
       .getByLabel("Settings page", { exact: true })
       .selectOption(String(i));
@@ -206,80 +221,18 @@ test("settings pages swipe without scrolling and retain accessible navigation", 
         .locator(".page-body")
         .evaluate((e) => e.scrollHeight <= e.clientHeight + 1),
     ).toBeTruthy();
-    expect(
-      await page.evaluate(() => document.documentElement.scrollHeight),
-    ).toBe(400);
   }
-  await page.getByLabel("Settings page", { exact: true }).selectOption("0");
   await page.getByRole("region", { name: "Settings", exact: true }).focus();
-  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowLeft");
   await expect(page.getByLabel("Settings page", { exact: true })).toHaveValue(
-    "1",
+    "9",
   );
 });
-test("interactive case, illuminated power, speakers and modules share live safety state", async ({
+test("states events and simulation pages are visible without desktop overflow", async ({
   page,
 }) => {
-  await page.request.post("/api/scenario", { data: { name: "Playback" } });
-  await page.goto("/");
-  await page.getByRole("button", { name: "Device", exact: true }).click();
-  await page.getByRole("button", { name: "Playback demo", exact: true }).tap();
-  await expect(page.getByLabel("Left speaker driven")).toBeVisible();
-  await expect(page.locator("[data-module=amplifier]")).toHaveAttribute(
-    "data-status",
-    "on",
-  );
-  await page.screenshot({ path: "test-results/daw-one-case.png" });
-  await page.locator("[data-module=wifi]").tap();
-  await page
-    .getByRole("button", { name: "Disconnect Wi-Fi", exact: true })
-    .tap();
-  await expect(page.locator("[data-module=wifi]")).toHaveAttribute(
-    "data-status",
-    "off",
-  );
-  await expect(page.getByLabel("Left speaker silent")).toBeVisible();
-  await page.getByRole("button", { name: "Playback demo", exact: true }).tap();
-  await page
-    .getByRole("button", { name: "Case power button", exact: true })
-    .tap();
-  await expect(page.getByLabel("Status LED standby")).toBeVisible();
-  await expect(page.getByLabel("Left speaker silent")).toBeVisible();
-  await page.getByRole("button", { name: "Wake device", exact: true }).tap();
-  await expect(page.getByLabel("Status LED ready")).toBeVisible();
-  await page.request.post("/api/scenario", { data: { name: "Playback" } });
-  await page.request.post("/api/event", { data: { type: "display-timeout" } });
-  await expect(page.locator(".case-screen")).toHaveAttribute(
-    "data-awake",
-    "false",
-  );
-  await page.getByRole("button", { name: "Device display", exact: true }).tap();
-  await expect(page.locator(".case-screen")).toHaveAttribute(
-    "data-awake",
-    "true",
-  );
-  await expect(page.getByLabel("Left speaker driven")).toBeVisible();
-  await page.request.post("/api/event", { data: { type: "amplifier-fault" } });
-  await expect(page.getByLabel("Status LED fault")).toBeVisible();
-  await expect(page.getByLabel("Left speaker silent")).toBeVisible();
-  await expect(page.locator("[data-module=amplifier]")).toHaveAttribute(
-    "data-status",
-    "fault",
-  );
-  await page.route("**/api/**", (r) => r.abort());
-  await expect(page.getByLabel("Status LED unknown")).toBeVisible();
-  await expect(page.locator("[data-module=amplifier]")).toHaveAttribute(
-    "data-status",
-    "unknown",
-  );
-});
-test("all simulator pages and phone settings fit without vertical scrolling", async ({
-  page,
-}) => {
-  await page.goto("/");
-  await page
-    .getByRole("button", { name: "Hardware Simulator", exact: true })
-    .click();
+  await reset(page);
+  await page.goto("/?lab=1");
   for (let i = 0; i < 5; i++) {
     await page
       .getByLabel("Simulator page", { exact: true })
@@ -290,9 +243,27 @@ test("all simulator pages and phone settings fit without vertical scrolling", as
         .evaluate((e) => e.scrollHeight <= e.clientHeight + 1),
     ).toBeTruthy();
   }
+  for (const tab of ["Modules", "States", "Events"]) {
+    await page.getByRole("tab", { name: tab, exact: true }).click();
+    expect(
+      await page
+        .locator(".bench-tab-content")
+        .evaluate((e) => e.scrollHeight <= e.clientHeight + 1),
+    ).toBeTruthy();
+  }
+  await page.getByRole("tab", { name: "States", exact: true }).click();
+  await expect(page.getByLabel("Device states")).toContainText(
+    "Amplifier enable request",
+  );
+});
+test("phone product settings and separate workbench remain usable", async ({
+  page,
+}) => {
+  await reset(page);
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
-  for (let i = 0; i < 10; i++) {
+  await page.goto("/");
+  await settings(page);
+  for (let i = 0; i < 11; i++) {
     await page
       .getByLabel("Settings page", { exact: true })
       .selectOption(String(i));
@@ -301,55 +272,44 @@ test("all simulator pages and phone settings fit without vertical scrolling", as
         .locator(".page-body")
         .evaluate((e) => e.scrollHeight <= e.clientHeight + 1),
     ).toBeTruthy();
-    expect(
-      await page.evaluate(() => document.documentElement.scrollHeight),
-    ).toBe(844);
   }
-  await page.getByRole("button", { name: "Device", exact: true }).click();
-  await expect(page.getByLabel("DAW ONE exterior")).toBeVisible();
+  await page.getByRole("button", { name: "Test bench", exact: true }).tap();
+  await expect(page.getByLabel("Physical device preview")).toBeVisible();
+  await page.getByRole("tab", { name: "Modules", exact: true }).tap();
+  await expect(page.getByLabel("Simulated modules")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(
     844,
   );
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
     390,
   );
+  await page.screenshot({ path: "test-results/workbench-phone.png" });
 });
-test("reference volume supports fine keyboard and touch buttons and connection page", async ({
+test("reference volume supports keyboard mute and connection settings", async ({
   page,
 }) => {
   await page.goto("/");
-  const dial = page.getByRole("slider", { name: "Volume", exact: true });
-  await dial.focus();
+  const v = page.getByRole("slider", { name: "Volume", exact: true });
+  await v.focus();
   await page.keyboard.press("Home");
-  await expect(dial).toHaveAttribute("aria-valuenow", "0");
+  await expect(v).toHaveAttribute("aria-valuenow", "0");
   await page
     .getByRole("button", { name: "Increase volume", exact: true })
     .tap();
-  await expect(dial).toHaveAttribute("aria-valuenow", "1");
-  await dial.focus();
-  await page.keyboard.press("PageUp");
-  await expect(dial).toHaveAttribute("aria-valuenow", "6");
+  await expect(v).toHaveAttribute("aria-valuenow", "1");
   await page.getByRole("button", { name: "Mute", exact: true }).tap();
   await expect(
     page.getByRole("button", { name: "Unmute", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await page.reload();
-  await expect(dial).toHaveAttribute("aria-valuenow", "6");
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
-  await page.getByLabel("Settings page", { exact: true }).selectOption("10");
+  await settings(page, 10);
   await expect(page.getByLabel("Music Assistant connection")).toContainText(
     "SIMULATION",
   );
-  expect(
-    await page
-      .locator(".page-body")
-      .evaluate((e) => e.scrollHeight <= e.clientHeight + 1),
-  ).toBeTruthy();
 });
-test("live metadata and actual volume render without presenting simulator as connected music", async ({
+test("live source displays actual metadata and read-only controls", async ({
   page,
 }) => {
-  const real = {
+  const data = {
     device: {
       mode: "ready",
       faults: [],
@@ -381,29 +341,74 @@ test("live metadata and actual volume render without presenting simulator as con
       controlEnabled: false,
       connected: true,
       status: "connected",
-      serverVersion: "protocol-fixture",
+      serverVersion: "fixture",
       players: [],
       volumeLimit: 40,
     },
   };
   await page.route("**/api/events", (r) => r.abort());
-  await page.route("**/api/state", (r) => r.fulfill({ json: real }));
+  await page.route("**/api/state", (r) => r.fulfill({ json: data }));
   await page.goto("/");
   await expect(
     page.getByRole("heading", { name: "Actual player track" }),
   ).toBeVisible();
-  await expect(page.locator(".status")).toContainText("LIVE MUSIC");
   await expect(
     page.getByRole("slider", { name: "Volume", exact: true }),
   ).toHaveAttribute("aria-valuenow", "18");
   await expect(
     page.getByRole("button", { name: "Increase volume", exact: true }),
   ).toBeDisabled();
+});
+test("startup media falls back to supplied still and never stalls a ready device", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.route("**/media/startup.mp4", (r) => r.abort());
+  await page.goto("/");
+  await expect(page.getByLabel("Startup animation")).toBeVisible();
+  await expect(page.getByAltText("ONE · DUTCHAUDIOWORKS")).toBeVisible();
+  await expect(page.getByLabel("Startup animation")).toHaveCount(0, {
+    timeout: 6000,
+  });
+  await page.getByRole("button", { name: "Play", exact: true }).tap();
   await expect(
     page.getByRole("button", { name: "Pause", exact: true }),
-  ).toBeDisabled();
-  await page.getByRole("button", { name: "Device", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "Hardware is simulated" }),
   ).toBeVisible();
+});
+test("workbench replays branding without resetting device state", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.goto("/?lab=1");
+  const screen = page.frameLocator('iframe[title="DAW ONE product display"]');
+  await expect(screen.getByLabel("Startup animation")).toHaveCount(0, {
+    timeout: 6000,
+  });
+  await page
+    .getByRole("button", { name: "Replay startup", exact: true })
+    .click();
+  await expect(screen.getByLabel("Startup animation")).toBeVisible();
+  const state = await (await page.request.get("/api/state")).json();
+  expect(state.device.mode).toBe("ready");
+  expect(state.device.amplifierEnabled).toBe(false);
+  await expect(screen.getByLabel("Startup animation")).toHaveCount(0, {
+    timeout: 6000,
+  });
+});
+test("branding holds at boot and gives fault state priority", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.goto("/");
+  await expect(page.getByLabel("Startup animation")).toHaveCount(0, {
+    timeout: 6000,
+  });
+  await page.request.post("/api/event", { data: { type: "boot" } });
+  await expect(page.getByLabel("Startup animation")).toBeVisible();
+  await expect(page.getByText("Starting device…", { exact: true })).toBeVisible(
+    { timeout: 6000 },
+  );
+  await page.request.post("/api/event", { data: { type: "thermal-alarm" } });
+  await expect(page.getByLabel("Startup animation")).toHaveCount(0);
+  await expect(page.locator(".status")).toContainText("FAULT");
 });

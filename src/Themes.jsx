@@ -20,6 +20,9 @@ export function ThemeSettings({ preferences, theme, onChange, section }) {
         onChange={(e) =>
           change({
             [key]: e.target.value,
+            ...(key === "selected" && e.target.value === "nerd-mode"
+              ? { diagnosticPalette: theme.tokens }
+              : {}),
             ...(key === "selected" ? { mode: "manual" } : {}),
           })
         }

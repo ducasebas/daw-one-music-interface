@@ -58,3 +58,25 @@ test("offline, stale heartbeat, muted preview and unverified boot never show act
     false,
   );
 });
+test("shared simulation volume and mute inhibit speaker animation across clients", () => {
+  const r = new DeviceRuntime(1000);
+  runScenario(r, "Playback", 1000);
+  r.dispatch({ type: "volume", value: 0 }, 1001);
+  assert.equal(
+    devicePresentation(r.snapshot(1001), { now: 1001 }).driven,
+    false,
+  );
+  r.dispatch({ type: "volume", value: 45 }, 1002);
+  r.dispatch({ type: "mute", value: true }, 1003);
+  assert.equal(
+    devicePresentation(r.snapshot(1003), { now: 1003 }).driven,
+    false,
+  );
+  r.dispatch({ type: "mute", value: false }, 1004);
+  assert.equal(
+    devicePresentation(r.snapshot(1004), { now: 1004 }).driven,
+    true,
+  );
+  assert.throws(() => r.dispatch({ type: "mute", value: "yes" }, 1005));
+  assert.throws(() => r.dispatch({ type: "volume", value: NaN }, 1005));
+});

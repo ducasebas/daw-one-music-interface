@@ -10,11 +10,12 @@ import {
   themeVariables,
   isDayHour,
 } from "../shared/themes.js";
-test("all five presets share the complete token contract", () => {
+test("all six presets share the complete token contract", () => {
   assert.deepEqual(
     presets.map((t) => t.name),
     [
       "Reference Dark",
+      "Minimal Dark",
       "Warm Bronze",
       "Champagne Gold",
       "Cinematic",
@@ -26,7 +27,7 @@ test("all five presets share the complete token contract", () => {
       Object.keys(t.tokens).sort(),
       Object.keys(tokenSchema).sort(),
     );
-  assert.equal(presets[4].diagnostics, true);
+  assert.equal(presets.find((t) => t.id === "nerd-mode").diagnostics, true);
 });
 test("tokens reject CSS injection, unknown fields and clamp numeric ranges", () => {
   const t = sanitizeTokens({
@@ -111,6 +112,17 @@ test("state auto switching prioritizes fault then offline then standby then play
 test("CSS variables are shared and always sanitized", () => {
   const v = themeVariables({ tokens: { font: "injected", accent: "bad" } });
   assert.equal(v["--accent"], presets[0].tokens.accent);
-  assert.ok(v["--font"].includes("Segoe"));
+  assert.ok(v["--font"].includes("Manrope"));
   assert.equal(v["--radius"], "5px");
+});
+test("Nerd diagnostics can inherit a selected palette without changing shared tokens", () => {
+  const bronze = presets.find((t) => t.id === "warm-bronze");
+  const p = normalizeThemePreferences({
+    selected: "nerd-mode",
+    diagnosticPalette: bronze.tokens,
+  });
+  const t = resolveTheme(p);
+  assert.equal(t.diagnostics, true);
+  assert.equal(t.tokens.accent, bronze.tokens.accent);
+  assert.equal(presets[0].tokens.accent, "#c9a674");
 });

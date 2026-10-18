@@ -19,17 +19,6 @@ export function VolumeControl({
   };
   return (
     <div className="volume-control reference-volume">
-      <div className="vu-unavailable" aria-label="Audio meters unavailable">
-        <div>
-          <span>L</span>
-          <b>╱││││││╲</b>
-        </div>
-        <div>
-          <span>R</span>
-          <b>╱││││││╲</b>
-        </div>
-        <small>LEVEL TELEMETRY UNAVAILABLE</small>
-      </div>
       <div
         className="volume-dial reference-volume-scale"
         role="slider"
@@ -44,7 +33,10 @@ export function VolumeControl({
         }
         aria-disabled={disabled}
         tabIndex={disabled ? -1 : 0}
-        style={{ "--volume-angle": `${(shown ?? 0) * 2.7}deg`, "--volume-percent": `${shown ?? 0}%` }}
+        style={{
+          "--volume-angle": `${(shown ?? 0) * 2.7}deg`,
+          "--volume-percent": `${shown ?? 0}%`,
+        }}
         onKeyDown={(e) => {
           const delta = {
             ArrowUp: 1,

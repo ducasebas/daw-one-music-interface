@@ -43,14 +43,14 @@ export const tokenSchema = {
   },
 };
 const base = {
-  background: "#111512",
-  surface: "#253020",
-  text: "#e7e9e3",
-  muted: "#a3b19a",
-  accent: "#c3d7a9",
-  borderColor: "#40513a",
-  glowColor: "#b6cf9a",
-  meterColor: "#a5be8c",
+  background: "#111417",
+  surface: "#1c2125",
+  text: "#f2efe9",
+  muted: "#9da3a6",
+  accent: "#c9a674",
+  borderColor: "#343436",
+  glowColor: "#c9a674",
+  meterColor: "#c9a674",
   font: "sans",
   panelOpacity: 0.4,
   spacing: 1,
@@ -67,15 +67,30 @@ export const presets = [
     diagnostics: false,
   },
   {
+    id: "minimal-dark",
+    name: "Minimal Dark",
+    tokens: {
+      ...base,
+      background: "#101211",
+      surface: "#1c2420",
+      accent: "#83b69a",
+      radius: 0,
+      glow: 0,
+      meter: "line",
+    },
+    diagnostics: false,
+  },
+  {
     id: "warm-bronze",
     name: "Warm Bronze",
     tokens: {
       ...base,
+      font: "serif",
       background: "#1b1512",
-      surface: "#4c3023",
+      surface: "#201b18",
       text: "#f0e5db",
       muted: "#c9ad96",
-      accent: "#e6ae7e",
+      accent: "#c58b5c",
       borderColor: "#6e4d39",
       glowColor: "#d88a4f",
       meterColor: "#dca171",
@@ -93,11 +108,11 @@ export const presets = [
       surface: "#4c4431",
       text: "#fff4dc",
       muted: "#cfc09e",
-      accent: "#eed49a",
+      accent: "#e1be7d",
       borderColor: "#786949",
       glowColor: "#e3ca85",
       meterColor: "#e9ca83",
-      font: "serif",
+      font: "sans",
       panelOpacity: 0.65,
       radius: 3,
       meter: "line",
@@ -113,7 +128,7 @@ export const presets = [
       surface: "#19233d",
       text: "#edf0ff",
       muted: "#adb8d6",
-      accent: "#b6c7ff",
+      accent: "#d9a578",
       borderColor: "#394b7a",
       glowColor: "#7b98ff",
       meterColor: "#a4baff",
@@ -127,22 +142,7 @@ export const presets = [
   {
     id: "nerd-mode",
     name: "Nerd Mode",
-    tokens: {
-      ...base,
-      background: "#07130f",
-      surface: "#0e3126",
-      text: "#ddffeb",
-      muted: "#8ec6a8",
-      accent: "#7cf5b1",
-      borderColor: "#297d52",
-      glowColor: "#2deb88",
-      meterColor: "#7cf5b1",
-      font: "mono",
-      panelOpacity: 0.6,
-      radius: 0,
-      glow: 8,
-      meter: "dots",
-    },
+    tokens: { ...base, font: "sans", radius: 5, glow: 0, meter: "dots" },
     diagnostics: true,
   },
 ];
@@ -190,6 +190,7 @@ export const defaultThemePreferences = {
   },
   custom: [],
   draft: null,
+  diagnosticPalette: null,
 };
 export function normalizeThemePreferences(raw) {
   const p = raw && typeof raw === "object" ? raw : {};
@@ -207,6 +208,9 @@ export function normalizeThemePreferences(raw) {
   return {
     ...defaultThemePreferences,
     custom: unique,
+    diagnosticPalette: p.diagnosticPalette
+      ? sanitizeTokens(p.diagnosticPalette)
+      : null,
     draft: p.draft ? sanitizeTheme(p.draft) : null,
     selected:
       p.selected === "draft" && p.draft
@@ -265,7 +269,13 @@ export function resolveTheme(raw, context = {}, date = new Date()) {
     id === "draft" && p.draft
       ? p.draft
       : [...presets, ...p.custom].find((t) => t.id === id) || presets[0];
-  return { ...theme, reason };
+  return {
+    ...theme,
+    ...(theme.id === "nerd-mode" && p.diagnosticPalette
+      ? { tokens: p.diagnosticPalette }
+      : {}),
+    reason,
+  };
 }
 export function saveCustomTheme(raw, draft, id) {
   const p = normalizeThemePreferences(raw);
@@ -293,7 +303,7 @@ export function themeVariables(theme) {
     "--glow-color": t.glowColor,
     "--meter-color": t.meterColor,
     "--font": {
-      sans: 'Inter, "Segoe UI", sans-serif',
+      sans: 'Manrope, "Helvetica Neue", Arial, sans-serif',
       serif: "Georgia, serif",
       mono: '"SFMono-Regular", Consolas, monospace',
     }[t.font],

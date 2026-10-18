@@ -10,9 +10,11 @@ import {
   themeVariables,
 } from "../shared/themes.js";
 import { SettingsPages } from "./SettingsPages.jsx";
-import { SimulatorPages } from "./SimulatorPages.jsx";
-import { DeviceView } from "./DeviceView.jsx";
+import { TestWorkbench } from "./TestWorkbench.jsx";
+import { ReferenceAside } from "./ReferenceAside.jsx";
+import { StartupScreen } from "./StartupScreen.jsx";
 import { VolumeControl } from "./VolumeControl.jsx";
+import "../design/brand-tokens.css";
 import "./style.css";
 function load() {
   try {
@@ -43,13 +45,16 @@ function App() {
     [prefs, setPrefs] = useState(load),
     [themePreferences, setThemePreferences] = useState(loadThemes),
     [page, setPage] = useState("playing"),
+    [startupPreview, setStartupPreview] = useState(0),
+    [lab, setLab] = useState(
+      new URLSearchParams(location.search).get("lab") === "1",
+    ),
     [offline, setOffline] = useState(false),
     [clock, setClock] = useState(Date.now()),
     [notice, setNotice] = useState(""),
     [videoAvailable, setVideoAvailable] = useState(true),
     [matched, setMatched] = useState(true),
-    [scenario, setScenario] = useState("Cold boot"),
-    [previewMuted, setPreviewMuted] = useState(false);
+    [scenario, setScenario] = useState("Cold boot");
   useEffect(() => {
     try {
       localStorage.setItem("daw-settings", JSON.stringify(prefs));
@@ -103,6 +108,19 @@ function App() {
   useEffect(() => {
     const id = setInterval(() => setClock(Date.now()), 250);
     return () => clearInterval(id);
+  }, []);
+  useEffect(() => {
+    const replay = (event) => {
+      if (
+        event.origin === location.origin &&
+        event.source === window.parent &&
+        window.parent !== window &&
+        event.data?.type === "daw:startup-preview"
+      )
+        setStartupPreview((v) => v + 1);
+    };
+    window.addEventListener("message", replay);
+    return () => window.removeEventListener("message", replay);
   }, []);
   async function send(e) {
     if (offline) {
@@ -161,7 +179,9 @@ function App() {
     !offline &&
     (!liveMusic ||
       (snapshot.musicAssistant?.controlEnabled && playback.connected));
-  const playerVolume = liveMusic ? playback.volume : prefs.volume;
+  const playerVolume = liveMusic
+    ? playback.volume
+    : (snapshot.audio?.volume ?? prefs.volume);
   const volumeEnabled =
     writable &&
     (!liveMusic ||
@@ -172,8 +192,36 @@ function App() {
     { device, playback, offline },
     new Date(clock),
   );
-  return (
+  const embedded = new URLSearchParams(location.search).get("screen") === "1";
+  const layout =
+    theme.id === "draft" || theme.id.startsWith("custom-")
+      ? "reference-dark"
+      : theme.id;
+  const videoActive = layout === "cinematic" || prefs.artwork === "video";
+  const openLab = () => {
+    setLab(true);
+    history.replaceState(null, "", "?lab=1");
+  };
+  const closeLab = () => {
+    setLab(false);
+    history.replaceState(null, "", location.pathname);
+  };
+  const simulatorProps = {
+    snapshot,
+    scenario,
+    setScenario,
+    run,
+    send,
+    videoAvailable,
+    setVideoAvailable,
+    matched,
+    setMatched,
+  };
+  const product = (
     <main
+      className="reference-product"
+      data-layout={layout}
+      data-daw-theme={layout === "warm-bronze" ? "bronze-vu" : layout}
       data-diagnostics={theme.diagnostics}
       data-theme={theme.id}
       data-meter={theme.tokens.meter}
@@ -182,6 +230,11 @@ function App() {
         "--brightness": prefs.brightness / 100,
       }}
     >
+      <StartupScreen
+        mode={device.mode}
+        offline={offline}
+        preview={startupPreview}
+      />
       <header>
         <a
           className="brand"
@@ -216,55 +269,32 @@ function App() {
         <nav aria-label="Main navigation">
           {[
             ["playing", "◉", "Now playing"],
-            ["device", "▣", "Device"],
             ["queue", "≋", "Queue"],
             ["settings", "⚙", "Settings"],
-            ["simulation", "⌘", "Hardware Simulator"],
+            ...(!embedded ? [["lab", "⌘", "Test bench"]] : []),
           ].map(([id, icon, label]) => (
             <button
               key={id}
               aria-label={label}
               aria-current={page === id ? "page" : undefined}
               className={page === id ? "selected" : ""}
-              onClick={() => setPage(id)}
+              onClick={() => (id === "lab" ? openLab() : setPage(id))}
             >
               <span>{icon}</span>
               <small>{label}</small>
             </button>
           ))}
         </nav>
-        {page === "device" ? (
-          liveMusic ? (
-            <section className="panel">
-              <h1>Hardware is simulated</h1>
-              <p>
-                Live Music Assistant controls the external player. Case
-                simulation is available in simulation mode.
-              </p>
-            </section>
-          ) : (
-            <DeviceView
-              snapshot={snapshot}
-              offline={offline}
-              prefs={prefs}
-              send={send}
-              now={clock}
-              onDemo={() => run("Playback")}
-              onOpenDisplay={() => setPage("playing")}
-            />
-          )
-        ) : page === "playing" ? (
+        {page === "playing" ? (
           <section className="now" aria-label="Now playing">
             <div
-              className={`art ${prefs.artwork === "video" && video.status === "active" ? "motion" : ""}`}
+              className={`art ${videoActive && video.status === "active" ? "motion" : ""}`}
             >
               <div className="orb" />
               <span className="art-label">
-                {prefs.artwork === "video"
-                  ? "VIDEO ARTWORK · MOCK"
-                  : "AMBIENT TRANSMISSIONS"}
+                {videoActive ? "VIDEO ARTWORK · MOCK" : "AMBIENT TRANSMISSIONS"}
               </span>
-              {prefs.artwork === "video" && (
+              {videoActive && (
                 <div className="video-info">
                   {video.status} · {time(video.position)}
                   <small>End-Sync {video.offset ?? "—"}s</small>
@@ -348,10 +378,18 @@ function App() {
               </div>
             </div>
             <aside className="volume">
-              <div className="eyebrow">VOLUME</div>
+              <ReferenceAside
+                layout={layout}
+                snapshot={snapshot}
+                prefs={prefs}
+                update={update}
+              />
+              <div className="eyebrow volume-title">VOLUME</div>
               <VolumeControl
                 value={playerVolume}
-                muted={liveMusic ? playback.muted : previewMuted}
+                muted={
+                  liveMusic ? playback.muted : (snapshot.audio?.muted ?? false)
+                }
                 live={liveMusic}
                 limit={
                   liveMusic ? (snapshot.musicAssistant?.volumeLimit ?? 40) : 100
@@ -362,41 +400,16 @@ function App() {
                 }
                 onValue={(value) => {
                   if (liveMusic) send({ type: "volume", value });
-                  else update("volume", value);
+                  else {
+                    update("volume", value);
+                    send({ type: "volume", value });
+                  }
                 }}
                 onMute={() => {
                   if (liveMusic) send({ type: "mute", value: !playback.muted });
-                  else setPreviewMuted((v) => !v);
+                  else send({ type: "mute", value: !snapshot.audio?.muted });
                 }}
               />
-              {theme.diagnostics && (
-                <dl
-                  className="diagnostic-widgets"
-                  aria-label="Nerd diagnostics"
-                >
-                  <div>
-                    <dt>Controller</dt>
-                    <dd>
-                      {snapshot.sensors?.heartbeatEnabled
-                        ? "MOCK HB ON"
-                        : "MOCK HB OFF"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Temp / PD</dt>
-                    <dd>
-                      {snapshot.sensors?.temperature ?? "—"} °C /{" "}
-                      {snapshot.sensors?.powerGood ? "GOOD" : "NOT GOOD"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Enable / faults</dt>
-                    <dd>
-                      {String(device.amplifierEnabled)} / {device.faults.length}
-                    </dd>
-                  </div>
-                </dl>
-              )}
               <small>
                 Hardware unverified
                 <br />
@@ -408,13 +421,7 @@ function App() {
           <section className="panel paginated-panel">
             <div className="panel-title">
               <div className="eyebrow">DAW ONE CONTROL</div>
-              <h1>
-                {page === "settings"
-                  ? "Make it yours"
-                  : page === "queue"
-                    ? "Up next"
-                    : "Hardware Simulator"}
-              </h1>
+              <h1>{page === "settings" ? "Make it yours" : "Up next"}</h1>
             </div>
             {page === "settings" ? (
               <SettingsPages
@@ -426,7 +433,7 @@ function App() {
                 theme={theme}
                 setThemePreferences={setThemePreferences}
               />
-            ) : page === "queue" ? (
+            ) : (
               <div className="queue">
                 {playback.queue.map((t, i) => (
                   <article key={t.id}>
@@ -443,24 +450,6 @@ function App() {
                   </article>
                 ))}
               </div>
-            ) : liveMusic ? (
-              <p className="live-notice">
-                Simulation scenarios are disabled while controlling Music
-                Assistant. View live connection details on the Connection
-                settings page.
-              </p>
-            ) : (
-              <SimulatorPages
-                snapshot={snapshot}
-                scenario={scenario}
-                setScenario={setScenario}
-                run={run}
-                send={send}
-                videoAvailable={videoAvailable}
-                setVideoAvailable={setVideoAvailable}
-                matched={matched}
-                setMatched={setMatched}
-              />
             )}
           </section>
         )}
@@ -489,6 +478,19 @@ function App() {
         </span>
       </footer>
     </main>
+  );
+  return lab && !embedded ? (
+    <TestWorkbench
+      snapshot={snapshot}
+      offline={offline}
+      prefs={prefs}
+      send={send}
+      now={clock}
+      onClose={closeLab}
+      simulatorProps={simulatorProps}
+    />
+  ) : (
+    product
   );
 }
 createRoot(document.getElementById("root")).render(<App />);
