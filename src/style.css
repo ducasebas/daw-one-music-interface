@@ -3480,3 +3480,7 @@ main[data-diagnostics="true"] .vu-unavailable b {
     gap: 5px;
   }
 }
+
+/* Fixed product pixels on HDMI and DSI; only the surrounding viewport changes. */
+.display-viewport { position:fixed; inset:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#000; }
+.display-frame { position:relative; flex:none; }

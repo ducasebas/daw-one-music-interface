@@ -11,10 +11,12 @@ StandardInput=tty
 TTYReset=yes
 TTYVHangup=yes
 UtmpIdentifier=tty1
+Environment=DAW_DISPLAY_MODE=hdmi-development
+EnvironmentFile=-/etc/daw-one-display.env
 Environment=XDG_RUNTIME_DIR=/run/daw-one-kiosk
 RuntimeDirectory=daw-one-kiosk
 RuntimeDirectoryMode=0700
-ExecStart=/usr/bin/cage -- /usr/bin/chromium --kiosk --no-first-run --disable-session-crashed-bubble --user-data-dir=/var/lib/dawone/chromium http://127.0.0.1:3001/?screen=1
+ExecStart=/opt/daw-one/kiosk.sh
 Restart=on-failure
 RestartSec=5
 [Install]

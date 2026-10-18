@@ -34,6 +34,8 @@ Installer uses distro packages `cage`, `chromium`, `curl`, `alsa-utils`, `libinp
 
 ## Kiosk / display / touchscreen
 
+See [HDMI development / DSI production](display-modes.md) for the explicit mode switch. HDMI development is the installed default and needs only a standard HDMI monitor; it does not require a DSI display. The same product is centered at a logical 1280 × 400 on Full HD displays.
+
 Cage is a minimal Wayland compositor; Chromium runs with its normal sandbox. Confirm DRM/KMS and local seat access on your OS first. The kiosk unit uses a PAM login seat on tty1; logind permissions and compositor support **require prototype validation**. It does not modify getty permanently, boot files or autologin. If the supplied unit cannot obtain a seat, diagnose via journal and distro Cage guidance; do not solve it with `--no-sandbox` or running Chromium as root.
 
 ```sh

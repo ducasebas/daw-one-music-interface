@@ -13,6 +13,8 @@ import { SettingsPages } from "./SettingsPages.jsx";
 import { TestWorkbench } from "./TestWorkbench.jsx";
 import { ReferenceAside } from "./ReferenceAside.jsx";
 import { StartupScreen } from "./StartupScreen.jsx";
+import { DisplayViewport } from "./DisplayViewport.jsx";
+import { displayMode } from "../shared/display.js";
 import { VolumeControl } from "./VolumeControl.jsx";
 import "../design/brand-tokens.css";
 import "./style.css";
@@ -47,9 +49,10 @@ function App() {
     [page, setPage] = useState("playing"),
     [startupPreview, setStartupPreview] = useState(0),
     [lab, setLab] = useState(
-      !["screen", "product"].some(
-        (key) => new URLSearchParams(location.search).get(key) === "1",
-      ),
+      !displayMode(location.search) &&
+        !["screen", "product"].some(
+          (key) => new URLSearchParams(location.search).get(key) === "1",
+        ),
     ),
     [offline, setOffline] = useState(false),
     [clock, setClock] = useState(Date.now()),
@@ -181,7 +184,8 @@ function App() {
     { device, playback, offline },
     new Date(clock),
   );
-  const embedded = new URLSearchParams(location.search).get("screen") === "1";
+  const mode = displayMode(location.search);
+  const embedded = mode !== null;
   const layout =
     theme.id === "draft" || theme.id.startsWith("custom-")
       ? "reference-dark"
@@ -475,6 +479,8 @@ function App() {
       product={product}
       onReplayStartup={() => setStartupPreview((v) => v + 1)}
     />
+  ) : mode ? (
+    <DisplayViewport mode={mode}>{product}</DisplayViewport>
   ) : (
     product
   );

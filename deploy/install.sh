@@ -24,6 +24,8 @@ install -m 644 "$repo/deploy/daw-one-kiosk.service" /etc/systemd/system/
 install -m 644 "$repo/deploy/daw-one-health.service" /etc/systemd/system/
 install -m 644 "$repo/deploy/daw-one-health.timer" /etc/systemd/system/
 install -m 755 "$repo/deploy/health.sh" /opt/daw-one/health.sh
+install -m 755 "$repo/deploy/kiosk.sh" /opt/daw-one/kiosk.sh
+install -m 755 "$repo/deploy/set-display-mode.sh" /opt/daw-one/set-display-mode.sh
 systemctl daemon-reload
 systemctl enable --now daw-one.service daw-one-health.timer
 echo 'Simulation backend installed. Review docs/raspberry-pi.md before enabling kiosk; no boot configuration changed.'
