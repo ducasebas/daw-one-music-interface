@@ -1,0 +1,10 @@
+[Unit]
+Description=DAW ONE HTTP health probe (does not certify hardware)
+[Service]
+Type=oneshot
+User=dawone
+ExecStart=/opt/daw-one/health.sh
+NoNewPrivileges=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes

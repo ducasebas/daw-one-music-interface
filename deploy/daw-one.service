@@ -1,0 +1,23 @@
+[Unit]
+Description=DAW ONE virtual device (no real hardware control)
+After=network.target
+[Service]
+Type=simple
+User=dawone
+Group=dawone
+WorkingDirectory=/opt/daw-one
+ExecStart=/usr/bin/env node server/index.js
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3001
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+MemoryMax=256M
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=multi-user.target

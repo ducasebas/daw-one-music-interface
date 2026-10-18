@@ -1,0 +1,14 @@
+{
+  "mode": "simulation",
+  "realHardwareEnabled": false,
+  "verificationRecord": null,
+  "gpio": null,
+  "uartDevice": null,
+  "i2cBus": null,
+  "amplifierEnablePin": null,
+  "amplifierMutePin": null,
+  "displayBacklightPath": null,
+  "temperatureSensor": null,
+  "powerGoodSource": null,
+  "warning": "Documentation placeholder; no physical transport exists. Filling this file does not enable hardware."
+}
