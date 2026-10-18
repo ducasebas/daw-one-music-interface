@@ -26,7 +26,7 @@ No real sound is emitted. Idle display state is shown in telemetry rather than h
 
 ## iPhone / iPad Safari
 
-Open the Codespace on a computer or tablet, copy the **private forwarded 5173 HTTPS URL** from Ports, and open it in Safari while logged into the same GitHub account. Use landscape orientation for the panel layout; narrow screens reflow with vertical scrolling. Touch play, navigate to settings, reload to check persistence, then run all simulator scenarios. Use the timeline and video timer to inspect safety and End-Sync. Safari browser shutdown/sleep does not simulate OS power-off. Test without hardware. Safari device validation is still required; Chromium automation is not Safari certification.
+Open the Codespace on a computer or tablet, copy the **private forwarded 5173 HTTPS URL** from Ports, and open it in Safari while logged into the same GitHub account. Use landscape orientation for the panel layout; narrow screens reflow with vertical scrolling. Touch play, navigate to settings, reload to check persistence, then run all simulator scenarios. Settings and simulator sections use swipe pages with arrows and a page picker rather than vertical scrolling. Use the timeline and video timer to inspect safety and End-Sync. Safari browser shutdown/sleep does not simulate OS power-off. Test without hardware. Safari device validation is still required; Chromium automation is not Safari certification.
 
 ## Verify
 
@@ -60,8 +60,16 @@ Read [hardware blockers](docs/hardware.md), [Pi deployment](docs/raspberry-pi.md
 
 ## Theme engine
 
-Settings → **Appearance studio** includes Reference Dark, Warm Bronze, Champagne Gold, Cinematic and Nerd Mode. Expand **Customize design tokens** to change colors, typography, panel opacity, spacing, corner radius, border width, glow and meter style. Name and save up to 20 custom skins locally. No theme can enable hardware. Nerd Mode adds controller/temperature/power/enable diagnostics to Now Playing.
+Settings → **Skins** includes Reference Dark, Warm Bronze, Champagne Gold, Cinematic and Nerd Mode. Use the **Palette**, **Accents**, **Typography** and **Finish** pages to change colors, typography, panel opacity, spacing, corner radius, border width, glow and meter style. Name and save up to 20 custom skins locally. No theme can enable hardware. Nerd Mode adds controller/temperature/power/enable diagnostics to Now Playing.
 
 Automatic switching supports browser-local day/night hours (including schedules across midnight) or state mapping. State priority: fault → offline → standby/shutdown → playback → manual fallback. Each mapping and both schedule skins are configurable. Equal day/night hours choose night all day. Color customization can reduce contrast; inspect text readability on the target display before adopting a custom palette. Built-in colors do not claim formal accessibility certification. Theme data is versioned and validated; arbitrary CSS is not accepted. See `shared/themes.js` for the reusable schema/resolver and `src/Themes.jsx` for controls.
 
 Offline cold reload is supported by the production build after one successful visit; development Vite does not register the static-shell service worker. API responses are never cached as live hardware state.
+
+## Interactive enclosure and swipe pages
+
+Open **Device** to see the conceptual case, illuminated power-button ring, status LED, embedded display, both speakers and eight module indicators. Press **Playback demo** to run the shared verified simulation scenario. The power button toggles standby/wake; touch a sleeping case display to wake it and an awake display to open Now Playing. Select a module for its explanation and contextual action (Wi-Fi/source disconnect, heartbeat loss, power-good failure, amplifier fault, display sleep or reboot). Real power rails, dimensions and speaker output remain unverified; indicators are explicitly **logical simulation status**, not measurements.
+
+Speaker movement requires the same verified amplifier gate as the backend, fresh controller heartbeat, power-good, connected source, active playback and nonzero preview volume. Display sleep preserves safe audio. Faults, standby, network loss or stale/offline telemetry stop the speaker-drive indication; offline modules become **unknown** rather than displaying stale green lights. Animation respects reduced-motion settings.
+
+Settings has ten short pages: General, Skins, Palette, Accents, Typography, Finish, Automation, Schedule, State mapping and Save theme. The simulator has five: Scenarios, Sensors, Connections, Safety and Timeline. Swipe horizontally on empty page space, use previous/next arrows, or select a page directly. Keyboard users can focus the page region and press left/right. Gestures starting on controls are ignored so sliders, selectors and buttons retain their normal behaviour. Timeline history is also paginated (three events per page). Pages are bounded, without vertical scrolling at the tested 1280 × 400 and 390 × 844 layouts; Now Playing can still reflow on narrow screens.

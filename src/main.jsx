@@ -1,20 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { initialDevice, transition, faultNames } from "../shared/device.js";
-import {
-  initialPlayback,
-  playbackEvent,
-  positionAt,
-} from "../shared/playback.js";
+import { initialDevice, transition } from "../shared/device.js";
+import { initialPlayback, positionAt } from "../shared/playback.js";
 import { settings as normalize } from "../shared/settings.js";
 import { endSync } from "../shared/video.js";
-import { scenarios } from "../shared/runtime.js";
 import {
   normalizeThemePreferences,
   resolveTheme,
   themeVariables,
 } from "../shared/themes.js";
-import { ThemeSettings } from "./Themes.jsx";
+import { SettingsPages } from "./SettingsPages.jsx";
+import { SimulatorPages } from "./SimulatorPages.jsx";
+import { DeviceView } from "./DeviceView.jsx";
 import "./style.css";
 function load() {
   try {
@@ -110,12 +107,14 @@ function App() {
       setNotice("Connection lost · settings remain available");
     }
   }
-  async function run() {
+  async function run(name) {
     try {
       const r = await fetch("/api/scenario", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: scenario }),
+        body: JSON.stringify({
+          name: typeof name === "string" ? name : scenario,
+        }),
       });
       if (!r.ok) throw Error();
       setSnapshot(await r.json());
@@ -181,6 +180,7 @@ function App() {
         <nav aria-label="Main navigation">
           {[
             ["playing", "◉", "Now playing"],
+            ["device", "▣", "Device"],
             ["queue", "≋", "Queue"],
             ["settings", "⚙", "Settings"],
             ["simulation", "⌘", "Hardware Simulator"],
@@ -197,7 +197,17 @@ function App() {
             </button>
           ))}
         </nav>
-        {page === "playing" ? (
+        {page === "device" ? (
+          <DeviceView
+            snapshot={snapshot}
+            offline={offline}
+            prefs={prefs}
+            send={send}
+            now={clock}
+            onDemo={() => run("Playback")}
+            onOpenDisplay={() => setPage("playing")}
+          />
+        ) : page === "playing" ? (
           <section className="now" aria-label="Now playing">
             <div
               className={`art ${prefs.artwork === "video" && video.status === "active" ? "motion" : ""}`}
@@ -337,7 +347,7 @@ function App() {
             </aside>
           </section>
         ) : (
-          <section className="panel">
+          <section className="panel paginated-panel">
             <div className="panel-title">
               <div className="eyebrow">DAW ONE CONTROL</div>
               <h1>
@@ -349,52 +359,13 @@ function App() {
               </h1>
             </div>
             {page === "settings" ? (
-              <>
-                <div className="settings-grid">
-                  <label>
-                    Display brightness <output>{prefs.brightness}%</output>
-                    <input
-                      aria-label="Display brightness"
-                      type="range"
-                      min="10"
-                      max="100"
-                      value={prefs.brightness}
-                      onChange={(e) => update("brightness", +e.target.value)}
-                    />
-                  </label>
-                  <label>
-                    Artwork mode
-                    <select
-                      value={prefs.artwork}
-                      onChange={(e) => update("artwork", e.target.value)}
-                    >
-                      <option value="cover">Album cover</option>
-                      <option value="video">Video artwork · mock</option>
-                    </select>
-                  </label>
-                  <label>
-                    Manual video correction (seconds)
-                    <input
-                      aria-label="Manual video correction"
-                      type="number"
-                      min="-600"
-                      max="600"
-                      value={prefs.correction}
-                      onChange={(e) => update("correction", +e.target.value)}
-                    />
-                  </label>
-                  <p>
-                    Saved on this browser. Available offline.
-                    <br />
-                    Brightness and volume are preview controls.
-                  </p>
-                </div>
-                <ThemeSettings
-                  preferences={themePreferences}
-                  theme={theme}
-                  onChange={setThemePreferences}
-                />
-              </>
+              <SettingsPages
+                prefs={prefs}
+                update={update}
+                themePreferences={themePreferences}
+                theme={theme}
+                setThemePreferences={setThemePreferences}
+              />
             ) : page === "queue" ? (
               <div className="queue">
                 {playback.queue.map((t, i) => (
@@ -413,155 +384,17 @@ function App() {
                 ))}
               </div>
             ) : (
-              <>
-                <div className="scenario-bar">
-                  <label>
-                    Automated scenario
-                    <select
-                      aria-label="Automated scenario"
-                      value={scenario}
-                      onChange={(e) => setScenario(e.target.value)}
-                    >
-                      {Object.keys(scenarios).map((n) => (
-                        <option key={n}>{n}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <button onClick={run}>Run scenario</button>
-                  <b>SIMULATED · NO PHYSICAL OUTPUT</b>
-                </div>
-                <div className="sim">
-                  <div className="sim-actions">
-                    {[
-                      "boot",
-                      "boot-complete",
-                      "standby",
-                      "presence",
-                      "display-timeout",
-                      "shutdown",
-                      "acknowledge",
-                      "simulation-verified",
-                      "disconnect",
-                      "reconnect",
-                      ...faultNames,
-                    ].map((type) => (
-                      <button key={type} onClick={() => send({ type })}>
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="telemetry">
-                    <b>SIMULATION ONLY</b>
-                    <div className="sensor-controls">
-                      <label>
-                        Ambient light {snapshot.sensors?.ambient ?? 60}%
-                        <input
-                          aria-label="Ambient light"
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={snapshot.sensors?.ambient ?? 60}
-                          onChange={(e) =>
-                            send({ type: "ambient", value: +e.target.value })
-                          }
-                        />
-                      </label>
-                      <label>
-                        Temperature °C
-                        <input
-                          aria-label="Temperature"
-                          type="number"
-                          value={snapshot.sensors?.temperature ?? 35}
-                          onChange={(e) =>
-                            send({
-                              type: "temperature",
-                              value: +e.target.value,
-                            })
-                          }
-                        />
-                      </label>
-                      {[
-                        ["powerGood", "Power good", "power-good"],
-                        ["wifi", "Wi-Fi available", "wifi"],
-                        [
-                          "heartbeatEnabled",
-                          "RP2040 heartbeat",
-                          "heartbeat-enabled",
-                        ],
-                      ].map(([key, label, type]) => (
-                        <label key={key}>
-                          <input
-                            type="checkbox"
-                            checked={snapshot.sensors?.[key] ?? false}
-                            onChange={(e) =>
-                              send({ type, value: e.target.checked })
-                            }
-                          />
-                          {label}
-                        </label>
-                      ))}
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={snapshot.sensors?.presence ?? false}
-                          onChange={(e) =>
-                            send({ type: "presence", value: e.target.checked })
-                          }
-                        />
-                        Presence
-                      </label>
-                      <button
-                        onClick={() =>
-                          send({ type: "button", button: "play-pause" })
-                        }
-                      >
-                        Physical play/pause button
-                      </button>
-                    </div>
-                    <p>
-                      Display: {device.displayAwake ? "awake" : "asleep"} ·
-                      Playback: {playback.playing ? "playing" : "paused"}
-                      <br />
-                      Simulated enable: {device.amplifierEnabled
-                        ? "ON"
-                        : "OFF"}{" "}
-                      · Verified: {String(device.verified)}
-                    </p>
-                    <p role="alert">
-                      {device.faults.join(", ") || "No latched faults"}
-                    </p>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={videoAvailable}
-                        onChange={(e) => setVideoAvailable(e.target.checked)}
-                      />{" "}
-                      Video available
-                    </label>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={matched}
-                        onChange={(e) => setMatched(e.target.checked)}
-                      />{" "}
-                      Match confirmed
-                    </label>
-                  </div>
-                </div>
-                <div className="timeline" aria-label="Device timeline">
-                  <h2>Event timeline</h2>
-                  {(snapshot.log || [])
-                    .slice()
-                    .reverse()
-                    .map((e) => (
-                      <div key={e.id}>
-                        <time>{e.at}</time>
-                        <b>{e.type}</b>
-                        <span>{e.reason}</span>
-                      </div>
-                    ))}
-                </div>
-              </>
+              <SimulatorPages
+                snapshot={snapshot}
+                scenario={scenario}
+                setScenario={setScenario}
+                run={run}
+                send={send}
+                videoAvailable={videoAvailable}
+                setVideoAvailable={setVideoAvailable}
+                matched={matched}
+                setMatched={setMatched}
+              />
             )}
           </section>
         )}
