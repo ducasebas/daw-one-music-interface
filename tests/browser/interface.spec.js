@@ -397,6 +397,10 @@ test("startup media falls back to supplied still and never stalls a ready device
   await page.route("**/media/startup.webm", (r) => r.abort());
   await page.goto("/?product=1");
   await expect(page.getByLabel("Startup animation")).toBeVisible();
+  await expect(page.getByLabel("Startup animation")).toHaveAttribute(
+    "data-renderer",
+    "fallback",
+  );
   await expect(page.getByAltText("ONE · DUTCHAUDIOWORKS")).toBeVisible();
   await expect(page.getByLabel("Startup animation")).toHaveCount(0, {
     timeout: 6000,
@@ -584,4 +588,42 @@ test("missing video uses animated logo fallback and reduced-motion stays static"
     "still",
   );
   await expect(page.locator(".startup-screen video")).toHaveCount(0);
+});
+
+test("startup primes a visible first frame and never cuts video short by wall clock", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.addInitScript(() => {
+    window.startupStarts = [];
+    const original = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      if (this.getAttribute("aria-label") === "DAW ONE cold start video")
+        window.startupStarts.push({
+          time: this.currentTime,
+          autoplay: this.autoplay,
+          renderer: this.closest("section")?.dataset.renderer,
+        });
+      return original.apply(this, arguments);
+    };
+  });
+  await page.goto("/?screen=1");
+  await expect
+    .poll(() => page.evaluate(() => window.startupStarts.length))
+    .toBeGreaterThan(0);
+  const first = await page.evaluate(() => window.startupStarts[0]);
+  expect(first.time).toBe(0);
+  expect(first.autoplay).toBe(false);
+  expect(first.renderer).toBe("primed");
+  await expect(page.getByLabel("Startup animation")).toHaveAttribute(
+    "data-renderer",
+    "video",
+  );
+  await page.locator(".startup-screen video").evaluate((v) => v.pause());
+  await page.waitForTimeout(3000);
+  await expect(page.getByLabel("Startup animation")).toBeVisible();
+  await page.locator(".startup-screen video").evaluate((v) => v.play());
+  await expect(page.getByLabel("Startup animation")).toHaveCount(0, {
+    timeout: 5000,
+  });
 });
