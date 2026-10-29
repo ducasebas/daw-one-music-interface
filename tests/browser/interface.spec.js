@@ -394,6 +394,7 @@ test("startup media falls back to supplied still and never stalls a ready device
 }) => {
   await reset(page);
   await page.route("**/media/startup.mp4", (r) => r.abort());
+  await page.route("**/media/startup.webm", (r) => r.abort());
   await page.goto("/?product=1");
   await expect(page.getByLabel("Startup animation")).toBeVisible();
   await expect(page.getByAltText("ONE · DUTCHAUDIOWORKS")).toBeVisible();
@@ -538,4 +539,49 @@ test("default browser keeps test bench visible during navigation and fault ackno
   expect(state.device.amplifierEnabled).toBe(false);
   expect(state.device.verified).toBe(false);
   await expect(page.getByLabel("Left speaker silent")).toBeVisible();
+});
+
+test("startup really plays decoded animation frames in Chromium", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.goto("/?screen=1");
+  const startup = page.getByLabel("Startup animation");
+  await expect(startup).toHaveAttribute("data-renderer", "video");
+  await expect
+    .poll(() =>
+      page.locator(".startup-screen video").evaluate((v) => v.currentTime),
+    )
+    .toBeGreaterThan(0.1);
+  await expect
+    .poll(() =>
+      page.locator(".startup-screen video").evaluate((v) => v.videoWidth),
+    )
+    .toBe(1280);
+});
+test("missing video uses animated logo fallback and reduced-motion stays static", async ({
+  page,
+}) => {
+  await reset(page);
+  await page.route("**/media/startup.webm", (route) => route.abort());
+  await page.route("**/media/startup.mp4", (route) => route.abort());
+  await page.goto("/?screen=1");
+  await expect(page.getByLabel("Startup animation")).toHaveAttribute(
+    "data-renderer",
+    "fallback",
+  );
+  await expect(page.locator(".startup-logo-motion")).toHaveCSS(
+    "animation-name",
+    "startup-brand-reveal",
+  );
+  await expect(page.getByLabel("Startup animation")).toHaveCount(0, {
+    timeout: 6500,
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  await expect(page.getByLabel("Startup animation")).toHaveAttribute(
+    "data-renderer",
+    "still",
+  );
+  await expect(page.locator(".startup-screen video")).toHaveCount(0);
 });

@@ -3484,3 +3484,11 @@ main[data-diagnostics="true"] .vu-unavailable b {
 /* Fixed product pixels on HDMI and DSI; only the surrounding viewport changes. */
 .display-viewport { position:fixed; inset:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#000; }
 .display-frame { position:relative; flex:none; }
+/* Codec-independent branding fallback; reduced-motion users get the still. */
+.startup-logo-motion { animation:startup-brand-reveal 2.8s ease-out both; }
+@keyframes startup-brand-reveal {
+  0% {opacity:0;transform:scale(.97)}
+  40% {opacity:1}
+  100% {opacity:1;transform:scale(1)}
+}
+@media(prefers-reduced-motion:reduce){.startup-logo-motion{animation:none}}

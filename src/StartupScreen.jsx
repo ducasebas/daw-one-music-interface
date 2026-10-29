@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-/** Branding playback is independent from boot readiness and every hardware gate. */
+/** Branding is independent from hardware readiness and never enables audio. */
 export function StartupScreen({ mode, offline, preview = 0 }) {
   const [reduced, setReduced] = useState(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
-  const [cycle, setCycle] = useState(0),
-    [visible, setVisible] = useState(true),
-    [elapsed, setElapsed] = useState(false),
-    [fallback, setFallback] = useState(false);
+  const [cycle, setCycle] = useState(0);
+  const [visible, setVisible] = useState(true);
+  const [elapsed, setElapsed] = useState(false);
+  const [renderer, setRenderer] = useState(reduced ? "still" : "loading");
   const previous = useRef(mode),
     video = useRef(null);
   useEffect(() => {
@@ -18,13 +18,24 @@ export function StartupScreen({ mode, offline, preview = 0 }) {
   useEffect(() => {
     setVisible(true);
     setElapsed(false);
-    setFallback(reduced);
-    const timer = setTimeout(() => setElapsed(true), 2800);
-    return () => clearTimeout(timer);
+    setRenderer(reduced ? "still" : "loading");
   }, [cycle, preview]);
   useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)"),
-      change = () => setReduced(media.matches);
+    if (!visible) return;
+    // Slow VM decoders must not consume the whole animation window while loading.
+    if (renderer === "loading") {
+      const timer = setTimeout(() => setRenderer("fallback"), 1800);
+      return () => clearTimeout(timer);
+    }
+    const timer = setTimeout(() => setElapsed(true), 2800);
+    return () => clearTimeout(timer);
+  }, [renderer, cycle, preview, visible]);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const change = () => {
+      setReduced(media.matches);
+      if (media.matches) setRenderer("still");
+    };
     media.addEventListener("change", change);
     return () => media.removeEventListener("change", change);
   }, []);
@@ -39,15 +50,15 @@ export function StartupScreen({ mode, offline, preview = 0 }) {
     };
   }, [visible, mode]);
   useEffect(() => {
-    if (reduced) return;
+    if (!visible || reduced || renderer !== "loading") return;
     let current = true;
     video.current?.play()?.catch(() => {
-      if (current) setFallback(true);
+      if (current) setRenderer("fallback");
     });
     return () => {
       current = false;
     };
-  }, [cycle, preview]);
+  }, [visible, renderer, cycle, preview, reduced]);
   useEffect(() => {
     if (
       mode === "fault" ||
@@ -62,21 +73,32 @@ export function StartupScreen({ mode, offline, preview = 0 }) {
       className="startup-screen"
       aria-label="Startup animation"
       role="status"
+      data-renderer={renderer}
     >
-      <img src="/media/startup-still.png" alt="ONE · DUTCHAUDIOWORKS" />
-      {!reduced && !fallback && !elapsed && (
+      <img
+        key={`${cycle}-${preview}-${renderer}`}
+        className={renderer === "fallback" ? "startup-logo-motion" : undefined}
+        src="/media/startup-still.png"
+        alt="ONE · DUTCHAUDIOWORKS"
+      />
+      {!reduced && !elapsed && ["loading", "video"].includes(renderer) && (
         <video
           key={`${cycle}-${preview}`}
           ref={video}
-          src="/media/startup.mp4"
+          style={{ visibility: renderer === "video" ? "visible" : "hidden" }}
           poster="/media/startup-still.png"
           muted
           autoPlay
           playsInline
           preload="auto"
-          onError={() => setFallback(true)}
+          onPlaying={() => setRenderer("video")}
+          onEnded={() => setElapsed(true)}
+          onError={() => setRenderer("fallback")}
           aria-label="DAW ONE cold start video"
-        />
+        >
+          <source src="/media/startup.webm" type='video/webm; codecs="vp8"' />
+          <source src="/media/startup.mp4" type="video/mp4" />
+        </video>
       )}
       {elapsed && mode === "booting" && !offline && (
         <span>Starting device…</span>
