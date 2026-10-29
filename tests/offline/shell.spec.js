@@ -142,4 +142,5 @@ test("installed help and read-only doctor are reachable without GitHub login", a
     "First Pi installation and Music Assistant test",
   );
   expect((await page.request.get("/docs/.env")).status()).toBe(404);
+  expect((await page.request.get("/docs/mac-vm.md")).status()).toBe(200);
 });

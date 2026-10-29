@@ -1,8 +1,23 @@
 #!/bin/bash
 set -euo pipefail
-# Run from a cloned repository on Raspberry Pi OS Lite. Never edits boot config.
-if [[ $(id -u) -ne 0 ]]; then echo 'Run: sudo bash deploy/install.sh'; exit 1; fi
-if ! tr -d '\0' </proc/device-tree/model | grep -q 'Raspberry Pi 4'; then echo 'Pi 4 not detected; refusing device installation'; exit 1; fi
+# Same simulated runtime on a Pi 4 or an explicitly selected ARM64 VM.
+target=pi4
+if [[ $# -gt 0 ]]; then
+  if [[ $# != 2 || $1 != --target ]]; then echo 'Usage: install.sh [--target pi4|vm]' >&2; exit 2; fi
+  target=$2
+fi
+case "$target" in pi4|vm) ;; *) echo 'Target must be pi4 or vm.' >&2; exit 2 ;; esac
+if [[ $(id -u) -ne 0 ]]; then echo 'Run with sudo inside the Linux target.' >&2; exit 1; fi
+repo=$(cd "$(dirname "$0")/.." && pwd)
+source "$repo/deploy/install-target.sh"
+model=''
+if [[ -r /proc/device-tree/model ]]; then model=$(tr -d '\0' </proc/device-tree/model); fi
+virtualization=none
+if [[ $target == vm ]]; then virtualization=$(systemd-detect-virt --vm 2>/dev/null || true); fi
+daw_validate_install_target "$target" "$(uname -m)" "$model" "$virtualization"
+if [[ ! -d /run/systemd/system ]] || ! command -v apt-get >/dev/null; then
+  echo 'This installer needs a Debian/Ubuntu ARM64 system running systemd, not macOS or a container.' >&2; exit 1
+fi
 command -v node >/dev/null || { echo 'Install a supported Node.js 22.12+ runtime first; see docs/raspberry-pi.md'; exit 1; }
 node -e 'const [a,b]=process.versions.node.split(".").map(Number);if(a<22||(a===22&&b<12)||typeof WebSocket!=="function"){console.error("Install Node.js 22.12+ with native WebSocket support");process.exit(1)}'
 apt-get update
@@ -12,7 +27,6 @@ id dawone >/dev/null 2>&1 || useradd --system --gid dawone --create-home --home-
 usermod -aG video,render,input dawone
 install -d -m 700 -o dawone -g dawone /var/lib/dawone/chromium
 # Deliberately no gpio, dialout, i2c or audio groups for the simulation service.
-repo=$(cd "$(dirname "$0")/.." && pwd)
 cd "$repo"
 npm ci
 npm run check
@@ -28,6 +42,7 @@ install -m 644 "$repo/deploy/daw-one-health.timer" /etc/systemd/system/
 install -m 755 "$repo/deploy/health.sh" /opt/daw-one/health.sh
 install -m 755 "$repo/deploy/kiosk.sh" /opt/daw-one/kiosk.sh
 install -m 755 "$repo/deploy/set-display-mode.sh" /opt/daw-one/set-display-mode.sh
+printf '%s\n' "$target" > /opt/daw-one/deployment-target
 systemctl daemon-reload
 systemctl enable daw-one.service daw-one-health.timer
 systemctl restart daw-one.service

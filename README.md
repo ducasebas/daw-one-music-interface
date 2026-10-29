@@ -115,3 +115,7 @@ On an installed Pi, switch with `sudo /opt/daw-one/set-display-mode.sh hdmi-deve
 ## First Raspberry Pi installation
 
 Read [the first-run Pi and Music Assistant guide](docs/pi-first-run.md) before installing. The private GitHub link requires a logged-in authorized account; after installation the same guide is available through `/docs/` on the local app, or at `/opt/daw-one/docs/pi-first-run.md`. Run `npm run doctor` in `/opt/daw-one` to check app assets and backend health; add `-- --require-ma` to require a live MA transport connection. These checks do not certify display, audio or electrical hardware.
+
+## Apple Silicon VM rehearsal
+
+For a MacBook M5, use [the UTM ARM64 VM guide](docs/mac-vm.md). A guest can run the same installer with `sudo bash deploy/install.sh --target vm`; the default remains Pi 4 and rejects non-Pi hardware. The VM rehearses Linux/systemd/kiosk/application behavior, not physical Pi firmware, GPU, DSI or audio. On a 16 GB host, proposed guest settings are 2 GB RAM, 4 vCPUs and 32 GB disk. No Mac VM has been created or physically validated by this repository.

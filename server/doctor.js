@@ -104,6 +104,17 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     try {
       drm = await readdir("/dev/dri");
     } catch {}
+    let target = "development checkout";
+    try {
+      target = (
+        await readFile(new URL("../deployment-target", import.meta.url), "utf8")
+      ).trim();
+    } catch {}
+    console.log(
+      "Deployment target:",
+      target,
+      "· VM results do not certify Pi hardware.",
+    );
     console.log("Host:", model, "· DRM devices:", drm.length);
     console.log(
       "UNVERIFIED: kiosk seat, display/touch, audio output, electrical safety and real hardware.",
