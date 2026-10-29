@@ -110,6 +110,25 @@ app.post("/api/event", async (q, r) => {
     r.status(music ? 409 : 400).json({ error: e.message });
   }
 });
+// Public documentation only; never expose the repository root or configuration.
+app.get(["/docs", "/docs/"], (_q, r) =>
+  r
+    .type("html")
+    .send(
+      `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DAW ONE installation</title><body style="background:#111417;color:#f2efe9;font:18px Arial;padding:24px;line-height:1.7"><h1>DAW ONE installation and kiosk</h1><ul><li><a style="color:#c9a674" href="/docs/pi-first-run.md">Pi first installation and Music Assistant test</a></li><li><a style="color:#c9a674" href="/docs/display-modes.md">HDMI / DSI kiosk modes</a></li><li><a style="color:#c9a674" href="/docs/music-assistant.md">Music Assistant configuration</a></li><li><a style="color:#c9a674" href="/docs/raspberry-pi.md">Raspberry Pi deployment details</a></li></ul></body></html>`,
+    ),
+);
+app.use(
+  "/docs",
+  express.static(fileURLToPath(new URL("../docs", import.meta.url)), {
+    dotfiles: "deny",
+    index: false,
+    setHeaders: (r, path) => {
+      if (path.endsWith(".md"))
+        r.setHeader("Content-Type", "text/plain; charset=utf-8");
+    },
+  }),
+);
 app.use(express.static(fileURLToPath(new URL("../dist", import.meta.url))));
 app.use((error, _q, r, _next) =>
   r.status(400).json({ error: "Invalid request" }),

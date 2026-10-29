@@ -1,13 +1,13 @@
-# Validation evidence — 2026-10-18
+# Validation evidence — 2026-10-29
 
 Executed in the implementation cloud environment (Node.js 24.19.0, Linux):
 
 | Check | Observed result |
 | --- | --- |
-| `npm test` | 59 domain, display-mode, safety, MA protocol/service, scenario, enclosure and theme tests passed |
+| `npm test` | 62 domain, deployment-diagnostic, display-mode, safety, MA protocol/service, scenario, enclosure and theme tests passed |
 | `npm run build` | Passed; Vite production assets generated |
 | `npm run test:ui` | 18 Chromium tests passed: 1280 × 400 geometry/touch/navigation, offline settings, workbench and shared React/backend state, 390 px phone layout/keyboard navigation, theme customization/persistence/Nerd widgets/state switching, swipe navigation, all settings/simulator pages without scrolling, case power/display/module actions and safety-linked speaker indication, reference volume/Connection page and live read-only metadata fixture |
-| `npm run test:offline` | 3 Chromium production tests passed: offline reload/settings plus HDMI/DSI exact geometry, all six skins, mouse playback, keyboard volume, small-window scaling and playback preserved across mode changes |
+| `npm run test:offline` | 4 Chromium production tests passed: offline reload/settings plus HDMI/DSI exact geometry, all six skins, mouse playback, keyboard volume, small-window scaling and playback preserved across mode changes, plus local help and deployment doctor |
 | `bash -n deploy/install.sh deploy/health.sh deploy/kiosk.sh deploy/set-display-mode.sh` | Passed; syntax only, not a real Pi install |
 
 Production JS bundle is approximately 269 kB uncompressed / 84 kB gzip, CSS approximately 61 kB / 11 kB gzip. These are build sizes, not measured Pi CPU/memory. Backend keeps at most 500 timeline entries. No hardware control module or driver is enabled.
@@ -26,3 +26,5 @@ White-display regression: the virtual display now mounts the actual product in t
 Display-r3 adds a readable pre-React loading/error shell, a React rendering error boundary, and a visible build marker in the workbench. It removes filtered ancestors around the scaled display/video. The WebKit suite also checks module-load and rendering failure messages; its swipe test uses synthetic touch events, while Chromium retains native CDP touch injection. Physical Safari white-screen reproduction remains open.
 
 HDMI development at 1920 × 1080 rendered the product at x=320, y=340 with width=1280 and height=400. DSI production at 1280 × 400 rendered at x=0, y=0. At 1024 × 768, HDMI uniformly scaled the product while retaining its logical 1280 × 400 dimensions. These are browser geometry measurements, not physical monitor measurements. Kiosk switch scripts passed syntax and invalid-mode rejection checks; no system services or boot settings were changed in this environment.
+
+Pi first-run patch: installer now requires Node >=22.12/native WebSocket, ensures the service group and writable Chromium profile, installs D-Bus/PAM session dependencies, copies local guides and restarts/probes the backend after updating. Kiosk diagnostics remain read-only. Automated HTTP checks cover compiled frontend assets, startup media, local help and rejection of invalid/HTML asset responses. No Pi installation, seat session, actual MA endpoint, audio or physical amplifier was validated here.

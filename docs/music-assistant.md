@@ -60,4 +60,6 @@ Tests exercise an injected WebSocket protocol fixture and browser fixtures, not 
 
 ## Pi service configuration
 
+For the full first-install sequence, token permissions, explicit read-only test and player prerequisites, see [pi-first-run.md](pi-first-run.md). `.env` is for development; `/etc/daw-one.env` is for the installed service. Music Assistant and a player must already exist; this repository does not install them.
+
 The systemd unit optionally reads `/etc/daw-one.env`. Set the same variables there and use a token file readable by the `dawone` service account outside its protected home. Restart `daw-one.service` after edits. Do not put the token into the repository or a unit committed to Git. The HTTP health probe accepts both simulation and music-assistant modes; a healthy HTTP response does not prove MA connectivity or sound output.

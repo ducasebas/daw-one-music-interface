@@ -111,3 +111,7 @@ Injected amplifier faults latch in the shared backend runtime, so refreshing the
 The same production UI supports a centered, letterboxed 1280 × 400 preview on an ordinary HDMI monitor and a native 1280 × 400 DSI screen. No DSI hardware is required in HDMI development mode. Open `/?screen=1&display=hdmi-development` or `/?screen=1&display=dsi-production` on the app's browser URL. All six skins, keyboard/mouse controls, settings and playback use the same components and backend.
 
 On an installed Pi, switch with `sudo /opt/daw-one/set-display-mode.sh hdmi-development` or `sudo /opt/daw-one/set-display-mode.sh dsi-production`. Only the kiosk restarts; the backend keeps running. See [display modes and minimal Pi OS Lite kiosk setup](docs/display-modes.md) for installation, pixel sizing, recovery and DSI hardware blockers.
+
+## First Raspberry Pi installation
+
+Read [the first-run Pi and Music Assistant guide](docs/pi-first-run.md) before installing. The private GitHub link requires a logged-in authorized account; after installation the same guide is available through `/docs/` on the local app, or at `/opt/daw-one/docs/pi-first-run.md`. Run `npm run doctor` in `/opt/daw-one` to check app assets and backend health; add `-- --require-ma` to require a live MA transport connection. These checks do not certify display, audio or electrical hardware.

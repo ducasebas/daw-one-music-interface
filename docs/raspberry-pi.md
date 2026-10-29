@@ -2,9 +2,11 @@
 
 This is an **unvalidated installation scaffold**, not a hardware-certified image. No Pi, touchscreen, audio HAT, RP2040 or power board was attached. It installs only the simulated device. Do not connect an enabled power amplifier for initial setup.
 
+Start with [the first Pi run and Music Assistant test](pi-first-run.md). After installation, guides are also available through `/docs/` on the local app and `/opt/daw-one/docs/`, without a GitHub login.
+
 ## Prerequisites and verification
 
-Use current 64-bit Raspberry Pi OS Lite (Debian Bookworm or newer), SSH enabled through Raspberry Pi Imager, a configured user, reliable supply and backed-up storage. Node.js 22+ and npm must be installed from a trusted source appropriate to your OS/architecture; installer deliberately does not pipe a remote installer to root. Verify `/usr/bin/env node --version` works under the service environment.
+Use current 64-bit Raspberry Pi OS Lite (Debian Bookworm or newer), SSH enabled through Raspberry Pi Imager, a configured user, reliable supply and backed-up storage. Node.js 22.12+ and npm must be installed from a trusted source appropriate to your OS/architecture; installer deliberately does not pipe a remote installer to root. Verify `/usr/bin/env node --version` works under the service environment.
 
 ```sh
 cat /etc/os-release

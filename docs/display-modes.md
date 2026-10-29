@@ -29,7 +29,7 @@ Open `http://localhost:3001/?screen=1&display=hdmi-development`. Browser display
 
 ## Pi 4, Raspberry Pi OS Lite, minimal kiosk
 
-Start with 64-bit Raspberry Pi OS Lite, SSH access, Node.js 22+ and npm. Connect the standard HDMI monitor and keyboard/mouse. Follow [Pi prerequisites and installation](raspberry-pi.md); the installer installs distro Cage, Chromium, seat/input tools, builds the production app and installs the systemd units. It neither requires a DSI panel nor edits boot configuration.
+Start with 64-bit Raspberry Pi OS Lite, SSH access, Node.js 22.12+ and npm. Connect the standard HDMI monitor and keyboard/mouse. Start with [the first-run installation checklist](pi-first-run.md), then [Pi prerequisites and installation](raspberry-pi.md); the installer installs distro Cage, Chromium, seat/input tools, builds the production app and installs the systemd units. It neither requires a DSI panel nor edits boot configuration.
 
 ```sh
 sudo bash deploy/install.sh

@@ -109,3 +109,37 @@ for (const mode of ["hdmi-development", "dsi-production"]) {
     }
   });
 }
+
+test("installed help and read-only doctor are reachable without GitHub login", async ({
+  page,
+}) => {
+  const { checkApplication } = await import("../../server/doctor.js");
+  const result = await checkApplication("http://127.0.0.1:3001");
+  expect(result.results.every((r) => r.ok)).toBe(true);
+  expect(result.health.mode).toBe("simulation");
+  const { spawnSync } = await import("node:child_process");
+  const script = new URL("../../server/doctor.js", import.meta.url).pathname;
+  const normal = spawnSync(process.execPath, [script], {
+    encoding: "utf8",
+    timeout: 10000,
+  });
+  expect(normal.status).toBe(0);
+  expect(normal.stdout).toContain("UNVERIFIED");
+  const strict = spawnSync(process.execPath, [script, "--require-ma"], {
+    encoding: "utf8",
+    timeout: 10000,
+  });
+  expect(strict.status).toBe(1);
+  expect(strict.stdout).toContain("Live Music Assistant connection required");
+
+  await page.goto("/docs/");
+  await page
+    .getByRole("link", {
+      name: "Pi first installation and Music Assistant test",
+    })
+    .click();
+  await expect(page.locator("body")).toContainText(
+    "First Pi installation and Music Assistant test",
+  );
+  expect((await page.request.get("/docs/.env")).status()).toBe(404);
+});

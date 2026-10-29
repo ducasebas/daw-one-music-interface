@@ -11,7 +11,8 @@
     "test:ui": "playwright test",
     "check": "npm test && npm run build",
     "test:offline": "playwright test -c playwright.production.config.js",
-    "test:webkit": "playwright test -c playwright.webkit.config.js"
+    "test:webkit": "playwright test -c playwright.webkit.config.js",
+    "doctor": "node server/doctor.js"
   },
   "dependencies": {
     "express": "^5.1.0",
@@ -24,6 +25,6 @@
     "vite": "^7.1.0"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12"
   }
 }

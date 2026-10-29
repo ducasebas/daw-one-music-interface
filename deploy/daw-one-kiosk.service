@@ -17,6 +17,8 @@ Environment=XDG_RUNTIME_DIR=/run/daw-one-kiosk
 RuntimeDirectory=daw-one-kiosk
 RuntimeDirectoryMode=0700
 ExecStart=/opt/daw-one/kiosk.sh
+StandardOutput=journal
+StandardError=journal
 Restart=on-failure
 RestartSec=5
 [Install]
