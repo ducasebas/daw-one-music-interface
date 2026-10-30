@@ -1,4 +1,9 @@
 import { test, expect } from "@playwright/test";
+// Keep shared simulator audio state independent between browser journeys.
+test.beforeEach(async ({ page }) => {
+  await page.request.post("/api/event", { data: { type: "volume", value: 32 } });
+  await page.request.post("/api/event", { data: { type: "mute", value: false } });
+});
 const reset = (page) =>
   page.request.post("/api/scenario", { data: { name: "Cold boot" } });
 const settings = async (page, index = 0) => {
@@ -491,7 +496,7 @@ test("virtual display works when nested browser frames are blocked", async ({
 test("module loading failures show a readable startup message", async ({
   page,
 }) => {
-  await page.route("**/src/main.jsx", (route) => route.abort());
+  await page.route(/\/src\/main\.jsx(?:\?.*)?$/, (route) => route.abort());
   await page.goto("/?product=1");
   await expect(page.locator("#boot-status")).toContainText("kon niet laden");
   await expect(page.locator("#boot-status")).toContainText("display-r3");

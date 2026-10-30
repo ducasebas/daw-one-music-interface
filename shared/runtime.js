@@ -7,6 +7,9 @@ export const policy = {
   thermalLimitC: 75,
 }; // Simulation policy only; not electrical specifications.
 export const eventTypes = [
+  "queue-select",
+  "queue-add",
+  "queue-remove",
   "volume",
   "mute",
   "play",
@@ -97,6 +100,36 @@ export class DeviceRuntime {
     if (e.type === "mute") {
       if (typeof e.value !== "boolean") throw Error("Boolean mute required");
       this.audio = { ...this.audio, muted: e.value };
+    }
+    if (["queue-select", "queue-add", "queue-remove"].includes(e.type)) {
+      const index = this.playback.queue.findIndex((t) => t.id === e.id);
+      if (e.type === "queue-select") {
+        if (index < 0) throw Error("Track unavailable");
+        this.playback = {
+          ...this.playback,
+          index,
+          position: 0,
+          observedAt: now,
+        };
+        e = { type: "play" };
+      } else {
+        if (index < 0) throw Error("Track unavailable");
+        const queue = [...this.playback.queue];
+        if (e.type === "queue-add") {
+          const item = { ...queue[index], id: `${e.id}-${++this.sequence}` };
+          queue.splice(
+            e.next ? this.playback.index + 1 : queue.length,
+            0,
+            item,
+          );
+        } else {
+          if (index === this.playback.index)
+            throw Error("Cannot remove current track");
+          queue.splice(index, 1);
+          if (index < this.playback.index) this.playback.index--;
+        }
+        this.playback = { ...this.playback, queue };
+      }
     }
     const before = this.device;
     let events = [e];

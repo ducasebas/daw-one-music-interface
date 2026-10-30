@@ -185,3 +185,7 @@ Additional references: [API/protocol](docs/protocol-and-api.md), [hardware relea
 - **No startup animation:** reduced-motion intentionally uses a still. Otherwise WebM/MP4 playback falls back to a logo fade if unavailable; **Replay startup** does not reboot or enable hardware.
 - **Private guide inaccessible on GitHub:** use the installed app's `/docs/` page or local files.
 - **No sound in simulation:** expected. Real sound requires a configured Music Assistant player and validated audio hardware.
+
+## GUI 2.0 preview
+
+Open **`/?gui=2&product=1`** for the new music-first interface, or **`/?gui=2&lab=1`** to keep the shared hardware workbench visible. The existing GUI remains available. Discover/library content is labelled as example data; playback and queue actions use the same simulator backend. Rivo grouping is a visual example, not a connected player. See [preview, SVG icons and skin contribution guide](docs/gui-2-preview.md).

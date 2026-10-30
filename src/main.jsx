@@ -18,6 +18,8 @@ import { displayMode } from "../shared/display.js";
 import { VolumeControl } from "./VolumeControl.jsx";
 import "../design/brand-tokens.css";
 import "./style.css";
+import { MusicShell } from "./MusicShell.jsx";
+import "./music-shell.css";
 function load() {
   try {
     return normalize(JSON.parse(localStorage.getItem("daw-settings") || "{}"));
@@ -206,7 +208,23 @@ function App() {
     matched,
     setMatched,
   };
-  const product = (
+  const gui2 = new URLSearchParams(location.search).get("gui") === "2";
+  const product = gui2 ? (
+    <MusicShell
+      snapshot={snapshot}
+      offline={offline}
+      send={send}
+      prefs={prefs}
+      update={update}
+      theme={theme}
+      themePreferences={themePreferences}
+      setThemePreferences={setThemePreferences}
+      setSnapshot={setSnapshot}
+      position={position}
+      notice={notice}
+      startupPreview={startupPreview}
+    />
+  ) : (
     <main
       className="reference-product"
       data-layout={layout}
@@ -235,6 +253,12 @@ function App() {
         >
           DAW <b>ONE</b>
           <span>INTELLIGENT STREAMING AMPLIFIER</span>
+        </a>
+        <a
+          href="?gui=2&product=1"
+          style={{ color: "var(--accent)", fontSize: 11 }}
+        >
+          Probeer GUI 2.0 ↗
         </a>
         <div className="status">
           <i className={offline ? "amber" : ""} />
