@@ -1,5 +1,6 @@
 export const defaults = {
   volume: 32,
+  volumeControl: "linear",
   brightness: 80,
   artwork: "cover",
   correction: 0,
@@ -7,6 +8,7 @@ export const defaults = {
 export function settings(input = {}) {
   input = input && typeof input === "object" ? input : {};
   return {
+    volumeControl: input.volumeControl === "circular" ? "circular" : "linear",
     volume: Number.isFinite(input.volume)
       ? Math.max(0, Math.min(100, input.volume))
       : defaults.volume,

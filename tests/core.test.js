@@ -167,7 +167,13 @@ test("settings whitelist, clamp and safe defaults", () => {
       correction: Infinity,
       enable: true,
     }),
-    { volume: 100, brightness: 10, artwork: "cover", correction: 0 },
+    {
+      volume: 100,
+      volumeControl: "linear",
+      brightness: 10,
+      artwork: "cover",
+      correction: 0,
+    },
   );
 });
 test("corrupt settings recover from null", () =>

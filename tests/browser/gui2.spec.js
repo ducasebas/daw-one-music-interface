@@ -211,7 +211,7 @@ test("visible frontend release identifies missing and mismatched backend version
   await page.goto("/?gui=2&product=1");
   await expect(
     page.getByLabel("Softwareversie", { exact: true }),
-  ).toContainText("GUI 2.5 · TRANSPORT");
+  ).toContainText("GUI 2.6 · TOUCH VOLUME");
   await expect(
     page.getByLabel("Softwareversie", { exact: true }),
   ).toHaveAttribute("data-alignment", "matched");
@@ -222,7 +222,7 @@ test("visible frontend release identifies missing and mismatched backend version
   await expect(product).toHaveURL(/gui=2/);
   await expect(
     product.getByLabel("Softwareversie", { exact: true }),
-  ).toContainText("GUI 2.5 · TRANSPORT");
+  ).toContainText("GUI 2.6 · TOUCH VOLUME");
   await product.close();
   await page.goto("/?gui=2&product=1");
   const snapshot = await (await page.request.get("/api/state")).json();
@@ -278,4 +278,36 @@ test("primary play pause glyphs remain centred and symmetric across skins", asyn
     await play.click();
   }
   await page.screenshot({ path: "test-results/gui2-transport.png" });
+});
+
+test("music menu edge flows preserve favourites and show empty search and radio states", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.request.post("/api/scenario", { data: { name: "Playback" } });
+  await page.goto("/?gui=2&product=1");
+  await page.getByRole("button", { name: "Mijn muziek", exact: true }).click();
+  await page.getByRole("button", { name: "Favorieten", exact: true }).click();
+  await expect(page.getByText("Jouw muziek, dichtbij.")).toBeVisible();
+  await page.getByRole("button", { name: "Albums", exact: true }).click();
+  await page.getByRole("button", { name: "Dive Tycho" }).click();
+  await page
+    .getByRole("button", { name: "Bewaar favoriet", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Terug naar overzicht" }).click();
+  await page.getByRole("button", { name: "Favorieten", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Dive Tycho" })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "Mijn muziek", exact: true }).click();
+  await page.getByRole("button", { name: "Favorieten", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Dive Tycho" })).toBeVisible();
+  await page.getByRole("button", { name: "Radio", exact: true }).click();
+  await expect(
+    page.getByText("Geen radiostream verbonden", { exact: false }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Zoeken", exact: true }).click();
+  await page.getByLabel("Zoek muziek").fill("no such track xyz");
+  await expect(
+    page.getByText("Geen resultaten voor", { exact: false }),
+  ).toBeVisible();
 });

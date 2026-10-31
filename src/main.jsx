@@ -103,7 +103,8 @@ function App() {
       } catch {}
     };
     stream.onerror = () => {
-      if (live) setOffline(true);
+      // SSE may fail while HTTP remains healthy; verify through the fallback.
+      if (live) poll();
     };
     poll();
     const id = setInterval(poll, 1500);
@@ -150,7 +151,7 @@ function App() {
   async function send(e) {
     if (offline) {
       setNotice("Offline preview · command not sent");
-      return;
+      return false;
     }
     try {
       const r = await fetch("/api/event", {
@@ -161,13 +162,15 @@ function App() {
       const data = await r.json();
       if (!r.ok) {
         setNotice(data.error || "Command rejected");
-        return;
+        return false;
       }
       setSnapshot(data);
       setNotice("");
+      return true;
     } catch {
       setOffline(true);
       setNotice("Connection lost · settings remain available");
+      return false;
     }
   }
   async function run(name) {

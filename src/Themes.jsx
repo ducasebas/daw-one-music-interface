@@ -74,6 +74,9 @@ export function ThemeSettings({ preferences, theme, onChange, section }) {
     <section className="theme-page" aria-label="Theme engine">
       <div className="theme-reason" role="status">
         Active: {theme.name} · {theme.reason}
+        {section === "Schedule"
+          ? " · Browser local time; equal hours: night all day"
+          : ""}
       </div>
       {section === "Skins" ? (
         <div className="control-grid">
@@ -163,9 +166,6 @@ export function ThemeSettings({ preferences, theme, onChange, section }) {
               />
             </label>
           ))}
-          <small className="control-note">
-            Browser local time. Equal hours choose night all day.
-          </small>
         </div>
       ) : section === "State mapping" ? (
         <div className="control-grid">

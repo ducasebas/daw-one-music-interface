@@ -1,7 +1,7 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.10.31-transport.1",
-  label: "GUI 2.5 · TRANSPORT",
+  id: "2026.10.31-touch-volume.1",
+  label: "GUI 2.6 · TOUCH VOLUME",
 });
 export function buildAlignment(frontend, backend, offline = false) {
   if (offline) return "offline";

@@ -50,3 +50,25 @@ Visible build marker (31 October 2026): **68 Node tests, six targeted Chromium G
 The final version-marker journey also opens Product only from the GUI 2.0 workbench and verifies the popup retains `gui=2` and the visible release marker. This prevents the legacy screen route from being mistaken for an unchanged GUI 2.0 skin.
 
 Transport icon refinement (31 October 2026): **68 Node tests, seven targeted Chromium GUI 2.0 journeys and the production build passed**. The primary button uses grid centring, zero text line-height and a fixed 20 px SVG inside its 44 px button. Play and pause use compact filled silhouettes on transparent SVG backgrounds; pause bars are symmetric about x=12, and both glyphs are symmetric vertically about y=12. The triangle has optical horizontal placement. Browser checks measure button/SVG centre alignment and glyph bounds, and toggle playback in all six skins. This release displays GUI 2.5 · TRANSPORT.
+
+## Touch volume and complete flow review — 31 October 2026
+
+All checks below completed successfully **before publishing this release**:
+
+| Check | Result |
+| --- | --- |
+| Node domain/integration/scenario suite | 73 passed |
+| Complete Chromium UI suite | 37 passed, 1.8 minutes |
+| WebKit GUI 2.0 and volume journeys | 16 passed, 1.8 minutes |
+| Production/offline suite | 5 passed, 18.7 seconds |
+| Production build | Passed |
+
+The volume tests cover real Chromium touch injection, tap/drag geometry, release-only commits, cancellation, keyboard/fine steps, circular centre/arc interaction, mode persistence, live ceiling/read-only/unknown values, rejected requests, serialised rapid changes and scaled workbench coordinates. WebKit exercises the actual mouse/pointer route and a synthetic pointer-cancel event; it is not physical Safari touch certification.
+
+Flow checks also cover all eleven settings pages in both modes, all six skins, navigation/back context, local favourites after reload, empty search and radio states, shared queue/device APIs, simulator states/faults and offline editing. General/Schedule layout overflow found during review was corrected. Production GUI 2.0 retains its chosen volume mode offline while disabling device commands.
+
+The longer run exposed an existing live-update defect: Node writable-stream backpressure was treated as disconnection once the event log grew. The new bounded/coalescing snapshot writer keeps clients connected and retains only the latest waiting snapshot. Unit tests cover drain/disconnect handling; a 140-command browser stress journey verifies that the UI remains usable. An SSE error now triggers the HTTP connectivity fallback instead of falsely declaring a healthy backend offline.
+
+WebKit's Linux dependencies were extracted into the temporary test environment from checksum-verified Debian packages; no project runtime dependency or target hardware setting was added. The browser actually launched and the stated tests ran; host preflight validation was skipped for the non-system library location. The normal developer setup remains Playwright's documented install-with-deps command.
+
+This validates software simulation/fixtures, not actual MA streaming, Rivo synchronisation, acoustic latency or physical amplifier/backlight safety. Release marker: **GUI 2.6 · TOUCH VOLUME**. GUI 1.0 retains its prior reference volume presentation.

@@ -28,3 +28,5 @@ Simulation audio commands `volume` and `mute` now update shared runtime audio (`
 ## Display activity
 
 `POST /api/activity` returns `{ok:true}` and refreshes the shared display-idle timer in simulation and live-music modes. It does not send a Music Assistant command. Only a ready device's display can wake; standby, shutdown, fault latches, hardware verification and amplifier enable remain unchanged. A wake emits `display-wake` and broadcasts state; ordinary activity does not flood the timeline. The browser throttles real input with a trailing update. Passive hover and playback updates are excluded. GPIO/backlight drivers remain unimplemented.
+
+SSE delivery handles writable-stream backpressure without treating it as a disconnect. Each slow client retains only its latest pending snapshot until drain; heartbeats do not replace waiting snapshots. Closed clients are removed. This prevents a large event log from causing false offline transitions. If the SSE transport errors, the frontend verifies connectivity through the HTTP snapshot fallback rather than declaring a healthy backend offline immediately.

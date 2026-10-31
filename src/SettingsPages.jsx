@@ -62,11 +62,18 @@ export function SettingsPages({
               onChange={(e) => update("correction", +e.target.value)}
             />
           </label>
-          <p>
-            Saved locally · offline available.
-            <br />
-            Swipe left or use arrows to explore appearance settings.
-          </p>
+          <label>
+            Volume control
+            <select
+              aria-label="Volume control"
+              value={prefs.volumeControl}
+              onChange={(e) => update("volumeControl", e.target.value)}
+            >
+              <option value="linear">Touch slider</option>
+              <option value="circular">Circular dial</option>
+            </select>
+          </label>
+
         </div>
       ) : pages[index] === "Connection" ? (
         <MusicConnection snapshot={snapshot} onSnapshot={onSnapshot} />

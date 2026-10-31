@@ -1,4 +1,5 @@
 import { BuildBadge } from "./BuildBadge.jsx";
+import { TouchVolume, useVolumeRequests } from "./TouchVolume.jsx";
 import React, { useState, useRef, useEffect } from "react";
 import { flushSync } from "react-dom";
 import { SkinPanel } from "./SkinPanel.jsx";
@@ -97,8 +98,11 @@ export function MusicShell({
       available && (simulated || snapshot.musicAssistant?.controlEnabled),
     volume = simulated ? (snapshot.audio?.volume ?? 32) : playback.volume,
     muted = simulated ? snapshot.audio?.muted : playback.muted;
+  const volumeRequests = useVolumeRequests(send);
   const canVolume =
-    control && (simulated || playback.capabilities?.includes("volume_set"));
+    control &&
+    Number.isFinite(volume) &&
+    (simulated || playback.capabilities?.includes("volume_set"));
   const animation = useRef(null);
   const returnTo = useRef({ page: "discover", detail: null });
   const [direction, setDirection] = useState("crossfade");
@@ -585,15 +589,16 @@ export function MusicShell({
                 </p>
                 <label>
                   Volume{" "}
-                  <input
-                    aria-label="TuneBox kamervolume"
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={volume ?? 0}
-                    disabled={!canVolume || pending}
-                    onChange={(e) =>
-                      command({ type: "volume", value: +e.target.value })
+                  <TouchVolume
+                    label="TuneBox kamervolume"
+                    value={volume}
+                    target={volumeRequests.target}
+                    onValue={volumeRequests.request}
+                    disabled={!canVolume}
+                    limit={
+                      simulated
+                        ? 100
+                        : (snapshot.musicAssistant?.volumeLimit ?? 40)
                     }
                   />
                 </label>
@@ -797,20 +802,14 @@ export function MusicShell({
         >
           <Icon name={muted ? "mute" : "volume"} />
         </button>
-        <label className="m2-volume">
-          <span>{volume ?? "—"}%</span>
-          <input
-            aria-label="Volume"
-            type="range"
-            min="0"
-            max={simulated ? 100 : (snapshot.musicAssistant?.volumeLimit ?? 40)}
-            value={volume ?? 0}
-            disabled={!canVolume || pending}
-            onChange={(e) =>
-              command({ type: "volume", value: +e.target.value })
-            }
-          />
-        </label>
+        <TouchVolume
+          value={volume}
+          target={volumeRequests.target}
+          onValue={volumeRequests.request}
+          disabled={!canVolume}
+          limit={simulated ? 100 : (snapshot.musicAssistant?.volumeLimit ?? 40)}
+          mode={prefs.volumeControl}
+        />
       </footer>
     </main>
   );

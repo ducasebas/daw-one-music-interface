@@ -79,3 +79,13 @@ A mismatched backend release shows BACKEND ANDERE VERSIE; a responding backend w
 To update locally: stop with Ctrl+C, run `git pull --ff-only`, then `npm run dev`. Reload the GUI 2.0 URL. For production also run `npm run build` before `npm start`. Backend and frontend must both be updated; a browser refresh alone cannot restart Node.
 
 The workbench's Product only link now preserves GUI 2.0 and opens its HDMI display route. GUI 1.0 workbenches retain their original product route.
+
+## Touch volume — GUI 2.6
+
+Settings → General → **Volume control** chooses a wide touch slider or circular dial. The choice is validated and saved locally, including offline. This applies to GUI 2.0; the earlier GUI 1.0 reference control remains unchanged.
+
+The linear control supports tapping and dragging with a 48 px interaction area and a 24 px thumb. The rotary control uses a 64 px target, a 270° arc and continuous angle tracking without jumping from maximum to zero across the bottom gap. Dragging from its centre uses vertical fine adjustment. Both offer keyboard arrows, Page Up/Down, Home/End and 44 px increment/decrement buttons at native display size.
+
+While dragging, the number and control follow immediately; **release commits the value**. The interface explicitly labels this preview, so it does not imply the audio changes continuously while dragging. Cancelled gestures commit nothing. A shared request lane serialises volume commands and keeps the latest desired value during a slow request. Pending values are distinguished from the last confirmed player value; a rejected request restores the actual value and exposes the error. Mute and player capability checks remain separate. Unknown/read-only/offline volume control is disabled, and the configured MA ceiling remains enforced. It is still not an electrical limiter.
+
+Menu checks include all eleven settings pages in both volume modes, six skins, album/search back navigation, favourite persistence, empty search/radio states, queue actions, room preview and fault indicators. Rivo grouping, recommendations and audio hardware remain explicitly unverified/mock where applicable.

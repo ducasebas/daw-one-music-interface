@@ -1412,5 +1412,201 @@ html[data-tunebox-motion="back"]::view-transition-new(tunebox-content) {
   }
 }
 /* Centre the primary transport by its box instead of the text baseline. */
-.music2 .m2-play{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;line-height:0}
-.music2 .m2-play>.tb-icon{display:block;width:20px;height:20px;margin:0;vertical-align:initial}
+.music2 .m2-play {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  line-height: 0;
+}
+.music2 .m2-play > .tb-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  vertical-align: initial;
+}
+.touch-volume {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.touch-volume-readout {
+  width: 62px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: center;
+}
+.touch-volume-readout strong {
+  font-size: 20px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.touch-volume-readout strong small {
+  font-size: 9px;
+  margin-left: 2px;
+}
+.touch-volume-readout > span {
+  font-size: 7px;
+  line-height: 1.2;
+  color: var(--muted);
+  min-height: 17px;
+}
+.touch-volume-slider {
+  height: 48px;
+  width: 158px;
+  position: relative;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  outline-offset: 0;
+}
+.touch-volume-slider[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+.touch-volume-track {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 5px;
+  background: var(--skin-line);
+  border-radius: 8px;
+}
+.touch-volume-track > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--touch-volume-progress);
+  background: var(--accent);
+  border-radius: 8px;
+}
+.touch-volume-track > i {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  left: var(--touch-volume-progress);
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--text);
+  border: 5px solid var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 1px 5px #0005;
+}
+.music2 .touch-volume-step {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  border: 1px solid var(--skin-line);
+  font-size: 22px;
+  font-weight: 300;
+  touch-action: manipulation;
+}
+.touch-volume-circular .touch-volume-slider {
+  width: 64px;
+  height: 64px;
+  isolation: isolate;
+}
+.touch-volume-circular .touch-volume-slider:before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: var(--skin-panel);
+  border: 1px solid var(--skin-line);
+}
+.touch-volume-slider > svg {
+  width: 64px;
+  height: 64px;
+  position: absolute;
+  inset: 0;
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.touch-volume-arc {
+  stroke: var(--skin-line);
+}
+.touch-volume-arc-fill {
+  stroke: var(--accent);
+}
+.touch-volume-needle {
+  width: 3px;
+  height: 13px;
+  position: absolute;
+  left: calc(50% - 1.5px);
+  top: 13px;
+  background: var(--text);
+  border-radius: 2px;
+  transform-origin: 50% 19px;
+  transform: rotate(var(--touch-volume-angle));
+}
+.m2-rooms .touch-volume-slider {
+  width: 120px;
+}
+.m2-rooms .touch-volume-step {
+  width: 44px;
+}
+.music2 .m2-player-status {
+  min-width: 50px;
+  font-size: 8px;
+}
+.music2 .m2-current {
+  width: 230px;
+}
+.music2 .m2-rooms article {
+  height: 87px;
+  min-height: 87px;
+}
+.music2 .m2-rooms .m2-note {
+  font-size: 8px !important;
+}
+@media (max-width: 900px) {
+  .music2 .m2-current {
+    width: 160px;
+    min-width: 110px;
+  }
+  .touch-volume-slider {
+    width: 120px;
+  }
+  .touch-volume-readout {
+    width: 48px;
+  }
+  .m2-player {
+    gap: 8px;
+  }
+  .m2-transport {
+    gap: 5px;
+  }
+}
+@media (max-width: 650px) {
+  .music2 .touch-volume-step {
+    display: none;
+  }
+  .touch-volume-slider {
+    width: 100px;
+  }
+  .m2-transport > button {
+    padding: 4px;
+  }
+  .music2 .m2-current {
+    width: 110px;
+  }
+  .touch-volume-circular .touch-volume-slider {
+    width: 64px;
+  }
+}
+.touch-volume-slider:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Natural settings height avoids padding/100%-height overflow in the low display. */
+.music2 .theme-page{height:auto;min-height:0}.music2 .theme-page .theme-reason{line-height:16px;margin-bottom:6px}.music2 .control-grid{row-gap:8px}
+.music2 .theme-page .control-note{font-size:8px;line-height:1.2;margin:0}

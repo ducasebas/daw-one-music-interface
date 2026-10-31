@@ -1,4 +1,5 @@
 import { release } from "../shared/release.js";
+import { snapshotWriter } from "./event-stream.js";
 import express from "express";
 import { fileURLToPath } from "node:url";
 import { DeviceRuntime, runScenario, scenarios } from "../shared/runtime.js";
@@ -32,13 +33,10 @@ const snapshot = () => {
     },
   };
 };
+const streamWriter = snapshotWriter();
 const broadcast = () => {
   const body = `data: ${JSON.stringify(snapshot())}\n\n`;
-  for (const client of clients)
-    if (!client.write(body)) {
-      client.end();
-      clients.delete(client);
-    }
+  for (const client of clients) streamWriter.write(client, body);
 };
 music?.on("change", broadcast);
 music?.start();
@@ -69,9 +67,12 @@ app.get("/api/events", (q, r) => {
     "X-Accel-Buffering": "no",
   });
   r.flushHeaders();
-  r.write(`data: ${JSON.stringify(snapshot())}\n\n`);
+  streamWriter.write(r, `data: ${JSON.stringify(snapshot())}\n\n`);
   clients.add(r);
-  q.on("close", () => clients.delete(r));
+  q.on("close", () => {
+    clients.delete(r);
+    streamWriter.remove(r);
+  });
 });
 app.get("/api/scenarios", (_q, r) =>
   r.json(music ? [] : Object.keys(scenarios)),
@@ -156,7 +157,8 @@ const clock = setInterval(() => {
 }, 500);
 clock.unref();
 const keepalive = setInterval(() => {
-  for (const c of clients) c.write(": heartbeat\n\n");
+  for (const c of clients)
+    if (!streamWriter.blocked(c)) streamWriter.write(c, ": heartbeat\n\n");
 }, 15000);
 keepalive.unref();
 const server = app.listen(
