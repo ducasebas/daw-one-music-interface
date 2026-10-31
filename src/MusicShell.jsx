@@ -1,3 +1,4 @@
+import { BuildBadge } from "./BuildBadge.jsx";
 import React, { useState, useRef, useEffect } from "react";
 import { flushSync } from "react-dom";
 import { SkinPanel } from "./SkinPanel.jsx";
@@ -279,13 +280,16 @@ export function MusicShell({
             <span>Jouw volgende ontdekking.</span>
           )}
         </div>
-        <small className={offline ? "m2-warning" : ""}>
-          {offline
-            ? "Offline · instellingen beschikbaar"
-            : simulated
-              ? "● SIMULATIE · VOORBEELDBIBLIOTHEEK"
-              : "● MUSIC ASSISTANT · BIBLIOTHEEK NOG NIET GEKOPPELD"}
-        </small>
+        <div className="m2-version-status">
+          <BuildBadge snapshot={snapshot} offline={offline} />
+          <small className={offline ? "m2-warning" : ""}>
+            {offline
+              ? "Offline · instellingen beschikbaar"
+              : simulated
+                ? "● SIMULATIE · VOORBEELDBIBLIOTHEEK"
+                : "● MUSIC ASSISTANT · BIBLIOTHEEK NOG NIET GEKOPPELD"}
+          </small>
+        </div>
       </div>
       <section
         className="m2-content"

@@ -1,3 +1,4 @@
+import { release } from "../shared/release.js";
 import express from "express";
 import { fileURLToPath } from "node:url";
 import { DeviceRuntime, runScenario, scenarios } from "../shared/runtime.js";
@@ -11,7 +12,7 @@ const music =
   config.mode === "music-assistant" ? new LiveMusicService(config) : null;
 runtime.dispatch({ type: "boot-complete" });
 const snapshot = () => {
-  const state = runtime.snapshot();
+  const state = { ...runtime.snapshot(), build: release };
   if (music)
     return {
       ...state,
@@ -45,6 +46,7 @@ app.use(express.json({ limit: "8kb" }));
 app.get("/api/health", (_q, r) =>
   r.json({
     ok: true,
+    build: release,
     mode: config.mode,
     hardware: "unverified",
     device: runtime.device.mode,

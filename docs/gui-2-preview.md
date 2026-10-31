@@ -69,3 +69,13 @@ Use **Skin** in the header for direct switching; custom skins remain available i
 The common 24-unit transparent SVG set now also includes favourites and Video Artwork symbols. Button labels remain accessible; unknown icon names get an obvious placeholder rather than silently becoming a Play symbol. This is an internally authored set, not Apple's SF Symbols or a claim of Apple affiliation.
 
 Meters explicitly say LEVEL SIGNAL UNAVAILABLE. Nerd's amplifier, power and temperature values are labelled simulated; hardware verification remains separate. No audio levels, sample-rate badges or actual output quality are invented. Skins contain no hardware command logic.
+
+## Visible software version
+
+The product header and workbench show **GUI 2.4 · SKINS** with the frontend's Git revision when available. Hover for the release ID, build/start timestamp and backend release ID. `source` means Git metadata was unavailable; it is not an invented commit hash. In development the revision is captured when Vite starts, so restart after pulling. Production captures it at build time.
+
+A mismatched backend release shows BACKEND ANDERE VERSIE; a responding backend without release metadata shows BACKENDVERSIE ONBEKEND. Offline is indicated separately. Matching release IDs does not prove an unmodified checkout or identical build timestamps. Bump `shared/release.js` for each user-visible release. The old `display-r3` string is retained only as a startup-diagnostics label, not as the product version.
+
+To update locally: stop with Ctrl+C, run `git pull --ff-only`, then `npm run dev`. Reload the GUI 2.0 URL. For production also run `npm run build` before `npm start`. Backend and frontend must both be updated; a browser refresh alone cannot restart Node.
+
+The workbench's Product only link now preserves GUI 2.0 and opens its HDMI display route. GUI 1.0 workbenches retain their original product route.

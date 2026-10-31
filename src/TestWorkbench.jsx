@@ -1,7 +1,9 @@
+import { BuildBadge } from "./BuildBadge.jsx";
 import React, { useRef, useState, useEffect } from "react";
 import { devicePresentation } from "../shared/presentation.js";
 import { SimulatorPages } from "./SimulatorPages.jsx";
 export function TestWorkbench({
+  gui2 = false,
   snapshot,
   offline,
   prefs,
@@ -106,13 +108,16 @@ export function TestWorkbench({
         </button>
         <a
           className="bench-product-link"
-          href="/?screen=1"
+          href={gui2 ? "/?gui=2&screen=1&display=hdmi-development" : "/?screen=1"}
           target="_blank"
           rel="noopener noreferrer"
         >
           Product only ↗
         </a>
-        <small className="bench-build">display-r3</small>
+        <div className="bench-build">
+          <BuildBadge snapshot={snapshot} offline={offline} />
+          <small>display-r3 diagnostics</small>
+        </div>
       </div>
       <div className="bench-layout">
         <section className="bench-preview" aria-label="Physical device preview">

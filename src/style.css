@@ -3492,3 +3492,4 @@ main[data-diagnostics="true"] .vu-unavailable b {
   100% {opacity:1;transform:scale(1)}
 }
 @media(prefers-reduced-motion:reduce){.startup-logo-motion{animation:none}}
+.build-badge{display:inline-block;font:10px Manrope,sans-serif;letter-spacing:.3px;line-height:1.5;color:var(--accent,#c9a674);white-space:nowrap}.build-badge[data-alignment=mismatch],.build-badge[data-alignment=unknown]{color:#e5b36c}.bench-build{display:flex;flex-direction:column;align-items:flex-end;gap:2px}.bench-build>small{font-size:7px;color:#87918b}.m2-version-status{display:flex;flex-direction:column;align-items:flex-end;gap:2px}.music2 .m2-version-status>small{font-size:7px;letter-spacing:.8px}.music2 .build-badge{font-size:10px}.build-revision{opacity:.65}@media(max-width:700px){.build-revision{display:none}.music2 .build-badge{font-size:8px}}

@@ -1,3 +1,4 @@
+import { BuildBadge } from "./BuildBadge.jsx";
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { initialDevice, transition } from "../shared/device.js";
@@ -517,13 +518,14 @@ function App() {
                 : "DESIGNED FOR LISTENING")}
         </span>
         <span>
-          DAW ONE <b>01</b>
+          <BuildBadge snapshot={snapshot} offline={offline} />
         </span>
       </footer>
     </main>
   );
   return lab && !embedded ? (
     <TestWorkbench
+      gui2={gui2}
       snapshot={snapshot}
       offline={offline}
       prefs={prefs}

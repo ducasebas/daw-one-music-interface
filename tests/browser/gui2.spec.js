@@ -204,3 +204,32 @@ test("GUI2 six skins keep shared navigation and native bounds with honest diagno
     "nerd-mode",
   );
 });
+
+test("visible frontend release identifies missing and mismatched backend versions", async ({
+  page,
+}) => {
+  await page.goto("/?gui=2&product=1");
+  await expect(
+    page.getByLabel("Softwareversie", { exact: true }),
+  ).toContainText("GUI 2.4 · SKINS");
+  await expect(
+    page.getByLabel("Softwareversie", { exact: true }),
+  ).toHaveAttribute("data-alignment", "matched");
+  await page.goto("/?gui=2&lab=1");
+  const popup = page.waitForEvent("popup");
+  await page.getByRole("link", {name:"Product only",exact:false}).click();
+  const product = await popup;
+  await expect(product).toHaveURL(/gui=2/);
+  await expect(product.getByLabel("Softwareversie",{exact:true})).toContainText("GUI 2.4 · SKINS");
+  await product.close();
+  await page.goto("/?gui=2&product=1");
+  const snapshot = await (await page.request.get("/api/state")).json();
+  await page.route("**/api/events", (r) => r.abort());
+  await page.route("**/api/state", (r) =>
+    r.fulfill({ json: { ...snapshot, build: { id: "older-release" } } }),
+  );
+  await page.reload();
+  await expect(
+    page.getByLabel("Softwareversie", { exact: true }),
+  ).toContainText("BACKEND ANDERE VERSIE");
+});
