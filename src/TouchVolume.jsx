@@ -38,6 +38,7 @@ export function useVolumeRequests(send) {
 }
 export function TouchVolume({
   value,
+  muted = false,
   target = null,
   onValue,
   disabled = false,
@@ -73,7 +74,7 @@ export function TouchVolume({
     if (!disabled) onValue(clampVolume(v, max));
   };
   return (
-    <div className={`touch-volume touch-volume-${mode}`}>
+    <div className={`touch-volume touch-volume-${mode}`} data-muted={muted}>
       <div className="touch-volume-readout">
         <strong>
           {shown ?? "—"}
@@ -88,7 +89,9 @@ export function TouchVolume({
                 ? "Niet beschikbaar"
                 : actual > max
                   ? `Speler · limiet ${max}%`
-                  : "Volume"}
+                  : muted
+                    ? "Gedempt · waarde behouden"
+                    : "Volume"}
         </span>
       </div>
       <div
@@ -98,7 +101,7 @@ export function TouchVolume({
         aria-valuemin={0}
         aria-valuemax={max}
         aria-valuenow={clipped}
-        aria-valuetext={`${shown ?? "Onbekend"} procent${target !== null ? ", wordt verstuurd" : ""}${actual > max ? `, bedieningslimiet ${max} procent` : ""}`}
+        aria-valuetext={`${shown ?? "Onbekend"} procent${muted ? ", gedempt" : ""}${target !== null ? ", wordt verstuurd" : ""}${actual > max ? `, bedieningslimiet ${max} procent` : ""}`}
         aria-disabled={disabled}
         tabIndex={disabled ? -1 : 0}
         style={{

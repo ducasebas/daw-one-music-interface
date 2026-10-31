@@ -64,7 +64,7 @@ User interaction resets the shared display-idle timer. Real pointer presses/drag
 
 ## GUI 2.0 skin refinement
 
-Use **Skin** in the header for direct switching; custom skins remain available in the same selector. Choosing a skin selects manual mode, as Settings does. Saved presets still use the shared token resolver and persist locally. Reference Dark uses graphite and restrained warm accents; Minimal uses flat mint markers and an upcoming-track panel; Bronze uses copper/serif display type; Champagne uses satin panels and output information; Cinematic uses wider artwork and midnight surfaces; Nerd adds the available shared device telemetry. Custom themes use the Reference presentation as their starting structure.
+Use **Settings → Skins** to switch appearance; custom skins remain available in the same selector. The music header keeps only navigation and connection status. Choosing a skin selects manual mode, as Settings does. Saved presets still use the shared token resolver and persist locally. Reference Dark uses graphite and restrained warm accents; Minimal uses flat mint markers and an upcoming-track panel; Bronze uses copper/serif display type; Champagne uses satin panels and output information; Cinematic uses wider artwork and midnight surfaces; Nerd adds the available shared device telemetry. Custom themes use the Reference presentation as their starting structure.
 
 The common 24-unit transparent SVG set now also includes favourites and Video Artwork symbols. Button labels remain accessible; unknown icon names get an obvious placeholder rather than silently becoming a Play symbol. This is an internally authored set, not Apple's SF Symbols or a claim of Apple affiliation.
 
@@ -89,3 +89,11 @@ The linear control supports tapping and dragging with a 48 px interaction area a
 While dragging, the number and control follow immediately; **release commits the value**. The interface explicitly labels this preview, so it does not imply the audio changes continuously while dragging. Cancelled gestures commit nothing. A shared request lane serialises volume commands and keeps the latest desired value during a slow request. Pending values are distinguished from the last confirmed player value; a rejected request restores the actual value and exposes the error. Mute and player capability checks remain separate. Unknown/read-only/offline volume control is disabled, and the configured MA ceiling remains enforced. It is still not an electrical limiter.
 
 Menu checks include all eleven settings pages in both volume modes, six skins, album/search back navigation, favourite persistence, empty search/radio states, queue actions, room preview and fault indicators. Rivo grouping, recommendations and audio hardware remain explicitly unverified/mock where applicable.
+
+## Mute, network and transport balance — GUI 2.7
+
+Mute greys the volume control and keeps its position/value; unmuting restores the same level. The saved volume is not animated down to zero. The control remains adjustable while muted, with explicit muted text and pressed-state feedback on the mute button.
+
+Appearance selection lives in Settings → Skins, not in the daily music header. The header's network summary opens a small information panel and closes with an outside press or Escape. Simulation shows only its simulated network availability. Live mode reports app connectivity, which may use Wi-Fi or ethernet. RSSI/signal strength is not measured and no strength bars are invented; a real OS telemetry adapter remains future work.
+
+The primary transport SVG is 24 px with a 16 px-high glyph in a 44 px button. Secondary mirrored skip glyphs render at 20 px in equal 44 px hit boxes. This makes the centre action visually dominant without moving the button centres. Media symbols share filled foreground shapes and transparent backgrounds; navigation icons retain their shared outline language.

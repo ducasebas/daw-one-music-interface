@@ -106,7 +106,7 @@ Music Assistant needs a separately configured server and a working player. The b
 
 | Area | Implemented | Remaining validation |
 | --- | --- | --- |
-| Product UI | Now Playing, queue, settings, horizontal volume and six skins | Final target display, accessibility and physical touch checks |
+| Product UI | Now Playing, queue, settings, touch/rotary volume and six skins | Final target display, accessibility and physical touch checks |
 | Themes | Shared tokens, local custom themes, day/night and state switching | Readability on the final screen |
 | Virtual device | Shared state machines, scenarios, sensors, physical-button/LED preview, modules and timestamped events | Actual button, LED driver and sensors |
 | Safety | Simulated fault latching, watchdog and denied enable for unverified/faulted hardware | Independent physical disable, controller firmware and electrical tests |
@@ -187,7 +187,7 @@ npx playwright install --with-deps webkit
 npm run test:webkit
 ```
 
-The touch-volume release passed **73 Node tests**, the full **37-case Chromium UI suite**, **16 targeted WebKit GUI/volume journeys**, **5 production/offline tests**, and the production build before publication. WebKit runs on Linux; actual iPad/Pi hardware and a real Music Assistant server remain separate validation. Dates, environment and limitations are in [validation.md](docs/validation.md).
+The touch-volume release passed **73 Node tests**, the full **40-case Chromium UI suite**, **19 targeted WebKit GUI/volume journeys**, **5 production/offline tests**, and the production build before publication. WebKit runs on Linux; actual iPad/Pi hardware and a real Music Assistant server remain separate validation. Dates, environment and limitations are in [validation.md](docs/validation.md).
 
 Node coverage includes playback transitions/reconnection, protocol fixtures, End-Sync edge cases, themes, deployment policies and safety scenarios. Browser coverage includes layout, controls, persistence, offline behaviour and startup recovery.
 
@@ -237,7 +237,7 @@ Read the [evaluation plan and draft sample request](docs/sonocotta-evaluation.md
 
 ## Next concrete tasks
 
-1. Review the refined GUI 2.0 skins on the target screen. Use the header Skin selector: Reference Dark, Minimal Dark, Warm Bronze, Champagne Gold, Cinematic and Nerd Mode now have distinct materials/presentation and shared SVG controls; Nerd adds real available simulation diagnostics.
+1. Review the refined GUI 2.0 skins on the target screen. Use Settings → Skins: Reference Dark, Minimal Dark, Warm Bronze, Champagne Gold, Cinematic and Nerd Mode now have distinct materials/presentation and shared SVG controls; Nerd adds real available simulation diagnostics.
 2. Complete daily-use interaction states: empty/loading/failure, clear command outcomes, accessibility and responsive/low-resource checks.
 3. Connect Music Assistant on the NUC for real library/search/artwork/favourites/queue operations and Spotify/Tidal discovery workflows. Current example content is not that integration.
 4. Verify a common player protocol and synchronised multiroom with the actual Volumio Rivo; visual grouping is not connected audio.
@@ -258,6 +258,6 @@ Additional references: [API/protocol](docs/protocol-and-api.md), [hardware relea
 
 **Touch volume:** Settings → General → Volume control selects a wide touch slider or circular dial. Both support keyboard/fine steps, larger touch targets and commit on release; the interface separates preview/pending values from confirmed player volume. The choice persists locally. GUI 1.0 keeps its earlier reference control.
 
-**Check the running version:** the GUI 2.0 header and testbench show **GUI 2.6 · TOUCH VOLUME** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
+**Check the running version:** the GUI 2.0 header and testbench show **GUI 2.7 · POLISH** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
 
 Open **`/?gui=2&product=1`** for the new music-first interface, or **`/?gui=2&lab=1`** to keep the shared hardware workbench visible. The existing GUI remains available. Discover/library content is labelled as example data; playback and queue actions use the same simulator backend. Rivo grouping is a visual example, not a connected player. See [preview, SVG icons and skin contribution guide](docs/gui-2-preview.md).

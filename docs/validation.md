@@ -72,3 +72,13 @@ The longer run exposed an existing live-update defect: Node writable-stream back
 WebKit's Linux dependencies were extracted into the temporary test environment from checksum-verified Debian packages; no project runtime dependency or target hardware setting was added. The browser actually launched and the stated tests ran; host preflight validation was skipped for the non-system library location. The normal developer setup remains Playwright's documented install-with-deps command.
 
 This validates software simulation/fixtures, not actual MA streaming, Rivo synchronisation, acoustic latency or physical amplifier/backlight safety. Release marker: **GUI 2.6 · TOUCH VOLUME**. GUI 1.0 retains its prior reference volume presentation.
+
+## Transport balance, mute and quiet music header — 31 October 2026
+
+Before publication: **73 Node tests, the full 40-test Chromium suite (2.4 minutes), 19 targeted WebKit GUI/volume journeys (2.2 minutes), five production/offline tests (17.7 seconds), and the production build passed**.
+
+New browser checks measure equal 44 px transport hit boxes, equal button-centre spacing, a dominant 16 px primary glyph and matching vertical centres. Play/pause closeups were visually inspected. Previous/next are filled mirrored shapes, so their weight no longer competes with an undersized primary icon.
+
+Both volume modes retain the exact value and indicator position when muted, turn grey, expose muted text and pressed state, and restore the same volume on unmute. Skin selection was removed from the music header and tested through Settings → Skins. A network-summary test checks the simulation disconnect state, expandable information, Escape dismissal and explicit unmeasured signal strength. No OS Wi-Fi/RSSI telemetry or fabricated strength bars were added. Linux WebKit is still not physical Safari/touchscreen certification.
+
+Release: **GUI 2.7 · POLISH**. Source changes were tested before the GitHub update.

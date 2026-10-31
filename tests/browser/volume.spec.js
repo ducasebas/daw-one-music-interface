@@ -1,9 +1,13 @@
+import { chooseSkin } from "./skin-helpers.js";
 import { test, expect } from "@playwright/test";
 async function start(page) {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.request.post("/api/event", {
     data: { type: "volume", value: 32 },
+  });
+  await page.request.post("/api/event", {
+    data: { type: "mute", value: false },
   });
   await page.goto("/?gui=2&product=1");
   await page.getByRole("button", { name: "Ontdek", exact: true }).click();
@@ -155,7 +159,7 @@ test("circular mode persists, supports touch rotation and keeps all skins within
     "cinematic",
     "nerd-mode",
   ]) {
-    await page.getByLabel("Kies skin", { exact: true }).selectOption(id);
+    await chooseSkin(page, id);
     expect(
       await page
         .locator(".m2-player")
@@ -291,4 +295,36 @@ test("scaled workbench volume uses the same touch geometry as the product", asyn
     [b.x + inset + (b.width - 2 * inset) * 0.75, b.y + b.height / 2],
   ]);
   await expect.poll(() => volume(page)).toBe(75);
+});
+
+test("mute greys both volume presentations without changing the stored volume or position", async ({
+  page,
+}) => {
+  await start(page);
+  for (const mode of ["linear", "circular"]) {
+    await page
+      .getByRole("button", { name: "Instellingen", exact: true })
+      .click();
+    await page.getByLabel("Settings page", { exact: true }).selectOption("0");
+    await page.getByLabel("Volume control", { exact: true }).selectOption(mode);
+    await page.getByRole("button", { name: "Open Nu spelen" }).click();
+    const slider = page.getByRole("slider", { name: "Volume", exact: true });
+    const before = await slider.getAttribute("style");
+    await page.getByRole("button", { name: "Dempen", exact: true }).click();
+    await expect(page.locator(".m2-player>.touch-volume")).toHaveAttribute(
+      "data-muted",
+      "true",
+    );
+    await expect(slider).toHaveAttribute("aria-valuenow", "32");
+    await expect(slider).toHaveAttribute("aria-valuetext", /gedempt/);
+    expect(await slider.getAttribute("style")).toBe(before);
+    expect(await volume(page)).toBe(32);
+    await page.screenshot({ path: `test-results/muted-${mode}.png` });
+    await page.getByRole("button", { name: "Geluid aan", exact: true }).click();
+    await expect(page.locator(".m2-player>.touch-volume")).toHaveAttribute(
+      "data-muted",
+      "false",
+    );
+    expect(await volume(page)).toBe(32);
+  }
 });

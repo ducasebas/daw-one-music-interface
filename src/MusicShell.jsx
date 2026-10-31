@@ -1,9 +1,10 @@
+import { NetworkStatus } from "./NetworkStatus.jsx";
 import { BuildBadge } from "./BuildBadge.jsx";
 import { TouchVolume, useVolumeRequests } from "./TouchVolume.jsx";
 import React, { useState, useRef, useEffect } from "react";
 import { flushSync } from "react-dom";
 import { SkinPanel } from "./SkinPanel.jsx";
-import { presets, normalizeThemePreferences } from "../shared/themes.js";
+import { presets } from "../shared/themes.js";
 import { themeVariables } from "../shared/themes.js";
 import { tracks } from "../shared/playback.js";
 import { endSync } from "../shared/video.js";
@@ -202,6 +203,7 @@ export function MusicShell({
     <main
       className="music2"
       data-theme={theme.id}
+      data-page={page}
       data-skin={
         presets.some((p) => p.id === theme.id) ? theme.id : "reference-dark"
       }
@@ -235,31 +237,7 @@ export function MusicShell({
             </button>
           ))}
         </nav>
-        <label className="m2-skin-picker">
-          <span>SKIN</span>
-          <select
-            aria-label="Kies skin"
-            value={theme.id}
-            onChange={(e) =>
-              setThemePreferences(
-                normalizeThemePreferences({
-                  ...themePreferences,
-                  selected: e.target.value,
-                  mode: "manual",
-                }),
-              )
-            }
-          >
-            {theme.id === "draft" && (
-              <option value="draft">Custom preview</option>
-            )}
-            {[...presets, ...themePreferences.custom].map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <NetworkStatus snapshot={snapshot} offline={offline} />
         <button aria-label="Instellingen" onClick={() => go("settings")}>
           <Icon name="settings" />
         </button>
@@ -592,6 +570,7 @@ export function MusicShell({
                   <TouchVolume
                     label="TuneBox kamervolume"
                     value={volume}
+                    muted={muted}
                     target={volumeRequests.target}
                     onValue={volumeRequests.request}
                     disabled={!canVolume}
@@ -793,6 +772,7 @@ export function MusicShell({
         </div>
         <button
           aria-label={muted ? "Geluid aan" : "Dempen"}
+          aria-pressed={!!muted}
           disabled={
             !control ||
             pending ||
@@ -804,6 +784,7 @@ export function MusicShell({
         </button>
         <TouchVolume
           value={volume}
+          muted={muted}
           target={volumeRequests.target}
           onValue={volumeRequests.request}
           disabled={!canVolume}

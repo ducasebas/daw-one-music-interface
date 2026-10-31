@@ -1,3 +1,4 @@
+import { chooseSkin } from "./skin-helpers.js";
 import { test, expect } from "@playwright/test";
 test("GUI2 music journey works at 1280x400 through the shared runtime", async ({
   page,
@@ -158,7 +159,7 @@ test("GUI2 six skins keep shared navigation and native bounds with honest diagno
     "nerd-mode",
   ];
   for (const id of ids) {
-    await page.getByLabel("Kies skin", { exact: true }).selectOption(id);
+    await chooseSkin(page, id);
     await expect(page.locator(".music2")).toHaveAttribute("data-skin", id);
     for (const name of [
       "Ontdek",
@@ -200,7 +201,8 @@ test("GUI2 six skins keep shared navigation and native bounds with honest diagno
     await page.screenshot({ path: `test-results/gui2-${id}.png` });
   }
   await page.reload();
-  await expect(page.getByLabel("Kies skin", { exact: true })).toHaveValue(
+  await expect(page.locator(".music2")).toHaveAttribute(
+    "data-skin",
     "nerd-mode",
   );
 });
@@ -211,7 +213,7 @@ test("visible frontend release identifies missing and mismatched backend version
   await page.goto("/?gui=2&product=1");
   await expect(
     page.getByLabel("Softwareversie", { exact: true }),
-  ).toContainText("GUI 2.6 · TOUCH VOLUME");
+  ).toContainText("GUI 2.7 · POLISH");
   await expect(
     page.getByLabel("Softwareversie", { exact: true }),
   ).toHaveAttribute("data-alignment", "matched");
@@ -222,7 +224,7 @@ test("visible frontend release identifies missing and mismatched backend version
   await expect(product).toHaveURL(/gui=2/);
   await expect(
     product.getByLabel("Softwareversie", { exact: true }),
-  ).toContainText("GUI 2.6 · TOUCH VOLUME");
+  ).toContainText("GUI 2.7 · POLISH");
   await product.close();
   await page.goto("/?gui=2&product=1");
   const snapshot = await (await page.request.get("/api/state")).json();
@@ -250,7 +252,7 @@ test("primary play pause glyphs remain centred and symmetric across skins", asyn
     "cinematic",
     "nerd-mode",
   ]) {
-    await page.getByLabel("Kies skin", { exact: true }).selectOption(id);
+    await chooseSkin(page, id);
     const pause = page.getByRole("button", { name: "Pauze", exact: true });
     const button = await pause.boundingBox(),
       icon = await pause.locator("svg").boundingBox();
@@ -310,4 +312,77 @@ test("music menu edge flows preserve favourites and show empty search and radio 
   await expect(
     page.getByText("Geen resultaten voor", { exact: false }),
   ).toBeVisible();
+});
+
+test("transport visual hierarchy gives primary glyph more weight and mirrors skip buttons", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.request.post("/api/scenario", { data: { name: "Playback" } });
+  await page.goto("/?gui=2&product=1");
+  await page.getByRole("button", { name: "Ontdek", exact: true }).click();
+  const group = page.locator(".m2-transport");
+  const sizes = await group.locator("button").evaluateAll((buttons) =>
+    buttons.map((b) => {
+      const r = b.getBoundingClientRect(),
+        s = b.querySelector("svg"),
+        p = s.querySelector("path").getBBox();
+      return {
+        x: r.x + r.width / 2,
+        y: r.y + r.height / 2,
+        w: r.width,
+        h: r.height,
+        glyph: (p.height * s.getBoundingClientRect().height) / 24,
+      };
+    }),
+  );
+  expect(sizes.map((s) => s.h)).toEqual([44, 44, 44]);
+  expect(sizes[0].y).toBe(sizes[1].y);
+  expect(sizes[1].y).toBe(sizes[2].y);
+  expect(
+    Math.abs(sizes[1].x - sizes[0].x - (sizes[2].x - sizes[1].x)),
+  ).toBeLessThan(0.1);
+  expect(sizes[1].glyph).toBe(16);
+  expect(sizes[1].glyph).toBeGreaterThan(sizes[0].glyph);
+  await group.screenshot({
+    path: "test-results/transport-pause-close.png",
+    scale: "css",
+  });
+  await page.getByRole("button", { name: "Pauze", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Afspelen", exact: true }),
+  ).toBeVisible();
+  await group.screenshot({
+    path: "test-results/transport-play-close.png",
+    scale: "css",
+  });
+});
+
+test("music header has network status instead of skin configuration and never invents signal strength", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.request.post("/api/scenario", { data: { name: "Playback" } });
+  await page.goto("/?gui=2&product=1");
+  await expect(page.locator(".m2-header select")).toHaveCount(0);
+  await page.getByLabel("Netwerkstatus", { exact: true }).click();
+  await expect(
+    page.getByText("Wi-Fi-signaalsterkte niet gemeten.", { exact: false }),
+  ).toBeVisible();
+  await expect(page.locator(".m2-network")).toHaveAttribute(
+    "data-signal",
+    "unavailable",
+  );
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".m2-network")).not.toHaveAttribute("open");
+  await page.request.post("/api/event", {
+    data: { type: "wifi", value: false },
+  });
+  await expect(page.locator(".m2-network")).toHaveAttribute(
+    "data-state",
+    "unavailable",
+  );
+  await page.getByRole("button", { name: "Instellingen", exact: true }).click();
+  await page.getByLabel("Settings page", { exact: true }).selectOption("1");
+  await expect(page.getByLabel("Skin", { exact: true })).toBeVisible();
 });

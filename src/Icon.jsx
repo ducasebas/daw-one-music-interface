@@ -1,6 +1,11 @@
 import React from "react";
 // TuneBox outline icons: one 24-unit grid, rounded caps and shared stroke tokens.
 const paths = {
+  wifi: "M2 8a16 16 0 0 1 20 0M5 12a11 11 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 20h.01",
+  "wifi-off":
+    "M2 2l20 20M7 5a16 16 0 0 1 15 3M2 8l2-1M5 12a11 11 0 0 1 4-2M15 11l4 1M8.5 16a5 5 0 0 1 7 0M12 20h.01",
+  network:
+    "M8 8l8 8M8 16l8-8M8 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M22 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 19a3 3 0 1 1-6 0 3 3 0 0 1 6 0M22 19a3 3 0 1 1-6 0 3 3 0 0 1 6 0",
   discover: "M12 3l2.6 6.4L21 12l-6.4 2.6L12 21l-2.6-6.4L3 12l6.4-2.6Z",
   library: "M4 4v16M9 4v16M14 4v16M18 5l3 14",
   search: "M21 21l-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0",
@@ -11,10 +16,11 @@ const paths = {
   heart:
     "M20.8 4.6a5.5 5.5 0 0 0-7.8 0l-1 1-1-1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z",
   film: "M3 4h18v16H3ZM7 4v16M17 4v16M3 8h4M3 16h4M17 8h4M17 16h4",
-  play: "M8.5 5.5 18.5 12 8.5 18.5Z",
-  pause: "M7 5.5h3.5v13H7Z M13.5 5.5H17v13h-3.5Z",
-  previous: "M5 4v16M19 4L7 12l12 8Z",
-  next: "M19 4v16M5 4l12 8-12 8Z",
+  play: "M7.7 4 20 12 7.7 20Z",
+  pause:
+    "M7.5 4h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z M14.5 4h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z",
+  previous: "M5 5h2v14H5Z M18 5v14L8 12Z",
+  next: "M17 5h2v14h-2Z M6 5l10 7L6 19Z",
   volume: "M3 9h4l5-5v16l-5-5H3ZM16 8q5 4 0 8M19 5q8 7 0 14",
   mute: "M3 9h4l5-5v16l-5-5H3ZM17 9l5 6M22 9l-5 6",
   back: "M15 4l-8 8 8 8",
@@ -43,8 +49,14 @@ export function Icon({ name, size = 20 }) {
     >
       <path
         d={paths[name] || "M4 4h16v16H4ZM8 8l8 8M16 8l-8 8"}
-        fill={name === "play" || name === "pause" ? "currentColor" : "none"}
-        strokeWidth={name === "play" || name === "pause" ? 1 : undefined}
+        fill={
+          ["play", "pause", "previous", "next"].includes(name)
+            ? "currentColor"
+            : "none"
+        }
+        strokeWidth={
+          ["play", "pause", "previous", "next"].includes(name) ? 0 : undefined
+        }
       />
     </svg>
   );
