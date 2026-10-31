@@ -237,7 +237,7 @@ Read the [evaluation plan and draft sample request](docs/sonocotta-evaluation.md
 
 ## Next concrete tasks
 
-1. Refine GUI 2.0 skins: polish Reference Dark first, then Minimal Dark, Warm Bronze, Champagne Gold, Cinematic and Nerd Mode using the same components and SVG icon language. The theme engine already exists; the current GUI 2.0 presets mostly share one layout.
+1. Review the refined GUI 2.0 skins on the target screen. Use the header Skin selector: Reference Dark, Minimal Dark, Warm Bronze, Champagne Gold, Cinematic and Nerd Mode now have distinct materials/presentation and shared SVG controls; Nerd adds real available simulation diagnostics.
 2. Complete daily-use interaction states: empty/loading/failure, clear command outcomes, accessibility and responsive/low-resource checks.
 3. Connect Music Assistant on the NUC for real library/search/artwork/favourites/queue operations and Spotify/Tidal discovery workflows. Current example content is not that integration.
 4. Verify a common player protocol and synchronised multiroom with the actual Volumio Rivo; visual grouping is not connected audio.

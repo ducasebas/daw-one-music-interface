@@ -7,7 +7,10 @@ const paths = {
   queue: "M4 6h16M4 12h12M4 18h8",
   rooms: "M12 3l9 6v12h-7v-7h-4v7H3V9Z",
   settings:
-    "M9 3h6l1 4 4 1v8l-4 1-1 4H9l-1-4-4-1V8l4-1ZM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0",
+    "M9.5 3h5l.6 2.4 2 .9 2.1-1.2 2.5 4.3-1.8 1.7v2l1.8 1.7-2.5 4.3-2.1-1.2-2 .9-.6 2.2h-5l-.6-2.2-2-.9-2.1 1.2-2.5-4.3 1.8-1.7v-2L2.3 9.4l2.5-4.3 2.1 1.2 2-.9ZM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0",
+  heart:
+    "M20.8 4.6a5.5 5.5 0 0 0-7.8 0l-1 1-1-1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z",
+  film: "M3 4h18v16H3ZM7 4v16M17 4v16M3 8h4M3 16h4M17 8h4M17 16h4",
   play: "M8 4l12 8-12 8Z",
   pause: "M8 4v16M16 4v16",
   previous: "M5 4v16M19 4L7 12l12 8Z",
@@ -26,6 +29,7 @@ export function Icon({ name, size = 20 }) {
   return (
     <svg
       className="tb-icon"
+      data-icon={name}
       width={size}
       height={size}
       viewBox="0 0 24 24"
@@ -37,7 +41,7 @@ export function Icon({ name, size = 20 }) {
       aria-hidden="true"
       focusable="false"
     >
-      <path d={paths[name] || paths.play} />
+      <path d={paths[name] || "M4 4h16v16H4ZM8 8l8 8M16 8l-8 8"} />
     </svg>
   );
 }

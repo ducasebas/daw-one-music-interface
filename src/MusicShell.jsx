@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { flushSync } from "react-dom";
+import { SkinPanel } from "./SkinPanel.jsx";
+import { presets, normalizeThemePreferences } from "../shared/themes.js";
 import { themeVariables } from "../shared/themes.js";
 import { tracks } from "../shared/playback.js";
 import { endSync } from "../shared/video.js";
@@ -195,6 +197,10 @@ export function MusicShell({
     <main
       className="music2"
       data-theme={theme.id}
+      data-skin={
+        presets.some((p) => p.id === theme.id) ? theme.id : "reference-dark"
+      }
+      data-diagnostics={theme.diagnostics}
       style={{
         ...themeVariables(theme),
         "--brightness": prefs.brightness / 100,
@@ -224,6 +230,31 @@ export function MusicShell({
             </button>
           ))}
         </nav>
+        <label className="m2-skin-picker">
+          <span>SKIN</span>
+          <select
+            aria-label="Kies skin"
+            value={theme.id}
+            onChange={(e) =>
+              setThemePreferences(
+                normalizeThemePreferences({
+                  ...themePreferences,
+                  selected: e.target.value,
+                  mode: "manual",
+                }),
+              )
+            }
+          >
+            {theme.id === "draft" && (
+              <option value="draft">Custom preview</option>
+            )}
+            {[...presets, ...themePreferences.custom].map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <button aria-label="Instellingen" onClick={() => go("settings")}>
           <Icon name="settings" />
         </button>
@@ -281,6 +312,7 @@ export function MusicShell({
                     )
                   }
                 >
+                  <Icon name="heart" size={16} />{" "}
                   {favorites.includes(detail.id)
                     ? "Favoriet opgeslagen"
                     : "Bewaar favoriet"}
@@ -650,7 +682,7 @@ export function MusicShell({
             </div>
             <aside>
               <button aria-pressed={video} onClick={() => setVideo((v) => !v)}>
-                Video Artwork
+                <Icon name="film" size={16} /> Video Artwork
               </button>
               {video ? (
                 <div className="m2-video">
@@ -672,11 +704,16 @@ export function MusicShell({
                   </small>
                 </div>
               ) : (
-                <p>
-                  Alle aandacht
-                  <br />
-                  voor de muziek.
-                </p>
+                <SkinPanel
+                  skin={
+                    presets.some((p) => p.id === theme.id)
+                      ? theme.id
+                      : "reference-dark"
+                  }
+                  theme={theme}
+                  snapshot={snapshot}
+                  offline={offline}
+                />
               )}
             </aside>
           </div>

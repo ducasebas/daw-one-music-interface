@@ -106,7 +106,9 @@ test("GUI2 reduced motion and delayed command feedback keep navigation available
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&product=1");
-  const activity = page.waitForResponse(r => r.url().endsWith("/api/activity") && r.request().method() === "POST");
+  const activity = page.waitForResponse(
+    (r) => r.url().endsWith("/api/activity") && r.request().method() === "POST",
+  );
   await page.getByRole("button", { name: "Ontdek", exact: true }).click();
   expect((await activity).status()).toBe(200);
   expect(
@@ -139,4 +141,66 @@ test("GUI2 reduced motion and delayed command feedback keep navigation available
   await expect(
     page.getByRole("navigation", { name: "Muzieknavigatie" }),
   ).toBeVisible();
+});
+
+test("GUI2 six skins keep shared navigation and native bounds with honest diagnostics", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.request.post("/api/scenario", { data: { name: "Playback" } });
+  await page.goto("/?gui=2&screen=1&display=dsi-production");
+  const ids = [
+    "reference-dark",
+    "minimal-dark",
+    "warm-bronze",
+    "champagne-gold",
+    "cinematic",
+    "nerd-mode",
+  ];
+  for (const id of ids) {
+    await page.getByLabel("Kies skin", { exact: true }).selectOption(id);
+    await expect(page.locator(".music2")).toHaveAttribute("data-skin", id);
+    for (const name of [
+      "Ontdek",
+      "Mijn muziek",
+      "Zoeken",
+      "Wachtrij",
+      "Kamers",
+    ]) {
+      await page.getByRole("button", { name, exact: true }).click();
+      expect(
+        await page
+          .locator(".m2-content")
+          .evaluate((e) => e.scrollHeight <= e.clientHeight + 1),
+      ).toBeTruthy();
+    }
+    await page.getByRole("button", { name: "Open Nu spelen" }).click();
+    const box = await page.locator(".music2").boundingBox();
+    expect(box.width).toBe(1280);
+    expect(box.height).toBe(400);
+    if (id === "nerd-mode")
+      await expect(page.getByLabel("Apparaatdiagnostiek")).toContainText(
+        "UNVERIFIED",
+      );
+    if (["reference-dark", "warm-bronze"].includes(id))
+      await expect(
+        page.getByLabel("Stereoniveau niet beschikbaar"),
+      ).toContainText("UNAVAILABLE");
+    const icons = await page
+      .locator("svg.tb-icon")
+      .evaluateAll((els) =>
+        els.every(
+          (e) =>
+            e.getAttribute("fill") === "none" &&
+            e.getAttribute("stroke") === "currentColor" &&
+            e.getAttribute("viewBox") === "0 0 24 24",
+        ),
+      );
+    expect(icons).toBe(true);
+    await page.screenshot({ path: `test-results/gui2-${id}.png` });
+  }
+  await page.reload();
+  await expect(page.getByLabel("Kies skin", { exact: true })).toHaveValue(
+    "nerd-mode",
+  );
 });

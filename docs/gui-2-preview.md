@@ -61,3 +61,11 @@ Transitions use an initial 180 ms budget with 120 ms press feedback. These are d
 The durable simulator entry is `/demo.html`, on both the development preview and production server. GitHub's README links to Codespaces creation; access to this private repository is still required. An anonymous public demo has not been deployed.
 
 User interaction resets the shared display-idle timer. Real pointer presses/drags, touch swipes, keyboard input, text/range input and wheel activity report to `/api/activity`, throttled with a trailing update. Passive hover, playback clocks and automatic animations do not count. Activity wakes only the display of a ready device; it cannot exit standby, acknowledge faults, grant verification or enable an amplifier. This is application state behaviour, not certification of physical backlight or OS blanking.
+
+## GUI 2.0 skin refinement
+
+Use **Skin** in the header for direct switching; custom skins remain available in the same selector. Choosing a skin selects manual mode, as Settings does. Saved presets still use the shared token resolver and persist locally. Reference Dark uses graphite and restrained warm accents; Minimal uses flat mint markers and an upcoming-track panel; Bronze uses copper/serif display type; Champagne uses satin panels and output information; Cinematic uses wider artwork and midnight surfaces; Nerd adds the available shared device telemetry. Custom themes use the Reference presentation as their starting structure.
+
+The common 24-unit transparent SVG set now also includes favourites and Video Artwork symbols. Button labels remain accessible; unknown icon names get an obvious placeholder rather than silently becoming a Play symbol. This is an internally authored set, not Apple's SF Symbols or a claim of Apple affiliation.
+
+Meters explicitly say LEVEL SIGNAL UNAVAILABLE. Nerd's amplifier, power and temperature values are labelled simulated; hardware verification remains separate. No audio levels, sample-rate badges or actual output quality are invented. Skins contain no hardware command logic.
