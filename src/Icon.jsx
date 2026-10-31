@@ -11,8 +11,8 @@ const paths = {
   heart:
     "M20.8 4.6a5.5 5.5 0 0 0-7.8 0l-1 1-1-1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z",
   film: "M3 4h18v16H3ZM7 4v16M17 4v16M3 8h4M3 16h4M17 8h4M17 16h4",
-  play: "M8 4l12 8-12 8Z",
-  pause: "M8 4v16M16 4v16",
+  play: "M8.5 5.5 18.5 12 8.5 18.5Z",
+  pause: "M7 5.5h3.5v13H7Z M13.5 5.5H17v13h-3.5Z",
   previous: "M5 4v16M19 4L7 12l12 8Z",
   next: "M19 4v16M5 4l12 8-12 8Z",
   volume: "M3 9h4l5-5v16l-5-5H3ZM16 8q5 4 0 8M19 5q8 7 0 14",
@@ -41,7 +41,11 @@ export function Icon({ name, size = 20 }) {
       aria-hidden="true"
       focusable="false"
     >
-      <path d={paths[name] || "M4 4h16v16H4ZM8 8l8 8M16 8l-8 8"} />
+      <path
+        d={paths[name] || "M4 4h16v16H4ZM8 8l8 8M16 8l-8 8"}
+        fill={name === "play" || name === "pause" ? "currentColor" : "none"}
+        strokeWidth={name === "play" || name === "pause" ? 1 : undefined}
+      />
     </svg>
   );
 }

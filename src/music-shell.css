@@ -1411,3 +1411,6 @@ html[data-tunebox-motion="back"]::view-transition-new(tunebox-content) {
     gap: 5px;
   }
 }
+/* Centre the primary transport by its box instead of the text baseline. */
+.music2 .m2-play{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;line-height:0}
+.music2 .m2-play>.tb-icon{display:block;width:20px;height:20px;margin:0;vertical-align:initial}

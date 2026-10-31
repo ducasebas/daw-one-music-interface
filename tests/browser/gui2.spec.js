@@ -211,16 +211,18 @@ test("visible frontend release identifies missing and mismatched backend version
   await page.goto("/?gui=2&product=1");
   await expect(
     page.getByLabel("Softwareversie", { exact: true }),
-  ).toContainText("GUI 2.4 · SKINS");
+  ).toContainText("GUI 2.5 · TRANSPORT");
   await expect(
     page.getByLabel("Softwareversie", { exact: true }),
   ).toHaveAttribute("data-alignment", "matched");
   await page.goto("/?gui=2&lab=1");
   const popup = page.waitForEvent("popup");
-  await page.getByRole("link", {name:"Product only",exact:false}).click();
+  await page.getByRole("link", { name: "Product only", exact: false }).click();
   const product = await popup;
   await expect(product).toHaveURL(/gui=2/);
-  await expect(product.getByLabel("Softwareversie",{exact:true})).toContainText("GUI 2.4 · SKINS");
+  await expect(
+    product.getByLabel("Softwareversie", { exact: true }),
+  ).toContainText("GUI 2.5 · TRANSPORT");
   await product.close();
   await page.goto("/?gui=2&product=1");
   const snapshot = await (await page.request.get("/api/state")).json();
@@ -232,4 +234,48 @@ test("visible frontend release identifies missing and mismatched backend version
   await expect(
     page.getByLabel("Softwareversie", { exact: true }),
   ).toContainText("BACKEND ANDERE VERSIE");
+});
+
+test("primary play pause glyphs remain centred and symmetric across skins", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.request.post("/api/scenario", { data: { name: "Playback" } });
+  await page.goto("/?gui=2&product=1");
+  for (const id of [
+    "reference-dark",
+    "minimal-dark",
+    "warm-bronze",
+    "champagne-gold",
+    "cinematic",
+    "nerd-mode",
+  ]) {
+    await page.getByLabel("Kies skin", { exact: true }).selectOption(id);
+    const pause = page.getByRole("button", { name: "Pauze", exact: true });
+    const button = await pause.boundingBox(),
+      icon = await pause.locator("svg").boundingBox();
+    expect(
+      Math.abs(button.x + button.width / 2 - (icon.x + icon.width / 2)),
+    ).toBeLessThan(0.5);
+    expect(
+      Math.abs(button.y + button.height / 2 - (icon.y + icon.height / 2)),
+    ).toBeLessThan(0.5);
+    const bars = await pause.locator("path").evaluate((e) => {
+      const b = e.getBBox();
+      return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+    });
+    expect(bars.x).toBe(12);
+    expect(bars.y).toBe(12);
+    await pause.click();
+    const play = page.getByRole("button", { name: "Afspelen", exact: true });
+    await expect(play.locator("svg")).toHaveAttribute("data-icon", "play");
+    expect(
+      await play.locator("path").evaluate((e) => {
+        const b = e.getBBox();
+        return b.y + b.height / 2;
+      }),
+    ).toBe(12);
+    await play.click();
+  }
+  await page.screenshot({ path: "test-results/gui2-transport.png" });
 });
