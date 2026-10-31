@@ -4,13 +4,73 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 **Current release: a runnable software prototype with simulated hardware.** The interface, simulator and automated software tests are implemented. Live Music Assistant playback, the Sonocotta Louder HAT and electrical protection still require real-system validation. No physical amplifier is enabled by this application.
 
-## Try the simulator
+## Try the simulator locally on Mac — recommended
+
+Run the React interface and Node backend directly on macOS. **No VM, Codespace, SSH tunnel or Music Assistant server is required for simulation.** The owner reports this local Mac workflow works; this is not Pi hardware validation.
+
+Install **Node.js 24 LTS** (the project minimum is 22.12), npm and Git. To clone this private repository, use an authorized GitHub account. With GitHub CLI installed:
+
+```sh
+gh repo clone ducasebas/daw-one-music-interface
+cd daw-one-music-interface
+npm ci
+npm run dev
+```
+
+If GitHub CLI is missing, install it with `brew install gh` if you already use Homebrew, then sign in with `gh auth login`. Alternatively clone with Git using your existing GitHub authentication; GitHub CLI is optional.
+
+Open one of these links **after the server starts**:
+
+| Preview | Local development URL |
+| --- | --- |
+| GUI 2.0 and hardware simulator | [Open test bench](http://localhost:5173/?gui=2&lab=1) |
+| Standalone responsive GUI 2.0 | [Open product](http://localhost:5173/?gui=2&product=1) |
+| Exact 1280 × 400 display, centred/letterboxed | [Open display preview](http://localhost:5173/?gui=2&screen=1&display=hdmi-development) |
+| Simulator shortcut | [Open demo entry](http://localhost:5173/demo.html) |
+
+Use a full-screen browser for presentation. Skins and settings belong to the browser/origin where you save them. Switching from Codespaces or port 5173 to port 3001 does not transfer local storage automatically.
+
+For a subsequent session:
+
+```sh
+cd daw-one-music-interface
+npm run dev
+```
+
+For updates, stop the dev server with Ctrl+C, then run:
+
+```sh
+git pull --ff-only
+npm ci
+npm run dev
+```
+
+Frontend changes hot-reload; restart after backend/environment changes. If an old Codespaces tunnel occupies local port 5173, stop that tunnel first. Open the port actually printed by Vite.
+
+For a production demonstration, stop the development server first:
+
+```sh
+npm run build
+npm start
+```
+
+Open [production simulator](http://localhost:3001/?gui=2&lab=1) or [production display](http://localhost:3001/?gui=2&screen=1&display=hdmi-development). Rebuild after frontend changes. Stop either local server with **Ctrl+C**.
+
+Local execution uses your Mac, not Codespaces compute. Separately **stop any running Codespace** from GitHub to stop its compute usage; closing Safari or a tunnel does not stop it. Stopped Codespaces still retain storage.
+
+## Optional cloud simulation
 
 [**Start TuneBox in GitHub Codespaces**](https://codespaces.new/ducasebas/daw-one-music-interface)
 
-When the Codespace is ready, open its forwarded **5173** port and append **`/demo.html`**. This opens **`/?gui=2&lab=1`**, the new interface with the shared hardware test bench. Locally: [open the simulator](http://localhost:5173/demo.html).
+Open forwarded port **5173**, then append `/demo.html` or `/?gui=2&lab=1`. The repository is private: reviewers need repository access and their own Codespace. This is not an anonymous hosted demo.
 
-The repository is private: reviewers need repository access and their own Codespace. This is a development launch link, not an anonymous hosted demo. Each Codespace has its own preview address; keep its visibility Private. No personal temporary Codespaces URL is presented as a permanent public service.
+If Safari downloads the forwarded address instead of displaying it, the local Mac workflow above avoids the web forwarding path. An alternative is GitHub CLI forwarding from **Mac Terminal**, while the app remains running in the Codespace:
+
+```sh
+gh codespace ports forward 5173:5173 -c YOUR_CODESPACE_NAME
+```
+
+Then open [the locally forwarded simulator](http://localhost:5173/?gui=2&lab=1). The cloud app still consumes Codespaces compute. Keep port visibility Private and do not publish mutation APIs as a workaround.
 
 ## Project name
 
@@ -54,7 +114,7 @@ Music Assistant needs a separately configured server and a working player. The b
 | Video Artwork | Mock video clock, End-Sync arithmetic and fallback states | Real video matching, embed availability and end-to-end synchronisation |
 | Startup | MP4/WebM branding, decoded-first-frame playback and fallback | Owner confirmation of the latest fix in UTM; Pi decoding |
 | Deployment | Pi/ARM64 VM installer, systemd kiosk, local guides and doctor | Real Pi display/audio/resources and cold boot |
-| Owner's VM | Owner reports the ARM64 Debian UTM kiosk runs | Latest startup fix, persistent resolution and remaining interaction checks |
+| Local Mac | Owner reports GUI 2.0 runs directly on macOS; previous UTM rehearsal is historical | Physical Safari interaction review and real Pi validation |
 
 Software simulation does not certify physical safety, sound quality, latency or output power. Phase 5 hardware validation is **not complete**. See [recorded test evidence](docs/validation.md) and [hardware verification blockers](docs/hardware.md).
 
@@ -127,7 +187,7 @@ npx playwright install --with-deps webkit
 npm run test:webkit
 ```
 
-Recorded runs include **64 Node tests**, a prior full **20-case Chromium UI run**, **4 production-browser tests**, and **6 targeted startup regressions** after the latest startup change. These were separate runs, not a claim that every current browser suite was rerun together. Dates, environment and limitations are in [validation.md](docs/validation.md).
+The latest motion/activity update passed **67 Node tests**, the full **25-case Chromium UI suite**, and the production build. Four production-browser tests passed in an earlier release; they were not rerun with every later UI change. Dates, environment and limitations are in [validation.md](docs/validation.md).
 
 Node coverage includes playback transitions/reconnection, protocol fixtures, End-Sync edge cases, themes, deployment policies and safety scenarios. Browser coverage includes layout, controls, persistence, offline behaviour and startup recovery.
 
@@ -177,12 +237,12 @@ Read the [evaluation plan and draft sample request](docs/sonocotta-evaluation.md
 
 ## Next concrete tasks
 
-1. Confirm full startup playback and stable display settings in the owner's VM.
-2. Run the complete interaction/scenario checks and record remaining failures.
-3. Connect a real Music Assistant server/player and validate actual controls and audio.
-4. Confirm the Louder SKU/revision with Sonocotta and obtain matching documentation.
-5. Validate Pi kiosk, DSI/touch and supported audio setup on real hardware.
-6. Implement and measure controller, power and mute protection before permitting physical amplifier enable.
+1. Refine GUI 2.0 skins: polish Reference Dark first, then Minimal Dark, Warm Bronze, Champagne Gold, Cinematic and Nerd Mode using the same components and SVG icon language. The theme engine already exists; the current GUI 2.0 presets mostly share one layout.
+2. Complete daily-use interaction states: empty/loading/failure, clear command outcomes, accessibility and responsive/low-resource checks.
+3. Connect Music Assistant on the NUC for real library/search/artwork/favourites/queue operations and Spotify/Tidal discovery workflows. Current example content is not that integration.
+4. Verify a common player protocol and synchronised multiroom with the actual Volumio Rivo; visual grouping is not connected audio.
+5. Validate Pi kiosk, DSI/touch and supported audio on real hardware; confirm the Sonocotta Louder SKU/revision and documentation.
+6. Implement and measure controller, power and mute protection before permitting physical amplifier enable. Real Video Artwork matching/embedding remains separate work.
 
 Additional references: [API/protocol](docs/protocol-and-api.md), [hardware release gate](docs/hardware.md), [validation history](docs/validation.md).
 
