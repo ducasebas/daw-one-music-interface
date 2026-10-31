@@ -24,3 +24,7 @@ End-Sync: `offset = videoDuration - audioDuration + manualCorrection`; `videoPos
 Live music additions: `GET /api/events` streams snapshots with SSE; `POST /api/player` accepts `{id}` for an explicitly selected available player. `GET /api/state` includes redacted `musicAssistant` connection/player/control status. Live `/api/event` allows playback commands plus `volume` (numeric `value`) and `mute` (boolean `value`); simulator actions and `/api/scenario` reject with 409 in live mode. Commands rejected by the service show a notice without falsely labelling the entire backend offline.
 
 Simulation audio commands `volume` and `mute` now update shared runtime audio (`snapshot.audio`) and timeline events, keeping the product, case speaker indication and multiple browser clients consistent. The workbench is a browser-only observer/controller; it does not introduce a second device state machine.
+
+## Display activity
+
+`POST /api/activity` returns `{ok:true}` and refreshes the shared display-idle timer in simulation and live-music modes. It does not send a Music Assistant command. Only a ready device's display can wake; standby, shutdown, fault latches, hardware verification and amplifier enable remain unchanged. A wake emits `display-wake` and broadcasts state; ordinary activity does not flood the timeline. The browser throttles real input with a trailing update. Passive hover and playback updates are excluded. GPIO/backlight drivers remain unimplemented.

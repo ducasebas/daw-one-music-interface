@@ -51,3 +51,13 @@ sudo bash deploy/install.sh --target vm
 ```
 
 Use the existing SSH tunnel and open `http://localhost:3301/?gui=2&product=1` in Mac Safari, or `http://localhost:3301/?gui=2&lab=1` for the workbench. Port 3301 assumes the tunnel in the Mac guide; use your actual forwarded port if different. The installed kiosk continues using its existing URL until explicitly changed.
+
+## Motion and feedback
+
+Main sections crossfade; album details enter forwards and Back reverses direction. Now Playing remembers the previous music context, including the search query and selected album. Native View Transitions enhance supporting browsers; a CSS entry animation provides the fallback. Rapid navigation interrupts prior transitions. Header and transport keep their layout; their controls do not wait for the content animation.
+
+Transitions use an initial 180 ms budget with 120 ms press feedback. These are design choices, not measured Pi guarantees. Reduced-motion disables movement, fades and animated pending indicators while retaining text. Pending/attention colours are semantic tokens; the selected skin still owns accent, typography and base colours. Artwork changes fade separately in the persistent player.
+
+The durable simulator entry is `/demo.html`, on both the development preview and production server. GitHub's README links to Codespaces creation; access to this private repository is still required. An anonymous public demo has not been deployed.
+
+User interaction resets the shared display-idle timer. Real pointer presses/drags, touch swipes, keyboard input, text/range input and wheel activity report to `/api/activity`, throttled with a trailing update. Passive hover, playback clocks and automatic animations do not count. Activity wakes only the display of a ready device; it cannot exit standby, acknowledge faults, grant verification or enable an amplifier. This is application state behaviour, not certification of physical backlight or OS blanking.

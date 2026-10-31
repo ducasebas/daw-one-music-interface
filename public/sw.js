@@ -1,5 +1,5 @@
 // Static shell only. Device APIs are never cached or represented as online.
-const CACHE = "daw-one-shell-v13";
+const CACHE = "daw-one-shell-v14";
 self.addEventListener("install", (event) =>
   event.waitUntil(
     (async () => {

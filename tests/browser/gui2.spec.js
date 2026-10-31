@@ -78,3 +78,65 @@ test("GUI2 all sections fit the native screen, use shared settings and show faul
     .click();
   await expect(page.getByText("END-SYNC · MOCK")).toBeVisible();
 });
+
+test("GUI2 album playback returns to the same search context", async ({
+  page,
+}) => {
+  await page.request.post("/api/scenario", { data: { name: "Playback" } });
+  await page.goto("/?gui=2&product=1");
+  await page.getByRole("button", { name: "Zoeken", exact: true }).click();
+  await page.getByLabel("Zoek muziek").fill("tycho");
+  await page.getByRole("button", { name: "A Walk Tycho ›" }).click();
+  await page.getByRole("button", { name: "Speel nu", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "A Walk", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Terug naar muziek" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Dive", exact: true, level: 1 }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Terug naar overzicht" }).click();
+  await expect(page.getByLabel("Zoek muziek")).toHaveValue("tycho");
+  await expect(page.locator(".music2")).toHaveAttribute("data-motion", "back");
+});
+
+test("GUI2 reduced motion and delayed command feedback keep navigation available", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.request.post("/api/scenario", { data: { name: "Playback" } });
+  await page.goto("/?gui=2&product=1");
+  const activity = page.waitForResponse(r => r.url().endsWith("/api/activity") && r.request().method() === "POST");
+  await page.getByRole("button", { name: "Ontdek", exact: true }).click();
+  expect((await activity).status()).toBe(200);
+  expect(
+    await page
+      .locator(".m2-content")
+      .evaluate((e) => getComputedStyle(e).animationName),
+  ).toBe("none");
+  await page.route("**/api/event", async (route) => {
+    await new Promise((r) => setTimeout(r, 600));
+    await route.continue();
+  });
+  await page.getByRole("button", { name: "Volgend nummer" }).click();
+  await expect(page.locator(".m2-player-status")).toHaveAttribute(
+    "data-feedback",
+    "pending",
+  );
+  await expect(
+    page.getByRole("button", { name: "Volgend nummer" }),
+  ).toBeDisabled();
+  await page.getByRole("button", { name: "Mijn muziek", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Mijn muziek", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".m2-player-status")).toHaveAttribute(
+    "data-feedback",
+    "idle",
+  );
+  await page.goto("/demo.html");
+  await expect(page).toHaveURL(/gui=2&lab=1/);
+  await expect(
+    page.getByRole("navigation", { name: "Muzieknavigatie" }),
+  ).toBeVisible();
+});

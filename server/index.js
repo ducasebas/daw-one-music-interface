@@ -51,6 +51,13 @@ app.get("/api/health", (_q, r) =>
     musicAssistant: music?.publicStatus().status || "mock",
   }),
 );
+// User activity affects the shared display timer, never MA playback or verification.
+app.post("/api/activity", (_q, r) => {
+  const awake = runtime.device.displayAwake;
+  runtime.dispatch({ type: "activity" });
+  if (awake !== runtime.device.displayAwake) broadcast();
+  r.json({ ok: true });
+});
 app.get("/api/state", (_q, r) => r.json(snapshot()));
 app.get("/api/events", (q, r) => {
   r.set({

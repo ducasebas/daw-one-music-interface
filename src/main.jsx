@@ -113,6 +113,36 @@ function App() {
     };
   }, []);
   useEffect(() => {
+    let lastSent = -Infinity;
+    let trailing;
+    const report = () => {
+      lastSent = performance.now();
+      fetch("/api/activity", { method: "POST" }).catch(() => {});
+    };
+    const activity = (event) => {
+      if (event.type === "pointermove" && !event.buttons) return;
+      if (!event.isTrusted) return;
+      clearTimeout(trailing);
+      if (performance.now() - lastSent >= 2000) report();
+      else trailing = setTimeout(report, 2000);
+    };
+    const events = [
+      "pointerdown",
+      "pointermove",
+      "keydown",
+      "input",
+      "wheel",
+      "touchmove",
+    ];
+    events.forEach((type) =>
+      document.addEventListener(type, activity, { passive: true }),
+    );
+    return () => {
+      clearTimeout(trailing);
+      events.forEach((type) => document.removeEventListener(type, activity));
+    };
+  }, []);
+  useEffect(() => {
     const id = setInterval(() => setClock(Date.now()), 250);
     return () => clearInterval(id);
   }, []);

@@ -4,6 +4,14 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 **Current release: a runnable software prototype with simulated hardware.** The interface, simulator and automated software tests are implemented. Live Music Assistant playback, the Sonocotta Louder HAT and electrical protection still require real-system validation. No physical amplifier is enabled by this application.
 
+## Try the simulator
+
+[**Start TuneBox in GitHub Codespaces**](https://codespaces.new/ducasebas/daw-one-music-interface)
+
+When the Codespace is ready, open its forwarded **5173** port and append **`/demo.html`**. This opens **`/?gui=2&lab=1`**, the new interface with the shared hardware test bench. Locally: [open the simulator](http://localhost:5173/demo.html).
+
+The repository is private: reviewers need repository access and their own Codespace. This is a development launch link, not an anonymous hosted demo. Each Codespace has its own preview address; keep its visibility Private. No personal temporary Codespaces URL is presented as a permanent public service.
+
 ## Project name
 
 **DAW TuneBox v1** is the current product name. **DAW ONE** is the earlier name still present in the interface, startup artwork, repository name, package, installation paths and systemd services. They refer to this same project. Existing names such as `/opt/daw-one` and `daw-one.service` remain valid; this documentation update does not migrate installed systems or replace branding assets.

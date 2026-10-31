@@ -883,3 +883,143 @@
 .m2-header .tb-icon {
   background: transparent;
 }
+/* Shared motion and semantic colour tokens. Skins still own the accent. */
+.music2 {
+  --motion-fast: 120ms;
+  --motion-page: 180ms;
+  --motion-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --feedback-attention: #e7b66e;
+  --feedback-pending: var(--accent);
+  --selection-surface: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.music2 button {
+  transition:
+    background var(--motion-fast),
+    color var(--motion-fast),
+    transform var(--motion-fast) var(--motion-ease);
+}
+.music2 button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.music2 .m2-header nav [aria-current="page"],
+.music2 [aria-pressed="true"] {
+  background: var(--selection-surface);
+  color: var(--accent);
+}
+.music2 .m2-content {
+  view-transition-name: tunebox-content;
+  animation: m2-fade var(--motion-page) var(--motion-ease) both;
+}
+.music2[data-motion="forward"] .m2-content {
+  animation-name: m2-forward;
+}
+.music2[data-motion="back"] .m2-content {
+  animation-name: m2-back;
+}
+.m2-current-cover {
+  display: block;
+  flex-shrink: 0;
+  animation: m2-fade 180ms ease-out;
+}
+.m2-player-status[data-feedback="attention"] {
+  color: var(--feedback-attention);
+}
+.m2-player-status[data-feedback="pending"] {
+  color: var(--feedback-pending);
+}
+.m2-player-status[data-feedback="pending"]:before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border: 1px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  margin-right: 7px;
+  vertical-align: middle;
+  animation: m2-spin 0.8s linear infinite;
+}
+@keyframes m2-fade {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes m2-forward {
+  from {
+    opacity: 0.3;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes m2-back {
+  from {
+    opacity: 0.3;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes m2-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Only content snapshots move; live transport/header never become a screenshot. */
+::view-transition-group(root) {
+  animation: none;
+}
+::view-transition-old(root) {
+  display: none;
+}
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-group(tunebox-content) {
+  animation-duration: 180ms;
+}
+::view-transition-old(tunebox-content) {
+  animation: m2-fade-out 140ms ease-out both;
+}
+::view-transition-new(tunebox-content) {
+  animation: m2-fade 180ms ease-out both;
+}
+html[data-tunebox-motion="forward"]::view-transition-new(tunebox-content) {
+  animation-name: m2-forward;
+}
+html[data-tunebox-motion="back"]::view-transition-new(tunebox-content) {
+  animation-name: m2-back;
+}
+@keyframes m2-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .music2 .m2-content,
+  .music2 .m2-current-cover,
+  .music2 .m2-player-status:before {
+    animation: none !important;
+  }
+  .music2 button {
+    transition: none !important;
+  }
+  .music2 button:active {
+    transform: none !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

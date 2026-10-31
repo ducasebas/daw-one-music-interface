@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { flushSync } from "react-dom";
 import { themeVariables } from "../shared/themes.js";
 import { tracks } from "../shared/playback.js";
 import { endSync } from "../shared/video.js";
@@ -95,10 +96,41 @@ export function MusicShell({
     muted = simulated ? snapshot.audio?.muted : playback.muted;
   const canVolume =
     control && (simulated || playback.capabilities?.includes("volume_set"));
+  const animation = useRef(null);
+  const returnTo = useRef({ page: "discover", detail: null });
+  const [direction, setDirection] = useState("crossfade");
+  function navigate(change, motion = "crossfade") {
+    animation.current?.skipTransition();
+    const commit = () => {
+      setDirection(motion);
+      change();
+    };
+    if (
+      document.startViewTransition &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      // Direction belongs to the transition snapshots; keep it off global CSS state.
+      document.documentElement.dataset.tuneboxMotion = motion;
+      animation.current = document.startViewTransition(() => flushSync(commit));
+      animation.current.finished.catch(() => {});
+    } else commit();
+  }
   const go = (id) => {
-    setPage(id);
-    setDetail(null);
-    setMessage("");
+    if (id === "playing" && page !== "playing")
+      returnTo.current = { page, detail };
+    navigate(() => {
+      setPage(id);
+      setDetail(null);
+      setMessage("");
+    });
+  };
+  const back = () => {
+    navigate(() => {
+      if (page === "playing") {
+        setPage(returnTo.current.page);
+        setDetail(returnTo.current.detail);
+      } else setDetail(null);
+    }, "back");
   };
   async function command(event) {
     if (lock.current) return;
@@ -118,8 +150,10 @@ export function MusicShell({
       .includes(query.toLocaleLowerCase()),
   );
   const choose = (t) => {
-    setDetail(t);
-    setOffset(0);
+    navigate(() => {
+      setDetail(t);
+      setOffset(0);
+    }, "forward");
   };
   const act = (t, next = false) => {
     const id = playback.queue.find((q) => q.title === t.title)?.id;
@@ -165,6 +199,7 @@ export function MusicShell({
         ...themeVariables(theme),
         "--brightness": prefs.brightness / 100,
       }}
+      data-motion={direction}
     >
       <StartupScreen
         mode={device.mode}
@@ -195,11 +230,15 @@ export function MusicShell({
       </header>
       <div className="m2-heading">
         <div>
-          {detail && (
+          {(detail || page === "playing") && (
             <button
               className="m2-back"
-              aria-label="Terug naar overzicht"
-              onClick={() => setDetail(null)}
+              aria-label={
+                page === "playing"
+                  ? "Terug naar muziek"
+                  : "Terug naar overzicht"
+              }
+              onClick={back}
             >
               <Icon name="back" />
             </button>
@@ -217,7 +256,11 @@ export function MusicShell({
               : "● MUSIC ASSISTANT · BIBLIOTHEEK NOG NIET GEKOPPELD"}
         </small>
       </div>
-      <section className="m2-content" aria-label={title} key={page}>
+      <section
+        className="m2-content"
+        aria-label={title}
+        key={`${page}-${detail?.id || "list"}`}
+      >
         {detail ? (
           <div className="m2-detail">
             <Cover index={tracks.findIndex((t) => t.id === detail.id)} />
@@ -290,7 +333,7 @@ export function MusicShell({
                 <br />
                 maar beginnen.
               </h2>
-              <span>Rustige ontdekkingen, grote klanken. ↗</span>
+              <span>Rustige ontdekkingen, grote klanken.</span>
               <div className="m2-feature-orb" />
             </button>
             <div className="m2-discover-right">
@@ -645,7 +688,9 @@ export function MusicShell({
           onClick={() => go("playing")}
           aria-label="Open Nu spelen"
         >
-          <Cover index={playback.index} small />
+          <span className="m2-current-cover" key={current.id}>
+            <Cover index={playback.index} small />
+          </span>
           <span>
             <strong>{current.title}</strong>
             <small>{current.artist}</small>
@@ -677,7 +722,17 @@ export function MusicShell({
             <Icon name="next" />
           </button>
         </div>
-        <div className="m2-player-status" role="status">
+        <div
+          className="m2-player-status"
+          role="status"
+          data-feedback={
+            offline || notice || device.faults.length
+              ? "attention"
+              : pending
+                ? "pending"
+                : "idle"
+          }
+        >
           {pending
             ? "Opdracht versturen…"
             : message ||

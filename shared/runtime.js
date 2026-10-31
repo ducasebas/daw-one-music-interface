@@ -7,6 +7,7 @@ export const policy = {
   thermalLimitC: 75,
 }; // Simulation policy only; not electrical specifications.
 export const eventTypes = [
+  "activity",
   "queue-select",
   "queue-add",
   "queue-remove",
@@ -88,6 +89,19 @@ export class DeviceRuntime {
       typeof e.value !== "boolean"
     )
       throw Error("Boolean sensor value required");
+    if (e.type === "activity") {
+      this.lastActivity = now;
+      if (this.device.mode === "ready" && !this.device.displayAwake) {
+        this.device = { ...this.device, displayAwake: true };
+        this.record(
+          now,
+          "display-wake",
+          this.device.mode,
+          "User interaction; display only, amplifier state unchanged",
+        );
+      }
+      return this.snapshot(now);
+    }
     if (e.type === "seek" && !Number.isFinite(e.position))
       throw Error("Finite seek position required");
     if (e.type === "volume") {
