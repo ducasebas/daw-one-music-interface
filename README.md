@@ -264,4 +264,4 @@ Open **`/?gui=2&product=1`** for the new music-first interface, or **`/?gui=2&la
 
 ## Available Pi hardware and image status
 
-The owner now reports a **Pi 3 Model B+ (1 GB)**. The existing Pi 4/ARM64-VM installer does **not** support that board and deliberately rejects it. There is **no flashable TuneBox image** or image release; Raspberry Pi OS Lite plus an application installer is the current deployment method. See [Pi readiness review and read-only inventory](docs/pi-readiness.md) before preparing a Pi 3 experiment.
+The available board is a **Pi 3 Model B+ (1 GB)**. An explicit [experimental Pi 3 mode](docs/pi3-experimental.md) now supports a Mac-built release bundle, static artwork and reduced effects. It remains unverified on physical hardware. Pi 4 is still the default installer target. There is **no flashable TuneBox OS image**.

@@ -6,3 +6,5 @@ test-results/
 .env.*
 !.env.example
 *.token
+
+tunebox-release*.tar.gz

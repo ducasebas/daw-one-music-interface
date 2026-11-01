@@ -1,3 +1,8 @@
+import {
+  deviceProfile,
+  profileSettings,
+  profileTheme,
+} from "../shared/profile.js";
 import { BuildBadge } from "./BuildBadge.jsx";
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
@@ -41,13 +46,14 @@ function loadThemes() {
     return normalizeThemePreferences();
   }
 }
+const profile = deviceProfile(location.search);
 function App() {
   const [snapshot, setSnapshot] = useState({
       device: transition(initialDevice(), { type: "boot-complete" }),
       playback: initialPlayback(),
       mode: "simulation",
     }),
-    [prefs, setPrefs] = useState(load),
+    [storedPrefs, setPrefs] = useState(load),
     [themePreferences, setThemePreferences] = useState(loadThemes),
     [page, setPage] = useState("playing"),
     [startupPreview, setStartupPreview] = useState(0),
@@ -63,13 +69,14 @@ function App() {
     [videoAvailable, setVideoAvailable] = useState(true),
     [matched, setMatched] = useState(true),
     [scenario, setScenario] = useState("Cold boot");
+  const prefs = profileSettings(storedPrefs, profile);
   useEffect(() => {
     try {
-      localStorage.setItem("daw-settings", JSON.stringify(prefs));
+      localStorage.setItem("daw-settings", JSON.stringify(storedPrefs));
     } catch {
       setNotice("Settings storage unavailable");
     }
-  }, [prefs]);
+  }, [storedPrefs]);
   useEffect(() => {
     try {
       localStorage.setItem("daw-themes", JSON.stringify(themePreferences));
@@ -145,7 +152,7 @@ function App() {
     };
   }, []);
   useEffect(() => {
-    const id = setInterval(() => setClock(Date.now()), 250);
+    const id = setInterval(() => setClock(Date.now()), profile.clockMs);
     return () => clearInterval(id);
   }, []);
   async function send(e) {
@@ -215,10 +222,13 @@ function App() {
     (!liveMusic ||
       (playback.capabilities?.includes("volume_set") &&
         Number.isFinite(playerVolume)));
-  const theme = resolveTheme(
-    themePreferences,
-    { device, playback, offline },
-    new Date(clock),
+  const theme = profileTheme(
+    resolveTheme(
+      themePreferences,
+      { device, playback, offline },
+      new Date(clock),
+    ),
+    profile,
   );
   const mode = displayMode(location.search);
   const embedded = mode !== null;
@@ -275,6 +285,7 @@ function App() {
         mode={device.mode}
         offline={offline}
         preview={startupPreview}
+        staticOnly={profile.lowPower}
       />
       <header>
         <a

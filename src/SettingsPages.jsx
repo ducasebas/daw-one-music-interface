@@ -48,7 +48,9 @@ export function SettingsPages({
               onChange={(e) => update("artwork", e.target.value)}
             >
               <option value="cover">Album cover</option>
-              <option value="video">Video artwork · mock</option>
+              <option value="video" disabled={prefs.lowPower}>
+                Video artwork · mock
+              </option>
             </select>
           </label>
           <label>
@@ -73,7 +75,6 @@ export function SettingsPages({
               <option value="circular">Circular dial</option>
             </select>
           </label>
-
         </div>
       ) : pages[index] === "Connection" ? (
         <MusicConnection snapshot={snapshot} onSnapshot={onSnapshot} />

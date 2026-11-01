@@ -1,10 +1,12 @@
 # Raspberry Pi readiness review — 1 November 2026
 
+**Pi 3 B+ update:** use the explicit [experimental Pi 3 guide](pi3-experimental.md). It preserves the Pi 4 default and requires a prebuilt bundle. Hardware performance is still unverified. The readiness review below describes the preceding audit.
+
 ## Current hardware correction
 
 The owner reports a **Raspberry Pi 3 Model B+**, not the previously assumed Pi 4 / 2 GB. The manufacturer's [Pi 3 B+ specification](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/) confirms a 1.4 GHz 64-bit Cortex-A53 CPU and **1 GB RAM**. No physical board was connected to this development environment.
 
-The installer currently accepts only Pi 4 or an explicitly detected ARM64 VM. It deliberately rejects Pi 3 B+, even with a 64-bit OS. Do not bypass this by pretending it is a Pi 4 or using the VM flag on real hardware. Pi 3 support has not been added by this review.
+At the time of this audit, the installer accepted only Pi 4 or an explicitly detected ARM64 VM. It deliberately rejects Pi 3 B+, even with a 64-bit OS. Do not bypass this by pretending it is a Pi 4 or using the VM flag on real hardware. The later opt-in implementation is documented in the guide above.
 
 ## Is there an image?
 

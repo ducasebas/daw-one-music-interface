@@ -1748,3 +1748,13 @@ html[data-tunebox-motion="back"]::view-transition-new(tunebox-content) {
 .touch-volume[data-muted="true"] .touch-volume-needle {
   background: var(--muted);
 }
+.music2[data-performance="pi3"],
+.music2[data-performance="pi3"] * {
+  animation: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.music2[data-performance="pi3"] .m2-feature-orb {
+  display: none;
+}

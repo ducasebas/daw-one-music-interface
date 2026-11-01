@@ -1,8 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 /** Branding is independent from hardware readiness and never enables audio. */
-export function StartupScreen({ mode, offline, preview = 0 }) {
+export function StartupScreen({
+  mode,
+  offline,
+  preview = 0,
+  staticOnly = false,
+}) {
   const [reduced, setReduced] = useState(
-    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () =>
+      staticOnly ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
   const [cycle, setCycle] = useState(0);
   const [visible, setVisible] = useState(true);
@@ -41,12 +48,12 @@ export function StartupScreen({ mode, offline, preview = 0 }) {
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const change = () => {
-      setReduced(media.matches);
-      if (media.matches) setRenderer("still");
+      setReduced(staticOnly || media.matches);
+      if (staticOnly || media.matches) setRenderer("still");
     };
     media.addEventListener("change", change);
     return () => media.removeEventListener("change", change);
-  }, []);
+  }, [staticOnly]);
   useEffect(() => {
     if (!visible || mode === "booting") return;
     const skip = () => setVisible(false);

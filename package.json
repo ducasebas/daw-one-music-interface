@@ -12,7 +12,8 @@
     "check": "npm test && npm run build",
     "test:offline": "playwright test -c playwright.production.config.js",
     "test:webkit": "playwright test -c playwright.webkit.config.js",
-    "doctor": "node server/doctor.js"
+    "doctor": "node server/doctor.js",
+    "package:pi": "npm run check && node deploy/release-bundle.js pack"
   },
   "dependencies": {
     "express": "^5.1.0",

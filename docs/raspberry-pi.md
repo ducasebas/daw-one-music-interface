@@ -1,5 +1,7 @@
 # Raspberry Pi 4 / 2 GB deployment
 
+**Pi 3 B+ update:** use the explicit [experimental Pi 3 guide](pi3-experimental.md). It preserves the Pi 4 default and requires a prebuilt bundle. Hardware performance is still unverified. The readiness review below describes the preceding audit.
+
 This is an **unvalidated installation scaffold**, not a hardware-certified image. No Pi, touchscreen, audio HAT, RP2040 or power board was attached. It installs only the simulated device. Do not connect an enabled power amplifier for initial setup.
 
 Start with [the first Pi run and Music Assistant test](pi-first-run.md). After installation, guides are also available through `/docs/` on the local app and `/opt/daw-one/docs/`, without a GitHub login.

@@ -1,5 +1,7 @@
 # First Pi installation and Music Assistant test
 
+**Pi 3 B+ update:** use the explicit [experimental Pi 3 guide](pi3-experimental.md). It preserves the Pi 4 default and requires a prebuilt bundle. Hardware performance is still unverified. The readiness review below describes the preceding audit.
+
 Start with the latest repository revision, a Raspberry Pi 4 (2 GB supported as a target, not yet benchmarked), 64-bit Raspberry Pi OS Lite, SSH access and an ordinary HDMI monitor. The HDMI development mode does not need Waveshare hardware. Physical GPIO/amplifier control remains disabled.
 
 ## 1. Prerequisites

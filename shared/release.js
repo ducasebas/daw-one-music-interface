@@ -1,7 +1,7 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.10.31-polish.1",
-  label: "GUI 2.7 · POLISH",
+  id: "2026.11.01-pi3.1",
+  label: "GUI 2.8 · PI3 EXP",
 });
 export function buildAlignment(frontend, backend, offline = false) {
   if (offline) return "offline";

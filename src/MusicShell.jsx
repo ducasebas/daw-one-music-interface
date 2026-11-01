@@ -114,6 +114,7 @@ export function MusicShell({
       change();
     };
     if (
+      !prefs.lowPower &&
       document.startViewTransition &&
       !matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
@@ -204,6 +205,7 @@ export function MusicShell({
       className="music2"
       data-theme={theme.id}
       data-page={page}
+      data-performance={prefs.lowPower ? "pi3" : "standard"}
       data-skin={
         presets.some((p) => p.id === theme.id) ? theme.id : "reference-dark"
       }
@@ -218,6 +220,7 @@ export function MusicShell({
         mode={device.mode}
         offline={offline}
         preview={startupPreview}
+        staticOnly={prefs.lowPower}
       />
       <header className="m2-header">
         <button className="m2-brand" onClick={() => go("discover")}>
@@ -669,8 +672,13 @@ export function MusicShell({
               </div>
             </div>
             <aside>
-              <button aria-pressed={video} onClick={() => setVideo((v) => !v)}>
-                <Icon name="film" size={16} /> Video Artwork
+              <button
+                disabled={prefs.lowPower}
+                aria-pressed={video}
+                onClick={() => setVideo((v) => !v)}
+              >
+                <Icon name="film" size={16} />{" "}
+                {prefs.lowPower ? "Video uit · Pi 3 modus" : "Video Artwork"}
               </button>
               {video ? (
                 <div className="m2-video">

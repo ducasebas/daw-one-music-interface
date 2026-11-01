@@ -84,3 +84,7 @@ Both volume modes retain the exact value and indicator position when muted, turn
 Release: **GUI 2.7 · POLISH**. Source changes were tested before the GitHub update.
 
 Pi readiness review (1 November 2026): 75 Node tests passed, including the current GUI 2 kiosk URL and explicit refusal of the owner's Pi 3 B+ by both Pi 4 and VM target policies. Production build passed; shell syntax checks passed for installer/kiosk/health/mode switch/read-only inventory. Inventory was run only on the cloud host, which correctly reported no Pi model. No actual Pi deployment, Pi RAM/frame-rate benchmark or image build is claimed. The available-board correction and image/footprint findings are in pi-readiness.md.
+
+## Pi 3 experimental profile — 2026-11-01
+
+Executed in the cloud, not on a physical Pi: 78 Node tests passed, including explicit B+ ARM64 target gates, unchanged Pi 4/VM refusal rules, immutable presentation settings and release-archive integrity/exclusion checks. Production build and bundle packaging passed. All 41 Chromium UI tests and all 5 production/offline tests passed, including the new Pi3 profile, video exclusion, six-skin picker and 1280 × 400 geometry. Shell syntax checks passed. This run does not establish Pi 3 memory consumption, frame rate, kiosk hardware compatibility, or electrical safety. No additional WebKit or physical Safari run was performed for this profile.
