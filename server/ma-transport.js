@@ -14,8 +14,8 @@ export function websocketUrl(address) {
       "MA_URL must be an http(s)/ws(s) base URL without credentials/query",
     );
   u.protocol = ["https:", "wss:"].includes(u.protocol) ? "wss:" : "ws:";
-  u.pathname = u.pathname.replace(/\/$/, "");
-  if (!u.pathname.endsWith("/ws")) u.pathname += "/ws";
+  const path = u.pathname.replace(/\/+$/, "");
+  u.pathname = path.endsWith("/ws") ? path : `${path}/ws`;
   return u.toString();
 }
 export class MusicAssistantTransport {
