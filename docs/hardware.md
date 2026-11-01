@@ -4,7 +4,7 @@ Status vocabulary: **Confirmed from manufacturer**, **Proposed design choice**, 
 
 | Item                         | Current evidence / design                                 | Status / verification action                                                                                          |
 | ---------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Exact Pi model and RAM       | User specifies Pi 4, 2 GB; no device attached             | Requires prototype validation: photograph PCB/model; `cat /proc/device-tree/model`, `free -h`                         |
+| Exact Pi model and RAM       | Owner reports Pi 3 Model B+ / manufacturer 1 GB; Pi 4 / 2 GB remains the original software target, not the available board             | Requires prototype validation: photograph PCB/model; `cat /proc/device-tree/model`, `free -h`                         |
 | Waveshare screen revision    | Waveshare 7.9inch DSI LCD, SKU 22293 selected; physical revision unknown        | Requires prototype validation: identify SKU/revision and manufacturer manual                                          |
 | Louder HAT Plus revision     | Unknown; no driver or pin assumptions                     | Requires prototype validation: schematic, vendor instructions, audio test                                             |
 | RP2040 firmware/pins         | JSON-lines protocol proposed; no board firmware delivered | Not yet implemented: identify board, UART levels/pins and firmware toolchain                                          |

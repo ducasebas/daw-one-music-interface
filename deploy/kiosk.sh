@@ -17,7 +17,7 @@ done
 if [[ ! -d /var/lib/dawone/chromium || ! -w /var/lib/dawone/chromium ]]; then
   echo 'Chromium profile is not writable; rerun the installer.' >&2; exit 1
 fi
-url="http://127.0.0.1:3001/?screen=1&display=$mode"
+url="http://127.0.0.1:3001/?gui=2&screen=1&display=$mode"
 # Readiness means the HTTP app responds, not that physical hardware is verified.
 for attempt in {1..30}; do
   if /usr/bin/curl --fail --silent --max-time 2 http://127.0.0.1:3001/api/health >/dev/null; then break; fi

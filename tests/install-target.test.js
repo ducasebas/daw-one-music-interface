@@ -33,3 +33,10 @@ test("VM installation requires explicit VM detection and ARM64, never a fake Pi 
   assert.equal(check("vm", "x86_64", "", "qemu"), 1);
   assert.equal(check("invalid", "aarch64", "", "qemu"), 2);
 });
+
+test('reported Pi 3 B+ cannot masquerade as the supported Pi 4 or an ARM64 VM',()=>{
+ const model='Raspberry Pi 3 Model B Plus Rev 1.3';
+ assert.equal(check('pi4','aarch64',model,'none'),1);
+ assert.equal(check('pi4','armv7l',model,'none'),1);
+ assert.equal(check('vm','aarch64',model,'none'),1);
+});

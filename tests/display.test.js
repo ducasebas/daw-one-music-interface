@@ -41,3 +41,9 @@ test("kiosk scripts reject unknown modes before contacting hardware or changing 
     assert.equal(result.status, 2);
   }
 });
+
+test('Pi kiosk launches the current GUI 2 product rather than legacy GUI 1',async()=>{
+ const {readFile}=await import('node:fs/promises');const script=await readFile(new URL('../deploy/kiosk.sh',import.meta.url),'utf8');
+ assert.ok(script.includes('url="http://127.0.0.1:3001/?gui=2&screen=1&display=$mode"'));
+ assert.ok(!script.includes('--no-sandbox'));
+});

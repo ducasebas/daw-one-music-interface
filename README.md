@@ -261,3 +261,7 @@ Additional references: [API/protocol](docs/protocol-and-api.md), [hardware relea
 **Check the running version:** the GUI 2.0 header and testbench show **GUI 2.7 · POLISH** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
 
 Open **`/?gui=2&product=1`** for the new music-first interface, or **`/?gui=2&lab=1`** to keep the shared hardware workbench visible. The existing GUI remains available. Discover/library content is labelled as example data; playback and queue actions use the same simulator backend. Rivo grouping is a visual example, not a connected player. See [preview, SVG icons and skin contribution guide](docs/gui-2-preview.md).
+
+## Available Pi hardware and image status
+
+The owner now reports a **Pi 3 Model B+ (1 GB)**. The existing Pi 4/ARM64-VM installer does **not** support that board and deliberately rejects it. There is **no flashable TuneBox image** or image release; Raspberry Pi OS Lite plus an application installer is the current deployment method. See [Pi readiness review and read-only inventory](docs/pi-readiness.md) before preparing a Pi 3 experiment.

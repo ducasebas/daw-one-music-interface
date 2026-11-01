@@ -37,7 +37,7 @@ sudo systemctl enable --now daw-one-kiosk.service
 journalctl -u daw-one.service -u daw-one-kiosk.service -b --no-pager -n 100
 ```
 
-Expect a centered 1280 × 400 UI on an ordinary Full HD monitor. The kiosk uses a dedicated local tty/seat, with a private D-Bus session and normal Chromium sandbox. The HTTP doctor cannot certify that Cage obtained a seat or that visible pixels/touch/audio work; this is the first actual Pi validation. If the kiosk fails, leave the backend up, inspect the journal and test from a browser using an SSH tunnel. Do not run Chromium as root or add `--no-sandbox`.
+Expect GUI 2.7 · POLISH in the current release, with a centered 1280 × 400 UI on an ordinary Full HD monitor. The kiosk uses a dedicated local tty/seat, with a private D-Bus session and normal Chromium sandbox. The HTTP doctor cannot certify that Cage obtained a seat or that visible pixels/touch/audio work; this is the first actual Pi validation. If the kiosk fails, leave the backend up, inspect the journal and test from a browser using an SSH tunnel. Do not run Chromium as root or add `--no-sandbox`.
 
 From a separate computer that has SSH access:
 
@@ -45,7 +45,7 @@ From a separate computer that has SSH access:
 ssh -N -L 3001:127.0.0.1:3001 YOUR_PI_USER@YOUR_PI_ADDRESS
 ```
 
-Then open `http://localhost:3001/` for Test bench or `http://localhost:3001/?screen=1&display=hdmi-development` for the product. The backend remains loopback-only; no LAN/public HTTP exposure is needed. Installation/help is available locally at `http://localhost:3001/docs/` or in `/opt/daw-one/docs/`. Markdown guides display as readable text; no GitHub session is needed.
+Then open `http://localhost:3001/?gui=2&lab=1` for Test bench or `http://localhost:3001/?gui=2&screen=1&display=hdmi-development` for the product. The backend remains loopback-only; no LAN/public HTTP exposure is needed. Installation/help is available locally at `http://localhost:3001/docs/` or in `/opt/daw-one/docs/`. Markdown guides display as readable text; no GitHub session is needed.
 
 ## 3. What works before Music Assistant exists
 
