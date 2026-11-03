@@ -16,7 +16,7 @@ UTF-8 JSON lines, maximum 1024 characters per frame. Fields `v:1`, monotonically
 
 ## Music and video
 
-The server-side MA WebSocket transport supports token auth, player/queue snapshots, commands, event refresh and automatic reconnect/backoff. Credentials stay on the backend. See [live Music Assistant setup](music-assistant.md) for source references and compatibility limits. Protocol tests use a fake WebSocket; actual server compatibility and sound output remain unverified.
+The server-side MA WebSocket transport supports token auth, player/queue snapshots, commands, event refresh and automatic reconnect/backoff. Credentials stay on the backend. See [live Music Assistant setup](music-assistant.md) for source references and compatibility limits. Protocol tests use a fake WebSocket; owner-reported MA 2.10.9/Pi-jack playback is recorded in [the field report](field-test-2026-11-01.md), while full compatibility and stability remain unverified.
 
 End-Sync: `offset = videoDuration - audioDuration + manualCorrection`; `videoPosition = audioPosition + offset`. Negative offset waits for audio to catch up. Clamp to valid video range; missing durations, wrong match or unavailable embed fall back. Intro is a verified minimum useful video time. Pause/seek recompute from audio clock. UI's local animated artwork is a mock video with duration 360 s and intro 10 s. There is no external video search, embed or guaranteed content matching. Duration/intro values are labelled demonstration inputs, not track metadata. Safari autoplay restrictions must be handled by a later real media adapter using an explicit user gesture.
 

@@ -7,7 +7,7 @@
     "dev": "concurrently -k \"node --env-file-if-exists=.env server/index.js\" \"vite --host 0.0.0.0\"",
     "build": "vite build",
     "start": "node --env-file-if-exists=.env server/index.js",
-    "test": "node --test --test-isolation=none tests/*.test.js",
+    "test": "node --test tests/*.test.js",
     "test:ui": "playwright test",
     "check": "npm test && npm run build",
     "test:offline": "playwright test -c playwright.production.config.js",

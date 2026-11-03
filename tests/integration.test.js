@@ -111,8 +111,8 @@ function service(config = {}) {
   );
 }
 test("MA URL validates protocols and never embeds credentials", () => {
-  for (const address of ["http://10.69.0.10:8095", "http://10.69.0.10:8095/", "ws://10.69.0.10:8095/ws", "http://10.69.0.10:8095/ws/"]) {
-    assert.equal(websocketUrl(address), "ws://10.69.0.10:8095/ws");
+  for (const address of ["http://192.0.2.10:8095", "http://192.0.2.10:8095/", "ws://192.0.2.10:8095/ws", "http://192.0.2.10:8095/ws/"]) {
+    assert.equal(websocketUrl(address), "ws://192.0.2.10:8095/ws");
   }
   assert.equal(
     websocketUrl("https://example.test/ma/"),

@@ -2,7 +2,11 @@
 
 DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifier controller with a premium **1280 × 400 touchscreen interface**, Music Assistant playback integration and clearly modelled standby, display and safety states.
 
-**Current release: a runnable software prototype with simulated hardware.** The interface, simulator and automated software tests are implemented. Live Music Assistant playback, the Sonocotta Louder HAT and electrical protection still require real-system validation. No physical amplifier is enabled by this application.
+**Current release: a runnable software prototype with simulated hardware.** The interface, simulator and automated software tests are implemented. The owner has reported live Music Assistant/Squeezelite playback through a Pi 3 headphone jack. Playback reliability, kiosk performance, the Sonocotta Louder HAT and electrical protection remain under validation. No physical amplifier is enabled by this application.
+
+![TuneBox Now Playing — simulated playback, not a hardware measurement](docs/images/now-playing-simulation.png)
+
+*Current software screenshot using simulated playback and conceptual artwork; no Louder HAT is connected.*
 
 ## Try the simulator locally on Mac — recommended
 
@@ -110,10 +114,10 @@ Music Assistant needs a separately configured server and a working player. The b
 | Themes | Shared tokens, local custom themes, day/night and state switching | Readability on the final screen |
 | Virtual device | Shared state machines, scenarios, sensors, physical-button/LED preview, modules and timestamped events | Actual button, LED driver and sensors |
 | Safety | Simulated fault latching, watchdog and denied enable for unverified/faulted hardware | Independent physical disable, controller firmware and electrical tests |
-| Music | Mock playback and Music Assistant adapter with protocol-fixture tests | Real server/player compatibility and audible output |
+| Music | Mock playback, MA adapter/fixtures; owner-reported MA 2.10.9 and Pi-jack playback | Stable track changes, reconnect and measured multiroom sync; live browsing/artwork/queue edits |
 | Video Artwork | Mock video clock, End-Sync arithmetic and fallback states | Real video matching, embed availability and end-to-end synchronisation |
-| Startup | MP4/WebM branding, decoded-first-frame playback and fallback | Owner confirmation of the latest fix in UTM; Pi decoding |
-| Deployment | Pi/ARM64 VM installer, systemd kiosk, local guides and doctor | Real Pi display/audio/resources and cold boot |
+| Startup | MP4/WebM branding, decoded-first-frame playback and fallback | Final Pi startup/decoding checks; Pi3 profile intentionally static |
+| Deployment | Pi/ARM64 VM installer, experimental Pi3 profile; owner-reported HDMI kiosk | Undervoltage, cursor stutter, cold boot, recovery and final DSI/touch |
 | Local Mac | Owner reports GUI 2.0 runs directly on macOS; previous UTM rehearsal is historical | Physical Safari interaction review and real Pi validation |
 
 Software simulation does not certify physical safety, sound quality, latency or output power. Phase 5 hardware validation is **not complete**. See [recorded test evidence](docs/validation.md) and [hardware verification blockers](docs/hardware.md).
@@ -187,7 +191,7 @@ npx playwright install --with-deps webkit
 npm run test:webkit
 ```
 
-The touch-volume release passed **73 Node tests**, the full **40-case Chromium UI suite**, **19 targeted WebKit GUI/volume journeys**, **5 production/offline tests**, and the production build before publication. WebKit runs on Linux; actual iPad/Pi hardware and a real Music Assistant server remain separate validation. Dates, environment and limitations are in [validation.md](docs/validation.md).
+The historical touch-volume release passed **73 Node tests**, the full **40-case Chromium UI suite**, **19 targeted WebKit GUI/volume journeys**, **5 production/offline tests**, and the production build before publication. WebKit runs on Linux; actual iPad/Pi hardware and a real Music Assistant server remain separate validation. The 3 November publication-maintenance run passed 78 tests on each of Node 22 and 24, 41 Chromium journeys, 5 production/offline tests and the build. Dates, environment and limitations are in [validation.md](docs/validation.md).
 
 Node coverage includes playback transitions/reconnection, protocol fixtures, End-Sync edge cases, themes, deployment policies and safety scenarios. Browser coverage includes layout, controls, persistence, offline behaviour and startup recovery.
 
@@ -233,14 +237,14 @@ Verify real metadata, queue updates, volume/mute, play/pause, reconnect and seek
 
 We would like to evaluate a Louder HAT and produce a reproducible integration guide, honest test results, issue reports and a short demonstration. A development sample would allow the physical audio work that simulation cannot validate.
 
-Read the [evaluation plan and draft sample request](docs/sonocotta-evaluation.md) for manufacturer questions, staged acceptance evidence and proposed deliverables. No request has been sent, sample promised or sponsorship established. A demonstration video is optional for initial outreach; screenshots and a clear explanation are also suitable. The repository remains private.
+Read the [evaluation plan and draft sample request](docs/sonocotta-evaluation.md) for manufacturer questions, staged acceptance evidence and proposed deliverables. No request has been sent, sample promised or sponsorship established. A demonstration video is optional for initial outreach; screenshots and a clear explanation are also suitable. The repository remains private pending the [publication review](docs/publication-review.md), source licence and asset-rights confirmation.
 
 ## Next concrete tasks
 
 1. Review the refined GUI 2.0 skins on the target screen. Use Settings → Skins: Reference Dark, Minimal Dark, Warm Bronze, Champagne Gold, Cinematic and Nerd Mode now have distinct materials/presentation and shared SVG controls; Nerd adds real available simulation diagnostics.
 2. Complete daily-use interaction states: empty/loading/failure, clear command outcomes, accessibility and responsive/low-resource checks.
 3. Connect Music Assistant on the NUC for real library/search/artwork/favourites/queue operations and Spotify/Tidal discovery workflows. Current example content is not that integration.
-4. Verify a common player protocol and synchronised multiroom with the actual Volumio Rivo; visual grouping is not connected audio.
+4. Make the owner-reported Squeezelite/Rivo group playback reproducible; measure delay/drift, track changes and recovery. The UI grouping example itself is not a live grouping control.
 5. Validate Pi kiosk, DSI/touch and supported audio on real hardware; confirm the Sonocotta Louder SKU/revision and documentation.
 6. Implement and measure controller, power and mute protection before permitting physical amplifier enable. Real Video Artwork matching/embedding remains separate work.
 
@@ -258,10 +262,14 @@ Additional references: [API/protocol](docs/protocol-and-api.md), [hardware relea
 
 **Touch volume:** Settings → General → Volume control selects a wide touch slider or circular dial. Both support keyboard/fine steps, larger touch targets and commit on release; the interface separates preview/pending values from confirmed player volume. The choice persists locally. GUI 1.0 keeps its earlier reference control.
 
-**Check the running version:** the GUI 2.0 header and testbench show **GUI 2.7 · POLISH** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
+**Check the running version:** the GUI 2.0 header and testbench show **GUI 2.8 · PI3 EXP** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
 
 Open **`/?gui=2&product=1`** for the new music-first interface, or **`/?gui=2&lab=1`** to keep the shared hardware workbench visible. The existing GUI remains available. Discover/library content is labelled as example data; playback and queue actions use the same simulator backend. Rivo grouping is a visual example, not a connected player. See [preview, SVG icons and skin contribution guide](docs/gui-2-preview.md).
 
 ## Available Pi hardware and image status
 
-The available board is a **Pi 3 Model B+ (1 GB)**. An explicit [experimental Pi 3 mode](docs/pi3-experimental.md) now supports a Mac-built release bundle, static artwork and reduced effects. It remains unverified on physical hardware. Pi 4 is still the default installer target. There is **no flashable TuneBox OS image**.
+The available board is a **Pi 3 Model B+ (1 GB)**. An explicit [experimental Pi 3 mode](docs/pi3-experimental.md) now supports a Mac-built release bundle, static artwork and reduced effects. It has owner-reported basic Pi-jack/HDMI operation, with unresolved power, cursor and playback reliability issues. Pi 4 is still the default installer target. There is **no flashable TuneBox OS image**.
+
+## Review and participation
+
+See the [owner-reported Pi/audio field test](docs/field-test-2026-11-01.md), [optional audio bench setup](docs/pi-audio-bench.md), [publication review](docs/publication-review.md), [security boundaries](SECURITY.md), [contribution guide](CONTRIBUTING.md) and [asset/dependency notices](THIRD_PARTY_NOTICES.md). The source licence is pending; this prototype is not yet offered as a fully licensed open-source release.

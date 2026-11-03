@@ -63,3 +63,7 @@ Tests exercise an injected WebSocket protocol fixture and browser fixtures, not 
 For the full first-install sequence, token permissions, explicit read-only test and player prerequisites, see [pi-first-run.md](pi-first-run.md). `.env` is for development; `/etc/daw-one.env` is for the installed service. Music Assistant and a player must already exist; this repository does not install them.
 
 The systemd unit optionally reads `/etc/daw-one.env`. Set the same variables there and use a token file readable by the `dawone` service account outside its protected home. Restart `daw-one.service` after edits. Do not put the token into the repository or a unit committed to Git. The HTTP health probe accepts both simulation and music-assistant modes; a healthy HTTP response does not prove MA connectivity or sound output.
+
+## Owner field test
+
+MA 2.10.9/schema 65 token authentication, player enumeration and Pi-jack playback were reported on 1 November 2026. This is narrower than full API/player compatibility. See [the field report](field-test-2026-11-01.md) for unresolved stream, group and kiosk issues and [the bench guide](pi-audio-bench.md) for the separate audio-player setup.
