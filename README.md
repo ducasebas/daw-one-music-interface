@@ -210,7 +210,7 @@ Keep new hardware adapters behind the shared model and deny physical enable unti
 
 ## Raspberry Pi and VM installation
 
-Follow the [Pi first-run guide](docs/pi-first-run.md) or [ARM64 UTM guide](docs/mac-vm.md). Raspberry Pi OS Lite uses a minimal Cage/Wayland/Chromium kiosk. VM installation explicitly uses `--target vm`; the default Pi target rejects other machines.
+Choose your target: [Pi 3 B+ experimental prebuilt installation](docs/pi3-experimental.md), [Pi 4 first-run installation](docs/pi-first-run.md), or [ARM64 UTM guide](docs/mac-vm.md). Install [system-wide Node/npm](docs/node-runtime.md) on the Linux target first. Raspberry Pi OS Lite uses a minimal Cage/Wayland/Chromium kiosk. VM installation explicitly uses `--target vm`; the default Pi target rejects other machines.
 
 On an installed system:
 

@@ -1,8 +1,8 @@
 # Raspberry Pi 4 / 2 GB deployment
 
-**Pi 3 B+ update:** use the explicit [experimental Pi 3 guide](pi3-experimental.md). It preserves the Pi 4 default and requires a prebuilt bundle. Hardware performance is still unverified. The readiness review below describes the preceding audit.
+**Pi 3 B+ update:** use the explicit [experimental Pi 3 guide](pi3-experimental.md). It preserves the Pi 4 default and requires a prebuilt bundle. Hardware performance is still unverified. Pi3 has owner-reported basic operation; see the field report for limitations.
 
-This is an **unvalidated installation scaffold**, not a hardware-certified image. No Pi, touchscreen, audio HAT, RP2040 or power board was attached. It installs only the simulated device. Do not connect an enabled power amplifier for initial setup.
+This is an **unvalidated installation scaffold**, not a hardware-certified image. Cloud tests have no attached Pi/HAT. Owner-operated Pi3 HDMI/jack playback is documented in [the field report](field-test-2026-11-01.md); this does not validate Pi4/DSI/HAT or electrical protection. It installs only the simulated device. Do not connect an enabled power amplifier for initial setup.
 
 Start with [the first Pi run and Music Assistant test](pi-first-run.md). After installation, guides are also available through `/docs/` on the local app and `/opt/daw-one/docs/`, without a GitHub login.
 
@@ -55,9 +55,9 @@ USB touch should enumerate as input hardware; identify device and test all four 
 
 ## Audio / Squeezelite / Music Assistant
 
-Current audio is simulated metadata and controls; no sound is emitted. Verify vendor-supported HAT overlay and ALSA device while amplifier physically disabled. Only after verification, install distro `squeezelite` if available (`apt-cache policy squeezelite`), inspect `squeezelite -?`, and use `squeezelite -l` / `aplay -l` to identify the exact ALSA device. Configure the distribution's Squeezelite service using its documented config, unique player name and verified Music Assistant server address. Do not assume a mixer, GPIO mute or power control option. Register/enable the Squeezelite player in the installed Music Assistant version. Confirm audio routing and volume limits on a bench before connecting speakers.
+Default playback is simulated and emits no sound. Optional real Pi-jack playback through Squeezelite was owner-reported; use [the separate audio bench guide](pi-audio-bench.md). Verify vendor-supported HAT overlay and ALSA device while amplifier physically disabled. Only after verification, install distro `squeezelite` if available (`apt-cache policy squeezelite`), inspect `squeezelite -?`, and use `squeezelite -l` / `aplay -l` to identify the exact ALSA device. Configure the distribution's Squeezelite service using its documented config, unique player name and verified Music Assistant server address. Do not assume a mixer, GPIO mute or power control option. Register/enable the Squeezelite player in the installed Music Assistant version. Confirm audio routing and volume limits on a bench before connecting speakers.
 
-`server/ma-transport.js` and `server/ma-service.js` implement the opt-in live WebSocket connection. See [setup](music-assistant.md) for backend-only credentials and read-only first testing. The actual installed server version, Squeezelite audio path and real sound output still require validation.
+`server/ma-transport.js` and `server/ma-service.js` implement the opt-in live WebSocket connection. See [setup](music-assistant.md) for backend-only credentials and read-only first testing. The MA 2.10.9 field test does not establish compatibility with all versions, stable track transitions or measured multiroom synchronisation.
 
 ## GPIO / UART / I²C and permissions
 

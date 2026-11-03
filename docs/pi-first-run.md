@@ -1,6 +1,6 @@
 # First Pi installation and Music Assistant test
 
-**Pi 3 B+ update:** use the explicit [experimental Pi 3 guide](pi3-experimental.md). It preserves the Pi 4 default and requires a prebuilt bundle. Hardware performance is still unverified. The readiness review below describes the preceding audit.
+**Pi 3 B+ update:** use the explicit [experimental Pi 3 guide](pi3-experimental.md). It preserves the Pi 4 default and requires a prebuilt bundle. Hardware performance is still unverified. Do not run this Pi4 source-install procedure on a Pi3.
 
 Start with the latest repository revision, a Raspberry Pi 4 (2 GB supported as a target, not yet benchmarked), 64-bit Raspberry Pi OS Lite, SSH access and an ordinary HDMI monitor. The HDMI development mode does not need Waveshare hardware. Physical GPIO/amplifier control remains disabled.
 
@@ -16,7 +16,7 @@ npm --version
 sudo /usr/bin/env node --version
 ```
 
-Do not continue if sudo cannot find the supported Node runtime. This guide does not automatically install Node or change boot firmware settings.
+Do not continue if sudo cannot find the supported Node runtime. For concrete runtime installation steps, see [system-wide Node.js](node-runtime.md). The TuneBox installer does not automatically install Node or change boot firmware settings.
 
 ## 2. Get the private repository and install
 
@@ -36,10 +36,10 @@ cd /opt/daw-one
 npm run doctor
 sudo /opt/daw-one/set-display-mode.sh hdmi-development
 sudo systemctl enable --now daw-one-kiosk.service
-journalctl -u daw-one.service -u daw-one-kiosk.service -b --no-pager -n 100
+sudo journalctl -u daw-one.service -u daw-one-kiosk.service -b --no-pager -n 100
 ```
 
-Expect GUI 2.7 · POLISH in the current release, with a centered 1280 × 400 UI on an ordinary Full HD monitor. The kiosk uses a dedicated local tty/seat, with a private D-Bus session and normal Chromium sandbox. The HTTP doctor cannot certify that Cage obtained a seat or that visible pixels/touch/audio work; this is the first actual Pi validation. If the kiosk fails, leave the backend up, inspect the journal and test from a browser using an SSH tunnel. Do not run Chromium as root or add `--no-sandbox`.
+Expect GUI 2.8 · PI3 EXP in the current release, with a centered 1280 × 400 UI on an ordinary Full HD monitor. The kiosk uses a dedicated local tty/seat, with a private D-Bus session and normal Chromium sandbox. The HTTP doctor cannot certify that Cage obtained a seat or that visible pixels/touch/audio work; this is the first actual Pi validation. If the kiosk fails, leave the backend up, inspect the journal and test from a browser using an SSH tunnel. Do not run Chromium as root or add `--no-sandbox`.
 
 From a separate computer that has SSH access:
 
@@ -69,7 +69,7 @@ Initially use read-only mode, with your actual server address:
 
 ```dotenv
 DAW_PLAYBACK_MODE=music-assistant
-MA_URL=http://YOUR_MA_HOST:8095
+MA_URL=http://YOUR_MA_HOST:8095/ws
 MA_PLAYER_ID=
 MA_ALLOW_CONTROL=false
 MA_VOLUME_LIMIT=40
@@ -77,7 +77,19 @@ MA_VOLUME_LIMIT=40
 # MA_TOKEN_FILE=/etc/daw-one/music-assistant.token
 ```
 
-Create the token through your installed MA version's supported access-token settings. If needed, create `/etc/daw-one` root-owned with group `dawone` and mode 0750. Create/edit `music-assistant.token` privately on the Pi; make it root:dawone with mode 0640 so the backend can read it. Do not put it under a protected user home, in Git, into browser settings, or in chat. Do not paste token values into shell commands that are retained in history. Do not enable the MA_TOKEN_FILE setting before a readable nonempty token file exists. Keep TLS validation enabled for HTTPS/WSS.
+Create the token through your installed MA version's supported access-token settings. MA error 20 means authentication is required; a successful HTTP/WebSocket connection alone does not establish authenticated access. If needed, create `/etc/daw-one` root-owned with group `dawone` and mode 0750. Create/edit `music-assistant.token` privately on the Pi; make it root:dawone with mode 0640 so the backend can read it. Do not put it under a protected user home, in Git, into browser settings, or in chat. Do not paste token values into shell commands that are retained in history. Do not enable the MA_TOKEN_FILE setting before a readable nonempty token file exists. Keep TLS validation enabled for HTTPS/WSS.
+
+For a token-authenticated server, create the file without putting its value in shell history:
+
+```sh
+sudo install -d -m 750 -o root -g dawone /etc/daw-one &&
+sudo touch /etc/daw-one/music-assistant.token &&
+sudo chown root:dawone /etc/daw-one/music-assistant.token &&
+sudo chmod 640 /etc/daw-one/music-assistant.token &&
+sudo nano /etc/daw-one/music-assistant.token
+```
+
+Paste only the token in the editor, save, then add `MA_TOKEN_FILE=/etc/daw-one/music-assistant.token` to `/etc/daw-one.env`. Do not show the token with `cat` or attach it to a public report. This preserves an existing token file; it does not truncate it.
 
 ```sh
 sudo systemctl restart daw-one.service
@@ -89,7 +101,7 @@ A reconnect can take time; if disconnected, inspect `journalctl -u daw-one.servi
 
 After confirming the right player, edit `/etc/daw-one.env` to set `MA_ALLOW_CONTROL=true`, restart the backend, and test pause/resume, track changes, seek where supported, volume and mute where supported. No automatic play/volume/unmute is sent on connect. The 40% request ceiling is a software limit, not an electrical loudness limiter. Start with the external player's volume low. Simulation controls stay disabled in live music mode.
 
-If there is no MA server yet, keep simulation and install/configure MA separately first. We have protocol-fixture coverage, not verified compatibility with your actual installed MA version. See [music-assistant.md](music-assistant.md) for protocol details and limitations.
+If there is no MA server yet, keep simulation and install/configure MA separately first. Protocol fixtures and an owner-reported MA 2.10.9/jack-audio experiment exist; compatibility with other setups and full stability are not established. See [music-assistant.md](music-assistant.md) for protocol details and limitations.
 
 ## 5. Recovery and honest acceptance
 
@@ -103,3 +115,20 @@ sudo systemctl start daw-one-kiosk.service
 If you need a local terminal again after stopping the kiosk: `sudo systemctl start getty@tty1.service`. Keep your existing SSH connection open. This is a separate console recovery action; the installer does not change console/autologin/boot splash configuration.
 
 Still requires real hardware validation: Pi 4 memory/thermal and MP4 decode load, Cage/logind session, physical HDMI/DSI and touch rotation, early boot visibility/backlight, audio/HAT routing, RP2040, electrical amplifier safety and power sequencing. The first Pi run is a prototype acceptance run, not a claim that everything is already certified working.
+
+## Kiosk exits with HUP
+
+The owner’s Pi3 kiosk exited immediately with `signal=HUP`. This console override allowed it to start; it is a field workaround, not a universal display fix. Apply over SSH only when the journal matches that symptom:
+
+```sh
+sudo mkdir -p /etc/systemd/system/daw-one-kiosk.service.d
+sudo tee /etc/systemd/system/daw-one-kiosk.service.d/console.conf >/dev/null <<'CONF'
+[Service]
+StandardInput=tty-force
+TTYVHangup=no
+CONF
+sudo systemctl daemon-reload &&
+sudo systemctl restart daw-one-kiosk.service
+```
+
+To undo this specific override, remove only `/etc/systemd/system/daw-one-kiosk.service.d/console.conf`, reload systemd and restart the kiosk. No boot configuration is changed. Keep SSH available; closing Chromium is not the preferred administration method.
