@@ -6,4 +6,4 @@ Keep themes in the shared token contract, SVG icons in the common icon system an
 
 For bugs, include expected/actual behaviour, reproduction steps and a redacted log. Never submit tokens, private addresses, MACs or personal account/device details. Include exact HAT/board revision for hardware findings. Disclose AI-assisted work and review it as carefully as any other contribution.
 
-Licensing for the project's own source is pending the owner's choice; public visibility alone does not grant an open-source licence. See THIRD_PARTY_NOTICES.md for separately licensed components. Confirm the chosen project licence before offering code for redistribution.
+The project’s own source is licensed under MIT; see LICENSE. Contributions are accepted under that same licence unless explicitly documented otherwise. Keep third-party notices intact; see THIRD_PARTY_NOTICES.md.

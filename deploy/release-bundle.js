@@ -22,6 +22,8 @@ const roots = [
   "docs",
   "package.json",
   "package-lock.json",
+  "LICENSE",
+  "THIRD_PARTY_NOTICES.md",
 ];
 function files(root) {
   const result = [];

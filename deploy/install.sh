@@ -46,7 +46,7 @@ if [[ $prebuilt != true ]]; then
   npm run check
 fi
 mkdir -p /opt/daw-one
-cp -r dist server shared docs package.json package-lock.json /opt/daw-one/
+cp -r dist server shared docs package.json package-lock.json LICENSE THIRD_PARTY_NOTICES.md /opt/daw-one/
 if [[ $prebuilt == true ]]; then install -m 644 "$repo/release-manifest.json" /opt/daw-one/release-manifest.json; fi
 cd /opt/daw-one
 npm ci --omit=dev

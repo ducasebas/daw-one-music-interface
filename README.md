@@ -237,7 +237,7 @@ Verify real metadata, queue updates, volume/mute, play/pause, reconnect and seek
 
 We would like to evaluate a Louder HAT and produce a reproducible integration guide, honest test results, issue reports and a short demonstration. A development sample would allow the physical audio work that simulation cannot validate.
 
-Read the [evaluation plan and draft sample request](docs/sonocotta-evaluation.md) for manufacturer questions, staged acceptance evidence and proposed deliverables. No request has been sent, sample promised or sponsorship established. A demonstration video is optional for initial outreach; screenshots and a clear explanation are also suitable. The repository remains private pending the [publication review](docs/publication-review.md), source licence and asset-rights confirmation.
+Read the [evaluation plan and draft sample request](docs/sonocotta-evaluation.md) for manufacturer questions, staged acceptance evidence and proposed deliverables. No request has been sent, sample promised or sponsorship established. A demonstration video is optional for initial outreach; screenshots and a clear explanation are also suitable. The repository is MIT-licensed and prepared for publication; its GitHub visibility still needs to be switched from private to public. See the [publication review](docs/publication-review.md).
 
 ## Next concrete tasks
 
@@ -272,4 +272,4 @@ The available board is a **Pi 3 Model B+ (1 GB)**. An explicit [experimental Pi 
 
 ## Review and participation
 
-See the [owner-reported Pi/audio field test](docs/field-test-2026-11-01.md), [optional audio bench setup](docs/pi-audio-bench.md), [publication review](docs/publication-review.md), [security boundaries](SECURITY.md), [contribution guide](CONTRIBUTING.md) and [asset/dependency notices](THIRD_PARTY_NOTICES.md). The source licence is pending; this prototype is not yet offered as a fully licensed open-source release.
+See the [owner-reported Pi/audio field test](docs/field-test-2026-11-01.md), [optional audio bench setup](docs/pi-audio-bench.md), [publication review](docs/publication-review.md), [security boundaries](SECURITY.md), [contribution guide](CONTRIBUTING.md) and [asset/dependency notices](THIRD_PARTY_NOTICES.md). The project’s own software and documentation use the [MIT licence](LICENSE). Dependencies and separately identified assets retain their own terms. The owner has confirmed permission to publish the supplied reference/startup images; see the notices.

@@ -1,6 +1,6 @@
 # Publication review — 3 November 2026
 
-Decision: **not yet cleared for public release**. Private repository maintenance is authorised; changing visibility and publishing private correspondence are separate actions. No email has been sent by this review.
+Decision updated after owner approval: **MIT source licence selected and supplied-image public redistribution approved on 3 November 2026**. Repository visibility remains private until the owner changes it; audit limitations below still apply. Private repository maintenance is authorised; changing visibility and publishing private correspondence are separate actions. No email has been sent by this review.
 
 ## Scope inspected
 
@@ -14,9 +14,9 @@ Most local files matched remote Git blob hashes. Two stale local documents were 
 | --- | --- |
 | No real access token, private key or password identified in inspected text/diffs | Keep credentials outside Git; do not treat absence of pattern matches as proof |
 | An internal MA IP appeared in a URL regression test | Current test uses reserved documentation address `192.0.2.10`; the old address remains in commit history. It is network metadata, not a credential. No history rewrite performed |
-| No project-wide source licence | Owner must select a licence before describing this as a reusable open-source release |
-| Reference/startup asset rights are not documented | Owner must confirm public redistribution rights or replace/remove affected assets; see THIRD_PARTY_NOTICES.md |
-| Latest five Actions runs failed before browser checks | Root cause: Node 22 rejected `--test-isolation=none`. Removed that unnecessary flag and added a Node 22/24 matrix; new run must be checked |
+| Source licence | Owner approved MIT; LICENSE and package metadata added |
+| Reference/startup asset rights | Owner confirmed public redistribution permission; separately licensed elements retain their terms. See THIRD_PARTY_NOTICES.md |
+| Latest five Actions runs failed before browser checks | Root cause: Node 22 rejected `--test-isolation=none`. Removed that unnecessary flag and added a Node 22/24 matrix; the 3 November run passed on Node 22 and 24 |
 | npm audit reported one high-severity body-parser advisory | Updated the compatible dependency lock without force; repeat audit and tests recorded separately |
 | README/outreach described only VM/mock playback | Added owner-reported Pi/MA/Squeezelite evidence, with unresolved problems and no HAT certification |
 | HTTP player API has no application authentication | Production defaults to loopback. Keep private forwarding/SSH; do not run an Internet-facing live-control demo |
@@ -26,14 +26,14 @@ The previously shared personal correspondence is not committed verbatim. Do not 
 
 ## What is still missing
 
-A current simulated Now Playing screenshot is included in the README; it is not proof of real audio or hardware safety. For a credible sample request: source licence, asset permission, an accessible demonstration, a concise product explanation and a bounded proposal that benefits other hobbyists. A polished video is useful but not a prerequisite. The existing private repository link alone is inaccessible to an unauthorised recipient.
+A current simulated Now Playing screenshot is included in the README; it is not proof of real audio or hardware safety. Source licence and owner asset permission are now recorded. For a credible sample request, provide an accessible demonstration, a concise product explanation and a bounded proposal that benefits other hobbyists. A polished video is useful but not a prerequisite. The existing private repository link alone is inaccessible to an unauthorised recipient.
 
 For the product: live library/search/recommendations/artwork/queue editing (current example sections are not connected), reproducible Squeezelite service/recovery, stable power, Pi graphics profiling, track-change and multiroom endurance/sync measurements, final DSI/touch, actual HAT audio, revision-specific standby/mute integration, controller firmware, button/LED/sensors, power sequencing and independent electrical safety. The project is an early prototype, not a completed amplifier.
 
 ## Publication steps after corrections
 
 1. Review the private changes and final CI result.
-2. Select and add the project licence; resolve asset redistribution and third-party notices.
+2. Completed: owner approved MIT and public redistribution of supplied images; keep third-party notices.
 3. Decide whether the remaining historical private-IP metadata is acceptable. Removing it from the latest file does not erase history. No blanket history rewrite is recommended without a concrete need.
 4. Review README, screenshots/demo, branches, releases, Actions artifacts/logs and GitHub account security settings for public suitability. Enable private vulnerability reporting/secret scanning where available.
 5. The owner can change Settings → General → Danger Zone → Change repository visibility after approval. The currently available GitHub connector does not provide a repository-visibility mutation tool.

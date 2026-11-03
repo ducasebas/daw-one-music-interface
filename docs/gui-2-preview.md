@@ -32,7 +32,7 @@ Live MA playback controls use the existing adapter. Browsing/recommendations and
 - Preserve focus indication, readable contrast, selected/disabled states and button labels. Test large icons and reduced motion.
 - Do not accept uploaded SVG markup or scripts as a theme. Skin contributions should remain reviewable source changes or validated token data.
 
-These are contribution interfaces for a future community release. Repository visibility and the project's release licence have not been changed by this work; do not interpret private access as a blanket open-source licence.
+These contribution interfaces share the project's MIT source licence; see LICENSE and THIRD_PARTY_NOTICES.md for scope and asset terms. GitHub repository visibility is configured separately.
 
 ## Verification
 

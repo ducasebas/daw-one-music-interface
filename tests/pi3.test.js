@@ -71,6 +71,8 @@ test("release archive excludes development and secrets, detects corruption and s
     for (const file of [
       "package.json",
       "package-lock.json",
+      "LICENSE",
+      "THIRD_PARTY_NOTICES.md",
       ".env",
       "node_modules/secret",
     ])
@@ -81,6 +83,8 @@ test("release archive excludes development and secrets, detects corruption and s
       encoding: "utf8",
     });
     assert.doesNotMatch(listing, /node_modules|\.env/);
+    assert.match(listing, /^LICENSE$/m);
+    assert.match(listing, /^THIRD_PARTY_NOTICES\.md$/m);
     const out = join(root, "out");
     mkdirSync(out);
     execFileSync("tar", ["-xzf", archive, "-C", out]);

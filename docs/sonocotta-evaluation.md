@@ -66,7 +66,8 @@ See [the proposed follow-up email](sonocotta-follow-up.md). Do not claim eligibi
 
 ## Before sending
 
-- [ ] Finish the publication review, select the source licence and confirm asset rights.
+- [x] Select MIT for the project source; owner confirmed public redistribution permission for supplied images.
+- [ ] Finish the visibility change and verify public access.
 - [ ] Confirm the actual sample revision and suitable power/display setup with the maker.
 - [ ] Make the repository/demo accessible to the recipient; a public GitHub page is not a hosted demo.
 - [ ] Review proposed documentation/test contributions; no unagreed schedule or favourable review is promised.

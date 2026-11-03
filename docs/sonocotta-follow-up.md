@@ -16,7 +16,7 @@ The next step is integrating the actual amplifier. Would you consider supplying 
 
 In return, I would share a reproducible Music Assistant/Squeezelite setup guide, revision-specific integration notes, honest test results and useful issue reports. I would also document the remaining standby question: keeping a player available for multiroom while reducing amplifier power without relying on a continuously silent stream to trigger idle handling.
 
-I am preparing the repository for public release, including a source-licence and asset-rights review. The project is here: https://github.com/ducasebas/daw-one-music-interface — I can arrange access while it remains private. No Louder hardware or electrical safety behaviour has been validated yet. Any supplied sample would be disclosed, with no promise of a positive review.
+The project’s own software is now MIT-licensed, and I am preparing the repository for public access. The project is here: https://github.com/ducasebas/daw-one-music-interface — I can arrange access while it remains private. No Louder hardware or electrical safety behaviour has been validated yet. Any supplied sample would be disclosed, with no promise of a positive review.
 
 I think a reusable, documented example could be useful to other hobbyists building Music Assistant devices around your boards. Would this be a project you would be interested in supporting?
 
@@ -26,4 +26,4 @@ Dutch Audio Works — DAW TuneBox
 
 ---
 
-Before sending: if the repository has become public and licensed, update the access paragraph to the actual status. Add a verified demo link or screenshot only when one is ready; do not invent an audience size, launch date, test result or sponsorship programme.
+Before sending: once the repository has become public, update the access paragraph to the actual status. Add a verified demo link or screenshot only when one is ready; do not invent an audience size, launch date, test result or sponsorship programme.
