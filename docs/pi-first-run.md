@@ -132,3 +132,5 @@ sudo systemctl restart daw-one-kiosk.service
 ```
 
 To undo this specific override, remove only `/etc/systemd/system/daw-one-kiosk.service.d/console.conf`, reload systemd and restart the kiosk. No boot configuration is changed. Keep SSH available; closing Chromium is not the preferred administration method.
+
+Installer update: Pi3 B+/Pi4 detection is automatic (`--target auto`); VM remains explicit. See [optional local Music Assistant](local-music-assistant.md) for the default-no co-hosting choice.

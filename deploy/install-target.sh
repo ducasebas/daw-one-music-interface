@@ -20,3 +20,12 @@ daw_validate_install_target() {
     *) echo 'Target must be pi4, pi3-experimental or vm.' >&2; return 2 ;;
   esac
 }
+
+# Pure detection: no default fallback to a different board or to a VM.
+daw_detect_install_target() {
+  case "$1" in
+    'Raspberry Pi 3 Model B Plus'*|'Raspberry Pi 3 Model B+'*) echo pi3-experimental ;;
+    'Raspberry Pi 4 Model B'*) echo pi4 ;;
+    *) echo 'Unsupported/unknown board. ARM64 virtual machines require explicit --target vm.' >&2; return 1 ;;
+  esac
+}

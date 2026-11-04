@@ -57,3 +57,5 @@ If this does not meet the interaction/resource budget, move to Pi 4 or a suitabl
 `bash deploy/pi-audit.sh` prints model/architecture, OS, Node/npm, RAM/storage, firmware temperature/throttling when available, systemd counters and service-user process RSS. It installs nothing, restarts nothing and changes no boot/hardware configuration. Some storage/journal information may need permissions. Raw process RSS includes shared pages and must not be summed as unique RAM. Share the output for review; no token, SSID or environment dump is requested.
 
 Real hardware phase 5 remains incomplete. There is no certified Pi 3 image or verified Pi 3 deployment yet.
+
+Installer update: Pi3 B+/Pi4 detection is automatic (`--target auto`); VM remains explicit. See [optional local Music Assistant](local-music-assistant.md) for the default-no co-hosting choice.

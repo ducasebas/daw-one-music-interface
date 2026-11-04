@@ -37,3 +37,7 @@ Before writing a physical transport: obtain manufacturer documents and schematic
 - [ ] Long-duration Pi memory/CPU, Chromium stability and audio underruns measured.
 
 All boxes require real hardware evidence. A green software test cannot complete them.
+
+## November I/O layout proposal
+
+The owner supplied an [I/O/mechanical proposal](hardware/io-layout-proposal.md) naming HUSB238, INA228, TSR 1-2450, ULN2803, TSL2591, PCT2075, a radar and direct Pi button/LED control. These are **proposed selections**, not measured or installed devices. The earlier RP2040/controller concept is not implemented; the new direct-Pi approach also does not establish an independent fail-safe. See [the review](hardware/io-layout-review.md) for power/bootstrap, rail-isolation, pin ownership and measurement blockers. Simulated hardware remains the default regardless of detected Pi model.

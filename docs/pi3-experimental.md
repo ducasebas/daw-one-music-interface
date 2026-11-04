@@ -1,6 +1,6 @@
 # Pi 3 Model B+ — experimental lightweight installation
 
-Use a **Pi 3 B+ with 64-bit Raspberry Pi OS Lite**. This is an experimental application installer, not a flashable TuneBox image. Pi 4 remains the default target; the Pi3 target rejects 32-bit OS and a regular Pi 3 B. Basic HDMI/jack playback was owner-reported, with unresolved power, graphics and playback-recovery issues; see [the field report](field-test-2026-11-01.md).
+Use a **Pi 3 B+ with 64-bit Raspberry Pi OS Lite**. This is an experimental application installer, not a flashable TuneBox image. The installer now auto-detects Pi3 B+ or Pi4; the Pi3 target rejects 32-bit OS and a regular Pi 3 B. Basic HDMI/jack playback was owner-reported, with unresolved power, graphics and playback-recovery issues; see [the field report](field-test-2026-11-01.md).
 
 ## 1. Prepare the Pi
 
@@ -54,7 +54,7 @@ In that SSH session, use a fresh extraction directory for every release. The fol
 tunebox_release_dir=$(mktemp -d "$HOME/tunebox-release.XXXXXX") &&
 tar -xzf "$HOME/tunebox-release.tar.gz" -C "$tunebox_release_dir" &&
 cd "$tunebox_release_dir" &&
-sudo bash deploy/install.sh --target pi3-experimental --prebuilt
+sudo bash deploy/install.sh --target auto --prebuilt
 ```
 
 Do not continue if the installer fails. It checks the actual model/ARM64 runtime and release manifest before system package installation, installs Cage/Wayland/Chromium and production npm dependencies, then starts the backend. It does **not build the frontend on the Pi** or install Music Assistant/Squeezelite. No boot configuration or real GPIO/amp control is enabled.
@@ -104,3 +104,5 @@ Stop only the display: `sudo systemctl stop daw-one-kiosk.service`. The backend 
 For updates, back up the current installation/configuration, rebuild on the Mac, transfer and repeat the fresh-directory **pi3-experimental --prebuilt** procedure; do not invoke the default Pi4/source installer on a Pi3. Retain SSH and previous bundle for recovery. This is a manual, non-atomic update process.
 
 Safe shutdown: stop playback, then `sudo shutdown -h now`; wait for the OS to halt before disconnecting power. The UI Shutdown scenario does not halt Linux. DSI/touch, HAT, controller, button/LED/sensors, mute and power sequencing remain unverified. Phase 5 is incomplete.
+
+Installer update: Pi3 B+/Pi4 detection is automatic (`--target auto`); VM remains explicit. See [optional local Music Assistant](local-music-assistant.md) for the default-no co-hosting choice.

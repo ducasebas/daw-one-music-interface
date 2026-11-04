@@ -210,7 +210,7 @@ Keep new hardware adapters behind the shared model and deny physical enable unti
 
 ## Raspberry Pi and VM installation
 
-Choose your target: [Pi 3 B+ experimental prebuilt installation](docs/pi3-experimental.md), [Pi 4 first-run installation](docs/pi-first-run.md), or [ARM64 UTM guide](docs/mac-vm.md). Install [system-wide Node/npm](docs/node-runtime.md) on the Linux target first. Raspberry Pi OS Lite uses a minimal Cage/Wayland/Chromium kiosk. VM installation explicitly uses `--target vm`; the default Pi target rejects other machines.
+Choose your target: [Pi 3 B+ experimental prebuilt installation](docs/pi3-experimental.md), [Pi 4 first-run installation](docs/pi-first-run.md), or [ARM64 UTM guide](docs/mac-vm.md). Install [system-wide Node/npm](docs/node-runtime.md) on the Linux target first. Raspberry Pi OS Lite uses a minimal Cage/Wayland/Chromium kiosk. VM installation explicitly uses `--target vm`; automatic detection rejects unknown boards.
 
 On an installed system:
 
@@ -237,7 +237,7 @@ Verify real metadata, queue updates, volume/mute, play/pause, reconnect and seek
 
 We would like to evaluate a Louder HAT and produce a reproducible integration guide, honest test results, issue reports and a short demonstration. A development sample would allow the physical audio work that simulation cannot validate.
 
-Read the [evaluation plan and draft sample request](docs/sonocotta-evaluation.md) for manufacturer questions, staged acceptance evidence and proposed deliverables. No request has been sent, sample promised or sponsorship established. A demonstration video is optional for initial outreach; screenshots and a clear explanation are also suitable. The repository is MIT-licensed and prepared for publication; its GitHub visibility still needs to be switched from private to public. See the [publication review](docs/publication-review.md).
+Read the [evaluation plan and draft sample request](docs/sonocotta-evaluation.md) for manufacturer questions, staged acceptance evidence and proposed deliverables. The owner reports that Sonocotta agreed to provide a development sample; receipt and the delivered revision are not yet confirmed. No endorsement or completed HAT validation is implied. A demonstration video is optional for initial outreach; screenshots and a clear explanation are also suitable. The repository is MIT-licensed and prepared for publication; its GitHub visibility still needs to be switched from private to public. See the [publication review](docs/publication-review.md).
 
 ## Next concrete tasks
 
@@ -268,8 +268,12 @@ Open **`/?gui=2&product=1`** for the new music-first interface, or **`/?gui=2&la
 
 ## Available Pi hardware and image status
 
-The available board is a **Pi 3 Model B+ (1 GB)**. An explicit [experimental Pi 3 mode](docs/pi3-experimental.md) now supports a Mac-built release bundle, static artwork and reduced effects. It has owner-reported basic Pi-jack/HDMI operation, with unresolved power, cursor and playback reliability issues. Pi 4 is still the default installer target. There is **no flashable TuneBox OS image**.
+The available board is a **Pi 3 Model B+ (1 GB)**. An explicit [experimental Pi 3 mode](docs/pi3-experimental.md) now supports a Mac-built release bundle, static artwork and reduced effects. It has owner-reported basic Pi-jack/HDMI operation, with unresolved power, cursor and playback reliability issues. Pi3 B+/Pi4 are now automatically detected. There is **no flashable TuneBox OS image**.
 
 ## Review and participation
 
 See the [owner-reported Pi/audio field test](docs/field-test-2026-11-01.md), [optional audio bench setup](docs/pi-audio-bench.md), [publication review](docs/publication-review.md), [security boundaries](SECURITY.md), [contribution guide](CONTRIBUTING.md) and [asset/dependency notices](THIRD_PARTY_NOTICES.md). The project’s own software and documentation use the [MIT licence](LICENSE). Dependencies and separately identified assets retain their own terms. The owner has confirmed permission to publish the supplied reference/startup images; see the notices.
+
+## Automatic Pi setup and hardware proposal
+
+The installer now detects Pi3 B+ (lightweight, prebuilt-only) or Pi4 automatically. A local Music Assistant server is optional and offered only after a conservative Pi4 resource/health check; never on Pi3. See [co-hosting policy and install options](docs/local-music-assistant.md). The [I/O layout](docs/hardware/io-layout-proposal.md) is unverified source material; read [its review](docs/hardware/io-layout-review.md). The [boot-flow proposal](docs/boot-flow-proposal.md) is for discussion before skins/boot/autoplay implementation.

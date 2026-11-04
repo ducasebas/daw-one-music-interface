@@ -18,7 +18,7 @@ function check(target, architecture, model, virtualization) {
     { encoding: "utf8" },
   ).status;
 }
-test("Pi remains the default target policy and a non-Pi is rejected", () => {
+test("Explicit Pi4 target policy still rejects a non-Pi", () => {
   assert.equal(
     check("pi4", "aarch64", "Raspberry Pi 4 Model B Rev 1.5", "none"),
     0,

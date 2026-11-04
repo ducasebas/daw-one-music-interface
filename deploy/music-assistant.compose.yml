@@ -1,0 +1,13 @@
+# Optional MA server; never started without explicit operator consent.
+# Official image/network pattern reviewed 2026-11-04:
+# https://www.music-assistant.io/installation/
+services:
+  music-assistant:
+    image: ghcr.io/music-assistant/server:latest
+    container_name: daw-one-music-assistant
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /var/lib/daw-one/music-assistant:/data
+    environment:
+      LOG_LEVEL: info

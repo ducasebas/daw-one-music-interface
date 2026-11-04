@@ -1,16 +1,19 @@
 #!/bin/bash
 set -euo pipefail
-# Same simulated runtime on a Pi 4 or an explicitly selected ARM64 VM.
-target=pi4
+# One simulated hardware runtime: auto-detected Pi3 B+/Pi4, or explicit ARM64 VM.
+target=auto
 prebuilt=false
+ma_mode=ask
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --target) [[ $# -ge 2 ]] || { echo 'Missing --target value' >&2; exit 2; }; target=$2; shift 2 ;;
     --prebuilt) prebuilt=true; shift ;;
-    *) echo 'Usage: install.sh [--target pi4|pi3-experimental|vm] [--prebuilt]' >&2; exit 2 ;;
+    --music-assistant) [[ $# -ge 2 ]] || { echo "Missing --music-assistant value" >&2; exit 2; }; ma_mode=$2; shift 2 ;;
+    *) echo 'Usage: install.sh [--target auto|pi4|pi3-experimental|vm] [--prebuilt] [--music-assistant ask|skip|install]' >&2; exit 2 ;;
   esac
 done
-case "$target" in pi4|pi3-experimental|vm) ;; *) echo 'Unknown installation target.' >&2; exit 2 ;; esac
+case "$target" in auto|pi4|pi3-experimental|vm) ;; *) echo 'Unknown installation target.' >&2; exit 2 ;; esac
+case "$ma_mode" in ask|skip|install) ;; *) echo "Invalid --music-assistant choice" >&2; exit 2 ;; esac
 if [[ $target == pi3-experimental && $prebuilt != true ]]; then
   echo 'Pi 3 experimental requires --prebuilt: build/package on the Mac first. See docs/pi3-experimental.md.' >&2; exit 2
 fi
@@ -19,6 +22,11 @@ repo=$(cd "$(dirname "$0")/.." && pwd)
 source "$repo/deploy/install-target.sh"
 model=''
 if [[ -r /proc/device-tree/model ]]; then model=$(tr -d '\0' </proc/device-tree/model); fi
+if [[ $target == auto ]]; then target=$(daw_detect_install_target "$model"); fi
+echo "Detected/selected TuneBox target: $target"
+if [[ $target == pi3-experimental && $prebuilt != true ]]; then
+  echo 'Pi 3 experimental requires --prebuilt: build/package on the Mac first.' >&2; exit 2
+fi
 virtualization=none
 if [[ $target == vm ]]; then virtualization=$(systemd-detect-virt --vm 2>/dev/null || true); fi
 daw_validate_install_target "$target" "$(uname -m)" "$model" "$virtualization"
@@ -32,6 +40,10 @@ if [[ $prebuilt == true ]]; then
 fi
 if [[ $target == pi3-experimental ]]; then
   echo 'EXPERIMENTAL Pi 3 B+: performance, kiosk seat and hardware are NOT certified. Static artwork profile; no real hardware enable.'
+fi
+if [[ $ma_mode == install ]]; then
+  # Refuse an unsuitable co-host before changing the app installation.
+  node "$repo/deploy/host-capacity.js" "$target"
 fi
 apt-get update
 apt-get install -y --no-install-recommends cage chromium curl alsa-utils libinput-tools wlr-randr seatd dbus-user-session libpam-systemd
@@ -70,3 +82,12 @@ for attempt in {1..30}; do
 done
 runuser -u dawone -- node /opt/daw-one/server/doctor.js
 echo 'Application backend installed; real hardware remains disabled. Read docs/pi-first-run.md before enabling kiosk. No boot configuration changed.'
+
+if [[ $ma_mode != skip ]]; then
+  ma_action=--offer
+  [[ $ma_mode != install ]] || ma_action=--install
+  if ! bash "$repo/deploy/music-assistant-local.sh" "$ma_action" "$target"; then
+    echo 'TuneBox installed, but optional local Music Assistant setup failed. Check its output; existing MA client settings remain unchanged.' >&2
+    [[ $ma_mode != install ]] || exit 1
+  fi
+fi

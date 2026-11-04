@@ -83,3 +83,5 @@ App Shutdown simulates a safe state transition; it does **not** power off Linux.
 ## Updates / rollback
 
 Keep previous release and lockfile. On a development clone: `git pull --ff-only`, `npm ci`, `npm run check`, `npm run test:ui`. For deployment stop kiosk/backend, retain `/opt/daw-one` backup, rerun installer, check health, then restart kiosk. Restore previous `/opt/daw-one` and units if checks fail. Do not update while real audio hardware is enabled. Installer is a simple manual update scaffold, not atomic OTA.
+
+Installer update: Pi3 B+/Pi4 detection is automatic (`--target auto`); VM remains explicit. See [optional local Music Assistant](local-music-assistant.md) for the default-no co-hosting choice.

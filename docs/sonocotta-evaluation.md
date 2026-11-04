@@ -1,7 +1,7 @@
 # Sonocotta Louder HAT — evaluation proposal
 
 Project: **DAW TuneBox v1**, currently implemented in this repository under the DAW ONE name.
-Status: independent prototype; no Sonocotta sponsorship, approval or hardware compatibility certification.
+Status: independent prototype. The owner reports that Sonocotta agreed to provide a development sample; receipt and delivered revision are unconfirmed. This is not an endorsement or hardware compatibility certification.
 
 ## Evaluation target
 
@@ -60,9 +60,9 @@ A 60–90 second screen recording is a proposed next deliverable, not an existin
 
 ## Follow-up outreach — draft, not sent
 
-Technical correspondence with the maker already occurred in October 2026. No development-sample request or sample commitment is established. This is a follow-up, not a first introduction. The full private thread and personal contact addresses are deliberately excluded from the repository.
+Technical correspondence with the maker already occurred in October 2026. The owner now reports a development sample was agreed after outreach; no received board or validated revision is established. This is a follow-up, not a first introduction. The full private thread and personal contact addresses are deliberately excluded from the repository.
 
-See [the proposed follow-up email](sonocotta-follow-up.md). Do not claim eligibility for a free-hardware programme until the owner supplies the actual published offer or the maker confirms it.
+See [the historical follow-up draft](sonocotta-follow-up.md); do not resend an initial sample request without checking the current conversation. Do not claim eligibility for a free-hardware programme until the owner supplies the actual published offer or the maker confirms it.
 
 ## Before sending
 
