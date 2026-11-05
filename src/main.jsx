@@ -286,6 +286,7 @@ function App() {
         offline={offline}
         preview={startupPreview}
         staticOnly={profile.lowPower}
+        boot={snapshot.boot}
       />
       <header>
         <a
@@ -483,6 +484,7 @@ function App() {
             </div>
             {page === "settings" ? (
               <SettingsPages
+                offline={offline}
                 snapshot={snapshot}
                 onSnapshot={setSnapshot}
                 prefs={prefs}

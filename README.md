@@ -262,7 +262,7 @@ Additional references: [API/protocol](docs/protocol-and-api.md), [hardware relea
 
 **Touch volume:** Settings → General → Volume control selects a wide touch slider or circular dial. Both support keyboard/fine steps, larger touch targets and commit on release; the interface separates preview/pending values from confirmed player volume. The choice persists locally. GUI 1.0 keeps its earlier reference control.
 
-**Check the running version:** the GUI 2.0 header and testbench show **GUI 2.8 · PI3 EXP** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
+**Check the running version:** the GUI 2.0 header and testbench show **GUI 2.9 · BOOT** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
 
 Open **`/?gui=2&product=1`** for the new music-first interface, or **`/?gui=2&lab=1`** to keep the shared hardware workbench visible. The existing GUI remains available. Discover/library content is labelled as example data; playback and queue actions use the same simulator backend. Rivo grouping is a visual example, not a connected player. See [preview, SVG icons and skin contribution guide](docs/gui-2-preview.md).
 
@@ -277,3 +277,9 @@ See the [owner-reported Pi/audio field test](docs/field-test-2026-11-01.md), [op
 ## Automatic Pi setup and hardware proposal
 
 The installer now detects Pi3 B+ (lightweight, prebuilt-only) or Pi4 automatically. A local Music Assistant server is optional and offered only after a conservative Pi4 resource/health check; never on Pi3. See [co-hosting policy and install options](docs/local-music-assistant.md). The [I/O layout](docs/hardware/io-layout-proposal.md) is unverified source material; read [its review](docs/hardware/io-layout-review.md). The [boot-flow proposal](docs/boot-flow-proposal.md) is for discussion before skins/boot/autoplay implementation.
+
+## Boot flow — GUI 2.9
+
+Open **Opstartcontrole** in the product header or Settings → Startup. Nine checks, timestamped transitions, simulation inputs and saved optional **simulated** cold-boot radio share the existing runtime. Live host/MA observations are distinguished from unavailable hardware. See [implementation and test steps](docs/boot-runtime.md). Real PD/backlight/fan control and live autoradio remain blocked pending verified adapters; the current Pi3 profile retains static branding.
+
+![GUI 2.9 startup checks — explicitly simulated](docs/images/startup-checks-simulation.png)

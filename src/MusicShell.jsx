@@ -1,3 +1,4 @@
+import { bootPhaseLabels } from "./BootPanel.jsx";
 import { NetworkStatus } from "./NetworkStatus.jsx";
 import { BuildBadge } from "./BuildBadge.jsx";
 import { TouchVolume, useVolumeRequests } from "./TouchVolume.jsx";
@@ -60,6 +61,7 @@ export function MusicShell({
   notice,
   startupPreview,
 }) {
+  const [settingsPage, setSettingsPage] = useState(0);
   const [page, setPage] = useState("discover"),
     [category, setCategory] = useState("Albums"),
     [detail, setDetail] = useState(null),
@@ -221,6 +223,7 @@ export function MusicShell({
         offline={offline}
         preview={startupPreview}
         staticOnly={prefs.lowPower}
+        boot={snapshot.boot}
       />
       <header className="m2-header">
         <button className="m2-brand" onClick={() => go("discover")}>
@@ -241,7 +244,13 @@ export function MusicShell({
           ))}
         </nav>
         <NetworkStatus snapshot={snapshot} offline={offline} />
-        <button aria-label="Instellingen" onClick={() => go("settings")}>
+        <button
+          aria-label="Instellingen"
+          onClick={() => {
+            setSettingsPage(0);
+            go("settings");
+          }}
+        >
           <Icon name="settings" />
         </button>
       </header>
@@ -266,7 +275,21 @@ export function MusicShell({
           )}
         </div>
         <div className="m2-version-status">
-          <BuildBadge snapshot={snapshot} offline={offline} />
+          <div className="m2-build-boot">
+            <button
+              className="boot-shortcut"
+              aria-label="Open opstartcontrole"
+              onClick={() => {
+                setSettingsPage(11);
+                go("settings");
+              }}
+            >
+              {offline
+                ? "Offline"
+                : bootPhaseLabels[snapshot.boot?.phase] || "Opstartstatus"}
+            </button>
+            <BuildBadge snapshot={snapshot} offline={offline} />
+          </div>
           <small className={offline ? "m2-warning" : ""}>
             {offline
               ? "Offline · instellingen beschikbaar"
@@ -628,6 +651,8 @@ export function MusicShell({
         ) : page === "settings" ? (
           <div className="m2-settings">
             <SettingsPages
+              offline={offline}
+              initialPage={settingsPage}
               snapshot={snapshot}
               onSnapshot={setSnapshot}
               prefs={prefs}

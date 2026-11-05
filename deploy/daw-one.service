@@ -18,6 +18,9 @@ PrivateDevices=yes
 ProtectSystem=strict
 ProtectHome=yes
 MemoryMax=256M
+StateDirectory=daw-one-state
+StateDirectoryMode=0700
+Environment=DAW_STATE_DIR=/var/lib/daw-one-state
 StandardOutput=journal
 StandardError=journal
 [Install]

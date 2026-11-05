@@ -1,6 +1,6 @@
 # Proposed boot flow — discussion before implementation
 
-Owner requirements collected 4 November 2026. **This is a flow proposal, not an implemented hardware boot sequence.** Agree the flow before changing skins, splash behaviour or autoplay. Current GPIO/display/sensor hardware remains unverified and disabled. The existing Pi3 startup profile intentionally uses a still.
+Owner requirements collected 4 November 2026. **Shared software checks and simulated autoradio are now implemented; see [implementation](boot-runtime.md). This is not an implemented hardware boot sequence.** Agree the flow before changing skins, splash behaviour or autoplay. Current GPIO/display/sensor hardware remains unverified and disabled. The existing Pi3 startup profile intentionally uses a still.
 
 ## Flow
 

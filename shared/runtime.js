@@ -1,3 +1,11 @@
+import {
+  bootSettings,
+  initialBootInputs,
+  setBootInput,
+  bootReport,
+  BootMonitor,
+  ColdBootRadio,
+} from "./boot.js";
 import { initialDevice, transition, faultNames } from "./device.js";
 import { initialPlayback, playbackEvent, positionAt } from "./playback.js";
 import { AmplifierSafetyManager } from "./controller.js";
@@ -8,6 +16,7 @@ export const policy = {
 }; // Simulation policy only; not electrical specifications.
 export const eventTypes = [
   "activity",
+  "startup-signal",
   "queue-select",
   "queue-add",
   "queue-remove",
@@ -39,7 +48,7 @@ export const eventTypes = [
   ...faultNames,
 ];
 export class DeviceRuntime {
-  constructor(now = Date.now()) {
+  constructor(now = Date.now(), startup = {}) {
     this.safety = new AmplifierSafetyManager();
     this.device = initialDevice();
     this.playback = initialPlayback();
@@ -57,6 +66,10 @@ export class DeviceRuntime {
     this.lastActivity = now;
     this.log = [];
     this.sequence = 0;
+    this.startupSettings = bootSettings(startup);
+    this.bootInputs = initialBootInputs();
+    this.bootMonitor = new BootMonitor();
+    this.coldRadio = new ColdBootRadio(this.startupSettings);
     this.record(now, "boot", "booting", "Cold boot; all output inhibited");
     this.safety.reconcile(this.device);
     this.record(
@@ -66,14 +79,14 @@ export class DeviceRuntime {
       "MUTE/DISABLE simulated cold-boot request",
     );
   }
-  record(now, type, state, reason) {
+  record(now, type, state, reason, simulated = true) {
     this.log.push({
       id: ++this.sequence,
       at: new Date(now).toISOString(),
       type,
       state,
       reason,
-      simulated: true,
+      simulated,
     });
     this.log = this.log.slice(-500);
   }
@@ -145,9 +158,31 @@ export class DeviceRuntime {
         this.playback = { ...this.playback, queue };
       }
     }
+    if (e.type === "startup-signal") {
+      this.bootInputs = setBootInput(this.bootInputs, e.key, e.value);
+      if (
+        (e.key === "pdWatts" && (!Number.isFinite(e.value) || e.value < 100)) ||
+        (this.bootInputs.fanExpected && !(this.bootInputs.fanRpm > 0))
+      ) {
+        this.record(
+          now,
+          "startup-check",
+          this.device.mode,
+          "Simulated required power/cooling check failed",
+        );
+        return this.dispatch(
+          {
+            type: e.key === "pdWatts" ? "power-good-failure" : "thermal-alarm",
+          },
+          now,
+        );
+      }
+    }
     const before = this.device;
     let events = [e];
     if (e.type === "boot") {
+      this.coldRadio = new ColdBootRadio(this.startupSettings);
+      this.bootMonitor = new BootMonitor();
       this.sensors = { ...this.sensors, powerGood: false, lastHeartbeat: now };
       this.playback = initialPlayback();
       this.playback.observedAt = now;
@@ -177,7 +212,10 @@ export class DeviceRuntime {
     if (e.type === "heartbeat") this.sensors.lastHeartbeat = now;
     if (
       e.type === "simulation-verified" &&
-      (!this.sensors.powerGood ||
+      (!Number.isFinite(this.bootInputs.pdWatts) ||
+        this.bootInputs.pdWatts < 100 ||
+        (this.bootInputs.fanExpected && !(this.bootInputs.fanRpm > 0)) ||
+        !this.sensors.powerGood ||
         now - this.sensors.lastHeartbeat > policy.heartbeatTimeoutMs ||
         this.sensors.temperature >= policy.thermalLimitC)
     ) {
@@ -234,8 +272,9 @@ export class DeviceRuntime {
       )
         events.push({ type: "display-timeout" });
       if (
+        Number.isFinite(this.playback.queue[this.playback.index].duration) &&
         positionAt(this.playback, now) >=
-        this.playback.queue[this.playback.index].duration
+          this.playback.queue[this.playback.index].duration
       ) {
         this.playback = playbackEvent(this.playback, { type: "next" }, now);
         this.record(
@@ -295,10 +334,61 @@ export class DeviceRuntime {
         `${command.enabled ? "ENABLE" : "MUTE/DISABLE"} simulated request; ${this.device.faults.join(", ") || (!this.device.verified ? "hardware unverified" : this.device.mode)}`,
       );
     }
+    const report = bootReport({
+      device: this.device,
+      sensors: this.sensors,
+      playback: this.playback,
+      inputs: this.bootInputs,
+    });
+    this.bootMonitor.update(report, this.record.bind(this), now);
+    const radio = this.coldRadio.consider({
+      simulated: true,
+      device: this.device,
+      sensors: this.sensors,
+      playback: this.playback,
+      inputs: this.bootInputs,
+    });
+    if (radio) {
+      this.audio = { volume: radio.volume, muted: false };
+      this.playback = {
+        ...this.playback,
+        queue: [
+          {
+            id: `mock-radio-${radio.station}`,
+            title:
+              radio.station === "ambient" ? "Ambient Radio" : "Classical Radio",
+            artist: "SIMULATED RADIO",
+            album: "Example station",
+            duration: null,
+          },
+        ],
+        index: 0,
+        position: 0,
+        observedAt: now,
+      };
+      this.record(
+        now,
+        "autoradio",
+        this.device.mode,
+        "One simulated cold-boot radio request; no real stream",
+      );
+      return this.dispatch({ type: "play" }, now);
+    }
     return this.snapshot(now);
   }
   snapshot(now = Date.now()) {
     return {
+      boot: {
+        ...bootReport({
+          device: this.device,
+          sensors: this.sensors,
+          playback: this.playback,
+          inputs: this.bootInputs,
+        }),
+        settings: this.startupSettings,
+        radioStatus: this.coldRadio.status,
+        inputs: this.bootInputs,
+      },
       audio: this.audio,
       device: this.device,
       playback: {
@@ -345,7 +435,13 @@ export const scenarios = {
 };
 export function runScenario(runtime, name, now = Date.now()) {
   if (!scenarios[name]) throw Error("Unknown scenario");
-  runtime.record(now, "scenario", runtime.device.mode, `Start ${name}`);
+  runtime.bootInputs = initialBootInputs();
+  runtime.record(
+    now,
+    "scenario",
+    runtime.device.mode,
+    `Start ${name}`,
+  );
   let at = now;
   for (const { advance = 0, ...e } of scenarios[name]) {
     at += advance;

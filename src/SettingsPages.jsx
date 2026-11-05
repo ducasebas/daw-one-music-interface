@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { BootPanel } from "./BootPanel.jsx";
+import React, { useState, useEffect } from "react";
 import { Pager } from "./Pager.jsx";
 import { MusicConnection } from "./MusicConnection.jsx";
 import { ThemeSettings } from "./Themes.jsx";
@@ -14,6 +15,7 @@ const pages = [
   "State mapping",
   "Save theme",
   "Connection",
+  "Startup",
 ];
 export function SettingsPages({
   snapshot,
@@ -23,8 +25,11 @@ export function SettingsPages({
   themePreferences,
   theme,
   setThemePreferences,
+  initialPage = 0,
+  offline = false,
 }) {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(initialPage);
+  useEffect(() => setIndex(initialPage), [initialPage]);
   return (
     <Pager label="Settings" items={pages} index={index} onChange={setIndex}>
       {index === 0 ? (
@@ -76,6 +81,12 @@ export function SettingsPages({
             </select>
           </label>
         </div>
+      ) : pages[index] === "Startup" ? (
+        <BootPanel
+          snapshot={snapshot}
+          onSnapshot={onSnapshot}
+          offline={offline}
+        />
       ) : pages[index] === "Connection" ? (
         <MusicConnection snapshot={snapshot} onSnapshot={onSnapshot} />
       ) : (

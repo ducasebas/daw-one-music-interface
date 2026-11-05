@@ -111,7 +111,12 @@ function service(config = {}) {
   );
 }
 test("MA URL validates protocols and never embeds credentials", () => {
-  for (const address of ["http://192.0.2.10:8095", "http://192.0.2.10:8095/", "ws://192.0.2.10:8095/ws", "http://192.0.2.10:8095/ws/"]) {
+  for (const address of [
+    "http://192.0.2.10:8095",
+    "http://192.0.2.10:8095/",
+    "ws://192.0.2.10:8095/ws",
+    "http://192.0.2.10:8095/ws/",
+  ]) {
     assert.equal(websocketUrl(address), "ws://192.0.2.10:8095/ws");
   }
   assert.equal(
@@ -263,4 +268,31 @@ test("unknown-duration radio position advances without a fabricated duration", a
   const { positionAt } = await import("../shared/playback.js");
   const p = normalizeMusic({ player }, 12000);
   assert.equal(positionAt(p, 15000), 15);
+});
+
+test("live MA startup distinguishes authentication codes without exposing server error details", async () => {
+  for (const [code, expected] of [
+    [20, "auth-required"],
+    [21, "auth-failed"],
+    [22, "permissions"],
+  ]) {
+    const t = transport();
+    t.connect = async () => {
+      throw Object.assign(Error("private authentication detail"), { code });
+    };
+    const s = new LiveMusicService(configuration, {
+      transport: t,
+      retryMs: 10000,
+    });
+    await s.start();
+    assert.equal(s.publicStatus().errorCode, expected);
+    assert.equal(s.publicStatus().connected, false);
+    assert.equal(
+      JSON.stringify(s.publicStatus()).includes(
+        "private authentication detail",
+      ),
+      false,
+    );
+    s.stop();
+  }
 });

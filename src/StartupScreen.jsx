@@ -1,3 +1,4 @@
+import { useStartupPreparation } from "./useStartupPreparation.js";
 import React, { useEffect, useRef, useState } from "react";
 /** Branding is independent from hardware readiness and never enables audio. */
 export function StartupScreen({
@@ -5,7 +6,9 @@ export function StartupScreen({
   offline,
   preview = 0,
   staticOnly = false,
+  boot,
 }) {
+  const preparation = useStartupPreparation();
   const [reduced, setReduced] = useState(
     () =>
       staticOnly ||
@@ -119,6 +122,7 @@ export function StartupScreen({
       aria-label="Startup animation"
       role="status"
       data-renderer={renderer}
+      data-preparation={preparation}
     >
       <img
         key={`${cycle}-${preview}-${renderer}`}
@@ -154,6 +158,13 @@ export function StartupScreen({
             <source src="/media/startup.mp4" type="video/mp4" />
           </video>
         )}
+      <small className="startup-check-caption">
+        {offline
+          ? "Offline · lokale instellingen beschikbaar"
+          : boot
+            ? `${boot.simulated ? "SIMULATIE · " : ""}${boot.checks.filter((c) => c.status === "pass").length} controles OK · ${boot.phase}`
+            : "Lokale interface voorbereiden…"}
+      </small>
       {elapsed && mode === "booting" && !offline && (
         <span>Starting device…</span>
       )}

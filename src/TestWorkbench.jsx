@@ -82,6 +82,7 @@ export function TestWorkbench({
     ],
   };
   const events = (snapshot.log || []).slice().reverse(),
+    primaryEvents = events.filter((e) => e.type !== "startup-check"),
     maxPage = Math.max(0, Math.ceil(events.length / 4) - 1),
     eventPage = Math.min(history, maxPage),
     module = view.modules.find((m) => m.id === selected);
@@ -108,7 +109,9 @@ export function TestWorkbench({
         </button>
         <a
           className="bench-product-link"
-          href={gui2 ? "/?gui=2&screen=1&display=hdmi-development" : "/?screen=1"}
+          href={
+            gui2 ? "/?gui=2&screen=1&display=hdmi-development" : "/?screen=1"
+          }
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -238,13 +241,15 @@ export function TestWorkbench({
             aria-label="Latest state changes"
           >
             <span>LATEST EVENTS</span>
-            {events.slice(0, 2).map((e) => (
-              <div key={e.id}>
-                <time>{e.at.slice(11, 19)}</time>
-                <b>{e.type}</b>
-                <span>{e.reason}</span>
-              </div>
-            ))}
+            {(primaryEvents.length ? primaryEvents : events)
+              .slice(0, 2)
+              .map((e) => (
+                <div key={e.id}>
+                  <time>{e.at.slice(11, 19)}</time>
+                  <b>{e.type}</b>
+                  <span>{e.reason}</span>
+                </div>
+              ))}
           </section>
         </section>
         <aside

@@ -1,3 +1,6 @@
+import { BootStore } from "./boot-store.js";
+import { bootInventory } from "./boot-inventory.js";
+import { bootReport, BootMonitor } from "../shared/boot.js";
 import { release } from "../shared/release.js";
 import { snapshotWriter } from "./event-stream.js";
 import express from "express";
@@ -5,9 +8,14 @@ import { fileURLToPath } from "node:url";
 import { DeviceRuntime, runScenario, scenarios } from "../shared/runtime.js";
 import { musicConfig } from "./ma-config.js";
 import { LiveMusicService } from "./ma-service.js";
+const startupStore = new BootStore(
+  process.env.DAW_STATE_DIR || ".tunebox-state",
+);
+const liveBootMonitor = new BootMonitor();
+let inventory = bootInventory();
 const config = musicConfig(),
   app = express(),
-  runtime = new DeviceRuntime(),
+  runtime = new DeviceRuntime(Date.now(), startupStore.load()),
   clients = new Set();
 const music =
   config.mode === "music-assistant" ? new LiveMusicService(config) : null;
@@ -19,6 +27,23 @@ const snapshot = () => {
       ...state,
       mode: "music-assistant",
       hardwareMode: "simulation",
+      boot: {
+        ...liveBootMonitor.update(
+          bootReport({
+            simulated: false,
+            device: state.device,
+            inventory,
+            music: music.publicStatus(),
+            playback: music.playback,
+          }),
+          runtime.record.bind(runtime),
+          Date.now(),
+        ),
+        settings: runtime.startupSettings,
+        radioStatus: runtime.startupSettings.radioEnabled
+          ? "blocked-live-adapter"
+          : "disabled",
+      },
       device: { ...state.device, verified: false, amplifierEnabled: false },
       playback: music.playback,
       musicAssistant: music.publicStatus(),
@@ -57,6 +82,28 @@ app.post("/api/activity", (_q, r) => {
   runtime.dispatch({ type: "activity" });
   if (awake !== runtime.device.displayAwake) broadcast();
   r.json({ ok: true });
+});
+app.post("/api/boot/settings", (q, r) => {
+  if (music)
+    return r
+      .status(409)
+      .json({
+        error:
+          "Live autoradio requires a verified route/station adapter; simulation settings only",
+      });
+  try {
+    runtime.startupSettings = startupStore.save(q.body);
+    runtime.record(
+      Date.now(),
+      "startup-settings",
+      runtime.device.mode,
+      "Saved for next simulated cold boot; current playback unchanged",
+    );
+    broadcast();
+    r.json(snapshot());
+  } catch {
+    r.status(400).json({ error: "Startup settings could not be saved" });
+  }
 });
 app.get("/api/state", (_q, r) => r.json(snapshot()));
 app.get("/api/events", (q, r) => {
@@ -156,6 +203,10 @@ const clock = setInterval(() => {
     broadcast();
 }, 500);
 clock.unref();
+const inventoryClock = setInterval(() => {
+  inventory = bootInventory();
+}, 30000);
+inventoryClock.unref();
 const keepalive = setInterval(() => {
   for (const c of clients)
     if (!streamWriter.blocked(c)) streamWriter.write(c, ": heartbeat\n\n");
@@ -171,6 +222,7 @@ for (const signal of ["SIGINT", "SIGTERM"])
     music?.stop();
     for (const c of clients) c.end();
     clearInterval(clock);
+    clearInterval(inventoryClock);
     clearInterval(keepalive);
     server.close(() => process.exit(0));
   });

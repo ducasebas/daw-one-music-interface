@@ -88,8 +88,15 @@ export class MusicAssistantTransport {
             clearTimeout(p.timer);
             this.pending.delete(id);
             p.reject(
-              Error(
-                `Music Assistant command rejected (${String(m.error_code).slice(0, 30)})`,
+              Object.assign(
+                Error(
+                  `Music Assistant command rejected (${String(m.error_code).slice(0, 30)})`,
+                ),
+                {
+                  code: [20, 21, 22].includes(m.error_code)
+                    ? m.error_code
+                    : null,
+                },
               ),
             );
             return;

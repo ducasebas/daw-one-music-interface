@@ -64,6 +64,7 @@ test("release archive excludes development and secrets, detects corruption and s
       "deploy",
       "docs",
       "node_modules",
+      ".tunebox-state",
     ])
       mkdirSync(join(root, dir), { recursive: true });
     writeFileSync(join(root, "dist/index.html"), "html");
@@ -75,6 +76,7 @@ test("release archive excludes development and secrets, detects corruption and s
       "THIRD_PARTY_NOTICES.md",
       ".env",
       "node_modules/secret",
+      ".tunebox-state/boot.json",
     ])
       writeFileSync(join(root, file), "{}");
     const archive = join(root, "bundle.tar.gz");
@@ -82,7 +84,7 @@ test("release archive excludes development and secrets, detects corruption and s
     const listing = execFileSync("tar", ["-tzf", archive], {
       encoding: "utf8",
     });
-    assert.doesNotMatch(listing, /node_modules|\.env/);
+    assert.doesNotMatch(listing, /node_modules|\.env|\.tunebox-state/);
     assert.match(listing, /^LICENSE$/m);
     assert.match(listing, /^THIRD_PARTY_NOTICES\.md$/m);
     const out = join(root, "out");

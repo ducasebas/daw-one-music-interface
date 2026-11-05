@@ -2,7 +2,15 @@ import React, { useState } from "react";
 import { Pager } from "./Pager.jsx";
 import { faultNames } from "../shared/device.js";
 import { scenarios } from "../shared/runtime.js";
-const pages = ["Scenarios", "Sensors", "Connections", "Safety", "Timeline"];
+const pages = [
+  "Scenarios",
+  "Sensors",
+  "Connections",
+  "Safety",
+  "Timeline",
+  "Boot power",
+  "Boot devices",
+];
 export function SimulatorPages({
   snapshot,
   scenario,
@@ -147,6 +155,70 @@ export function SimulatorPages({
               {type}
             </button>
           ))}
+        </div>
+      ) : index === 5 ? (
+        <div className="control-grid">
+          <label>
+            PD-contract (W)
+            <input
+              aria-label="Simulated PD watts"
+              type="number"
+              min="0"
+              max="240"
+              value={snapshot.boot?.inputs?.pdWatts ?? ""}
+              onChange={(e) =>
+                send({
+                  type: "startup-signal",
+                  key: "pdWatts",
+                  value: e.target.value === "" ? null : +e.target.value,
+                })
+              }
+            />
+          </label>
+          {toggle(
+            "Simulated group active",
+            snapshot.boot?.inputs?.groupActive,
+            (value) =>
+              send({ type: "startup-signal", key: "groupActive", value }),
+          )}
+          <p>
+            Alleen simulatie. Onbekend of minder dan 100 W blokkeert
+            verificatie. Herstel voeding en reset de fout voor opnieuw testen.
+          </p>
+        </div>
+      ) : index === 6 ? (
+        <div className="control-grid">
+          {toggle(
+            "USB audio present",
+            snapshot.boot?.inputs?.usbAudio,
+            (value) => send({ type: "startup-signal", key: "usbAudio", value }),
+          )}
+          {toggle(
+            "Digital output verified",
+            snapshot.boot?.inputs?.digitalVerified,
+            (value) =>
+              send({ type: "startup-signal", key: "digitalVerified", value }),
+          )}
+          {toggle("Fan required", snapshot.boot?.inputs?.fanExpected, (value) =>
+            send({ type: "startup-signal", key: "fanExpected", value }),
+          )}
+          <label>
+            Fan feedback (RPM)
+            <input
+              aria-label="Simulated fan RPM"
+              type="number"
+              min="0"
+              max="10000"
+              value={snapshot.boot?.inputs?.fanRpm ?? ""}
+              onChange={(e) =>
+                send({
+                  type: "startup-signal",
+                  key: "fanRpm",
+                  value: e.target.value === "" ? null : +e.target.value,
+                })
+              }
+            />
+          </label>
         </div>
       ) : (
         <div className="paged-timeline" aria-label="Device timeline">

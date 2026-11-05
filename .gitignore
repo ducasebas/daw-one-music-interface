@@ -8,3 +8,5 @@ test-results/
 *.token
 
 tunebox-release*.tar.gz
+
+.tunebox-state/

@@ -75,6 +75,7 @@ export class LiveMusicService extends EventEmitter {
     this.playerId = config.playerId;
     this.status = "disconnected";
     this.error = null;
+    this.errorCode = null;
     this.playback = {
       connected: false,
       playing: false,
@@ -104,6 +105,7 @@ export class LiveMusicService extends EventEmitter {
       connected: this.status === "connected",
       status: this.status,
       error: this.error,
+      errorCode: this.errorCode,
       serverVersion: this.transport.info?.server_version || null,
       schemaVersion: this.transport.info?.schema_version ?? null,
       playerId: this.playerId,
@@ -133,17 +135,29 @@ export class LiveMusicService extends EventEmitter {
       this.retryCount = 0;
       this.status = "connected";
       this.error = null;
+      this.errorCode = null;
       this.notify();
-    } catch {
+    } catch (error) {
+      const auth = {
+        20: [
+          "Authentication required; configure server-side MA token",
+          "auth-required",
+        ],
+        21: ["Authentication failed; check token", "auth-failed"],
+        22: ["Insufficient MA permissions", "permissions"],
+      }[error?.code];
       this.failed(
-        "Connection, authentication or player sync failed; check server settings and version",
+        auth?.[0] ||
+          "Connection or player sync failed; check server settings and version",
+        auth?.[1] || "connection",
       );
     }
   }
-  failed(reason) {
+  failed(reason, code = "connection") {
     if (this.stopped) return;
     this.status = "disconnected";
     this.error = reason;
+    this.errorCode = code;
     this.playback = {
       ...this.playback,
       connected: false,
