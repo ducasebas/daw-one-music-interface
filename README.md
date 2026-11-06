@@ -262,7 +262,7 @@ Additional references: [API/protocol](docs/protocol-and-api.md), [hardware relea
 
 **Touch volume:** Settings → General → Volume control selects a wide touch slider or circular dial. Both support keyboard/fine steps, larger touch targets and commit on release; the interface separates preview/pending values from confirmed player volume. The choice persists locally. GUI 1.0 keeps its earlier reference control.
 
-**Check the running version:** the GUI 2.0 header and testbench show **GUI 2.9 · BOOT** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
+**Check the running version:** the GUI 2.0 header and testbench show **GUI 2.10 · SENSORS** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
 
 Open **`/?gui=2&product=1`** for the new music-first interface, or **`/?gui=2&lab=1`** to keep the shared hardware workbench visible. The existing GUI remains available. Discover/library content is labelled as example data; playback and queue actions use the same simulator backend. Rivo grouping is a visual example, not a connected player. See [preview, SVG icons and skin contribution guide](docs/gui-2-preview.md).
 
@@ -283,3 +283,7 @@ The installer now detects Pi3 B+ (lightweight, prebuilt-only) or Pi4 automatical
 Open **Opstartcontrole** in the product header or Settings → Startup. Nine checks, timestamped transitions, simulation inputs and saved optional **simulated** cold-boot radio share the existing runtime. Live host/MA observations are distinguished from unavailable hardware. See [implementation and test steps](docs/boot-runtime.md). Real PD/backlight/fan control and live autoradio remain blocked pending verified adapters; the current Pi3 profile retains static branding.
 
 ![GUI 2.9 startup checks — explicitly simulated](docs/images/startup-checks-simulation.png)
+
+## Optional real sensors
+
+PCT2075 (bus 1 / 0x37) and TSL2591 (0x29) can feed separate real temperature/lux telemetry into the backend and Opstartcontrole. Installation is explicit; stale/error values are unknown and never grant amplifier enable. See [sensor setup and limitations](docs/sensors.md).

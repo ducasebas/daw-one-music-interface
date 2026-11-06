@@ -38,3 +38,5 @@ Persistence: local development uses ignored `.tunebox-state/boot.json`; installe
 6. Test backend outage: settings/checks must show unavailable/offline rather than invent current results. A saved radio edit needs the backend; existing ordinary visual preferences remain browser-local.
 
 Run domain tests/build, Chromium journeys and production/offline tests before publishing. Physical DSI darkness/backlight, real sensor values, optical output identity, HAT safety, sound latency and Pi smoothness still require board-level tests. No phase-5 completion is claimed.
+
+Optional sensor update: [PCT2075/TSL2591 service](sensors.md) supplies separately attributed real measurements to the header of these pages. It does not replace the simulated safety input or CPU check, and has its own explicit I²C permission boundary.

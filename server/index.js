@@ -1,3 +1,4 @@
+import {readSensorTelemetry} from "./sensor-telemetry.js";
 import { BootStore } from "./boot-store.js";
 import { bootInventory } from "./boot-inventory.js";
 import { bootReport, BootMonitor } from "../shared/boot.js";
@@ -21,7 +22,7 @@ const music =
   config.mode === "music-assistant" ? new LiveMusicService(config) : null;
 runtime.dispatch({ type: "boot-complete" });
 const snapshot = () => {
-  const state = { ...runtime.snapshot(), build: release };
+  const state = { ...runtime.snapshot(), build: release, hardwareTelemetry:readSensorTelemetry(process.env.DAW_SENSOR_FILE) };
   if (music)
     return {
       ...state,

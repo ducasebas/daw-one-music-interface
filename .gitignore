@@ -10,3 +10,6 @@ test-results/
 tunebox-release*.tar.gz
 
 .tunebox-state/
+
+__pycache__/
+*.pyc

@@ -1,0 +1,25 @@
+[Unit]
+Description=TuneBox PCT2075 / TSL2591 telemetry (no actuator control)
+After=systemd-udevd.service
+[Service]
+User=dawsensor
+Group=dawsensors
+SupplementaryGroups=i2c
+ExecStartPre=/usr/bin/test -c /dev/i2c-1
+ExecStart=/opt/daw-one-sensor-env/bin/python /opt/daw-one/read-sensors.py
+Restart=on-failure
+RestartSec=5
+RuntimeDirectory=daw-one-sensors
+RuntimeDirectoryMode=0750
+UMask=0027
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+DevicePolicy=closed
+DeviceAllow=/dev/i2c-1 rw
+MemoryMax=128M
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=multi-user.target

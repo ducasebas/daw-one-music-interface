@@ -66,6 +66,7 @@ export function BootPanel({ snapshot, onSnapshot, offline = false }) {
         {page < 3 ? (
           <div className="boot-checks">
             <small>
+              {snapshot.hardwareTelemetry?.enabled && <span aria-label="Echte sensormetingen">PCT2075: {offline ? "onbekend" : snapshot.hardwareTelemetry.temperature?.value ?? "onbekend"} °C · TSL2591: {offline ? "onbekend" : snapshot.hardwareTelemetry.light?.value ?? "onbekend"} lux · echte metingen — </span>}
               {boot?.simulated
                 ? "GESIMULEERDE CHECKS"
                 : "HOSTMETINGEN · HARDWARE NIET GEVERIFIEERD"}
