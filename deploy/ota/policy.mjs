@@ -3,7 +3,7 @@ export const repository='ducasebas/daw-one-music-interface';
 export function verifyManifest(raw,signature,key,channel,lastSequence=0){
  if(raw.length>8192||!verify(null,raw,key,signature))throw Error('Invalid OTA signature');
  const m=JSON.parse(raw.toString('utf8'));
- if(m.schema!==1||m.repository!==repository||m.channel!==channel||!['preview','stable'].includes(channel)||!Number.isSafeInteger(m.sequence)||m.sequence<=lastSequence||!/^[a-f0-9]{40}$/.test(m.commit)||!/^[a-f0-9]{64}$/.test(m.sha256)||typeof m.release!=='string'||m.release.length>100||!Number.isInteger(m.bytes)||m.bytes<1||m.bytes>33554432)throw Error('Invalid, replayed or incompatible OTA manifest');
+ if(m.schema!==1||m.repository!==repository||m.channel!==channel||!['preview','stable'].includes(channel)||!Number.isSafeInteger(m.sequence)||m.sequence<=lastSequence||!/^[a-f0-9]{40}$/.test(m.commit)||!/^[a-f0-9]{64}$/.test(m.sha256)||typeof m.release!=='string'||!m.release||m.release.length>100||(m.notes!==undefined&&(typeof m.notes!=='string'||m.notes.length>500))||!Number.isInteger(m.bytes)||m.bytes<1||m.bytes>33554432)throw Error('Invalid, replayed or incompatible OTA manifest');
  return m;
 }
 export function verifyArchive(bytes,m){if(bytes.length!==m.bytes||createHash('sha256').update(bytes).digest('hex')!==m.sha256)throw Error('OTA archive integrity failed');}
@@ -12,10 +12,31 @@ export function canUpdate(state){
  return state.mode==='simulation'||(state.musicAssistant?.connected===true&&state.playback.connected===true);
 }
 /** Transaction journal is written before activation; candidate code never runs as root. */
-export async function activate(host,m){
+export async function activate(host,m,progress=()=>{}){
  const previous=await host.current();await host.journal({previous,candidate:m.commit});
- try{await host.stop();await host.select(m.commit);await host.start();if(!await host.healthy(m))throw Error('Candidate unhealthy');await host.commit(m);await host.clearJournal();return 'installed';}
- catch(error){await host.stop();await host.select(previous);await host.start();const recovered=await host.healthy(null);if(!recovered)throw Error('Rollback selected but previous app is unhealthy; manual recovery required');await host.clearJournal();throw Error('Update failed; previous application restored');}
+ try{
+  await progress('installing');await host.stop();await host.select(m.commit);
+  await progress('restarting');await host.start();await progress('checking-health');
+  if(!await host.healthy(m))throw Error('Candidate unhealthy');
+  await host.commit(m);await host.clearJournal();return 'installed';
+ }catch(error){
+  await progress('rolling-back');await host.stop();await host.select(previous);await host.start();
+  const recovered=await host.healthy(null);
+  if(!recovered)throw Error('Rollback selected but previous app is unhealthy; manual recovery required');
+  await host.clearJournal();throw Error('Update failed; previous application restored');
+ }
+}
+export async function restorePrevious(host,previous,progress=()=>{}){
+ const current=await host.current();await host.journal({previous:current,candidate:previous});
+ try{
+  await progress('rolling-back');await host.stop();await host.select(previous);await host.start();
+  if(!await host.healthy(null))throw Error('Previous version unhealthy');
+  await host.commitRollback(current,previous);await host.clearJournal();return 'rolled-back';
+ }catch(error){
+  await host.stop();await host.select(current);await host.start();
+  if(!await host.healthy(null))throw Error('Recovery requires manual repair');
+  await host.clearJournal();throw Error('Rollback failed; current application restored');
+ }
 }
 /** Keep current, previous, and two recent spare slots; ignore unfamiliar names. */
 export function prunableSlots(entries,current,previous){

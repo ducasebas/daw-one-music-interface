@@ -27,5 +27,9 @@ for attempt in {1..30}; do
   if [[ $attempt == 30 ]]; then echo 'DAW ONE backend unavailable; kiosk not started' >&2; exit 1; fi
   sleep 1
 done
+if /usr/bin/curl --fail --silent --max-time 2 http://127.0.0.1:3002/status >/dev/null; then
+  url="http://127.0.0.1:3002/?display=$mode"
+  if [[ -r /opt/daw-one/deployment-target && $(cat /opt/daw-one/deployment-target) == pi3-experimental ]]; then url="$url&profile=pi3"; fi
+fi
 printf 'DAW ONE kiosk: %s, logical viewport 1280x400\n' "$mode"
 exec /usr/bin/dbus-run-session -- /usr/bin/cage -- /usr/bin/chromium --ozone-platform=wayland --kiosk --force-device-scale-factor=1 --no-first-run --disable-session-crashed-bubble --user-data-dir=/var/lib/dawone/chromium "$url"

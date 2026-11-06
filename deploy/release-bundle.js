@@ -1,5 +1,6 @@
 import {
   cpSync,
+  chmodSync,
   existsSync,
   lstatSync,
   mkdtempSync,
@@ -91,6 +92,14 @@ export function packRelease(root, output) {
         recursive: true,
         dereference: false,
       });
+    // Source workspaces can use restrictive umasks; the service user must read deployed code.
+    files(staging); // Reject links/special files before changing any permissions.
+    const normalise = (path) => {
+      const directory=lstatSync(path).isDirectory();
+      chmodSync(path,directory?0o755:0o644);
+      if(directory)for(const name of readdirSync(path))normalise(join(path,name));
+    };
+    roots.forEach(name=>normalise(join(staging,name)));
     const manifest = {
       schema: 1,
       release: release.id,
@@ -104,6 +113,7 @@ export function packRelease(root, output) {
       join(staging, "release-manifest.json"),
       JSON.stringify(manifest, null, 2) + "\n",
     );
+    chmodSync(join(staging, "release-manifest.json"),0o644);
     verifyRelease(staging);
     execFileSync("tar", [
       "-czf",

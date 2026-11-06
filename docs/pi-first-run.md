@@ -134,3 +134,7 @@ sudo systemctl restart daw-one-kiosk.service
 To undo this specific override, remove only `/etc/systemd/system/daw-one-kiosk.service.d/console.conf`, reload systemd and restart the kiosk. No boot configuration is changed. Keep SSH available; closing Chromium is not the preferred administration method.
 
 Installer update: Pi3 B+/Pi4 detection is automatic (`--target auto`); VM remains explicit. See [optional local Music Assistant](local-music-assistant.md) for the default-no co-hosting choice.
+
+## Guided setup and signed updates
+
+This release also installs the limited device manager. A fresh managed device opens Settings → Setup; revisit it later for network, server/player, headphone-test and sensor checks. The optional `--updates auto|notify|skip` installer choice uses the same bundled project public key on every device. A source checkout without a project key leaves OTA off unless an external public key is provided. Read [the wizard](first-run-wizard.md) and [OTA setup](ota-updates.md) before enabling updates. The physical Pi update, failed-candidate rollback and independent display handover still need bench validation.

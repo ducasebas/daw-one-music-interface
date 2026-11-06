@@ -292,4 +292,10 @@ PCT2075 (bus 1 / 0x37) and TSL2591 (0x29) can feed separate real temperature/lux
 
 GUI 2.12 connects albums/artists/tracks/playlists/radio, search and cover art to MA in live mode. Play/Next/Add actions respect read-only/player/volume policy. This is not Spotify’s personalised Discover feed or complete queue editing. See [API evidence, resource bounds and actual-server verification](docs/music-library.md). Temperature display is filtered and rounded; raw telemetry and safety permissions are unchanged.
 
-Software updates: [signed OTA setup and recovery](docs/ota-updates.md). Updates are opt-in; GitHub signing setup and a pinned public key are required.
+## GUI 2.14 · Setup and updates
+
+Settings → Setup provides swipeable network, Music Assistant, player, headphone-test and sensor pages. Settings → Updates shows versions and signed release notes, real download progress, an automatic/notify/paused policy, timezone-aware windows and confirmed rollback. Local development labels all privileged device actions as simulated and uses the same action protocol, policy and transaction logic.
+
+During initial Pi installation, choose `--updates auto`, `--updates notify` or `--updates skip`. A single public project key is bundled with signed release packages once the maintainer configures GitHub signing. No per-device private key is needed. The independent local progress page remains available while the application backend restarts.
+
+See [signed OTA setup and recovery](docs/ota-updates.md) and the [first-run wizard](docs/first-run-wizard.md). Signing setup and physical Pi update/rollback validation are still required; simulation results do not certify hardware.

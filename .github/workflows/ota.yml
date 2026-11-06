@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   publish:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository
+    if: github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch') && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -34,6 +34,11 @@ jobs:
             echo '::notice::No signing key, or a newer main commit exists; skipping publication.'
           fi
       - if: steps.ready.outputs.publish == 'true'
+        name: Bundle public project key
+        env:
+          TUNEBOX_OTA_SIGNING_KEY: ${{ secrets.TUNEBOX_OTA_SIGNING_KEY }}
+        run: node deploy/ota/export-public.mjs
+      - if: steps.ready.outputs.publish == 'true'
         run: npm ci && npm run package:pi
       - if: steps.ready.outputs.publish == 'true'
         name: Sign and publish immutable assets
@@ -41,6 +46,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TUNEBOX_OTA_SIGNING_KEY: ${{ secrets.TUNEBOX_OTA_SIGNING_KEY }}
           TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+          TUNEBOX_UPDATE_NOTES: ${{ github.event.workflow_run.display_title }}
         run: |
           node deploy/ota/sign.mjs tunebox-release.tar.gz preview "$TESTED_SHA" "$GITHUB_RUN_ID"
           tag="ota-preview-$TESTED_SHA"

@@ -1,63 +1,104 @@
-# Signed software updates
+# Signed updates and initial installation
 
-TuneBox can follow the GitHub **preview** channel. Each successful Verify run for a push to main can publish an immutable signed release. The Pi polls every 15 minutes; this is a pull channel, so it needs no inbound internet port. No updates are enabled by the normal installer.
+TuneBox follows a signed GitHub **preview** channel. A successful Verify run for a main push can publish an immutable release. The Pi pulls releases every 15 minutes; it needs no incoming internet port. One project public key verifies releases on every device. Devices do not need separate signing keys or a GitHub token.
 
-The updater is a separate, root-installed program. It verifies an Ed25519 signature with a pinned public key, archive size/hash, safe archive paths and the complete file inventory. Production npm dependencies install with scripts disabled as an unprivileged build user. The application still runs as `dawone`. An update never executes the candidate installer as root or updates the updater itself.
+## One-time project setup (maintainer, on your Mac)
 
-## One-time maintainer setup on your Mac
-
-From a trusted checkout, with Node 22.12+ and GitHub CLI installed:
+With Node 22.12+ and GitHub CLI, from a trusted checkout:
 
 ```sh
 node deploy/ota/keygen.mjs
 gh secret set TUNEBOX_OTA_SIGNING_KEY --repo ducasebas/daw-one-music-interface < .ota-keys/private.pem
-scp .ota-keys/public.pem dawdev@10.69.0.203:~/tunebox-ota-public.pem
+gh workflow run check.yml --repo ducasebas/daw-one-music-interface --ref main
+npm ci
+npm run package:pi
 ```
 
-Keep a secure backup of the private key. `.ota-keys/` is ignored; never add it to Git or send the private key in chat. GitHub Actions receives only the repository secret. The public key is safe to distribute. Rotating the signing key requires manually replacing the pinned public key on each Pi.
+Key generation creates the ignored `.ota-keys/private.pem`, a backup public key, and `deploy/ota/public.pem` for bundling. Keep a secure offline backup of the private key. Never commit it or paste it in chat. The public key may be committed. If you already have a signing key, do not generate a replacement: copy its public key to `deploy/ota/public.pem` instead. Key rotation requires manually replacing the pinned public key on each Pi.
 
-## One-time Pi setup
+The manual Verify run above tests main and can publish the first release without a dummy commit. After the GitHub secret is configured, the publication workflow includes the matching public key in each release bundle. The secret is available only to the public-key export and signing steps, not the dependency installation/build steps. Source checkouts without an established project key cannot silently enable OTA. No project signing key or GitHub signing secret was created by the implementation task.
 
-First install this version through the normal [Raspberry Pi installation](raspberry-pi.md). From the extracted release directory (not `/opt/daw-one`):
+## Enable during initial Pi installation
+
+From the extracted release directory:
 
 ```sh
-sudo bash deploy/install-ota.sh ~/tunebox-ota-public.pem preview
+sudo bash deploy/install.sh --target auto --prebuilt --music-assistant skip --updates auto
+```
+
+Use `--updates notify` to check and announce updates without installing them automatically, or `--updates skip` to leave OTA off. The default `--updates ask` asks in an interactive terminal when a project key is available; otherwise it leaves OTA off and explains why. An explicit `auto` or `notify` fails before installing packages if no valid project public key is available. For an external public key:
+
+```sh
+sudo bash deploy/install.sh --target auto --prebuilt --music-assistant skip --updates notify --update-key ~/tunebox-ota-public.pem
+```
+
+The initial installer installs the limited device manager and first-run wizard even with OTA off. It preserves existing configuration and never changes boot configuration or grants physical amplifier verification.
+
+## Existing installation
+
+Install this application release normally first. To enable OTA separately:
+
+```sh
+sudo bash deploy/install-ota.sh ~/tunebox-ota-public.pem preview notify
 sudo systemctl start daw-one-update.service
 sudo journalctl -u daw-one-update.service -n 60 --no-pager
 curl -fsS http://127.0.0.1:3001/api/updates
 ```
 
-Settings → Updates shows the channel, last check, commit and status. It is read only; the browser cannot execute privileged updates. `not-configured` is expected before setup. A newly added GitHub secret takes effect on the next successful main push. Existing green commits do not publish retrospectively.
+The last argument is `auto`, `notify` or `paused`. The installer also installs/refreshes the trusted device manager, independent progress page and backend connection-file drop-in. Root updater/manager changes require a reviewed manual rerun of their installers; application OTA never replaces these privileged programs or systemd units itself.
 
-The GitHub repository and release assets must be publicly readable. Private repository authentication is not implemented in this version. Never work around this by placing a GitHub token in frontend code. Verify repository visibility before enabling the channel.
+## Touchscreen settings
 
-## Behaviour and boundaries
+**Settings → Updates** contains three swipeable pages:
 
-Updates defer while the shared state reports playback, faults, an enabled amplifier, an unknown device state, or a disconnected live player/server. The updater checks again after staging. External Music Assistant playback can start at any moment; these checks do not reserve a playback lock on the NUC. Squeezelite is never stopped by the updater.
+- **Overzicht:** current and available versions, last check, check/install actions, and a separate confirmation for restoring the previous version.
+- **Beleid:** automatic installation, notification only, pause, and an optional time window with an explicit IANA timezone. Overnight windows and daylight saving time are handled in that timezone. Equal start/end means all day. Timer polling means a window is not an exact start-time appointment.
+- **Wijzigingen:** the short release note covered by the release signature; it is rendered as text.
 
-During activation only the UI/backend services restart. A healthy backend must report the expected release **and commit**, and serve the frontend. If health fails, the previous application slot is selected and restarted. A failed recovery retains a journal for repair. A process/power interruption is recovered at the next updater timer run (normally five minutes after boot); this is not an uninterrupted boot guarantee.
+Explicit installation bypasses the time window, never the safety/idle check. An unsafe manual request is deferred: stop playback and request installation again in notification-only mode. Automatic mode retries at a later scheduled check. Manual rollback requires a previously installed slot and safe idle state, then pauses automatic installation to prevent an immediate re-upgrade.
 
-The updater preserves `/etc/daw-one.env`, token files, persistent settings, Chromium profile, independent Squeezelite service, sensor virtual environment and current top-level deployment helpers. It does not change system packages, systemd policy, GPIO, I²C permissions, boot configuration or amplifier verification. Releases needing those changes require a manual installation. Health probes check the root HTML and referenced built assets; they are not a browser rendering or hardware certification test.
+In local development with simulated playback, these controls use a labelled simulated device and the same protocol, update policy and activation/rollback functions. They do not replace application files or produce physical audio. Production never silently falls back to simulated privileged control if the manager is missing.
 
-Release slots live in `/opt/daw-one-releases`. After successful activation, the updater keeps the current, previous and two recent spare slots, pruning older slots with recognised release names. Unfamiliar names are left alone. At eight accumulated slots (for example after repeated failed staging), automatic installation stops; inspect and remove only unused slots through SSH, keeping the current symlink target and the previous known working version. Staging requires free storage for an archive, extracted app and production dependencies. Preview is the automatic channel; stable is reserved for a separately reviewed, signed publication process and currently has no automatic publisher.
+## Real progress and backend restarts
 
-## Pause and recovery
+Downloading shows received bytes and a real percentage against the signed archive size. Signature verification, preparation, activation, restart and health checks show their actual phase with an indeterminate progress bar. No invented overall completion percentage is shown.
+
+`daw-one-manager.service` serves a small independent progress page at **127.0.0.1:3002**. The kiosk uses this local entry point when available; before an update the UI transfers to it. Chromium/Cage remain running while only the application backend restarts. The page polls its own service and returns to the app after activation/recovery is finished and the backend responds. It has no HTTP mutation API and no dependency on React, Vite or the application assets.
+
+Remote browsers keep the already-loaded progress overlay during a backend restart and reload after successful activation/recovery. Their own `localhost:3002` is never used as a redirect target. To inspect the independent page from your Mac, forward its port explicitly:
+
+```sh
+ssh -N -L 3001:127.0.0.1:3001 -L 3002:127.0.0.1:3002 dawdev@10.69.0.203
+```
+
+The independent display still depends on the manager, browser, graphical session and power. It cannot guarantee visible progress if those components fail. Its fallback branding is fixed; the React progress screens inherit the active skin tokens.
+
+## Verification, state and recovery
+
+The root-installed updater verifies the Ed25519 signature against the pinned key, repository/channel/sequence, archive size/hash, safe tar paths and complete file inventory. Dependencies install with npm scripts disabled as a separate unprivileged build user. Candidate installers never run as root. The application remains `dawone`.
+
+Automatic installation defers on playback, faults, an enabled amplifier, unknown device state or disconnected live player/server. Checks repeat after staging and before activation. External MA playback may start at any time: this is not a distributed playback lock on the NUC. Squeezelite is never stopped by the updater.
+
+Health must report the expected release **and commit**, and serve the root HTML and referenced built assets. Failure selects and restarts the prior slot. A failed recovery keeps its transaction journal. A process/power interruption is recovered at the next updater run, normally around five minutes after boot. This is not an uninterrupted boot guarantee or a physical hardware/rendering certification test.
+
+Updates preserve `/etc/daw-one.env`, `/etc/daw-one/connection.env`, token files, persistent settings, Chromium profile, Squeezelite, sensor environment and current deployment helpers. They never change boot configuration, kernel/OS packages, electrical limits, GPIO, HAT controls or amplifier verification. Releases requiring those changes need manual installation.
+
+Slots are in `/opt/daw-one-releases`. Successful activation keeps the current slot, previous slot and two recent spares. Unfamiliar names are untouched. Eight accumulated slots or insufficient staging space stops installation rather than deleting arbitrary data. A minimum of 256 MiB free space is checked; actual dependencies may need more. Inspect unused slots through SSH when repeated failures fill storage.
+
+The repository/releases must be publicly readable. Authenticated private release download is not implemented. Stable is reserved for a reviewed signed publication process; preview is currently the only automatic publisher.
+
+## Diagnostics and manual pause
 
 ```sh
 sudo systemctl disable --now daw-one-update.timer
-readlink -f /opt/daw-one
-sudo journalctl -u daw-one-update.service -b --no-pager
+sudo systemctl status daw-one-manager.service daw-one-update.service --no-pager
+sudo journalctl -u daw-one-update.service -u daw-one-manager.service -b --no-pager
 sudo cat /var/lib/daw-one-update-status/status.json
+readlink -f /opt/daw-one
 ```
 
-If a pending transaction exists, run the updater again to attempt recovery:
+Starting `daw-one-update.service` retries pending-journal recovery. Do not delete its current or previous slot. Do not run the normal installer over an OTA symlink; use a reviewed migration back to a conventional installation for OS/systemd changes. Root configuration is in `/etc/daw-one-updater`, private journals in `/var/lib/daw-one-updater`; public status deliberately excludes credentials and raw errors.
 
-```sh
-sudo systemctl start daw-one-update.service
-```
+## Validation boundaries
 
-For manual rollback, stop the kiosk/backend, select a known working directory in `/opt/daw-one-releases` using an atomic replacement symlink, then start the backend and run `npm run doctor` from `/opt/daw-one`. Never remove the current slot or the previous slot recorded in `/var/lib/daw-one-updater/pending.json`. Do not run the regular installer over an OTA symlink: disable OTA and migrate back to a conventional installation first. Root updater changes require a reviewed rerun of `install-ota.sh`.
-
-## Validation status
-
-Automated tests cover signatures, tampering, replay/channel rejection, archive traversal/symlink limits, idle policy, successful activation and health failure rollback with mocked service operations. Actual GitHub-secret publication, systemd activation, interrupted power and rollback on a physical Pi remain to be validated. Do not treat the implementation as already enabled on an owner's device.
+Automated tests exercise protocol restrictions, same-origin control tokens, policy/window/DST handling, signature/hash checks, safe extraction, simulated update progress and rollback, health-failure recovery, independent HTTP progress without the backend, and the setup UI at 1280 × 400. Systemd actions are mocked in logic tests. A physical Pi transaction, intentional failed release, power interruption, Wi-Fi change and actual headphone test still require owner hardware validation.

@@ -32,3 +32,11 @@ Simulation audio commands `volume` and `mute` now update shared runtime audio (`
 SSE delivery handles writable-stream backpressure without treating it as a disconnect. Each slow client retains only its latest pending snapshot until drain; heartbeats do not replace waiting snapshots. Closed clients are removed. This prevents a large event log from causing false offline transitions. If the SSE transport errors, the frontend verifies connectivity through the HTTP snapshot fallback rather than declaring a healthy backend offline immediately.
 
 GUI 2.12 adds read-only catalogue/search and guarded play/next/add routes plus a restricted artwork proxy. See [library contract and compatibility limits](music-library.md).
+
+## Device setup and update control (GUI 2.14)
+
+`GET /api/updates` is never cached. It returns sanitised phase/download/current/available release data, device-manager capabilities/policy and a process-bound control nonce. Raw errors, Wi-Fi passwords and MA tokens are excluded. `POST /api/device` requires this nonce as `X-TuneBox-Control`, JSON `{command,args}`, and same-origin validation. Production forwards the bounded command to a protected Unix socket; development simulation uses the same `DeviceManager` protocol and update policy/transactions.
+
+Allowed commands: `status`, `policy`, `check`, `install`, `rollback`, `network`, `wifi`, `probe-music`, `save-music`, `audio-test`, `complete-setup`. Unknown commands/fields, arbitrary paths, non-local MA URLs and unverified audio devices are rejected. `audio-test` accepts only `plughw:CARD=Headphones,DEV=0` and the real adapter additionally checks bcm2835 Headphones identity and safe idle state. There is no GPIO/shell endpoint. The MA/wifi credential fields exist only in their explicit setup request and protected OS storage, not in public status or local storage.
+
+Root status/commands use `/run/daw-one-manager/control.sock` (root:dawone 0660). The independent progress HTTP server at 127.0.0.1:3002 exposes only `GET /` and `GET /status`; it accepts no management commands. Update phases are logged without credentials to the update service journal; simulated update phases also enter the common simulator event timeline. See [OTA](ota-updates.md) and [setup](first-run-wizard.md) for operating boundaries.

@@ -213,7 +213,7 @@ test("visible frontend release identifies missing and mismatched backend version
   await page.goto("/?gui=2&product=1");
   await expect(
     page.getByLabel("Softwareversie", { exact: true }),
-  ).toContainText("GUI 2.13 · OTA");
+  ).toContainText("GUI 2.14 · SETUP");
   await expect(
     page.getByLabel("Softwareversie", { exact: true }),
   ).toHaveAttribute("data-alignment", "matched");
@@ -224,7 +224,7 @@ test("visible frontend release identifies missing and mismatched backend version
   await expect(product).toHaveURL(/gui=2/);
   await expect(
     product.getByLabel("Softwareversie", { exact: true }),
-  ).toContainText("GUI 2.13 · OTA");
+  ).toContainText("GUI 2.14 · SETUP");
   await product.close();
   await page.goto("/?gui=2&product=1");
   const snapshot = await (await page.request.get("/api/state")).json();

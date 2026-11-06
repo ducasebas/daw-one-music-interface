@@ -82,10 +82,12 @@ App Shutdown simulates a safe state transition; it does **not** power off Linux.
 
 ## Updates / rollback
 
-Keep previous release and lockfile. On a development clone: `git pull --ff-only`, `npm ci`, `npm run check`, `npm run test:ui`. For deployment stop kiosk/backend, retain `/opt/daw-one` backup, rerun installer, check health, then restart kiosk. Restore previous `/opt/daw-one` and units if checks fail. Do not update while real audio hardware is enabled. Installer is a simple manual update scaffold, not atomic OTA.
+Keep previous release and lockfile. On a development clone: `git pull --ff-only`, `npm ci`, `npm run check`, `npm run test:ui`. For deployment stop kiosk/backend, retain `/opt/daw-one` backup, rerun installer, check health, then restart kiosk. Restore previous `/opt/daw-one` and units if checks fail. Do not update while real audio hardware is enabled. The regular installer performs a manual installation. Optional signed OTA uses separate release slots and health-checked rollback; never run the regular installer over an active OTA symlink.
 
 Installer update: Pi3 B+/Pi4 detection is automatic (`--target auto`); VM remains explicit. See [optional local Music Assistant](local-music-assistant.md) for the default-no co-hosting choice.
 
 ## Optional signed software updates
 
-See [OTA setup and recovery](ota-updates.md). Normal installation does not enable automatic updates.
+The initial installer accepts `--updates auto`, `--updates notify` or `--updates skip`. Its default `ask` only offers a choice interactively when a project public key is bundled or already pinned; otherwise it leaves OTA off. The same public key is used on all devices, with one private signing key retained by the project maintainer. See [OTA setup and recovery](ota-updates.md).
+
+The installer also installs the bounded `daw-one-manager.service`. This adds the first-run wizard, fixed setup/update actions, a backend connection override file, and a loopback-only independent progress page on port 3002. The backend stays unprivileged; the independent Squeezelite service is retained. The manager's additional RAM use on Pi3/Pi4 has not yet been measured. See [first-run wizard capabilities and limits](first-run-wizard.md).

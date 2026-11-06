@@ -1,3 +1,4 @@
+import {SetupWizard} from "./SetupWizard.jsx";
 import { UpdateSettings } from "./UpdateSettings.jsx";
 import { BootPanel } from "./BootPanel.jsx";
 import React, { useState, useEffect } from "react";
@@ -18,6 +19,7 @@ const pages = [
   "Connection",
   "Startup",
   "Updates",
+  "Setup",
 ];
 export function SettingsPages({
   snapshot,
@@ -28,10 +30,12 @@ export function SettingsPages({
   theme,
   setThemePreferences,
   initialPage = 0,
+  onPageChange,
   offline = false,
 }) {
   const [index, setIndex] = useState(initialPage);
   useEffect(() => setIndex(initialPage), [initialPage]);
+  useEffect(()=>onPageChange?.(index),[index,onPageChange]);
   return (
     <Pager label="Settings" items={pages} index={index} onChange={setIndex}>
       {index === 0 ? (
@@ -83,6 +87,8 @@ export function SettingsPages({
             </select>
           </label>
         </div>
+      ) : pages[index] === "Setup" ? (
+        <SetupWizard snapshot={snapshot} offline={offline}/>
       ) : pages[index] === "Updates" ? (
         <UpdateSettings />
       ) : pages[index] === "Startup" ? (

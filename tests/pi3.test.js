@@ -6,6 +6,8 @@ import {
   writeFileSync,
   rmSync,
   symlinkSync,
+  chmodSync,
+  statSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -79,6 +81,8 @@ test("release archive excludes development and secrets, detects corruption and s
       ".tunebox-state/boot.json",
     ])
       writeFileSync(join(root, file), "{}");
+    chmodSync(join(root,"package.json"),0o600);
+    chmodSync(join(root,"server"),0o700);
     const archive = join(root, "bundle.tar.gz");
     packRelease(root, archive);
     const listing = execFileSync("tar", ["-tzf", archive], {
@@ -89,8 +93,11 @@ test("release archive excludes development and secrets, detects corruption and s
     assert.match(listing, /^THIRD_PARTY_NOTICES\.md$/m);
     const out = join(root, "out");
     mkdirSync(out);
-    execFileSync("tar", ["-xzf", archive, "-C", out]);
+    execFileSync("tar", ["-xzpf", archive, "-C", out]);
     assert.equal(verifyRelease(out).release, release.id);
+    assert.equal(statSync(join(out,"package.json")).mode & 0o777,0o644);
+    assert.equal(statSync(join(out,"server")).mode & 0o777,0o755);
+    assert.equal(statSync(join(out,"release-manifest.json")).mode & 0o777,0o644);
     writeFileSync(join(out, "package.json"), "changed");
     assert.throws(() => verifyRelease(out), /integrity/);
     writeFileSync(join(root, "dist/assets/app.js"), "old-release");

@@ -1,3 +1,5 @@
+import "./device-settings.css";
+import {DeviceUpdatesProvider} from "./DeviceUpdates.jsx";
 import {
   deviceProfile,
   profileSettings,
@@ -581,7 +583,7 @@ class AppBoundary extends React.Component {
 }
 createRoot(document.getElementById("root")).render(
   <AppBoundary>
-    <App />
+    <DeviceUpdatesProvider><App /></DeviceUpdatesProvider>
   </AppBoundary>,
 );
 if (import.meta.env.PROD && "serviceWorker" in navigator)

@@ -4,5 +4,8 @@ if(existsSync('.ota-keys'))throw Error('.ota-keys exists; refusing to overwrite 
 mkdirSync('.ota-keys',{mode:0o700});
 const {privateKey,publicKey}=generateKeyPairSync('ed25519');
 writeFileSync('.ota-keys/private.pem',privateKey.export({type:'pkcs8',format:'pem'}),{mode:0o600});
-writeFileSync('.ota-keys/public.pem',publicKey.export({type:'spki',format:'pem'}));
+const publicPem=publicKey.export({type:'spki',format:'pem'});
+writeFileSync('.ota-keys/public.pem',publicPem);
+writeFileSync('deploy/ota/public.pem',publicPem);
+console.log('Bundled the public project key for initial installation; one key can verify every device.');
 console.log('Created local .ota-keys/private.pem and public.pem; never commit the private key.');

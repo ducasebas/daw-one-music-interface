@@ -1,3 +1,4 @@
+import {GlobalUpdateProgress,useDeviceUpdates} from "./DeviceUpdates.jsx";
 import { LiveLibrary } from "./LiveLibrary.jsx";
 import { Artwork } from "./Artwork.jsx";
 import { bootPhaseLabels } from "./BootPanel.jsx";
@@ -63,6 +64,7 @@ export function MusicShell({
   notice,
   startupPreview,
 }) {
+  const deviceUpdates=useDeviceUpdates();
   const [liveViews, setLiveViews] = useState({});
   const [settingsPage, setSettingsPage] = useState(0);
   const [page, setPage] = useState("discover"),
@@ -75,6 +77,8 @@ export function MusicShell({
     [pending, setPending] = useState(false),
     [video, setVideo] = useState(false),
     [rooms, setRooms] = useState({ rivo: false, volume: 35 });
+  const prompted=useRef(false);
+  useEffect(()=>{const manager=deviceUpdates?.info?.manager;if(!prompted.current&&manager?.managed&&!manager.simulated&&manager.setupComplete===false){prompted.current=true;setSettingsPage(13);setPage("settings");}},[deviceUpdates?.info?.manager?.managed,deviceUpdates?.info?.manager?.setupComplete]);
   const [favorites, setFavorites] = useState(() => {
     try {
       const v = JSON.parse(
@@ -207,7 +211,7 @@ export function MusicShell({
   );
   return (
     <main
-      className="music2"
+      className={"music2"+(page==="settings"&&settingsPage>=12?" immersive-settings":"")}
       data-theme={theme.id}
       data-page={page}
       data-performance={prefs.lowPower ? "pi3" : "standard"}
@@ -221,6 +225,7 @@ export function MusicShell({
       }}
       data-motion={direction}
     >
+      <GlobalUpdateProgress />
       <StartupScreen
         mode={device.mode}
         offline={offline}
@@ -666,6 +671,7 @@ export function MusicShell({
             <SettingsPages
               offline={offline}
               initialPage={settingsPage}
+              onPageChange={setSettingsPage}
               snapshot={snapshot}
               onSnapshot={setSnapshot}
               prefs={prefs}

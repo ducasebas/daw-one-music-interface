@@ -4,15 +4,20 @@ set -euo pipefail
 target=auto
 prebuilt=false
 ma_mode=ask
+updates_mode=ask
+update_key=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --updates) [[ $# -ge 2 ]] || exit 2; updates_mode=$2; shift 2 ;;
+    --update-key) [[ $# -ge 2 ]] || exit 2; update_key=$2; shift 2 ;;
     --target) [[ $# -ge 2 ]] || { echo 'Missing --target value' >&2; exit 2; }; target=$2; shift 2 ;;
     --prebuilt) prebuilt=true; shift ;;
     --music-assistant) [[ $# -ge 2 ]] || { echo "Missing --music-assistant value" >&2; exit 2; }; ma_mode=$2; shift 2 ;;
-    *) echo 'Usage: install.sh [--target auto|pi4|pi3-experimental|vm] [--prebuilt] [--music-assistant ask|skip|install]' >&2; exit 2 ;;
+    *) echo 'Usage: install.sh [--target auto|pi4|pi3-experimental|vm] [--prebuilt] [--music-assistant ask|skip|install] [--updates ask|auto|notify|skip] [--update-key PATH]' >&2; exit 2 ;;
   esac
 done
 case "$target" in auto|pi4|pi3-experimental|vm) ;; *) echo 'Unknown installation target.' >&2; exit 2 ;; esac
+case "$updates_mode" in ask|auto|notify|skip) ;; *) echo "Invalid --updates choice" >&2; exit 2 ;; esac
 case "$ma_mode" in ask|skip|install) ;; *) echo "Invalid --music-assistant choice" >&2; exit 2 ;; esac
 if [[ $target == pi3-experimental && $prebuilt != true ]]; then
   echo 'Pi 3 experimental requires --prebuilt: build/package on the Mac first. See docs/pi3-experimental.md.' >&2; exit 2
@@ -21,6 +26,27 @@ if [[ $(id -u) -ne 0 ]]; then echo 'Run with sudo inside the Linux target.' >&2;
 if [[ -L /opt/daw-one ]]; then echo "OTA slot installation detected. Disable OTA and follow docs/ota-updates.md before a manual reinstall." >&2; exit 2; fi
 repo=$(cd "$(dirname "$0")/.." && pwd)
 source "$repo/deploy/install-target.sh"
+if [[ -z $update_key ]]; then
+  if [[ -f "$repo/deploy/ota/public.pem" ]]; then update_key="$repo/deploy/ota/public.pem";
+  elif [[ -f /etc/daw-one-updater/public.pem ]]; then update_key=/etc/daw-one-updater/public.pem; fi
+fi
+if [[ $updates_mode == ask ]]; then
+  updates_mode=skip
+  if [[ -n $update_key && -t 0 ]]; then
+    read -r -p 'Software updates: automatic, notify only, or skip? [auto/notify/skip, default notify] ' update_answer
+    updates_mode=${update_answer:-notify}
+    case "$updates_mode" in auto|notify|skip) ;; *) echo 'Invalid update choice' >&2; exit 2 ;; esac
+  else echo 'OTA not enabled automatically: non-interactive installation or project public key missing.'; fi
+fi
+if [[ $updates_mode != skip ]]; then
+  [[ -f $update_key ]] || { echo 'No project signing key. Use --update-key PATH or bundle deploy/ota/public.pem; see docs/ota-updates.md.' >&2; exit 2; }
+  update_key=$(readlink -f "$update_key")
+  node --input-type=module - "$update_key" <<'JS'
+import {readFileSync} from 'node:fs';import {createPublicKey} from 'node:crypto';
+if(createPublicKey(readFileSync(process.argv[2])).asymmetricKeyType!=='ed25519')throw Error('Ed25519 public key required');
+JS
+fi
+
 model=''
 if [[ -r /proc/device-tree/model ]]; then model=$(tr -d '\0' </proc/device-tree/model); fi
 if [[ $target == auto ]]; then target=$(daw_detect_install_target "$model"); fi
@@ -59,11 +85,16 @@ if [[ $prebuilt != true ]]; then
   npm run check
 fi
 mkdir -p /opt/daw-one
-cp -r dist server shared docs package.json package-lock.json LICENSE THIRD_PARTY_NOTICES.md /opt/daw-one/
+cp -r dist server shared deploy docs package.json package-lock.json LICENSE THIRD_PARTY_NOTICES.md /opt/daw-one/
 if [[ $prebuilt == true ]]; then install -m 644 "$repo/release-manifest.json" /opt/daw-one/release-manifest.json; fi
 cd /opt/daw-one
-npm ci --omit=dev
+npm ci --omit=dev --ignore-scripts
 chown -R root:root /opt/daw-one
+# An owner's restrictive umask must not leave public runtime code unreadable by dawone.
+chmod 755 /opt/daw-one
+chmod -R a+rX /opt/daw-one/{dist,server,shared,deploy,docs,node_modules}
+chmod 644 /opt/daw-one/{package.json,package-lock.json,LICENSE,THIRD_PARTY_NOTICES.md}
+if [[ -f /opt/daw-one/release-manifest.json ]]; then chmod 644 /opt/daw-one/release-manifest.json; fi
 install -m 644 "$repo/deploy/daw-one.service" /etc/systemd/system/
 install -m 644 "$repo/deploy/daw-one-kiosk.service" /etc/systemd/system/
 install -m 644 "$repo/deploy/daw-one-health.service" /etc/systemd/system/
@@ -72,6 +103,13 @@ install -m 755 "$repo/deploy/health.sh" /opt/daw-one/health.sh
 install -m 755 "$repo/deploy/kiosk.sh" /opt/daw-one/kiosk.sh
 install -m 755 "$repo/deploy/set-display-mode.sh" /opt/daw-one/set-display-mode.sh
 printf '%s\n' "$target" > /opt/daw-one/deployment-target
+if [[ ! -f /etc/daw-one.env ]]; then
+  printf 'DAW_PLAYBACK_MODE=simulation\nMA_ALLOW_CONTROL=false\nMA_VOLUME_LIMIT=40\n' > /etc/daw-one.env
+  chown root:dawone /etc/daw-one.env
+  chmod 640 /etc/daw-one.env
+fi
+bash "$repo/deploy/install-manager.sh"
+if [[ $updates_mode != skip ]]; then bash "$repo/deploy/install-ota.sh" "$update_key" preview "$updates_mode"; fi
 systemctl daemon-reload
 systemctl enable daw-one.service daw-one-health.timer
 systemctl restart daw-one.service

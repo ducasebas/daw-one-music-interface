@@ -1,3 +1,5 @@
+import {deviceRequest,controlToken,validDeviceRequest} from "./device-client.js";
+import {simulatedDevice} from "./simulated-device.js";
 import {updateStatus, deploymentCommit} from "./update-status.js";
 import { MusicLibrary } from "./music-library.js";
 import { ArtworkCache } from "./artwork.js";
@@ -76,7 +78,17 @@ const broadcast = () => {
 music?.on("change", broadcast);
 music?.start();
 app.use(express.json({ limit: "8kb" }));
-app.get("/api/updates", (_q,r)=>r.json(updateStatus()));
+const simulatedManager=process.env.NODE_ENV!=="production"&&config.mode==="simulation"&&!process.env.DAW_MANAGER_SOCKET?simulatedDevice({snapshot,directory:process.env.DAW_STATE_DIR||".tunebox-state",onEvent:phase=>runtime.record(Date.now(),"software-update",runtime.device.mode,"Simulated update: "+phase)}):null;
+const manage=request=>simulatedManager?simulatedManager.request(request):deviceRequest(request);
+app.get("/api/updates",async(_q,r)=>{
+ let manager;try{manager=await manage({command:"status"});}catch{manager={managed:false,simulated:false,configured:false};}
+ const status=simulatedManager?simulatedManager.status():updateStatus();
+ r.set("Cache-Control","no-store").json({...status,current:status.current?.release?status.current:{release:release.id,commit:deploymentCommit()},manager,controlToken});
+});
+app.post("/api/device",async(q,r)=>{
+ if(!validDeviceRequest(q))return r.status(403).json({error:"Reload TuneBox before changing device settings"});
+ try{r.json(await manage(q.body));}catch(error){r.status(409).json({error:String(error.message).slice(0,180)});}
+});
 app.get("/api/health", (_q, r) =>
   r.json({
     ok: true,

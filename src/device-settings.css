@@ -1,0 +1,45 @@
+.updates-page,.setup-wizard{display:flex;flex-direction:column;height:100%;min-height:0;font-size:12px;color:var(--muted)}
+.updates-page h3,.setup-wizard h3{font-size:16px;font-weight:500;color:var(--text);margin:0 0 6px}
+.updates-page p,.setup-wizard p{margin:5px 0;line-height:1.4}
+.updates-page small,.setup-wizard small{font-size:10px;line-height:1.35}
+.updates-page button,.setup-wizard button{min-height:44px;border:1px solid var(--border-color);border-radius:var(--radius,8px);padding:8px 12px;font-size:12px;color:var(--text)}
+.updates-page input,.updates-page select,.setup-wizard input,.setup-wizard select{display:block;width:100%;height:44px;min-width:0;margin:4px 0 0;background:var(--surface);color:var(--text);border:1px solid var(--border-color);border-radius:var(--radius,8px);padding:6px 10px;font:inherit}
+.updates-page .pager-bar,.setup-wizard .pager-bar{height:44px}
+.updates-page .page-body,.setup-wizard .page-body{padding-top:8px}
+.update-columns{display:grid;grid-template-columns:1fr 1.3fr;gap:25px;height:100%;align-items:start}
+.update-summary p{font-size:11px}
+.update-actions{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.update-summary{position:relative;min-width:0}
+.update-confirm{position:absolute;inset:0;display:flex;align-content:center;justify-content:center;flex-wrap:wrap;gap:12px;padding:14px;background:var(--bg,#101416);border:1px solid var(--accent);z-index:2}
+.update-confirm span{width:100%}
+.device-notice{flex:none;min-height:18px;font-size:10px!important;color:var(--accent);overflow-wrap:anywhere}
+.update-policy{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px 18px;align-items:end}
+.update-policy>small{grid-column:1/-1}
+.update-toggle{display:flex;gap:10px;align-items:center;line-height:1.4}
+.update-toggle input[type=checkbox]{display:inline-block;width:22px;height:22px;flex:none;accent-color:var(--accent);margin:0}
+.update-progress{width:100%;max-width:1000px;color:var(--text)}
+.update-progress>small{color:var(--accent);letter-spacing:.13em;font-size:10px}
+.update-progress h3{font-size:27px;margin:12px 0 16px;font-weight:400}
+.update-progress.compact h3{font-size:18px;margin:9px 0}
+.update-progress p{color:var(--muted);font-size:12px}
+.update-progress progress{width:100%;height:12px;accent-color:var(--accent)}
+.update-steps{list-style:none;display:flex;gap:9px;justify-content:space-between;padding:0;margin:15px 0}
+.update-steps li{font-size:13px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:7px;flex:1}
+.update-steps li span{font-size:10px;text-align:center}
+.update-steps li[aria-current=step]{color:var(--accent)}
+.update-overlay{position:absolute;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg,#101416);padding:35px;min-height:400px}
+.update-changes p{white-space:pre-wrap;overflow-wrap:anywhere;max-width:1050px;line-height:1.5;max-height:135px;overflow:hidden}
+.setup-form{display:grid;grid-template-columns:1fr 1fr;gap:8px 22px;align-items:start}
+.setup-form>section{min-width:0}
+.setup-form label{min-width:0}
+.setup-form>button{justify-self:start;align-self:end}
+.setup-sensors{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.setup-sensors>section{padding:12px 14px;border:1px solid var(--border-color);border-radius:var(--radius,8px)}
+.setup-sensors h3{margin-top:6px}.setup-sensors strong{font-size:21px;font-weight:400;color:var(--text)}
+@media(max-width:700px){.update-columns{gap:10px}.update-summary p{font-size:10px}.update-actions{gap:4px}.updates-page button,.setup-wizard button{font-size:10px;padding:7px}.update-policy{gap:7px}.update-steps li span{font-size:8px}.setup-form{gap:8px}.setup-sensors{gap:8px}.setup-sensors>section{padding:7px}.setup-sensors strong{font-size:15px}}
+@media(prefers-reduced-motion:no-preference){.update-progress progress:indeterminate{animation:update-breathe 1.5s ease-in-out infinite alternate}@keyframes update-breathe{to{opacity:.4}}}
+.setup-network{grid-template-columns:1fr 1fr 1fr}.setup-network>section{grid-row:span 2}.setup-network>small{grid-column:1/-1}
+.music2.immersive-settings{grid-template-rows:58px minmax(0,1fr)}
+.music2.immersive-settings>.m2-heading,.music2.immersive-settings>.m2-player{display:none}
+.music2.immersive-settings>.m2-content{grid-row:2}
+.music2 .updates-page button,.music2 .setup-wizard button{min-height:44px;border:1px solid var(--border-color);padding:8px 12px;font-size:12px}
