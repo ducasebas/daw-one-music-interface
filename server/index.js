@@ -1,4 +1,6 @@
-import {readSensorTelemetry} from "./sensor-telemetry.js";
+import { MusicLibrary } from "./music-library.js";
+import { ArtworkCache } from "./artwork.js";
+import { readSensorTelemetry } from "./sensor-telemetry.js";
 import { BootStore } from "./boot-store.js";
 import { bootInventory } from "./boot-inventory.js";
 import { bootReport, BootMonitor } from "../shared/boot.js";
@@ -20,9 +22,15 @@ const config = musicConfig(),
   clients = new Set();
 const music =
   config.mode === "music-assistant" ? new LiveMusicService(config) : null;
+const library = music ? new MusicLibrary(music) : null;
+const artwork = music ? new ArtworkCache(config) : null;
 runtime.dispatch({ type: "boot-complete" });
 const snapshot = () => {
-  const state = { ...runtime.snapshot(), build: release, hardwareTelemetry:readSensorTelemetry(process.env.DAW_SENSOR_FILE) };
+  const state = {
+    ...runtime.snapshot(),
+    build: release,
+    hardwareTelemetry: readSensorTelemetry(process.env.DAW_SENSOR_FILE),
+  };
   if (music)
     return {
       ...state,
@@ -86,12 +94,10 @@ app.post("/api/activity", (_q, r) => {
 });
 app.post("/api/boot/settings", (q, r) => {
   if (music)
-    return r
-      .status(409)
-      .json({
-        error:
-          "Live autoradio requires a verified route/station adapter; simulation settings only",
-      });
+    return r.status(409).json({
+      error:
+        "Live autoradio requires a verified route/station adapter; simulation settings only",
+    });
   try {
     runtime.startupSettings = startupStore.save(q.body);
     runtime.record(
@@ -104,6 +110,55 @@ app.post("/api/boot/settings", (q, r) => {
     r.json(snapshot());
   } catch {
     r.status(400).json({ error: "Startup settings could not be saved" });
+  }
+});
+app.get("/api/library", async (q, r) => {
+  if (!library)
+    return r
+      .status(409)
+      .json({ error: "Live bibliotheek vereist Music Assistant-modus" });
+  try {
+    r.json(
+      await library.browse({
+        kind: q.query.type || "albums",
+        q: q.query.q || "",
+        offset: Number(q.query.offset || 0),
+        parent: q.query.parent || "",
+        favorite: q.query.favorite === "true",
+      }),
+    );
+  } catch {
+    r.status(503).json({
+      error:
+        "Bibliotheek niet beschikbaar; controleer verbinding, rechten en MA-versie",
+    });
+  }
+});
+app.post("/api/library/play", async (q, r) => {
+  if (!library)
+    return r.status(409).json({ error: "Live bibliotheek niet actief" });
+  try {
+    await library.enqueue(q.body.id, q.body.option);
+    r.json(snapshot());
+  } catch (e) {
+    r.status(409).json({
+      error: e.message.startsWith("Music Assistant")
+        ? "Music Assistant weigerde de actie; deze is niet opnieuw verstuurd"
+        : e.message,
+    });
+  }
+});
+app.get("/api/artwork/:id", async (q, r) => {
+  if (!artwork) return r.sendStatus(404);
+  try {
+    const image = await artwork.get(q.params.id);
+    r.set({
+      "Content-Type": image.type,
+      "Cache-Control": "private, max-age=300",
+      "X-Content-Type-Options": "nosniff",
+    }).send(image.body);
+  } catch {
+    r.sendStatus(404);
   }
 });
 app.get("/api/state", (_q, r) => r.json(snapshot()));

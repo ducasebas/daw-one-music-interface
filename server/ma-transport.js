@@ -108,15 +108,27 @@ export class MusicAssistantTransport {
               clearTimeout(p.timer);
               return;
             }
-            p.parts.push(...m.result);
+            p.parts.push(
+              ...m.result.slice(0, Math.max(0, p.maxItems - p.parts.length)),
+            );
             return;
           }
           clearTimeout(p.timer);
           this.pending.delete(id);
           p.resolve(
             p.parts.length
-              ? [...p.parts, ...(Array.isArray(m.result) ? m.result : [])]
-              : m.result,
+              ? [
+                  ...p.parts,
+                  ...(Array.isArray(m.result)
+                    ? m.result.slice(
+                        0,
+                        Math.max(0, p.maxItems - p.parts.length),
+                      )
+                    : []),
+                ]
+              : Array.isArray(m.result)
+                ? m.result.slice(0, p.maxItems)
+                : m.result,
           );
         } else if (m.event) this.emit(m);
       });
@@ -126,7 +138,7 @@ export class MusicAssistantTransport {
     this.ready = true;
     return this.info;
   }
-  command(command, args = {}) {
+  command(command, args = {}, options = {}) {
     if (!this.socket || this.socket.readyState !== 1)
       return Promise.reject(Error("Music Assistant disconnected"));
     const id = String(++this.sequence);
@@ -135,7 +147,16 @@ export class MusicAssistantTransport {
         this.pending.delete(id);
         reject(Error("Music Assistant command timed out"));
       }, this.timeoutMs);
-      this.pending.set(id, { resolve, reject, timer, parts: [] });
+      this.pending.set(id, {
+        resolve,
+        reject,
+        timer,
+        parts: [],
+        maxItems:
+          Number.isInteger(options.maxItems) && options.maxItems > 0
+            ? options.maxItems
+            : Infinity,
+      });
       try {
         this.socket.send(JSON.stringify({ message_id: id, command, args }));
       } catch {

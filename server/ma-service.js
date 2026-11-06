@@ -1,3 +1,4 @@
+import { mediaImage } from "../shared/media.js";
 import { EventEmitter } from "node:events";
 import { MusicAssistantTransport } from "./ma-transport.js";
 const emptyTrack = {
@@ -24,6 +25,10 @@ export function normalizeMusic(
       item?.artist ||
       "",
     album: item?.media_item?.album?.name || item?.album || "",
+    artwork:
+      mediaImage(item?.media_item || item) || mediaImage(item)
+        ? `/api/artwork/${mediaImage(item?.media_item || item) || mediaImage(item)}`
+        : null,
     duration:
       Number.isFinite(item?.duration) && item.duration > 0
         ? item.duration

@@ -296,3 +296,16 @@ test("live MA startup distinguishes authentication codes without exposing server
     s.stop();
   }
 });
+
+test("bounded streamed catalogue replies retain only the requested item budget", async () => {
+  FixtureSocket.partial = true;
+  const t = transport();
+  await t.connect();
+  try {
+    const result = await t.command("players/all", {}, { maxItems: 1 });
+    assert.equal(result.length, 1);
+  } finally {
+    t.close();
+    FixtureSocket.partial = false;
+  }
+});

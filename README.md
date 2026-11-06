@@ -262,9 +262,9 @@ Additional references: [API/protocol](docs/protocol-and-api.md), [hardware relea
 
 **Touch volume:** Settings → General → Volume control selects a wide touch slider or circular dial. Both support keyboard/fine steps, larger touch targets and commit on release; the interface separates preview/pending values from confirmed player volume. The choice persists locally. GUI 1.0 keeps its earlier reference control.
 
-**Check the running version:** the GUI 2.0 header and testbench show **GUI 2.11 · SENSOR CARDS** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
+**Check the running version:** the GUI 2.0 header and testbench show **GUI 2.12 · MUSIC** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
 
-Open **`/?gui=2&product=1`** for the new music-first interface, or **`/?gui=2&lab=1`** to keep the shared hardware workbench visible. The existing GUI remains available. Discover/library content is labelled as example data; playback and queue actions use the same simulator backend. Rivo grouping is a visual example, not a connected player. See [preview, SVG icons and skin contribution guide](docs/gui-2-preview.md).
+Open **`/?gui=2&product=1`** for the new music-first interface, or **`/?gui=2&lab=1`** to keep the shared hardware workbench visible. The existing GUI remains available. Simulation Discover/library content is labelled as example data. In live MA mode, GUI2 now loads actual library/search results and artwork through the shared backend. Rivo grouping is a visual example, not a connected player. See [preview, SVG icons and skin contribution guide](docs/gui-2-preview.md).
 
 ## Available Pi hardware and image status
 
@@ -287,3 +287,7 @@ Open **Opstartcontrole** in the product header or Settings → Startup. Nine che
 ## Optional real sensors
 
 PCT2075 (bus 1 / 0x37) and TSL2591 (0x29) can feed separate real temperature/lux telemetry into the backend and Opstartcontrole. Installation is explicit; stale/error values are unknown and never grant amplifier enable. See [sensor setup and limitations](docs/sensors.md).
+
+## Live Music Assistant library
+
+GUI 2.12 connects albums/artists/tracks/playlists/radio, search and cover art to MA in live mode. Play/Next/Add actions respect read-only/player/volume policy. This is not Spotify’s personalised Discover feed or complete queue editing. See [API evidence, resource bounds and actual-server verification](docs/music-library.md). Temperature display is filtered and rounded; raw telemetry and safety permissions are unchanged.

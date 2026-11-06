@@ -110,3 +110,7 @@ Final 5 November check: **94 Node tests passed on Node 24 and Node 22**. The add
 ## Sensor cards — 6 November 2026
 
 96 Node tests and production build passed. Four targeted boot/sensor browser cases passed; the sensor case was then expanded to check each sensor card and inner page bounds in all six skins, with offline unknown status. Real sensor values remain separate from CPU/simulation checks, and the backend sensor/security policy is unchanged. No new hardware/service installation validation is claimed.
+
+## Live library / artwork and calm temperature display — 6 November 2026
+
+105 Node tests passed on Node 24 and Node 22, the production build passed, all 47 Chromium UI cases passed, and all 6 production/offline cases passed. New fixture journeys cover live album/track browsing, explicit queue actions, retained browse context, all six skins, read-only controls, touch search and obsolete-response protection. Artwork tests cover opaque IDs, backend-only credentials, redirect/SVG rejection and bounded caching. MA 2.10.9 source contracts were inspected directly; the owner's NUC was not accessed, so actual provider results, artwork delivery and audible new-media playback still require a Pi-side check. Temperature display smoothing/rounding is presentation-only; raw telemetry and amplifier permissions remain unchanged.

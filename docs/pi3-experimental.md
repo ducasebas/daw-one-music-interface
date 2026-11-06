@@ -72,7 +72,7 @@ Doctor passing proves HTTP/assets, not visible pixels, working audio or electric
 
 ## 4. Check the display and lightweight profile
 
-The kiosk automatically adds `profile=pi3`: same 1280 × 400 UI, skins, backend APIs and controls, but static startup/cover artwork, no video/glow/transitions/backdrop blur and a 1 Hz presentation clock. Safety processing remains in the backend. Stored artwork/theme settings survive switching back to the standard profile. Look for **GUI 2.11 · SENSOR CARDS** and **Video uit · Pi 3 modus**.
+The kiosk automatically adds `profile=pi3`: same 1280 × 400 UI, skins, backend APIs and controls, but static startup/cover artwork, no video/glow/transitions/backdrop blur and a 1 Hz presentation clock. Safety processing remains in the backend. Stored artwork/theme settings survive switching back to the standard profile. Look for **GUI 2.12 · MUSIC** and **Video uit · Pi 3 modus**.
 
 To preview this profile on the Mac: `npm run dev`, then `http://localhost:5173/?gui=2&profile=pi3`. This does not measure Pi performance.
 

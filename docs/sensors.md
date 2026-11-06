@@ -36,3 +36,7 @@ Values become stale/unavailable automatically. To remove the opt-in backend conf
 Software tests use fixtures; the packaged systemd account/permissions, current Python dependency versions and actual readings still require the owner's installation check on the Pi. Sensor detection does not validate the power, amplifier, display or independent fail-safe design.
 
 In a development checkout, test commands: `npm run check`, `python3 -m unittest discover -s tests -p sensor_reader_test.py`, and the browser sensor/boot journeys. The separate sensor service itself still needs installation verification on the actual Pi; a successful former manual root read does not prove the service account permissions.
+
+## Calm presentation
+
+GUI2 temperature is rounded to one decimal; lux is rounded to a whole number. Raw backend telemetry is unchanged. The PCT display uses a timestamp-aware exponential filter: `shown += (1 - exp(-dt/tau)) * (raw - shown)`. Normal time constant is 15 seconds. A rise of at least 1 °C above the display, or a raw rise of at least 0.3 °C at >=0.1 °C/second, uses a 2-second time constant. These are UI choices, not electrical protection thresholds. Repeated timestamps do not advance the filter. Stale/error/offline data becomes unknown immediately; gaps over 15 seconds restart from the fresh measurement. This display filter must never be used as a substitute for raw, independently verified thermal protection.

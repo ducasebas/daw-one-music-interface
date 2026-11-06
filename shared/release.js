@@ -1,7 +1,7 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.06-sensors.2",
-  label: "GUI 2.11 · SENSOR CARDS",
+  id: "2026.11.06-library.1",
+  label: "GUI 2.12 · MUSIC",
 });
 export function buildAlignment(frontend, backend, offline = false) {
   if (offline) return "offline";

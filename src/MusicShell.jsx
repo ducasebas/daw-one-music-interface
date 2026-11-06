@@ -1,3 +1,5 @@
+import { LiveLibrary } from "./LiveLibrary.jsx";
+import { Artwork } from "./Artwork.jsx";
 import { bootPhaseLabels } from "./BootPanel.jsx";
 import { NetworkStatus } from "./NetworkStatus.jsx";
 import { BuildBadge } from "./BuildBadge.jsx";
@@ -61,6 +63,7 @@ export function MusicShell({
   notice,
   startupPreview,
 }) {
+  const [liveViews, setLiveViews] = useState({});
   const [settingsPage, setSettingsPage] = useState(0);
   const [page, setPage] = useState("discover"),
     [category, setCategory] = useState("Albums"),
@@ -295,7 +298,7 @@ export function MusicShell({
               ? "Offline · instellingen beschikbaar"
               : simulated
                 ? "● SIMULATIE · VOORBEELDBIBLIOTHEEK"
-                : "● MUSIC ASSISTANT · BIBLIOTHEEK NOG NIET GEKOPPELD"}
+                : "● MUSIC ASSISTANT · LIVE BIBLIOTHEEK"}
           </small>
         </div>
       </div>
@@ -304,7 +307,17 @@ export function MusicShell({
         aria-label={title}
         key={`${page}-${detail?.id || "list"}`}
       >
-        {detail ? (
+        {!simulated && ["discover", "library", "search"].includes(page) ? (
+          <LiveLibrary
+            view={page}
+            snapshot={snapshot}
+            offline={offline}
+            onSnapshot={setSnapshot}
+            onPlaying={() => go("playing")}
+            state={liveViews[page] || {}}
+            onState={(state) => setLiveViews((v) => ({ ...v, [page]: state }))}
+          />
+        ) : detail ? (
           <div className="m2-detail">
             <Cover index={tracks.findIndex((t) => t.id === detail.id)} />
             <div>
@@ -664,7 +677,11 @@ export function MusicShell({
           </div>
         ) : (
           <div className="m2-playing">
-            <Cover index={playback.index} />
+            {simulated ? (
+              <Cover index={playback.index} />
+            ) : (
+              <Artwork src={current.artwork} alt={current.title} />
+            )}
             <div>
               <small>
                 {simulated ? "SIMULATIE" : "MUSIC ASSISTANT"} /{" "}
@@ -747,7 +764,11 @@ export function MusicShell({
           aria-label="Open Nu spelen"
         >
           <span className="m2-current-cover" key={current.id}>
-            <Cover index={playback.index} small />
+            {simulated ? (
+              <Cover index={playback.index} small />
+            ) : (
+              <Artwork src={current.artwork} alt={current.title} />
+            )}
           </span>
           <span>
             <strong>{current.title}</strong>
