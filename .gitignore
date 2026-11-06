@@ -13,3 +13,7 @@ tunebox-release*.tar.gz
 
 __pycache__/
 *.pyc
+
+.ota-keys/
+ota-manifest.json
+ota-manifest.sig

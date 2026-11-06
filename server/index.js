@@ -1,3 +1,4 @@
+import {updateStatus, deploymentCommit} from "./update-status.js";
 import { MusicLibrary } from "./music-library.js";
 import { ArtworkCache } from "./artwork.js";
 import { readSensorTelemetry } from "./sensor-telemetry.js";
@@ -75,9 +76,11 @@ const broadcast = () => {
 music?.on("change", broadcast);
 music?.start();
 app.use(express.json({ limit: "8kb" }));
+app.get("/api/updates", (_q,r)=>r.json(updateStatus()));
 app.get("/api/health", (_q, r) =>
   r.json({
     ok: true,
+    deploymentCommit: deploymentCommit(),
     build: release,
     mode: config.mode,
     hardware: "unverified",

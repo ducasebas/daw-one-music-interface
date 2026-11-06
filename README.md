@@ -291,3 +291,5 @@ PCT2075 (bus 1 / 0x37) and TSL2591 (0x29) can feed separate real temperature/lux
 ## Live Music Assistant library
 
 GUI 2.12 connects albums/artists/tracks/playlists/radio, search and cover art to MA in live mode. Play/Next/Add actions respect read-only/player/volume policy. This is not Spotify’s personalised Discover feed or complete queue editing. See [API evidence, resource bounds and actual-server verification](docs/music-library.md). Temperature display is filtered and rounded; raw telemetry and safety permissions are unchanged.
+
+Software updates: [signed OTA setup and recovery](docs/ota-updates.md). Updates are opt-in; GitHub signing setup and a pinned public key are required.

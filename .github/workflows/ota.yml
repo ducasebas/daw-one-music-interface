@@ -1,0 +1,52 @@
+name: Publish signed preview
+on:
+  workflow_run:
+    workflows: [Verify]
+    types: [completed]
+permissions:
+  contents: write
+concurrency:
+  group: ota-preview
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Check channel prerequisites
+        id: ready
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SIGNING_KEY: ${{ secrets.TUNEBOX_OTA_SIGNING_KEY }}
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          head=$(gh api repos/$GITHUB_REPOSITORY/git/ref/heads/main --jq .object.sha)
+          if [ -n "$SIGNING_KEY" ] && [ "$head" = "$TESTED_SHA" ]; then
+            echo 'publish=true' >> "$GITHUB_OUTPUT"
+          else
+            echo '::notice::No signing key, or a newer main commit exists; skipping publication.'
+          fi
+      - if: steps.ready.outputs.publish == 'true'
+        run: npm ci && npm run package:pi
+      - if: steps.ready.outputs.publish == 'true'
+        name: Sign and publish immutable assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TUNEBOX_OTA_SIGNING_KEY: ${{ secrets.TUNEBOX_OTA_SIGNING_KEY }}
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          node deploy/ota/sign.mjs tunebox-release.tar.gz preview "$TESTED_SHA" "$GITHUB_RUN_ID"
+          tag="ota-preview-$TESTED_SHA"
+          if gh release view "$tag" --json isDraft --jq .isDraft 2>/dev/null | grep -qx false; then exit 0; fi
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$TESTED_SHA" --draft --prerelease --title "TuneBox preview $TESTED_SHA" --notes 'Automatically published after Verify passed. Signed OTA; hardware remains unverified.'
+          fi
+          gh release upload "$tag" tunebox-release.tar.gz ota-manifest.json ota-manifest.sig --clobber
+          gh release edit "$tag" --draft=false

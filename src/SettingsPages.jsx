@@ -1,3 +1,4 @@
+import { UpdateSettings } from "./UpdateSettings.jsx";
 import { BootPanel } from "./BootPanel.jsx";
 import React, { useState, useEffect } from "react";
 import { Pager } from "./Pager.jsx";
@@ -16,6 +17,7 @@ const pages = [
   "Save theme",
   "Connection",
   "Startup",
+  "Updates",
 ];
 export function SettingsPages({
   snapshot,
@@ -81,6 +83,8 @@ export function SettingsPages({
             </select>
           </label>
         </div>
+      ) : pages[index] === "Updates" ? (
+        <UpdateSettings />
       ) : pages[index] === "Startup" ? (
         <BootPanel
           snapshot={snapshot}

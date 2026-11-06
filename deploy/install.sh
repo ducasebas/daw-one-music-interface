@@ -18,6 +18,7 @@ if [[ $target == pi3-experimental && $prebuilt != true ]]; then
   echo 'Pi 3 experimental requires --prebuilt: build/package on the Mac first. See docs/pi3-experimental.md.' >&2; exit 2
 fi
 if [[ $(id -u) -ne 0 ]]; then echo 'Run with sudo inside the Linux target.' >&2; exit 1; fi
+if [[ -L /opt/daw-one ]]; then echo "OTA slot installation detected. Disable OTA and follow docs/ota-updates.md before a manual reinstall." >&2; exit 2; fi
 repo=$(cd "$(dirname "$0")/.." && pwd)
 source "$repo/deploy/install-target.sh"
 model=''

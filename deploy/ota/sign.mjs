@@ -1,0 +1,11 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash,sign,createPrivateKey} from 'node:crypto';
+import {release} from '../../shared/release.js';
+import {repository} from './policy.mjs';
+const [archive,channel,commit,sequence]=process.argv.slice(2);
+if(!['preview','stable'].includes(channel)||!/^[a-f0-9]{40}$/.test(commit)||!Number.isSafeInteger(Number(sequence)))throw Error('Invalid signing inputs');
+const bytes=readFileSync(archive),key=createPrivateKey(process.env.TUNEBOX_OTA_SIGNING_KEY||'');
+if(key.asymmetricKeyType!=='ed25519')throw Error('Use an Ed25519 signing key');
+const manifest={schema:1,repository,channel,commit,sequence:Number(sequence),release:release.id,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')};
+if(bytes.length<1||bytes.length>33554432||Number(sequence)<1)throw Error('Archive or sequence out of bounds');
+const raw=Buffer.from(JSON.stringify(manifest)+'\n');writeFileSync('ota-manifest.json',raw);writeFileSync('ota-manifest.sig',sign(null,raw,key).toString('base64')+'\n');console.log('Signed OTA manifest for '+commit);
