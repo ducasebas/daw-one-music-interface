@@ -299,3 +299,7 @@ Settings → Setup provides swipeable network, Music Assistant, player, headphon
 During initial Pi installation, choose `--updates auto`, `--updates notify` or `--updates skip`. A single public project key is bundled with signed release packages once the maintainer configures GitHub signing. No per-device private key is needed. The independent local progress page remains available while the application backend restarts.
 
 See [signed OTA setup and recovery](docs/ota-updates.md) and the [first-run wizard](docs/first-run-wizard.md). Signing setup and physical Pi update/rollback validation are still required; simulation results do not certify hardware.
+
+## GUI 2.15 · Real PCM visualizer
+
+Now Playing can show stereo dBFS meters or a 16/32-band spectrum from the local Squeezelite PCM export. There is no fake signal fallback. Measurement is globally switchable in Settings → Audio analysis and stops without visible demand or during display sleep. It requires the optional native reader and a VISEXPORT-enabled Squeezelite; ALSA routing and amplifier permissions remain unchanged. See [installation, source accuracy and limits](docs/audio-analysis.md).

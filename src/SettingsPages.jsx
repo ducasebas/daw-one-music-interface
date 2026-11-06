@@ -1,3 +1,4 @@
+import {AudioSettings} from "./AudioVisualizer.jsx";
 import {SetupWizard} from "./SetupWizard.jsx";
 import { UpdateSettings } from "./UpdateSettings.jsx";
 import { BootPanel } from "./BootPanel.jsx";
@@ -20,6 +21,7 @@ const pages = [
   "Startup",
   "Updates",
   "Setup",
+  "Audio analysis",
 ];
 export function SettingsPages({
   snapshot,
@@ -87,6 +89,8 @@ export function SettingsPages({
             </select>
           </label>
         </div>
+      ) : pages[index] === "Audio analysis" ? (
+        <AudioSettings prefs={prefs} update={update} offline={offline}/>
       ) : pages[index] === "Setup" ? (
         <SetupWizard snapshot={snapshot} offline={offline}/>
       ) : pages[index] === "Updates" ? (

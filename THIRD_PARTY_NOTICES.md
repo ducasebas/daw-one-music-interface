@@ -9,3 +9,5 @@ The project’s own software and documentation are licensed under MIT; see LICEN
 - Startup PNG/MP4 and derived WebM were supplied by the owner. The owner confirmed permission for public redistribution on 3 November 2026. Third-party elements, if any, retain their original terms; the MIT software licence does not override them.
 - DAW/TuneBox branding, manufacturer names and product marks are not an endorsement or a grant of trademark rights. Music Assistant, Volumio and Sonocotta are independent projects/products.
 - Do not add commercial album covers, artist photography or other provider content as bundled demo assets without permission. The application's current conceptual covers do not establish access to a provider's artwork library.
+
+Squeezelite is an optional external player, not bundled by TuneBox. The real-audio integration reads its VISEXPORT interoperability format; the independently implemented reader/FFT/UI are in this repository. Upstream Squeezelite is distributed separately under its own GPL terms. Protocol source evidence and the exact reviewed revision are recorded in docs/audio-analysis.md.

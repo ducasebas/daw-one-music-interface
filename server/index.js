@@ -1,3 +1,4 @@
+import {AudioAnalysis} from "./audio-analysis.js";
 import {deviceRequest,controlToken,validDeviceRequest} from "./device-client.js";
 import {simulatedDevice} from "./simulated-device.js";
 import {updateStatus, deploymentCommit} from "./update-status.js";
@@ -25,6 +26,7 @@ const config = musicConfig(),
   clients = new Set();
 const music =
   config.mode === "music-assistant" ? new LiveMusicService(config) : null;
+const audioAnalysis=new AudioAnalysis({onStatus:status=>{runtime.record(Date.now(),"audio-analysis",runtime.device.mode,"Local PCM measurement: "+status);broadcast();}});
 const library = music ? new MusicLibrary(music) : null;
 const artwork = music ? new ArtworkCache(config) : null;
 runtime.dispatch({ type: "boot-complete" });
@@ -88,6 +90,11 @@ app.get("/api/updates",async(_q,r)=>{
 app.post("/api/device",async(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:"Reload TuneBox before changing device settings"});
  try{r.json(await manage(q.body));}catch(error){r.status(409).json({error:String(error.message).slice(0,180)});}
+});
+app.get("/api/audio",(q,r)=>r.set("Cache-Control","no-store").json(audioAnalysis.get({watch:q.query.watch==="1",awake:runtime.device.displayAwake&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId})));
+app.post("/api/audio/settings",(q,r)=>{
+ if(!validDeviceRequest(q))return r.status(403).json({error:"Reload TuneBox before changing measurement settings"});
+ try{if(!q.body||Object.keys(q.body).length!==1||!Object.hasOwn(q.body,"enabled"))throw Error("Only enabled can be changed");audioAnalysis.setEnabled(q.body.enabled);r.json(audioAnalysis.get());}catch(error){r.status(400).json({error:error.message});}
 });
 app.get("/api/health", (_q, r) =>
   r.json({
@@ -291,6 +298,7 @@ const server = app.listen(
 for (const signal of ["SIGINT", "SIGTERM"])
   process.on(signal, () => {
     music?.stop();
+    audioAnalysis.close();
     for (const c of clients) c.end();
     clearInterval(clock);
     clearInterval(inventoryClock);

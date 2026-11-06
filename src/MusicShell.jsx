@@ -1,3 +1,4 @@
+import {AudioVisualizer} from "./AudioVisualizer.jsx";
 import {GlobalUpdateProgress,useDeviceUpdates} from "./DeviceUpdates.jsx";
 import { LiveLibrary } from "./LiveLibrary.jsx";
 import { Artwork } from "./Artwork.jsx";
@@ -720,7 +721,7 @@ export function MusicShell({
               </div>
             </div>
             <aside>
-              <button
+              <div className="m2-artwork-controls"><button
                 disabled={prefs.lowPower}
                 aria-pressed={video}
                 onClick={() => setVideo((v) => !v)}
@@ -728,6 +729,7 @@ export function MusicShell({
                 <Icon name="film" size={16} />{" "}
                 {prefs.lowPower ? "Video uit · Pi 3 modus" : "Video Artwork"}
               </button>
+              <button aria-label="Visualizer wisselen" onClick={()=>{setVideo(false);update("visualizer",prefs.visualizer==="off"?"spectrum":prefs.visualizer==="spectrum"?"meters":"off");}}>Visualizer {prefs.visualizer==="off"?"uit":prefs.visualizer==="meters"?"meters":"spectrum"}</button></div>
               {video ? (
                 <div className="m2-video">
                   <strong>END-SYNC · MOCK</strong>
@@ -747,6 +749,8 @@ export function MusicShell({
                     Offset {sync.offset ?? "—"} s · geen echte video
                   </small>
                 </div>
+              ) : prefs.visualizer!=="off" ? (
+                <AudioVisualizer mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline}/>
               ) : (
                 <SkinPanel
                   skin={

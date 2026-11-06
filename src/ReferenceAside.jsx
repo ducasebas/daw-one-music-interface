@@ -1,3 +1,4 @@
+import {AudioVisualizer} from "./AudioVisualizer.jsx";
 import React from "react";
 export function StereoMeters() {
   return (
@@ -36,6 +37,7 @@ export function ReferenceAside({ layout, snapshot, prefs, update }) {
   const p = snapshot.playback,
     s = snapshot.sensors || {},
     live = snapshot.mode === "music-assistant";
+  if(prefs.visualizer&&prefs.visualizer!=="off")return <AudioVisualizer mode={prefs.visualizer} bands={prefs.visualizerBands}/>;
   if (layout === "nerd-mode")
     return (
       <section className="reference-diagnostics" aria-label="Nerd diagnostics">

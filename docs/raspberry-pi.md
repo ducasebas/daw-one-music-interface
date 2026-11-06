@@ -91,3 +91,7 @@ Installer update: Pi3 B+/Pi4 detection is automatic (`--target auto`); VM remain
 The initial installer accepts `--updates auto`, `--updates notify` or `--updates skip`. Its default `ask` only offers a choice interactively when a project public key is bundled or already pinned; otherwise it leaves OTA off. The same public key is used on all devices, with one private signing key retained by the project maintainer. See [OTA setup and recovery](ota-updates.md).
 
 The installer also installs the bounded `daw-one-manager.service`. This adds the first-run wizard, fixed setup/update actions, a backend connection override file, and a loopback-only independent progress page on port 3002. The backend stays unprivileged; the independent Squeezelite service is retained. The manager's additional RAM use on Pi3/Pi4 has not yet been measured. See [first-run wizard capabilities and limits](first-run-wizard.md).
+
+## Optional real PCM visualizer
+
+[Audio analysis](audio-analysis.md) uses Squeezelite's optional -v shared-memory export and a native read-only reader. Install separately with `deploy/install-audio-analysis.sh`; the regular installer never switches the audio route or silently enables capture. The backend's private-device sandbox receives only a read-only shared-memory bind. A single explicit player restart may be needed to add -v; measurement toggles themselves never restart Squeezelite.
