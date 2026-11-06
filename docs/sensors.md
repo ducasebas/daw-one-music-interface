@@ -23,7 +23,7 @@ curl -fsS http://127.0.0.1:3001/api/state |
 node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>console.log(JSON.stringify(JSON.parse(s).hardwareTelemetry,null,2)))'
 ```
 
-In the interface, open **Opstartcontrole** to see the separate real PCT2075/lux readings. The simulated temperature/light controls and CPU boot check remain separately labelled. A stale/saturated/unavailable reading is unknown. These values do not grant amplifier verification, change the simulated safety state, regulate a fan or physically dim the screen. Automatic brightness and verified physical thermal protection are separate future integrations.
+In GUI 2.11, open **Opstartcontrole → 05 · Sensoren** to see separate cards for PCT2075 temperature and TSL2591 lux alongside the CPU/simulation-temperature card. Cards show units, source and unknown/stale/error status; simulated values never masquerade as real sensor data. The simulated temperature/light controls and CPU boot check remain separately labelled. A stale/saturated/unavailable reading is unknown. These values do not grant amplifier verification, change the simulated safety state, regulate a fan or physically dim the screen. Automatic brightness and verified physical thermal protection are separate future integrations.
 
 ## Disable / recover
 

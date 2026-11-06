@@ -106,3 +106,7 @@ Final 5 November check: **94 Node tests passed on Node 24 and Node 22**. The add
 ## Optional PCT2075 / TSL2591 telemetry — 6 November 2026
 
 96 Node tests and the production build passed. Three hardware-free Python tests cover signed temperature decode, invalid/saturated measurements and independent sensor failures. Four Chromium sensor/boot journeys passed, including distinct actual-readout fixtures, native page bounds and unknown telemetry on backend loss. Sensor commands and bus addresses were previously validated by the owner manually; the new dedicated account, service/device permissions and Python driver environment still need installation verification on the Pi. No sensor fixture grants amplifier verification or drives brightness, fans or GPIO.
+
+## Sensor cards — 6 November 2026
+
+96 Node tests and production build passed. Four targeted boot/sensor browser cases passed; the sensor case was then expanded to check each sensor card and inner page bounds in all six skins, with offline unknown status. Real sensor values remain separate from CPU/simulation checks, and the backend sensor/security policy is unchanged. No new hardware/service installation validation is claimed.

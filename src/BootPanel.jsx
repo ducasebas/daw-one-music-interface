@@ -50,6 +50,15 @@ export function BootPanel({ snapshot, onSnapshot, offline = false }) {
       setPending(false);
     }
   }
+  const telemetry = snapshot.hardwareTelemetry;
+  const sensorCard = (key,label,unit,digits,source) => {
+    const reading = telemetry?.[key];
+    const valid = !offline && reading?.status === "ok" && Number.isFinite(reading.value);
+    return {id:key,label,status:valid?"pass":"unavailable",value:valid?`${reading.value.toFixed(digits)} ${unit}`:"Onbekend",reason:`${source} · ${offline?"backend offline":!telemetry?.enabled?"sensorservice niet ingeschakeld":reading?.status==="stale"?"meting verouderd":valid?"echte meting":"geen geldige meting"}`};
+  };
+  const physicalSensors = [sensorCard("temperature","Omgevingstemperatuur","°C",1,"PCT2075"),sensorCard("light","Lichtsterkte","lux",1,"TSL2591")];
+  const temperatureCheck = boot?.checks?.find(c=>c.id === "temperature");
+  const cpuCard = {id:"cpu",label:boot?.simulated?"Temperatuur · simulatie":"CPU-temperatuur",status:offline?"unavailable":temperatureCheck?.status||"unavailable",reason:offline?"Backend offline · actuele status onbekend":temperatureCheck?.reason||"Hostmeting niet beschikbaar"};
   return (
     <div className="boot-panel" aria-label="Opstartcontrole">
       <Pager
@@ -59,6 +68,7 @@ export function BootPanel({ snapshot, onSnapshot, offline = false }) {
           "Audio en koeling",
           "Netwerk en speler",
           "Autoradio",
+          "Sensoren",
         ]}
         index={page}
         onChange={setPage}
@@ -66,7 +76,6 @@ export function BootPanel({ snapshot, onSnapshot, offline = false }) {
         {page < 3 ? (
           <div className="boot-checks">
             <small>
-              {snapshot.hardwareTelemetry?.enabled && <span aria-label="Echte sensormetingen">PCT2075: {offline ? "onbekend" : snapshot.hardwareTelemetry.temperature?.value ?? "onbekend"} °C · TSL2591: {offline ? "onbekend" : snapshot.hardwareTelemetry.light?.value ?? "onbekend"} lux · echte metingen — </span>}
               {boot?.simulated
                 ? "GESIMULEERDE CHECKS"
                 : "HOSTMETINGEN · HARDWARE NIET GEVERIFIEERD"}
@@ -90,6 +99,11 @@ export function BootPanel({ snapshot, onSnapshot, offline = false }) {
             {!boot && (
               <p>Opstartstatus niet beschikbaar · backend controleren</p>
             )}
+          </div>
+        ) : page === 4 ? (
+          <div className="boot-checks sensor-cards" aria-label="Echte sensormetingen">
+            <small>Echte I²C-metingen · apart van CPU en simulatie · geen versterkervrijgave</small>
+            {[...physicalSensors,cpuCard].map(card=><article key={card.id} data-status={card.status} aria-label={card.label}><b>{card.label}</b><span>{states[card.status]}</span>{card.value&&<strong>{card.value}</strong>}<small>{card.reason}</small></article>)}
           </div>
         ) : (
           <div className="boot-radio">
