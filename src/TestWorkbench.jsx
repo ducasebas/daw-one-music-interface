@@ -1,3 +1,4 @@
+import { panelProfile, panelProfiles } from "../shared/display.js";
 import { BuildBadge } from "./BuildBadge.jsx";
 import React, { useRef, useState, useEffect } from "react";
 import { devicePresentation } from "../shared/presentation.js";
@@ -13,6 +14,7 @@ export function TestWorkbench({
   product,
   onReplayStartup,
 }) {
+  const panel = panelProfile(location.search), dimensions = panelProfiles[panel];
   const [tab, setTab] = useState("Controls"),
     [selected, setSelected] = useState("amplifier"),
     [history, setHistory] = useState(0),
@@ -45,7 +47,7 @@ export function TestWorkbench({
           (entries[0].contentRect.height -
             (top.current?.offsetHeight || 64) -
             29) *
-            3.2 +
+            (dimensions.width / dimensions.height) +
             22,
         ),
       ),
@@ -89,7 +91,7 @@ export function TestWorkbench({
   const power = () =>
     send({ type: "button", button: d.mode === "standby" ? "wake" : "standby" });
   return (
-    <div className="test-workbench">
+    <div className="test-workbench" data-panel={panel}>
       <div className="bench-toolbar">
         <b>
           DAW ONE <span>TEST WORKBENCH</span>
@@ -110,7 +112,7 @@ export function TestWorkbench({
         <a
           className="bench-product-link"
           href={
-            gui2 ? "/?gui=2&screen=1&display=hdmi-development" : "/?screen=1"
+            gui2 ? "/?gui=2&screen=1&display=hdmi-development&panel="+panel : "/?screen=1"
           }
           target="_blank"
           rel="noopener noreferrer"
@@ -169,17 +171,17 @@ export function TestWorkbench({
                 <div
                   className="bench-screen"
                   ref={frame}
-                  style={{ height: 400 * scale + 4 }}
+                  style={{ height: dimensions.height * scale + 4 }}
                 >
                   <div
                     className="virtual-display-surface"
                     role="region"
                     aria-label="DAW ONE product display"
-                    style={{ transform: `scale(${scale})` }}
+                    style={{ width: dimensions.width, height: dimensions.height, transform: `scale(${scale})` }}
                   >
                     {product}
                   </div>
-                  {!view.displayAwake && !live && (
+                  {!view.displayAwake && !live && panel !== "wall-16-10" && (
                     <button
                       className="screen-sleep"
                       aria-label="Wake device display"

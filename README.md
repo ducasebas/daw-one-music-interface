@@ -1,6 +1,6 @@
 # DAW TuneBox v1 — Raspberry Pi streaming amplifier prototype
 
-DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifier controller with a premium **1280 × 400 touchscreen interface**, Music Assistant playback integration and clearly modelled standby, display and safety states.
+DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifier controller with a premium **touchscreen interface with a new16:10 wall profile and retained1280 ×400 legacy profile**, Music Assistant playback integration and clearly modelled standby, display and safety states.
 
 **Current release: a runnable software prototype with simulated hardware.** The interface, simulator and automated software tests are implemented. The owner has reported live Music Assistant/Squeezelite playback through a Pi 3 headphone jack. Playback reliability, kiosk performance, the Sonocotta Louder HAT and electrical protection remain under validation. No physical amplifier is enabled by this application.
 
@@ -8,14 +8,22 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 *Current software screenshot using simulated playback and conceptual artwork; no Louder HAT is connected.*
 
+## GUI3.0 · WALL — approved exterior and new screen profile
+
+The chosen exterior is a wall-mounted enclosure with **walnut sides, black glass front and a top standby button with LED ring; no physical volume knob**. [Approved render and provisional dimensions](docs/design/wall-product.md): **190×124×55mm total projection target**, not validated CAD or a minimum thickness claim. New screen drawing: glass170.18×104.20mm, approximately16:10; **native model/resolution still needs confirmation**. The UI profile currently assumes1280×800. Old1280×400 installations retain their existing profile by default.
+
+**[Open the new wall display locally](http://localhost:5173/?gui=2&screen=1&display=hdmi-development&panel=wall-16-10)** · **[Wall hardware simulator](http://localhost:5173/?gui=2&lab=1&panel=wall-16-10)**. Start with `npm ci` then `npm run dev`. Six skins, larger touch controls, screen-rest clock/date/widgets/sunset/glow/Now Playing/black, and a paged notification centre share the existing backend and safety logic. Real Wi-Fi quality is optional through the device manager; unknown measurements stay unknown.
+
+**[Release notes, exact Pi profile/install commands, Safari demo and hardware acceptance checklist](docs/wall-hardware-test.md)**. Look for **GUI3.0 · WALL /2026.11.07-wall.1**. Black rest mode draws black pixels and does not claim physical backlight-off. Newsletter is informational, not a connected feed. This commit does not certify hardware or solve the earlier black-screen issue.
+
 ## Try the simulator locally on Mac — recommended
 
 Run the React interface and Node backend directly on macOS. **No VM, Codespace, SSH tunnel or Music Assistant server is required for simulation.** The owner reports this local Mac workflow works; this is not Pi hardware validation.
 
-Install **Node.js 24 LTS** (the project minimum is 22.12), npm and Git. To clone this private repository, use an authorized GitHub account. With GitHub CLI installed:
+Install **Node.js 24 LTS** (the project minimum is 22.12), npm and Git. This repository is public. With GitHub CLI installed:
 
 ```sh
-gh repo clone ducasebas/daw-one-music-interface
+git clone https://github.com/ducasebas/daw-one-music-interface.git
 cd daw-one-music-interface
 npm ci
 npm run dev

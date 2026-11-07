@@ -104,7 +104,7 @@ export class DeviceRuntime {
       throw Error("Boolean sensor value required");
     if (e.type === "activity") {
       this.lastActivity = now;
-      if (this.device.mode === "ready" && !this.device.displayAwake) {
+      if (["ready", "standby", "fault"].includes(this.device.mode) && !this.device.displayAwake) {
         this.device = { ...this.device, displayAwake: true };
         this.record(
           now,

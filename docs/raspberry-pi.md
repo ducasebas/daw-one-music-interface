@@ -1,4 +1,6 @@
-# Raspberry Pi 4 / 2 GB deployment
+# Raspberry Pi 4 deployment
+
+**New wall product:** see the [GUI3.0 install/profile and hardware checklist](wall-hardware-test.md). The new16:10 profile is explicit and provisional; existing1280×400 devices are not switched automatically.
 
 **Pi 3 B+ update:** use the explicit [experimental Pi 3 guide](pi3-experimental.md). It preserves the Pi 4 default and requires a prebuilt bundle. Hardware performance is still unverified. Pi3 has owner-reported basic operation; see the field report for limitations.
 

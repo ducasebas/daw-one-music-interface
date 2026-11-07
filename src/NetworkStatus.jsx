@@ -1,7 +1,24 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
+import { wifiReading } from "../shared/wall.js";
 import { Icon } from "./Icon.jsx";
 export function NetworkStatus({ snapshot, offline }) {
   const root = useRef(null);
+  const [network,setNetwork]=useState(null);
+  useEffect(()=>{
+    let active=true,timer,controller;
+    async function read(){
+      if(document.visibilityState==='visible'&&!offline){
+        controller=new AbortController();
+        const timeout=setTimeout(()=>controller.abort(),5000);
+        try{const r=await fetch('/api/network',{signal:controller.signal});if(!r.ok)throw Error();const n=await r.json();if(active)setNetwork(n);}
+        catch{if(active)setNetwork(null);}finally{clearTimeout(timeout);}
+      }else if(active)setNetwork(null);
+      if(active)timer=setTimeout(read,30000);
+    }
+    read();return()=>{active=false;clearTimeout(timer);controller?.abort();};
+  },[offline]);
+  const reading=wifiReading(network,offline);
+
   useEffect(() => {
     const outside = (e) => {
       if (root.current && !root.current.contains(e.target))
@@ -34,7 +51,7 @@ export function NetworkStatus({ snapshot, offline }) {
       ref={root}
       className="m2-network"
       data-state={offline || wifi === false ? "unavailable" : "connected"}
-      data-signal="unavailable"
+      data-signal={reading.level===null?"unavailable":reading.level}
     >
       <summary aria-label="Netwerkstatus">
         <Icon
@@ -47,7 +64,7 @@ export function NetworkStatus({ snapshot, offline }) {
           }
           size={18}
         />
-        <span>{label}</span>
+        <span>{label}{reading.level!==null ? ` · ${reading.label}${reading.simulated ? " sim" : ""}` : ""}</span>
       </summary>
       <div className="m2-network-info">
         <strong>{label}</strong>
@@ -59,8 +76,8 @@ export function NetworkStatus({ snapshot, offline }) {
               : `De app-backend is bereikbaar. ${snapshot.musicAssistant?.connected ? "Music Assistant is verbonden." : "Music Assistant is niet verbonden."}`}
         </p>
         <small>
-          Wi-Fi-signaalsterkte niet gemeten. Een werkende appverbinding kan ook
-          via ethernet lopen.
+          {reading.level===null ? "Wi-Fi-signaalsterkte niet gemeten. Een werkende appverbinding kan ook via ethernet lopen." : `Wi-Fi-signaalsterkte ${reading.label} · ${reading.simulated ? "gesimuleerd" : "NetworkManager-meting (maximaal 30 s oud)"}`}
+
         </small>
       </div>
     </details>

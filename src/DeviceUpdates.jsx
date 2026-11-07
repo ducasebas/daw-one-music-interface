@@ -30,7 +30,7 @@ export function GlobalUpdateProgress(){
  const critical=['installing','restarting','checking-health','rolling-back'].includes(info?.status);
  useEffect(()=>{
   if(critical){wasBusy.current=true;if(info.manager?.progressDisplay&&!info.manager?.simulated&&['127.0.0.1','localhost'].includes(location.hostname)&&location.port==='3001'&&new URLSearchParams(location.search).get('screen')==='1'){
-   const q=new URLSearchParams(location.search);location.replace('http://127.0.0.1:3002/?display='+(q.get('display')==='dsi-production'?'dsi-production':'hdmi-development')+(q.get('profile')==='pi3'?'&profile=pi3':''));
+   const q=new URLSearchParams(location.search);location.replace('http://127.0.0.1:3002/?display='+(q.get('display')==='dsi-production'?'dsi-production':'hdmi-development')+(q.get('profile')==='pi3'?'&profile=pi3':'')+'&panel='+(q.get('panel')==='wall-16-10'?'wall-16-10':'legacy-wide'));
   }}else if(wasBusy.current&&!info?.offline&&['installed','rolled-back'].includes(info?.status)){
    wasBusy.current=false;if(!info.manager?.simulated)location.reload();
   }

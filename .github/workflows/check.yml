@@ -21,9 +21,11 @@ jobs:
       - run: npm run check
       - run: python3 -m unittest discover -s tests -p '*_test.py'
       - run: npm audit --omit=dev --audit-level=high
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
         if: matrix.node == 24
       - run: npm run test:ui
         if: matrix.node == 24
       - run: npm run test:offline
+        if: matrix.node == 24
+      - run: npx playwright test -c playwright.webkit.config.js wall.spec.js
         if: matrix.node == 24

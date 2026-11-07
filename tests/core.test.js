@@ -168,6 +168,7 @@ test("settings whitelist, clamp and safe defaults", () => {
       enable: true,
     }),
     {
+      screen: { mode: "clock", latitude: null, longitude: null },
       visualizer: "off",
       visualizerBands: 32,
       volume: 100,

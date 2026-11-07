@@ -1,3 +1,4 @@
+import { screenSettings } from "./wall.js";
 export const defaults = {
   visualizer: "off",
   visualizerBands: 32,
@@ -10,6 +11,7 @@ export const defaults = {
 export function settings(input = {}) {
   input = input && typeof input === "object" ? input : {};
   return {
+    screen: screenSettings(input.screen),
     visualizer: ["meters","spectrum"].includes(input.visualizer)?input.visualizer:"off",
     visualizerBands: input.visualizerBands===16?16:32,
     volumeControl: input.volumeControl === "circular" ? "circular" : "linear",

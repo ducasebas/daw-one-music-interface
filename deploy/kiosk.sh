@@ -18,6 +18,10 @@ if [[ ! -d /var/lib/dawone/chromium || ! -w /var/lib/dawone/chromium ]]; then
   echo 'Chromium profile is not writable; rerun the installer.' >&2; exit 1
 fi
 url="http://127.0.0.1:3001/?gui=2&screen=1&display=$mode"
+panel=${DAW_PANEL_PROFILE:-legacy-wide}
+if [[ -r /opt/daw-one/panel-profile ]]; then panel=$(cat /opt/daw-one/panel-profile); fi
+case "$panel" in legacy-wide|wall-16-10) ;; *) echo 'Unsupported panel profile' >&2; exit 2 ;; esac
+url="$url&panel=$panel"
 if [[ -r /opt/daw-one/deployment-target ]] && [[ $(cat /opt/daw-one/deployment-target) == pi3-experimental ]]; then
   url="$url&profile=pi3"
 fi
@@ -28,7 +32,7 @@ for attempt in {1..30}; do
   sleep 1
 done
 if /usr/bin/curl --fail --silent --max-time 2 http://127.0.0.1:3002/status >/dev/null; then
-  url="http://127.0.0.1:3002/?display=$mode"
+  url="http://127.0.0.1:3002/?display=$mode&panel=$panel"
   if [[ -r /opt/daw-one/deployment-target && $(cat /opt/daw-one/deployment-target) == pi3-experimental ]]; then url="$url&profile=pi3"; fi
 fi
 printf 'DAW ONE kiosk: %s, logical viewport 1280x400\n' "$mode"

@@ -29,6 +29,7 @@ import "../design/brand-tokens.css";
 import "./style.css";
 import { MusicShell } from "./MusicShell.jsx";
 import "./music-shell.css";
+import "./wall.css";
 function load() {
   try {
     return normalize(JSON.parse(localStorage.getItem("daw-settings") || "{}"));
@@ -89,14 +90,15 @@ function App() {
   }, [themePreferences]);
   useEffect(() => {
     let live = true;
-    const poll = () =>
-      fetch("/api/state")
+    const poll = () => {
+      if (!navigator.onLine) { if(live)setOffline(true); return; }
+      return fetch("/api/state")
         .then((r) => {
           if (!r.ok) throw Error();
           return r.json();
         })
         .then((s) => {
-          if (live) {
+          if (live && navigator.onLine) {
             setSnapshot(s);
             setOffline(false);
           }
@@ -104,9 +106,13 @@ function App() {
         .catch(() => {
           if (live) setOffline(true);
         });
+    };
+    const markOffline=()=>setOffline(true);
+    window.addEventListener("offline",markOffline);
+    window.addEventListener("online",poll);
     const stream = new EventSource("/api/events");
     stream.onmessage = (e) => {
-      if (!live) return;
+      if (!live || !navigator.onLine) return;
       try {
         setSnapshot(JSON.parse(e.data));
         setOffline(false);
@@ -122,6 +128,8 @@ function App() {
       live = false;
       clearInterval(id);
       stream.close();
+      window.removeEventListener("offline",markOffline);
+      window.removeEventListener("online",poll);
     };
   }, []);
   useEffect(() => {
@@ -155,9 +163,9 @@ function App() {
     };
   }, []);
   useEffect(() => {
-    const id = setInterval(() => setClock(Date.now()), profile.clockMs);
+    const id = setInterval(() => setClock(Date.now()), snapshot.device.displayAwake === false ? 30000 : profile.clockMs);
     return () => clearInterval(id);
-  }, []);
+  }, [snapshot.device.displayAwake]);
   async function send(e) {
     if (offline) {
       setNotice("Offline preview · command not sent");

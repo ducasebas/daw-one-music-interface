@@ -82,6 +82,18 @@ music?.start();
 app.use(express.json({ limit: "8kb" }));
 const simulatedManager=process.env.NODE_ENV!=="production"&&config.mode==="simulation"&&!process.env.DAW_MANAGER_SOCKET?simulatedDevice({snapshot,directory:process.env.DAW_STATE_DIR||".tunebox-state",onEvent:phase=>runtime.record(Date.now(),"software-update",runtime.device.mode,"Simulated update: "+phase)}):null;
 const manage=request=>simulatedManager?simulatedManager.request(request):deviceRequest(request);
+let networkCache=null,networkRead=null;
+app.get("/api/network",async(_q,r)=>{
+  r.set("Cache-Control","no-store");
+  if(!networkCache||Date.now()-networkCache.observedAt>30000){
+    networkRead ||= (async()=>{
+      try {const value=await manage({command:"network",args:{}});networkCache={...value,observedAt:Date.now()};}
+      catch {networkCache={supported:false,connected:null,signal:null,observedAt:Date.now()};}
+    })().finally(()=>{networkRead=null;});
+    await networkRead;
+  }
+  r.json(networkCache);
+});
 app.get("/api/updates",async(_q,r)=>{
  let manager;try{manager=await manage({command:"status"});}catch{manager={managed:false,simulated:false,configured:false};}
  const status=simulatedManager?simulatedManager.status():updateStatus();

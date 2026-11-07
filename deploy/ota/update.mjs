@@ -94,7 +94,7 @@ try{
  report('preparing');run('chown',['-R','dawupdatebuild:dawupdatebuild',dest]);
  run('runuser',['-u','dawupdatebuild','--','env','-i','PATH=/usr/bin:/bin','HOME=/var/lib/daw-one-update-build','npm','ci','--prefix',dest,'--omit=dev','--ignore-scripts','--no-audit','--no-fund']);
  run('chown',['-R','root:root',dest]);run('chmod',['-R','go-w',dest]);verifyTree(dest,manifest.release);
- for(const file of ['kiosk.sh','set-display-mode.sh','health.sh','deployment-target','read-sensors.py'])if(existsSync(app+'/'+file))copyFileSync(app+'/'+file,dest+'/'+file);
+ for(const file of ['kiosk.sh','set-display-mode.sh','health.sh','deployment-target','panel-profile','read-sensors.py'])if(existsSync(app+'/'+file))copyFileSync(app+'/'+file,dest+'/'+file);
  for(const file of ['kiosk.sh','set-display-mode.sh','health.sh'])if(existsSync(dest+'/'+file))run('chmod',['755',dest+'/'+file]);
  atomic(dest+'/deployment-ota.json',{commit:manifest.commit});run('chmod',['644',dest+'/deployment-ota.json']);
  const latestPolicy=updateSettings(json(configPath).policy);const finalDecision=installationDecision(latestPolicy,request.action,canUpdate(await local('/api/state')));

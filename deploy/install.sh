@@ -102,6 +102,7 @@ install -m 644 "$repo/deploy/daw-one-health.timer" /etc/systemd/system/
 install -m 755 "$repo/deploy/health.sh" /opt/daw-one/health.sh
 install -m 755 "$repo/deploy/kiosk.sh" /opt/daw-one/kiosk.sh
 install -m 755 "$repo/deploy/set-display-mode.sh" /opt/daw-one/set-display-mode.sh
+install -m 755 "$repo/deploy/set-panel-profile.sh" /opt/daw-one/set-panel-profile.sh
 printf '%s\n' "$target" > /opt/daw-one/deployment-target
 if [[ ! -f /etc/daw-one.env ]]; then
   printf 'DAW_PLAYBACK_MODE=simulation\nMA_ALLOW_CONTROL=false\nMA_VOLUME_LIMIT=40\n' > /etc/daw-one.env

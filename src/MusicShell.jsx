@@ -1,3 +1,5 @@
+import { panelProfile } from "../shared/display.js";
+import { WallControls, SleepSurface } from "./WallExperience.jsx";
 import {AudioVisualizer} from "./AudioVisualizer.jsx";
 import {GlobalUpdateProgress,useDeviceUpdates} from "./DeviceUpdates.jsx";
 import { LiveLibrary } from "./LiveLibrary.jsx";
@@ -66,6 +68,11 @@ export function MusicShell({
   startupPreview,
 }) {
   const deviceUpdates=useDeviceUpdates();
+  const wall = panelProfile(location.search) === "wall-16-10";
+  const [sleepPreview,setSleepPreview] = useState(false);
+  const sleeping = wall && (sleepPreview || (!offline && snapshot.device.displayAwake === false));
+  const wake = () => { setSleepPreview(false); if(!offline) send({type:"activity"}); };
+
   const [liveViews, setLiveViews] = useState({});
   const [settingsPage, setSettingsPage] = useState(0);
   const [page, setPage] = useState("discover"),
@@ -213,6 +220,9 @@ export function MusicShell({
   return (
     <main
       className={"music2"+(page==="settings"&&settingsPage>=12?" immersive-settings":"")}
+      data-panel={wall ? "wall-16-10" : "legacy-wide"}
+      onPointerDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();wake();}:undefined}
+      onKeyDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();wake();}:undefined}
       data-theme={theme.id}
       data-page={page}
       data-performance={prefs.lowPower ? "pi3" : "standard"}
@@ -227,6 +237,8 @@ export function MusicShell({
       data-motion={direction}
     >
       <GlobalUpdateProgress />
+      {sleeping && <SleepSurface prefs={prefs} snapshot={snapshot} offline={offline} wake={wake} />}
+
       <StartupScreen
         mode={device.mode}
         offline={offline}
@@ -253,6 +265,10 @@ export function MusicShell({
           ))}
         </nav>
         <NetworkStatus snapshot={snapshot} offline={offline} />
+        {wall && <WallControls snapshot={snapshot} offline={offline} prefs={prefs} updates={deviceUpdates}
+          onSleep={()=>{setSleepPreview(true);if(!offline)send({type:"display-timeout"});}}
+          onNavigate={id=>{if(id==="status"){setSettingsPage(11);go("settings");}else if(id==="updates"){setSettingsPage(12);go("settings");}else if(id==="screen"){setSettingsPage(15);go("settings");}else go(id);}} />}
+
         <button
           aria-label="Instellingen"
           onClick={() => {

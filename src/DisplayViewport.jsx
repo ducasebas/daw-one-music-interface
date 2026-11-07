@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
-import { displayGeometry } from "../shared/display.js";
+import { displayGeometry, panelProfile } from "../shared/display.js";
 /** The actual product, with fixed logical dimensions; no second app or API client. */
 export function DisplayViewport({ mode, children }) {
   const host = useRef(null);
@@ -14,12 +14,13 @@ export function DisplayViewport({ mode, children }) {
     observer.observe(host.current);
     return () => observer.disconnect();
   }, []);
-  const geometry = displayGeometry(mode, size.width, size.height);
+  const geometry = displayGeometry(mode, size.width, size.height, panelProfile(location.search));
   return (
     <div
       ref={host}
       className="display-viewport"
       data-display-mode={mode}
+      data-panel={panelProfile(location.search)}
       aria-label="Production display viewport"
     >
       <div
@@ -31,7 +32,7 @@ export function DisplayViewport({ mode, children }) {
       >
         <div
           className="virtual-display-surface"
-          style={{ transform: `scale(${geometry.scale})` }}
+          style={{ width: geometry.width, height: geometry.height, transform: `scale(${geometry.scale})` }}
         >
           {children}
         </div>

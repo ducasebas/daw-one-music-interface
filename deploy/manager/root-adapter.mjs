@@ -16,7 +16,14 @@ export async function networkStatus(){
  try{
   const raw=await run('/usr/bin/nmcli',['--terse','--escape','no','--fields','DEVICE,TYPE,STATE','device','status']);
   const interfaces=raw.trim().split('\n').map(line=>{const [name,type,state]=line.split(':');return {name,type,state};}).filter(x=>x.type==='wifi'&&/^wl[a-zA-Z0-9_-]{0,20}$/.test(x.name));
-  return {supported:true,interfaces,connected:interfaces.some(x=>x.state==='connected')};
+  let signal=null;
+  try {
+    const rows=await run('/usr/bin/nmcli',['--terse','--escape','no','--fields','IN-USE,SIGNAL','device','wifi','list','--rescan','no']);
+    const active=rows.split('\n').find(line=>line.startsWith('*:'));
+    const value=active&&/^\*:[0-9]{1,3}$/.test(active)?Number(active.split(':')[1]):NaN;
+    if(Number.isFinite(value)&&value>=0&&value<=100)signal=value;
+  } catch {}
+  return {supported:true,interfaces,connected:interfaces.some(x=>x.state==='connected'),signal,observedAt:Date.now(),simulated:false};
  }catch{return {supported:false,interfaces:[],connected:null};}
 }
 async function musicProbe(args){

@@ -136,3 +136,16 @@ Release packaging also normalises public runtime file/directory permissions; the
 Executed: 131 Node tests passed, nine Python sensor/archive/export-configuration tests passed, 55 full Chromium browser tests passed, three focused audio UI tests passed after verifying 44px touch targets, six production/offline tests passed, and Vite production build passed. Native fixtures compile and execute the same read-only helper used by the Pi installer. Known-amplitude stereo PCM verifies dBFS RMS/peak, channel isolation, Hann FFT power, antiphase preservation, silence/full-scale samples, frequency resolution and Nyquist limits. Framing tests cover fragmented/burst/corrupt inputs. The shared-memory fixture includes ring wrap and proves the reader leaves every producer byte unchanged. Idle, stale, incompatible, missing and symlinked inputs never turn into fabricated levels.
 
 The real helper-to-analyser pipeline and a separate HTTP-backend test exercise the nonce-protected global switch, rejection of executable/source overrides, actual PCM summary output, shutdown on global off and lease expiry, and amplifier inhibition remaining intact. Browser tests use explicitly intercepted PCM summaries to check SVG meters/spectrum, all six skins at 1280 × 400, 16/32-band preference persistence, offline/stale clearing and touch controls. These are automated PCM fixtures, not a claim of measured Pi/headphone/HAT output. The installer, live Squeezelite VISEXPORT ABI, read-only systemd bind, Pi CPU/latency and gain/mute behaviour remain to be verified on the owner's hardware. The upstream export is a 16-bit best-effort measurement copy, not calibrated analogue feedback; no ALSA routing, physical amplifier control or boot configuration was added.
+
+
+## GUI3.0 · WALL — 7 November 2026
+
+-138 Node tests passed; production Vite build passed; `npm run package:pi` creates the prebuilt Pi archive.
+- Full Chromium regression:59passed (55existing plus4wall tests); final focused wall suite adds the wall-testbench aspect/shared-state check:5passed.
+- Production service-worker/offline suite:7passed, including the new wall shell and persisted screen-rest settings after offline reload.
+- Python sensor/OTA tests:9passed. Shell syntax and manager/updater module syntax checked.
+- Inspected the actual1280×800 screenshot; corrected inherited legacy artwork height and small transport hit areas. Six skins use the same new panel geometry.
+- WebKit browser downloaded, but local launch is **blocked before tests run** by missing libgtk-4, graphene, harfbuzz-icu, manette, hyphen and GLES libraries. This executor has no sudo/package installer. Do not count this as a Safari pass. CI now installs Chromium/WebKit dependencies and runs the wall suite in WebKit; its remote result remains pending until the commit runs.
+- No owner Pi deployment, real new screen, physical display power control, RF reading, PD contract, CAD fit or amplifier safety certification was performed in this cloud session.
+
+The committed screenshot uses simulated playback and conceptual artwork. The approved exterior render is an aesthetic concept, not manufactured hardware.

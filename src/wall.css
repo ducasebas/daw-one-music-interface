@@ -1,0 +1,82 @@
+/* New panel profile only. All colors and typefaces inherit the shared skin tokens. */
+.virtual-display-surface>.music2[data-panel="wall-16-10"]{width:1280px;height:800px;min-height:0}
+.music2[data-panel="wall-16-10"]{font-size:17px;grid-template-rows:88px 70px minmax(0,1fr) 110px;padding:0 28px}
+.music2[data-panel="wall-16-10"] button{min-width:48px;min-height:48px;font-size:16px;touch-action:manipulation}
+.music2[data-panel="wall-16-10"] input,.music2[data-panel="wall-16-10"] select{font-size:18px;min-height:48px}
+.music2[data-panel="wall-16-10"] small{font-size:13px}
+.music2[data-panel="wall-16-10"] .m2-header{gap:10px}
+.music2[data-panel="wall-16-10"] .m2-header nav{gap:4px;flex:1;justify-content:center}
+.music2[data-panel="wall-16-10"] .m2-header nav button{height:56px;min-height:56px;padding:6px 12px;font-size:16px;display:flex;flex-direction:column;gap:4px;justify-content:center;align-items:center}
+.music2[data-panel="wall-16-10"] .m2-brand{font-size:20px;min-width:150px}
+.music2[data-panel="wall-16-10"] .m2-brand span{font-size:10px}
+.music2[data-panel="wall-16-10"] .m2-network summary{min-height:48px;display:flex;align-items:center;gap:8px;max-width:140px;font-size:12px}
+.music2[data-panel="wall-16-10"] .m2-heading h1{font-size:28px}
+.music2[data-panel="wall-16-10"] .m2-heading>div>span{font-size:16px}
+.music2[data-panel="wall-16-10"] .m2-content{padding-bottom:20px}
+.music2[data-panel="wall-16-10"] .m2-discover{gap:28px;grid-template-columns:34% 1fr}
+.music2[data-panel="wall-16-10"] .m2-feature h2{font-size:44px}
+.music2[data-panel="wall-16-10"] .m2-feature span{font-size:17px}
+.music2[data-panel="wall-16-10"] .m2-discover-right .m2-cover{max-height:260px}
+.music2[data-panel="wall-16-10"] .m2-card strong{font-size:20px}
+.music2[data-panel="wall-16-10"] .m2-card small{font-size:15px}
+.music2[data-panel="wall-16-10"] .m2-discover .m2-note{font-size:13px!important}
+.music2[data-panel="wall-16-10"] .m2-player{height:110px;grid-template-columns:minmax(220px,1fr) auto minmax(100px,1fr) 48px 270px;gap:16px}
+.music2[data-panel="wall-16-10"] .m2-play{width:72px;height:72px}
+.music2[data-panel="wall-16-10"] .m2-transport{gap:12px}
+.music2[data-panel="wall-16-10"] .m2-transport .tb-icon{width:28px;height:28px}
+.music2[data-panel="wall-16-10"] .m2-current strong{font-size:19px}
+.music2[data-panel="wall-16-10"] .m2-current-cover{width:64px;height:64px}
+.music2[data-panel="wall-16-10"] .m2-player-status{font-size:12px}
+.music2[data-panel="wall-16-10"] .m2-playing{grid-template-columns:300px minmax(0,1fr) 230px;gap:28px;align-items:center;height:100%}
+.music2[data-panel="wall-16-10"] .m2-playing>.m2-cover,.music2[data-panel="wall-16-10"] .m2-playing>.real-artwork{width:300px;height:300px}
+.music2[data-panel="wall-16-10"] .m2-playing h2{font-size:40px;line-height:1.15}
+.music2[data-panel="wall-16-10"] .m2-playing p{font-size:21px}
+.music2[data-panel="wall-16-10"] .m2-times{font-size:16px}
+.music2[data-panel="wall-16-10"] .m2-settings{height:100%}
+.music2[data-panel="wall-16-10"] .pager-bar{min-height:56px}
+.music2[data-panel="wall-16-10"] .control-grid{gap:24px;align-content:start}
+.music2[data-panel="wall-16-10"] .control-grid label{font-size:18px}
+.music2[data-panel="wall-16-10"] .page-body p{font-size:16px;line-height:1.5}
+.music2[data-panel="wall-16-10"] .live-media-open b{font-size:20px}
+.music2[data-panel="wall-16-10"] .live-media-open small{font-size:15px}
+.music2[data-panel="wall-16-10"] .live-media-open .real-artwork{width:120px}
+.music2[data-panel="wall-16-10"] .live-media-grid article{grid-template-rows:minmax(0,1fr) 56px}
+.music2[data-panel="wall-16-10"] .live-media-actions button{font-size:15px;min-height:48px}
+.music2[data-panel="wall-16-10"] .m2-keyboard button{min-height:48px}
+.music2[data-panel="wall-16-10"] .m2-list button{min-height:56px}
+.music2[data-panel="wall-16-10"] .touch-volume-slider{min-height:56px}
+.wall-bell{position:relative}.wall-bell i{position:absolute;right:7px;top:7px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.wall-notifications{padding:0;border:1px solid var(--divider,#555);border-radius:18px;background:var(--panel,#15191b);color:var(--text,#fff);width:min(620px,94vw);max-height:94dvh;overflow:auto;font:inherit;box-shadow:0 12px 50px #0008}
+.wall-notifications::backdrop{background:#0008}
+.wall-tray{padding:24px;animation:wall-dropdown 180ms ease-out}
+.wall-tray header,.wall-tray footer{display:flex;align-items:center;justify-content:space-between;position:static;height:auto;padding:0;color:inherit;letter-spacing:normal}
+.wall-tray header h2{margin:0;font-size:24px}.wall-tray nav{display:flex;gap:10px;margin:20px 0;position:static;flex-direction:row;padding:0;border:0;width:auto}
+.wall-tray nav button{flex:1;min-height:56px}.wall-tray [aria-pressed=true]{color:var(--accent);background:var(--background,#111)}
+.wall-tray article{padding:20px;background:var(--background,#111);border-radius:12px;min-height:240px}.wall-tray article[data-attention=true]{border-left:3px solid var(--accent)}
+.wall-tray h3{font-size:24px}.wall-tray p{font-size:18px;line-height:1.5}.wall-tray footer{margin-top:16px}.wall-tray button{min-height:48px}
+.music2 .sleep-surface{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:0;background:#050608;color:var(--text);z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;cursor:pointer;padding:36px;animation:wall-fade 180ms ease-out}
+.music2 .sleep-surface:hover{background:#050608}.sleep-surface .sleep-clock{font-size:124px;line-height:1;font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:-5px}
+.sleep-surface>span{font-size:24px}.sleep-surface>small{color:var(--muted);letter-spacing:2px}
+.sleep-surface[data-mode=glow]{background:radial-gradient(ellipse at 50% 100%,var(--accent) -110%,#050608 70%)}
+.sleep-widgets{display:flex;gap:16px;max-width:100%}.sleep-widgets>span{display:grid;gap:16px;background:var(--panel);padding:24px;border-radius:12px;min-width:200px;font-size:16px}.sleep-widgets strong{font-size:24px}
+.sleep-sunset{display:flex;gap:16px;align-items:center}.sleep-playing{display:grid;justify-items:center;gap:24px}.sleep-playing>strong{font-size:48px;max-width:1000px}.sleep-playing>span{font-size:28px}
+.music2[data-performance=pi3] .sleep-surface{animation:none}.music2[data-performance=pi3] .sleep-surface[data-mode=glow]{background:#050608}
+@keyframes wall-dropdown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+@keyframes wall-fade{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.wall-tray,.music2 .sleep-surface{animation:none}}
+.music2[data-panel="wall-16-10"] .m2-player{display:grid}
+.music2[data-panel="wall-16-10"] .m2-transport>.m2-play{width:72px;height:72px;min-width:72px;min-height:72px;flex:none}
+.music2[data-panel="wall-16-10"] .m2-transport>button:not(.m2-play){width:52px;height:52px;min-width:52px;min-height:52px;flex:none}
+.music2[data-panel="wall-16-10"] .m2-current{width:auto;min-width:0}
+
+.music2[data-panel="wall-16-10"]>.m2-header{height:88px}
+.sleep-fault{position:absolute;top:32px;left:32px;right:32px;display:flex;gap:16px;align-items:center;padding:18px;border:1px solid var(--accent);background:var(--panel)}
+.music2[data-panel="wall-16-10"] .m2-playing{display:grid}
+.music2[data-panel="wall-16-10"] .m2-playing>.m2-cover,.music2[data-panel="wall-16-10"] .m2-playing>.real-artwork{max-height:300px;min-height:300px}
+.music2[data-panel="wall-16-10"] .m2-playing p span{font-size:17px}
+
+.test-workbench[data-panel="wall-16-10"] .physical-front{border-color:#76543c}
+.test-workbench[data-panel="wall-16-10"] .physical-top{background:linear-gradient(100deg,#76543c,#533b2d);border-color:#9a7654}
+.wall-tray nav{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.music2[data-panel="wall-16-10"] .wall-tray nav button{min-width:0;padding:8px 4px}
+.wall-notifications{margin:clamp(12px,8vh,88px) 3vw auto auto}

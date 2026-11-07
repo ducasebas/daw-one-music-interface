@@ -1,3 +1,4 @@
+import { ScreenSettings } from "./WallExperience.jsx";
 import {AudioSettings} from "./AudioVisualizer.jsx";
 import {SetupWizard} from "./SetupWizard.jsx";
 import { UpdateSettings } from "./UpdateSettings.jsx";
@@ -22,6 +23,7 @@ const pages = [
   "Updates",
   "Setup",
   "Audio analysis",
+  "Schermrust",
 ];
 export function SettingsPages({
   snapshot,
@@ -89,6 +91,8 @@ export function SettingsPages({
             </select>
           </label>
         </div>
+      ) : pages[index] === "Schermrust" ? (
+        <ScreenSettings prefs={prefs} update={update}/>
       ) : pages[index] === "Audio analysis" ? (
         <AudioSettings prefs={prefs} update={update} offline={offline}/>
       ) : pages[index] === "Setup" ? (
