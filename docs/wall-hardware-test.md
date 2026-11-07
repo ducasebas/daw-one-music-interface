@@ -1,6 +1,17 @@
 # GUI3.0 wall-panel release and hardware test
 
-Release: `2026.11.07-wall.1` / **GUI3.0 · WALL**. New panel geometry is **provisional1280×800 (16:10)**, from the owner's new screen drawing. Do not reuse the old400×1280 kernel overlay on a different screen merely because this GUI fits. Confirm the screen SKU and manufacturer-required overlay first. No installer here changes boot files, physical timings or amplifier verification.
+Release: `2026.11.07-wall.1` / **GUI3.0 · WALL**. New panel geometry is **confirmed1280×800 (16:10)** from the owner's selected product description, matching **Waveshare7inch DSI LCD (E), SKU29112**. The word “Display2” in a reseller title must not be confused with the official Raspberry Pi Touch Display2 (a different720×1280 product). Do not reuse the old400×1280 kernel overlay on a different screen merely because this GUI fits. Confirm the screen SKU and manufacturer-required overlay first. No installer here changes boot files, physical timings or amplifier verification.
+
+## Manufacturer screen configuration — manual reference, never applied automatically
+
+Sources: [manufacturer product](https://www.waveshare.com/7inch-dsi-lcd-e.htm) and [7inch DSI LCD(E) instructions](https://www.waveshare.com/wiki/7inch_DSI_LCD_%28E%29). For the matching E model on Pi4, the published Trixie/Bookworm DSI1 configuration is:
+
+```ini
+dtoverlay=vc4-kms-v3d
+dtoverlay=vc4-kms-dsi-waveshare-panel,8_0_inch
+```
+
+**`8_0_inch` is intentionally the manufacturer's parameter for this7-inch E model.** Do not guess `7_0_inch` or retain `7_9_inch`. Verify the delivered product label first, back up `/boot/firmware/config.txt`, and replace only the old screen overlay; keep one KMS line, correct `[all]` scope and the documented I2C routing. This document does not authorize or perform remote boot changes. The owner has not yet reported testing this new screen. Mechanical drawing, mounting holes, revision, power budget and actual detected mode remain hardware checks.
 
 ## Start and identify the build
 

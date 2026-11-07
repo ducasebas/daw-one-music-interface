@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1100" height="660" viewBox="0 0 1100 660" role="img" aria-labelledby="title desc">
-<title id="title">TuneBox wall enclosure — provisional envelope</title><desc id="desc">Design target 190 by 124 millimetres, projection 55 millimetres. Not a fabrication drawing. Screen glass 170.18 by104.20 from supplied drawing, model and resolution pending.</desc>
+<title id="title">TuneBox wall enclosure — provisional envelope</title><desc id="desc">Design target 190 by 124 millimetres, projection 55 millimetres. Not a fabrication drawing. Screen glass 170.18 by104.20 from supplied drawing, native1280x800 confirmed; delivered revision and fit pending.</desc>
 <rect width="1100" height="660" fill="#111618"/>
 <g font-family="sans-serif" fill="#eee9de"><text x="50" y="52" font-size="26">DAW TuneBox v1 · wall enclosure</text><text x="50" y="82" fill="#c8bba6">PROVISIONAL ENVELOPE · NOT FOR MANUFACTURE · millimetres</text></g>
 <g transform="translate(100 170) scale(2.8)">
@@ -7,7 +7,7 @@
 <rect x="5" y="5" width="180" height="114" rx="7" fill="#24282a" stroke="#c9b190" stroke-width=".5"/>
 <rect x="9.91" y="9.9" width="170.18" height="104.2" rx="3" fill="#080c0f"/>
 <rect x="19.1" y="14.45" width="151.8" height="95.1" fill="#172227"/>
-<g fill="#eee9de" font-family="sans-serif" text-anchor="middle"><text x="95" y="56" font-size="7">16:10 touch display</text><text x="95" y="69" font-size="4">Native resolution / revision to confirm</text><text x="95" y="104" font-size="3.5">DAW TuneBox</text></g>
+<g fill="#eee9de" font-family="sans-serif" text-anchor="middle"><text x="95" y="56" font-size="7">16:10 touch display</text><text x="95" y="69" font-size="4">1280 x800 native / physical fit to verify</text><text x="95" y="104" font-size="3.5">DAW TuneBox</text></g>
 </g>
 <g stroke="#b8aaa0" stroke-width="1" fill="none"><path d="M100 142H632M100 132v20M632 132v20M73 170v347M63 170h20M63 517h20"/>
 <path d="M760 142h154M760 132v20M914 132v20"/>

@@ -1,6 +1,6 @@
 # DAW TuneBox v1 — approved exterior direction
 
-Status: exterior concept approved by owner on 7 November 2026. This freezes the visual direction, not manufacturing dimensions, electrical design or thermal certification.
+Status: exterior concept approved by owner on 7 November 2026. Native1280×800 resolution confirmed by owner; product description matches [Waveshare7inch DSI LCD (E), SKU29112](https://www.waveshare.com/7inch-dsi-lcd-e.htm). Verify the label/revision on the delivered unit. This freezes the visual direction, not manufacturing dimensions, electrical design or thermal certification.
 
 ![Approved wall-mounted exterior: walnut sides, black glass, no volume knob](wall-render.png)
 
@@ -14,9 +14,9 @@ Walnut side band around the depth of the enclosure; black glass front; fine cham
 | Body depth | 50 mm | Proposed starting allocation, not a validated minimum |
 | Wall mounting allowance | 5 mm | Proposed; bracket/cable bend geometry unverified |
 | Total wall projection | 55 mm | Body plus mounting allowance; may increase after thermal/connector layout |
-| Screen cover glass | 170.18 × 104.20 mm | Transcribed from owner's new supplier screenshot; exact model/revision not confirmed |
+| Screen cover glass | 170.18 × 104.20 mm | Transcribed from owner's new supplier screenshot; delivered revision and physical drawing fit not yet verified |
 | Active screen area | approx.151.80 ×95.10 mm | Supplier screenshot; verify actual aperture before CAD |
-| GUI panel | 16:10; 1280 ×800 logical pixels | Working assumption pending native resolution confirmation |
+| GUI panel | 16:10; 1280 ×800 logical pixels | Native resolution confirmed by owner; matches manufacturer1280×800 specification |
 | Front surround | approx.9.91 mm left/right;9.90 mm top/bottom outside glass | Arithmetic from proposed envelope, not screw/glass assembly tolerances |
 | Button diameter / ring wiring | TBD | Existing16mm button specification requires actual mounting drawing, depth and driver validation |
 | Pi / HAT / PD / carrier positions | TBD | No collision-free mechanical stack established |
@@ -29,7 +29,7 @@ The render is an aesthetic reference. It is NOT CAD, an exact scale model or evi
 
 ## Mechanical prototype before enclosure fabrication
 
-- Confirm screen SKU, native resolution, cover-glass drawing, PCB height and mounting-hole coordinates.
+- Verify delivered SKU/revision, cover-glass drawing, PCB height and mounting-hole coordinates. The selected native resolution is1280×800.
 - Measure Pi4, actual Louder HAT revision, GPIO stack/standoffs, plugs and cooling solution. HAT fit and safe output are not certified.
 - Lay out actual PD hardware, INA228 current path, temperature/light sensors, radar window and LED driver; no fabricated pin assignments.
 - Validate screen FPC bend radius, access to SD and connectors, speaker terminals and cable exit clearances.
