@@ -1,5 +1,7 @@
 # TuneBox C1 — maatvaste indeling voor de pasproef
 
+**Status bijgesteld op 10 november 2026: bewaarde verpakkingsstudie.** De bronmaten en berekeningen blijven naslag. De eigenaar heeft de volgorde render → materialen → binnenmaatvoering/plaatsing → bevestiging vastgesteld. De kastmaat en constructie uit C1 zijn geen goedgekeurde ontwerpbesluiten; volg de [actuele ontwerpvolgorde](design-workflow.md). De historische tekst en bestanden hieronder zijn niet de vrijgegeven bouwbasis.
+
 10 november 2026. Pi en Louder HAT staan naast elkaar op de aluminium achterplaat. De openbare fabrikantbestanden zijn opgezocht; de eigenaar hoeft die niet opnieuw aan te leveren. Dit vervangt het schematische montageconcept B als basis voor de mechanische pasproef.
 
 ![Binnenindeling met hoofdprinten, voeding en sensoren](wall-rear-layout.svg)
