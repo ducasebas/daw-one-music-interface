@@ -1,0 +1,317 @@
+{
+  "revision": "C1",
+  "status": "dimensioned fit prototype; not released for production",
+  "units": "mm",
+  "view": "inside of rear plate, screen removed; X right, Y up, origin lower left of enclosure",
+  "enclosure": {
+    "width": 190,
+    "height": 124,
+    "body_depth": 50,
+    "rear_plate": 3,
+    "wood_wall": 5,
+    "wall_allowance": 5,
+    "corner_radius": 6
+  },
+  "screen": {
+    "model": "Waveshare 7inch DSI LCD (E), SKU 29112",
+    "glass_width": 170.18,
+    "glass_height": 104.2,
+    "window_width": 151.8,
+    "window_height": 95.1,
+    "front_depth_reservation": 22,
+    "reservation_status": "design allowance, not a manufacturer thickness measurement"
+  },
+  "boards": [
+    {
+      "id": "pi",
+      "name": "Raspberry Pi 4",
+      "x": 12,
+      "y": 16,
+      "w": 56,
+      "h": 85,
+      "rotation": -90,
+      "source_size": [
+        85,
+        56
+      ],
+      "holes": [
+        [
+          3.5,
+          81.5
+        ],
+        [
+          3.5,
+          23.5
+        ],
+        [
+          52.5,
+          81.5
+        ],
+        [
+          52.5,
+          23.5
+        ]
+      ],
+      "screws": [
+        1,
+        2
+      ],
+      "z_reservation": 22,
+      "mount": "component side toward rear plate; 18 mm PCB underside datum; heat bridge to SoC",
+      "source_to_layout": "x=12+56-v; y=16+85-u, viewed from screen side with component side toward plate"
+    },
+    {
+      "id": "hat",
+      "name": "Louder HAT Plus 1X",
+      "x": 82,
+      "y": 34,
+      "w": 65.001,
+      "h": 61.376,
+      "source_size": [
+        65.001,
+        61.376
+      ],
+      "holes": [
+        [
+          3.5,
+          57.286
+        ],
+        [
+          61.501,
+          57.283
+        ],
+        [
+          61.498,
+          8.284
+        ],
+        [
+          3.5,
+          8.284
+        ]
+      ],
+      "screws": [
+        0,
+        2
+      ],
+      "z_reservation": 16,
+      "mount": "PCB underside 6 mm above plate; component side toward screen; four feet, two screws"
+    },
+    {
+      "id": "pd",
+      "name": "HUSB238 PD",
+      "x": 122,
+      "y": 2,
+      "w": 20.32,
+      "h": 27.813,
+      "rotation": 180,
+      "source_size": [
+        20.32,
+        27.813
+      ],
+      "holes": [
+        [
+          2.667,
+          2.54
+        ],
+        [
+          17.907,
+          2.54
+        ],
+        [
+          17.78,
+          25.273
+        ],
+        [
+          2.54,
+          25.273
+        ]
+      ],
+      "z_reservation": 16,
+      "mount": "USB-C faces bottom; dedicated removable I/O cassette"
+    },
+    {
+      "id": "ina",
+      "name": "INA228",
+      "x": 155,
+      "y": 64.5,
+      "w": 20.32,
+      "h": 25.4,
+      "rotation": 90,
+      "source_size": [
+        25.4,
+        20.32
+      ],
+      "holes": [
+        [
+          2.54,
+          2.54
+        ],
+        [
+          2.54,
+          22.86
+        ]
+      ],
+      "z_reservation": 16,
+      "mount": "QT cable exits toward top and bottom; reserve cable corridor"
+    },
+    {
+      "id": "pct",
+      "name": "PCT2075",
+      "x": 95,
+      "y": 100,
+      "w": 25.4,
+      "h": 17.78,
+      "source_size": [
+        25.4,
+        17.78
+      ],
+      "holes": [
+        [
+          2.54,
+          15.24
+        ],
+        [
+          22.86,
+          15.24
+        ],
+        [
+          2.54,
+          2.54
+        ],
+        [
+          22.86,
+          2.54
+        ]
+      ],
+      "z_reservation": 10,
+      "mount": "nylon cradle, thermally isolated from rear plate"
+    },
+    {
+      "id": "tsl",
+      "name": "TSL2591 QT",
+      "x": 148,
+      "y": 100,
+      "w": 25.4,
+      "h": 17.78,
+      "source_size": [
+        25.4,
+        17.78
+      ],
+      "holes": [
+        [
+          2.54,
+          15.24
+        ],
+        [
+          22.86,
+          15.24
+        ],
+        [
+          2.54,
+          2.54
+        ],
+        [
+          22.86,
+          2.54
+        ]
+      ],
+      "z_reservation": 10,
+      "mount": "nylon cradle; light pipe toward top wall"
+    },
+    {
+      "id": "carrier",
+      "name": "TSR + ULN carrier",
+      "x": 151,
+      "y": 32,
+      "w": 31,
+      "h": 24,
+      "source_size": null,
+      "holes": [],
+      "z_reservation": 18,
+      "mount": "reserved custom carrier envelope; layout and protection not yet designed"
+    },
+    {
+      "id": "radar",
+      "name": "mmWave RF pocket",
+      "x": 77,
+      "y": 8,
+      "w": 22,
+      "h": 18,
+      "source_size": [
+        18,
+        22
+      ],
+      "holes": [],
+      "z_reservation": 22,
+      "mount": "reserved bracket/RF pocket; antenna aimed through non-metal bottom window, orientation to be tested"
+    }
+  ],
+  "button": {
+    "x": 40,
+    "diameter": 16,
+    "body_width_reservation": 22,
+    "body_insertion_reservation": 19.5
+  },
+  "io": {
+    "strip_x": 75,
+    "strip_width": 105,
+    "strip_depth": 18,
+    "centres": {
+      "speaker_l": 108,
+      "usb_c": 132.16,
+      "speaker_r": 163
+    },
+    "note": "positions and cassette reservation only; speaker cutouts and USB pocket depend on chosen panel connector"
+  },
+  "minimum_planar_gap": 3,
+  "sources": [
+    {
+      "part": "Pi 4",
+      "url": "https://pip-assets.raspberrypi.com/categories/545-raspberry-pi-4-model-b/documents/RP-008341-DS-1-raspberry-pi-4-datasheet.pdf",
+      "revision": "release 1.1, figure 1",
+      "sha256": "8febd042d004c7a2897a60fe6e1b2c007a941c3c4119f4fb791dc0afb669a860"
+    },
+    {
+      "part": "HAT STEP",
+      "url": "https://github.com/sonocotta/raspberry-media-center/blob/main/hardware/5-Louder-Plus/Rev%20F%20-%201X%20Hat/2601-louder-raspberry-hat-plus-1x-f.step",
+      "revision": "Rev F 1X; delivered F1 not assumed identical",
+      "sha256": "84f0732614c575a98365861e74376fbf0b549f508ee53a1ba808341e6a04e75e"
+    },
+    {
+      "part": "HAT drill",
+      "url": "https://github.com/sonocotta/raspberry-media-center/blob/main/hardware/5-Louder-Plus/Rev%20F%20-%201X%20Hat/2601-louder-raspberry-hat-plus-1x-f.zip",
+      "revision": "EasyEDA export 2026-02-07",
+      "sha256": "4180911765cae9858c0ebc0dc99ede6023af11d5d3cf051f119f3a10f778c8ac"
+    },
+    {
+      "part": "Screen",
+      "url": "https://files.waveshare.com/wiki/7inch-DSI-LCD-%28E%29/7inch_DSI_LCD_%28E%29-20250428.pdf",
+      "revision": "drawing 2025-04-28; glass and window dimensions only used"
+    },
+    {
+      "part": "PD",
+      "url": "https://github.com/adafruit/Adafruit-USB-Type-C-PD-Switchable-PCB/blob/main/Adafruit%20USB%20Type%20C%20PD%20Switchable.brd",
+      "sha256": "697505b7b05a1dc9b443af864714f3e185ac082cbe37f4ea5d55e82de0f6045a"
+    },
+    {
+      "part": "INA228",
+      "url": "https://github.com/adafruit/Adafruit-INA228-PCB/blob/main/Adafruit%20INA228%20I2C%20Power%20Monitor.brd",
+      "sha256": "9af15c5c219a21ff9b90531e0c61b140017e0260bf2736a748ca9af7353ab4a2"
+    },
+    {
+      "part": "PCT2075",
+      "url": "https://github.com/adafruit/Adafruit-PCT2075-PCB/blob/master/Adafruit_PCT2075.brd",
+      "sha256": "ab46f92a8ec108a24bc480aa511d66f27e083a2bd3ed110227af062211721d1d"
+    },
+    {
+      "part": "TSL2591 QT",
+      "url": "https://github.com/adafruit/Adafruit-TSL2591-Breakout-PCB/blob/master/Adafruit%20TSL2591.brd",
+      "sha256": "7937a98cc343e0269e4518916525a844591c1ad5ddf6a66be0d3049da2d82a4a"
+    },
+    {
+      "part": "Radar",
+      "url": "https://wiki.seeedstudio.com/mmwave_for_xiao/",
+      "note": "18 x 22 mm module, not a validated RF keepout"
+    }
+  ]
+}

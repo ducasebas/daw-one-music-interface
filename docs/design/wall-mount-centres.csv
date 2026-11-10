@@ -1,0 +1,23 @@
+part,point,x_mm,y_mm,function
+pi,1,15.5,97.5,passive support
+pi,2,15.5,39.5,screw
+pi,3,64.5,97.5,screw
+pi,4,64.5,39.5,passive support
+hat,1,85.5,91.286,screw
+hat,2,143.501,91.283,passive support
+hat,3,143.498,42.284,screw
+hat,4,85.5,42.284,passive support
+pd,1,124.667,4.54,screw
+pd,2,139.907,4.54,screw
+pd,3,139.78,27.273,screw
+pd,4,124.54,27.273,screw
+ina,1,157.54,67.04,screw
+ina,2,157.54,87.36,screw
+pct,1,97.54,115.24,screw
+pct,2,117.86,115.24,screw
+pct,3,97.54,102.54,screw
+pct,4,117.86,102.54,screw
+tsl,1,150.54,115.24,screw
+tsl,2,170.86,115.24,screw
+tsl,3,150.54,102.54,screw
+tsl,4,170.86,102.54,screw

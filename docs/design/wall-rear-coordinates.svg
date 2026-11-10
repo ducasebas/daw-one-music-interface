@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420mm" height="297mm" viewBox="0 0 420 297">
+<title>DAW TuneBox C1 — maatvaste pasproef</title>
+<desc>PCB-reserveringen en montagecoördinaten, geen productievrijgave. Alle maten in mm.</desc>
+<rect x="0" y="0" width="420" height="297" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="0.25"/>
+<text x="14" y="15" font-family="DejaVu Sans, sans-serif" font-size="5.0" font-weight="700" fill="#23343a" text-anchor="start">DAW TUNEBOX  /  TECHNISCHE INDELING C1</text>
+<text x="14" y="23" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Montagecoördinaten en dieptebudget — dezelfde aanzichtzijde als blad 1.</text>
+<line x1="14" y1="29" x2="406" y2="29" stroke="#ced6d8" stroke-width="0.25"/>
+<line x1="14" y1="277" x2="406" y2="277" stroke="#ced6d8" stroke-width="0.25"/>
+<text x="14" y="284" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="start">10 NOV 2026  ·  ALLE MATEN IN mm  ·  COÖRDINATEN VOOR PASPROEF</text>
+<text x="406" y="284" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="end">C1   /   2 van 3</text>
+<text x="14" y="42" font-family="DejaVu Sans, sans-serif" font-size="3.6" font-weight="700" fill="#23343a" text-anchor="start">HOOFDPRINTEN  /  POSITIES VAN BOREN OF GELIJMDE MONTAGEVOETEN</text>
+<text x="14" y="50" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">X/Y vanaf linkeronderhoek van de kast. Niet spiegelen vanaf de buitenzijde van de achterplaat.</text>
+<text x="14" y="55" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">M2,5 bevestiging; HAT-brongat circa Ø3,048, standaard raster circa 58 × 49. PCB-gaten zijn geen boormaat voor de alu-plaat.</text>
+<text x="14" y="67" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="700" fill="#23343a" text-anchor="start">Onderdeel</text>
+<text x="58" y="67" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="700" fill="#23343a" text-anchor="start">Punt</text>
+<text x="96" y="67" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="700" fill="#23343a" text-anchor="start">X</text>
+<text x="134" y="67" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="700" fill="#23343a" text-anchor="start">Y</text>
+<text x="170" y="67" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="700" fill="#23343a" text-anchor="start">Functie</text>
+<text x="231" y="67" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="700" fill="#23343a" text-anchor="start">Bron</text>
+<line x1="14" y1="72" x2="405" y2="72" stroke="#ced6d8" stroke-width="0.25"/>
+<text x="14" y="79" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#236b8e" text-anchor="start">Raspberry Pi 4</text>
+<text x="58" y="79" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#236b8e" text-anchor="start">1</text>
+<text x="96" y="79" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#236b8e" text-anchor="start">15.500</text>
+<text x="134" y="79" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#236b8e" text-anchor="start">97.500</text>
+<text x="170" y="79" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#236b8e" text-anchor="start">Steun zonder bout</text>
+<text x="231" y="79" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#236b8e" text-anchor="start">Pi figuur 1</text>
+<line x1="14" y1="82" x2="405" y2="82" stroke="#ced6d8" stroke-width="0.15"/>
+<text x="14" y="87" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start"></text>
+<text x="58" y="87" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">2</text>
+<text x="96" y="87" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">15.500</text>
+<text x="134" y="87" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">39.500</text>
+<text x="170" y="87" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">Schroef</text>
+<text x="231" y="87" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">Pi figuur 1</text>
+<line x1="14" y1="90" x2="405" y2="90" stroke="#ced6d8" stroke-width="0.15"/>
+<text x="14" y="95" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start"></text>
+<text x="58" y="95" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">3</text>
+<text x="96" y="95" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">64.500</text>
+<text x="134" y="95" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">97.500</text>
+<text x="170" y="95" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">Schroef</text>
+<text x="231" y="95" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">Pi figuur 1</text>
+<line x1="14" y1="98" x2="405" y2="98" stroke="#ced6d8" stroke-width="0.15"/>
+<text x="14" y="103" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start"></text>
+<text x="58" y="103" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">4</text>
+<text x="96" y="103" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">64.500</text>
+<text x="134" y="103" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">39.500</text>
+<text x="170" y="103" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">Steun zonder bout</text>
+<text x="231" y="103" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">Pi figuur 1</text>
+<line x1="14" y1="106" x2="405" y2="106" stroke="#ced6d8" stroke-width="0.15"/>
+<text x="14" y="114" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#91602e" text-anchor="start">Louder HAT Plus 1X</text>
+<text x="58" y="114" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#91602e" text-anchor="start">1</text>
+<text x="96" y="114" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#91602e" text-anchor="start">85.500</text>
+<text x="134" y="114" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#91602e" text-anchor="start">91.286</text>
+<text x="170" y="114" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#91602e" text-anchor="start">Schroef</text>
+<text x="231" y="114" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#91602e" text-anchor="start">Sonocotta Rev F STEP + drill</text>
+<line x1="14" y1="117" x2="405" y2="117" stroke="#ced6d8" stroke-width="0.15"/>
+<text x="14" y="122" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start"></text>
+<text x="58" y="122" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">2</text>
+<text x="96" y="122" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">143.501</text>
+<text x="134" y="122" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">91.283</text>
+<text x="170" y="122" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">Steun zonder bout</text>
+<text x="231" y="122" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">Sonocotta Rev F STEP + drill</text>
+<line x1="14" y1="125" x2="405" y2="125" stroke="#ced6d8" stroke-width="0.15"/>
+<text x="14" y="130" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start"></text>
+<text x="58" y="130" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">3</text>
+<text x="96" y="130" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">143.498</text>
+<text x="134" y="130" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">42.284</text>
+<text x="170" y="130" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">Schroef</text>
+<text x="231" y="130" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">Sonocotta Rev F STEP + drill</text>
+<line x1="14" y1="133" x2="405" y2="133" stroke="#ced6d8" stroke-width="0.15"/>
+<text x="14" y="138" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start"></text>
+<text x="58" y="138" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">4</text>
+<text x="96" y="138" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">85.500</text>
+<text x="134" y="138" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">42.284</text>
+<text x="170" y="138" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">Steun zonder bout</text>
+<text x="231" y="138" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#23343a" text-anchor="start">Sonocotta Rev F STEP + drill</text>
+<line x1="14" y1="141" x2="405" y2="141" stroke="#ced6d8" stroke-width="0.15"/>
+<text x="14" y="165" font-family="DejaVu Sans, sans-serif" font-size="3.6" font-weight="700" fill="#23343a" text-anchor="start">VOORGESTELD DIEPTEBUDGET  /  ALLEEN RESERVERINGEN</text>
+<rect x="25.0" y="185" width="8.7" height="48" rx="0" fill="#aab8be" stroke="#23343a" stroke-width="0.35"/>
+<text x="29.35" y="210" font-family="DejaVu Sans, sans-serif" font-size="2.5" font-weight="400" fill="#23343a" text-anchor="middle">Alu</text>
+<line x1="25.0" y1="240" x2="33.7" y2="240" stroke="#53676e" stroke-width="0.2"/>
+<line x1="24.0" y1="241.4" x2="26.0" y2="238.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="32.7" y1="241.4" x2="34.7" y2="238.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="29.35" y="238.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">3</text>
+<rect x="33.7" y="185" width="63.8" height="48" rx="0" fill="#e4f0f5" stroke="#23343a" stroke-width="0.35"/>
+<text x="65.6" y="210" font-family="DejaVu Sans, sans-serif" font-size="2.5" font-weight="400" fill="#23343a" text-anchor="middle">Elektronica</text>
+<line x1="33.7" y1="240" x2="97.5" y2="240" stroke="#53676e" stroke-width="0.2"/>
+<line x1="32.7" y1="241.4" x2="34.7" y2="238.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="96.5" y1="241.4" x2="98.5" y2="238.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="65.6" y="238.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">22</text>
+<rect x="97.5" y="185" width="8.7" height="48" rx="0" fill="#ffffff" stroke="#23343a" stroke-width="0.35"/>
+<text x="101.85" y="210" font-family="DejaVu Sans, sans-serif" font-size="2.5" font-weight="400" fill="#23343a" text-anchor="middle">Vrij</text>
+<line x1="97.5" y1="240" x2="106.2" y2="240" stroke="#53676e" stroke-width="0.2"/>
+<line x1="96.5" y1="241.4" x2="98.5" y2="238.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="105.2" y1="241.4" x2="107.2" y2="238.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="101.85" y="238.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">3</text>
+<rect x="106.2" y="185" width="63.8" height="48" rx="0" fill="#e8e9e9" stroke="#23343a" stroke-width="0.35"/>
+<text x="138.1" y="210" font-family="DejaVu Sans, sans-serif" font-size="2.5" font-weight="400" fill="#23343a" text-anchor="middle">LCD-reserve</text>
+<line x1="106.2" y1="240" x2="170.0" y2="240" stroke="#53676e" stroke-width="0.2"/>
+<line x1="105.2" y1="241.4" x2="107.2" y2="238.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="169.0" y1="241.4" x2="171.0" y2="238.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="138.1" y="238.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">22</text>
+<line x1="25" y1="250" x2="170.0" y2="250" stroke="#53676e" stroke-width="0.2"/>
+<line x1="24" y1="251.4" x2="26" y2="248.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="169.0" y1="251.4" x2="171.0" y2="248.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="97.5" y="248.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">50 mm kastdiepte · nog geen gemeten minimum</text>
+<text x="197" y="181" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">Pi: componentzijde naar de achterplaat.</text>
+<text x="197" y="187" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">18 mm datum tot de onderzijde van de PCB.</text>
+<text x="197" y="193" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">Metalen warmtebrug op maat, geen dikke stapel pads.</text>
+<text x="197" y="199" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">HAT: PCB-onderzijde 6 mm van alu; componenten naar LCD.</text>
+<text x="197" y="205" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">LCD 22 mm is een gereserveerd volume, geen bronmaat.</text>
+<text x="197" y="211" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">3 mm nominale vrije ruimte is voor de pasproef.</text>
+<text x="197" y="217" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">Geen gekruiste voeding of ongeteste GPIO-kabel uit dit model.</text>
+<text x="14" y="263" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="700" fill="#23343a" text-anchor="start">1:1 TEMPLATE: wall-mount-template.svg / .dxf. Print PDF-blad 3 op 100%, controleer de 50 mm maatbalk.</text>
+</svg>

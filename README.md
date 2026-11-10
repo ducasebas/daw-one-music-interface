@@ -10,6 +10,8 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 ## GUI3.0 · WALL — approved exterior and new screen profile
 
+**Mechanical update, 10 November: [dimensioned C1 layout and manufacturer sources](docs/design/wall-mechanical-c1.md)**. Pi4 and Louder HAT sit side by side with two screws and two support feet each. Includes a three-page PDF, 1:1 positioning template, DXF/CSV and STEP reserved volumes. PCB clearances are checked; the50mm body depth and thermal/connector fit still require a physical prototype.
+
 The chosen exterior is a wall-mounted enclosure with **walnut sides, black glass front and a top standby button with LED ring; no physical volume knob**. [Approved render and provisional dimensions](docs/design/wall-product.md): **190×124×55mm total projection target**, not validated CAD or a minimum thickness claim. Selected screen: **Waveshare7inch DSI LCD (E), manufacturer SKU29112**, matching the owner-supplied1280×800, ten-point-touch, optical-bonding product description. Native1280×800 /16:10 is confirmed for the project. Cover-glass drawing170.18×104.20mm and exact delivered PCB revision still require physical verification. Old1280×400 installations retain their existing profile by default.
 
 **[Open the new wall display locally](http://localhost:5173/?gui=2&screen=1&display=hdmi-development&panel=wall-16-10)** · **[Wall hardware simulator](http://localhost:5173/?gui=2&lab=1&panel=wall-16-10)**. Start with `npm ci` then `npm run dev`. Six skins, larger touch controls, screen-rest clock/date/widgets/sunset/glow/Now Playing/black, and a paged notification centre share the existing backend and safety logic. Real Wi-Fi quality is optional through the device manager; unknown measurements stay unknown.

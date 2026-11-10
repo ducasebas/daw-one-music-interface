@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420mm" height="297mm" viewBox="0 0 420 297">
+<title>DAW TuneBox C1 — maatvaste pasproef</title>
+<desc>PCB-reserveringen en montagecoördinaten, geen productievrijgave. Alle maten in mm.</desc>
+<rect x="0" y="0" width="420" height="297" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="0.25"/>
+<text x="14" y="15" font-family="DejaVu Sans, sans-serif" font-size="5.0" font-weight="700" fill="#23343a" text-anchor="start">DAW TUNEBOX  /  TECHNISCHE INDELING C1</text>
+<text x="14" y="23" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Binnenzijde achterplaat, scherm weggenomen. Pi, HAT en hulpprinten naast elkaar.</text>
+<line x1="14" y1="29" x2="406" y2="29" stroke="#ced6d8" stroke-width="0.25"/>
+<line x1="14" y1="277" x2="406" y2="277" stroke="#ced6d8" stroke-width="0.25"/>
+<text x="14" y="284" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="start">10 NOV 2026  ·  ALLE MATEN IN mm  ·  COÖRDINATEN VOOR PASPROEF</text>
+<text x="406" y="284" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="end">C1   /   1 van 3</text>
+<rect x="16.0" y="45.400000000000006" width="266.0" height="173.6" rx="8.399999999999999" fill="#e5e9eb" stroke="#23343a" stroke-width="0.5"/>
+<rect x="23.0" y="52.400000000000006" width="251.99999999999997" height="159.6" rx="2.8" fill="#f9fbfb" stroke="#ced6d8" stroke-width="0.3"/>
+<rect x="29.873999999999995" y="59.25999999999999" width="238.25199999999998" height="145.88" rx="0" fill="none" stroke="#aab5b9" stroke-width="0.2" stroke-dasharray="2 1.2"/>
+<rect x="32.8" y="77.60000000000001" width="78.39999999999999" height="118.99999999999999" rx="1.4" fill="#e4f0f5" stroke="#236b8e" stroke-width="0.4"/>
+<text x="72.0" y="173.25" font-family="DejaVu Sans, sans-serif" font-size="3.4" font-weight="700" fill="#236b8e" text-anchor="middle">01  RASPBERRY PI 4</text>
+<text x="72.0" y="177.95" font-family="DejaVu Sans, sans-serif" font-size="3.4" font-weight="400" fill="#236b8e" text-anchor="middle">85 × 56 · 90° gedraaid</text>
+<circle cx="37.7" cy="82.5" r="2.0999999999999996" fill="#ffffff" stroke="#236b8e" stroke-width="0.3"/>
+<circle cx="37.7" cy="82.5" r="0.5" fill="#236b8e" stroke="#236b8e" stroke-width="0.25"/>
+<circle cx="37.7" cy="163.7" r="2.0999999999999996" fill="#ffffff" stroke="#236b8e" stroke-width="0.3"/>
+<line x1="36.5" y1="163.7" x2="38.900000000000006" y2="163.7" stroke="#236b8e" stroke-width="0.3"/>
+<line x1="37.7" y1="164.89999999999998" x2="37.7" y2="162.5" stroke="#236b8e" stroke-width="0.3"/>
+<circle cx="106.3" cy="82.5" r="2.0999999999999996" fill="#ffffff" stroke="#236b8e" stroke-width="0.3"/>
+<line x1="105.1" y1="82.5" x2="107.5" y2="82.5" stroke="#236b8e" stroke-width="0.3"/>
+<line x1="106.3" y1="83.69999999999999" x2="106.3" y2="81.30000000000001" stroke="#236b8e" stroke-width="0.3"/>
+<circle cx="106.3" cy="163.7" r="2.0999999999999996" fill="#ffffff" stroke="#236b8e" stroke-width="0.3"/>
+<circle cx="106.3" cy="163.7" r="0.5" fill="#236b8e" stroke="#236b8e" stroke-width="0.25"/>
+<rect x="130.8" y="85.47360000000002" width="91.0014" height="85.92639999999999" rx="1.4" fill="#f4eade" stroke="#91602e" stroke-width="0.4"/>
+<text x="176.3007" y="123.73680000000002" font-family="DejaVu Sans, sans-serif" font-size="3.4" font-weight="700" fill="#91602e" text-anchor="middle">02  LOUDER HAT</text>
+<text x="176.3007" y="128.4368" font-family="DejaVu Sans, sans-serif" font-size="3.4" font-weight="400" fill="#91602e" text-anchor="middle">PLUS 1X  /  REV F</text>
+<text x="176.3007" y="133.13680000000002" font-family="DejaVu Sans, sans-serif" font-size="3.4" font-weight="400" fill="#91602e" text-anchor="middle">65,00 × 61,38</text>
+<circle cx="135.7" cy="91.1996" r="2.0999999999999996" fill="#ffffff" stroke="#91602e" stroke-width="0.3"/>
+<line x1="134.5" y1="91.1996" x2="136.89999999999998" y2="91.1996" stroke="#91602e" stroke-width="0.3"/>
+<line x1="135.7" y1="92.39959999999999" x2="135.7" y2="89.99960000000002" stroke="#91602e" stroke-width="0.3"/>
+<circle cx="216.9014" cy="91.2038" r="2.0999999999999996" fill="#ffffff" stroke="#91602e" stroke-width="0.3"/>
+<circle cx="216.9014" cy="91.2038" r="0.5" fill="#91602e" stroke="#91602e" stroke-width="0.25"/>
+<circle cx="216.89719999999997" cy="159.8024" r="2.0999999999999996" fill="#ffffff" stroke="#91602e" stroke-width="0.3"/>
+<line x1="215.69719999999998" y1="159.8024" x2="218.09719999999996" y2="159.8024" stroke="#91602e" stroke-width="0.3"/>
+<line x1="216.89719999999997" y1="161.0024" x2="216.89719999999997" y2="158.60240000000002" stroke="#91602e" stroke-width="0.3"/>
+<circle cx="135.7" cy="159.8024" r="2.0999999999999996" fill="#ffffff" stroke="#91602e" stroke-width="0.3"/>
+<circle cx="135.7" cy="159.8024" r="0.5" fill="#91602e" stroke="#91602e" stroke-width="0.25"/>
+<rect x="186.79999999999998" y="177.2618" width="28.447999999999997" height="38.938199999999995" rx="1.4" fill="#f1eaf5" stroke="#875a99" stroke-width="0.4"/>
+<text x="201.02399999999997" y="194.3809" font-family="DejaVu Sans, sans-serif" font-size="2.65" font-weight="700" fill="#875a99" text-anchor="middle">03  USB-C PD</text>
+<text x="201.02399999999997" y="199.0809" font-family="DejaVu Sans, sans-serif" font-size="2.65" font-weight="400" fill="#875a99" text-anchor="middle">HUSB238</text>
+<circle cx="190.53379999999999" cy="212.644" r="2.0999999999999996" fill="#ffffff" stroke="#875a99" stroke-width="0.3"/>
+<circle cx="211.8698" cy="212.644" r="2.0999999999999996" fill="#ffffff" stroke="#875a99" stroke-width="0.3"/>
+<circle cx="211.69199999999998" cy="180.8178" r="2.0999999999999996" fill="#ffffff" stroke="#875a99" stroke-width="0.3"/>
+<circle cx="190.356" cy="180.8178" r="2.0999999999999996" fill="#ffffff" stroke="#875a99" stroke-width="0.3"/>
+<rect x="233.0" y="93.13999999999999" width="28.447999999999997" height="35.559999999999995" rx="1.4" fill="#f1eaf5" stroke="#875a99" stroke-width="0.4"/>
+<text x="247.224" y="108.57000000000002" font-family="DejaVu Sans, sans-serif" font-size="2.65" font-weight="700" fill="#875a99" text-anchor="middle">04  INA228</text>
+<text x="247.224" y="113.27000000000001" font-family="DejaVu Sans, sans-serif" font-size="2.65" font-weight="400" fill="#875a99" text-anchor="middle">stroom / vermogen</text>
+<circle cx="236.55599999999998" cy="125.144" r="2.0999999999999996" fill="#ffffff" stroke="#875a99" stroke-width="0.3"/>
+<circle cx="236.55599999999998" cy="96.69600000000003" r="2.0999999999999996" fill="#ffffff" stroke="#875a99" stroke-width="0.3"/>
+<rect x="149.0" y="54.108000000000004" width="35.559999999999995" height="24.892" rx="1.4" fill="#e9f4ef" stroke="#41836e" stroke-width="0.4"/>
+<text x="166.78" y="64.20400000000001" font-family="DejaVu Sans, sans-serif" font-size="2.65" font-weight="700" fill="#41836e" text-anchor="middle">05  PCT2075</text>
+<text x="166.78" y="68.904" font-family="DejaVu Sans, sans-serif" font-size="2.65" font-weight="400" fill="#41836e" text-anchor="middle">lucht °C</text>
+<circle cx="152.556" cy="57.664000000000016" r="2.0999999999999996" fill="#ffffff" stroke="#41836e" stroke-width="0.3"/>
+<circle cx="181.004" cy="57.664000000000016" r="2.0999999999999996" fill="#ffffff" stroke="#41836e" stroke-width="0.3"/>
+<circle cx="152.556" cy="75.44399999999999" r="2.0999999999999996" fill="#ffffff" stroke="#41836e" stroke-width="0.3"/>
+<circle cx="181.004" cy="75.44399999999999" r="2.0999999999999996" fill="#ffffff" stroke="#41836e" stroke-width="0.3"/>
+<rect x="223.2" y="54.108000000000004" width="35.559999999999995" height="24.892" rx="1.4" fill="#e9f4ef" stroke="#41836e" stroke-width="0.4"/>
+<text x="240.97999999999996" y="64.20400000000001" font-family="DejaVu Sans, sans-serif" font-size="2.65" font-weight="700" fill="#41836e" text-anchor="middle">06  TSL2591</text>
+<text x="240.97999999999996" y="68.904" font-family="DejaVu Sans, sans-serif" font-size="2.65" font-weight="400" fill="#41836e" text-anchor="middle">licht · lux</text>
+<circle cx="226.75599999999997" cy="57.664000000000016" r="2.0999999999999996" fill="#ffffff" stroke="#41836e" stroke-width="0.3"/>
+<circle cx="255.204" cy="57.664000000000016" r="2.0999999999999996" fill="#ffffff" stroke="#41836e" stroke-width="0.3"/>
+<circle cx="226.75599999999997" cy="75.44399999999999" r="2.0999999999999996" fill="#ffffff" stroke="#41836e" stroke-width="0.3"/>
+<circle cx="255.204" cy="75.44399999999999" r="2.0999999999999996" fill="#ffffff" stroke="#41836e" stroke-width="0.3"/>
+<rect x="227.39999999999998" y="140.6" width="43.4" height="33.599999999999994" rx="1.4" fill="#f1eaf5" stroke="#875a99" stroke-width="0.4"/>
+<text x="249.1" y="155.05" font-family="DejaVu Sans, sans-serif" font-size="2.65" font-weight="700" fill="#875a99" text-anchor="middle">07  TSR + ULN</text>
+<text x="249.1" y="159.75" font-family="DejaVu Sans, sans-serif" font-size="2.65" font-weight="400" fill="#875a99" text-anchor="middle">31 × 24 gereserveerd</text>
+<rect x="123.8" y="182.60000000000002" width="30.799999999999997" height="25.2" rx="1.4" fill="#e9f4ef" stroke="#41836e" stroke-width="0.4"/>
+<text x="139.2" y="192.85000000000002" font-family="DejaVu Sans, sans-serif" font-size="2.65" font-weight="700" fill="#41836e" text-anchor="middle">08  mmWAVE</text>
+<text x="139.2" y="197.55" font-family="DejaVu Sans, sans-serif" font-size="2.65" font-weight="400" fill="#41836e" text-anchor="middle">RF-proefzone</text>
+<rect x="56.599999999999994" y="45.40000000000002" width="30.799999999999997" height="27.299999999999997" rx="0" fill="none" stroke="#9d763c" stroke-width="0.3" stroke-dasharray="2 1.2"/>
+<text x="72.0" y="56.60000000000002" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="700" fill="#9d763c" text-anchor="middle">KNOP Ø16</text>
+<text x="72.0" y="63.60000000000002" font-family="DejaVu Sans, sans-serif" font-size="2.4" font-weight="400" fill="#9d763c" text-anchor="middle">inbouwreserve</text>
+<rect x="61.5" y="107.7" width="30.799999999999997" height="30.799999999999997" rx="0" fill="none" stroke="#c26b38" stroke-width="0.3" stroke-dasharray="2 1.2"/>
+<text x="76.9" y="144.8" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#a6522c" text-anchor="middle">SoC → warmtebrug*</text>
+<line x1="245.6" y1="54.108000000000004" x2="245.6" y2="46.10000000000002" stroke="#41836e" stroke-width="0.8"/>
+<text x="126.6" y="212.0" font-family="DejaVu Sans, sans-serif" font-size="2.45" font-weight="400" fill="#41836e" text-anchor="start">RF-venster in onderwand</text>
+<circle cx="16.0" cy="219.0" r="1.2" fill="#ffffff" stroke="#23343a" stroke-width="0.3"/>
+<line x1="16.0" y1="219.0" x2="32.8" y2="219.0" stroke="#23343a" stroke-width="0.45"/>
+<line x1="16.0" y1="219.0" x2="16.0" y2="202.2" stroke="#23343a" stroke-width="0.45"/>
+<text x="15.0" y="225.0" font-family="DejaVu Sans, sans-serif" font-size="2.7" font-weight="400" fill="#23343a" text-anchor="start">0,0</text>
+<line x1="16.0" y1="38.39999999999998" x2="282.0" y2="38.39999999999998" stroke="#53676e" stroke-width="0.2"/>
+<line x1="15.0" y1="39.799999999999955" x2="17.0" y2="37.0" stroke="#53676e" stroke-width="0.25"/>
+<line x1="281.0" y1="39.799999999999955" x2="283.0" y2="37.0" stroke="#53676e" stroke-width="0.25"/>
+<text x="149.0" y="36.799999999999955" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">190,00  buitenmaat</text>
+<line x1="23.0" y1="231.6" x2="275.0" y2="231.6" stroke="#53676e" stroke-width="0.2"/>
+<line x1="22.0" y1="233.0" x2="24.0" y2="230.2" stroke="#53676e" stroke-width="0.25"/>
+<line x1="274.0" y1="233.0" x2="276.0" y2="230.2" stroke="#53676e" stroke-width="0.25"/>
+<text x="149.0" y="230.0" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">180,00  nominaal binnen de houten wand</text>
+<line x1="8" y1="219.0" x2="8" y2="45.400000000000006" stroke="#53676e" stroke-width="0.2"/>
+<line x1="6.6" y1="220.0" x2="9.4" y2="218.0" stroke="#53676e" stroke-width="0.25"/>
+<line x1="6.6" y1="46.400000000000006" x2="9.4" y2="44.400000000000006" stroke="#53676e" stroke-width="0.25"/>
+<text x="6" y="132.2" font-family="DejaVu Sans, sans-serif" font-size="2.7" font-weight="400" fill="#53676e" text-anchor="middle">124,00</text>
+<text x="16" y="244" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="700" fill="#23343a" text-anchor="start">I/O-CASSETTE ONDERZIJDE  /  105 × 18 GERESERVEERD</text>
+<rect x="73" y="249" width="147.0" height="18" rx="0" fill="#f4f0e8" stroke="#9d763c" stroke-width="0.35"/>
+<circle cx="119.19999999999999" cy="258" r="3" fill="#ffffff" stroke="#9d763c" stroke-width="0.3"/>
+<text x="119.19999999999999" y="259.1" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="700" fill="#9d763c" text-anchor="middle">L</text>
+<circle cx="153.024" cy="258" r="3" fill="#ffffff" stroke="#9d763c" stroke-width="0.3"/>
+<text x="153.024" y="259.1" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="700" fill="#9d763c" text-anchor="middle">USB-C</text>
+<circle cx="196.2" cy="258" r="3" fill="#ffffff" stroke="#9d763c" stroke-width="0.3"/>
+<text x="196.2" y="259.1" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="700" fill="#9d763c" text-anchor="middle">R</text>
+<text x="16" y="273" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="start">Symbolen zijn reserveringen; geen gefingeerde boorgaten voor onbekende paneelklemmen.</text>
+<text x="301" y="42" font-family="DejaVu Sans, sans-serif" font-size="3.2" font-weight="700" fill="#23343a" text-anchor="start">MAATBASIS</text>
+<text x="301" y="49.0" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Kast: 190 × 124 × 50.</text>
+<text x="301" y="53.69999999999999" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Achterplaat: aluminium 3.</text>
+<text x="301" y="58.400000000000006" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Walnoot zijwand: 5 nominale dikte.</text>
+<text x="301" y="63.099999999999994" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Wandafstand: 5 gereserveerd.</text>
+<text x="301" y="67.80000000000001" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">55 wandprojectie blijft een doelmaat.</text>
+<text x="301" y="81" font-family="DejaVu Sans, sans-serif" font-size="3.2" font-weight="700" fill="#23343a" text-anchor="start">MONTAGE</text>
+<text x="301" y="88.0" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Pi + HAT: elk 2 diagonale schroeven.</text>
+<text x="301" y="92.69999999999999" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Daarnaast elk 2 passieve steunvoetjes.</text>
+<text x="301" y="97.4" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Geen gedeelde bouten door het LCD.</text>
+<text x="301" y="102.1" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Montagevoeten: geschroefd heeft voorkeur.</text>
+<text x="301" y="106.80000000000001" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Gelijmde voeten alleen na lijmproef.</text>
+<text x="301" y="120" font-family="DejaVu Sans, sans-serif" font-size="3.2" font-weight="700" fill="#23343a" text-anchor="start">WARMTE</text>
+<text x="301" y="127.0" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Pi-SoC via passende metalen brug</text>
+<text x="301" y="131.7" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">en isolerend thermisch raakvlak naar alu.</text>
+<text x="301" y="136.4" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">HAT via daarvoor geschikte PCB-zone;</text>
+<text x="301" y="141.1" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">geen willekeurige druk op componenten.</text>
+<text x="301" y="145.8" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Thermische delen zijn geen printlijm.</text>
+<text x="301" y="159" font-family="DejaVu Sans, sans-serif" font-size="3.2" font-weight="700" fill="#23343a" text-anchor="start">SENSOREN EN RADIO</text>
+<text x="301" y="166.0" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">PCT op nylon; los van hete achterplaat.</text>
+<text x="301" y="170.7" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">TSL via lichtgeleider naar boven.</text>
+<text x="301" y="175.4" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Radar bij een niet-metalen bodemvenster.</text>
+<text x="301" y="180.1" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Wi-Fi en radar in gesloten kast testen.</text>
+<text x="301" y="184.8" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Kabels krijgen trekontlasting.</text>
+<text x="301" y="198" font-family="DejaVu Sans, sans-serif" font-size="3.2" font-weight="700" fill="#23343a" text-anchor="start">GECONTROLEERD</text>
+<text x="301" y="205.0" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Openbare fabrikant-CAD gebruikt.</text>
+<text x="301" y="209.7" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Geen overlap van PCB-reserveringen.</text>
+<text x="301" y="214.4" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Kleinste tussenruimte: circa 4,00 mm.</text>
+<text x="301" y="219.1" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">Stekkers en kabels nog passen in 3D.</text>
+<text x="301" y="223.8" font-family="DejaVu Sans, sans-serif" font-size="2.85" font-weight="400" fill="#53676e" text-anchor="start">* Warmtebrugzone is indicatief.</text>
+<rect x="301" y="241" width="105" height="28" rx="2" fill="#fcf3e6" stroke="#b27735" stroke-width="0.25"/>
+<text x="305" y="250" font-family="DejaVu Sans, sans-serif" font-size="2.7" font-weight="400" fill="#895b26" text-anchor="start">BRONMATEN ≠ BEWEZEN MINIMUMDIKTE.</text>
+<text x="305" y="255" font-family="DejaVu Sans, sans-serif" font-size="2.7" font-weight="400" fill="#895b26" text-anchor="start">Plaatsing en hoofdgatpatronen zijn vastgelegd;</text>
+<text x="305" y="260" font-family="DejaVu Sans, sans-serif" font-size="2.7" font-weight="400" fill="#895b26" text-anchor="start">pasproef, warmte en I/O bepalen vrijgave.</text>
+</svg>

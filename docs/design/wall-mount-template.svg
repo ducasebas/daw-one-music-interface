@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="190mm" height="124mm" viewBox="0 0 190 124">
+<title>TuneBox C1 1:1 position template — not a drill release</title>
+<rect x="0" y="0" width="190" height="124" rx="6" fill="none" stroke="black" stroke-width="0.2"/>
+<rect x="12" y="23" width="56" height="85" fill="none" stroke="#236b8e" stroke-width="0.2"/>
+<path d="M13.5,26.5h4 M15.5,24.5v4" fill="none" stroke="#236b8e" stroke-width="0.2"/>
+<path d="M13.5,84.5h4 M15.5,82.5v4" fill="none" stroke="#236b8e" stroke-width="0.2"/>
+<path d="M62.5,26.5h4 M64.5,24.5v4" fill="none" stroke="#236b8e" stroke-width="0.2"/>
+<path d="M62.5,84.5h4 M64.5,82.5v4" fill="none" stroke="#236b8e" stroke-width="0.2"/>
+<rect x="82" y="28.624000000000002" width="65.001" height="61.376" fill="none" stroke="#91602e" stroke-width="0.2"/>
+<path d="M83.5,32.714h4 M85.5,30.714v4" fill="none" stroke="#91602e" stroke-width="0.2"/>
+<path d="M141.501,32.717h4 M143.501,30.717v4" fill="none" stroke="#91602e" stroke-width="0.2"/>
+<path d="M141.498,81.71600000000001h4 M143.498,79.71600000000001v4" fill="none" stroke="#91602e" stroke-width="0.2"/>
+<path d="M83.5,81.71600000000001h4 M85.5,79.71600000000001v4" fill="none" stroke="#91602e" stroke-width="0.2"/>
+<rect x="122" y="94.187" width="20.32" height="27.813" fill="none" stroke="#875a99" stroke-width="0.2"/>
+<path d="M122.667,119.46h4 M124.667,117.46v4" fill="none" stroke="#875a99" stroke-width="0.2"/>
+<path d="M137.907,119.46h4 M139.907,117.46v4" fill="none" stroke="#875a99" stroke-width="0.2"/>
+<path d="M137.78,96.727h4 M139.78,94.727v4" fill="none" stroke="#875a99" stroke-width="0.2"/>
+<path d="M122.54,96.727h4 M124.54,94.727v4" fill="none" stroke="#875a99" stroke-width="0.2"/>
+<rect x="155" y="34.1" width="20.32" height="25.4" fill="none" stroke="#875a99" stroke-width="0.2"/>
+<path d="M155.54,56.959999999999994h4 M157.54,54.959999999999994v4" fill="none" stroke="#875a99" stroke-width="0.2"/>
+<path d="M155.54,36.64h4 M157.54,34.64v4" fill="none" stroke="#875a99" stroke-width="0.2"/>
+<rect x="95" y="6.219999999999999" width="25.4" height="17.78" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<path d="M95.54,8.760000000000005h4 M97.54,6.760000000000005v4" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<path d="M115.86,8.760000000000005h4 M117.86,6.760000000000005v4" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<path d="M95.54,21.459999999999994h4 M97.54,19.459999999999994v4" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<path d="M115.86,21.459999999999994h4 M117.86,19.459999999999994v4" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<rect x="148" y="6.219999999999999" width="25.4" height="17.78" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<path d="M148.54,8.760000000000005h4 M150.54,6.760000000000005v4" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<path d="M168.86,8.760000000000005h4 M170.86,6.760000000000005v4" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<path d="M148.54,21.459999999999994h4 M150.54,19.459999999999994v4" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<path d="M168.86,21.459999999999994h4 M170.86,19.459999999999994v4" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<rect x="151" y="68" width="31" height="24" fill="none" stroke="#875a99" stroke-width="0.2"/>
+<rect x="77" y="98" width="22" height="18" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<path d="M5,120h50 M5,118v4 M55,118v4" fill="none" stroke="black" stroke-width="0.2"/>
+<text x="30" y="117" font-size="2.8" text-anchor="middle">50 mm</text></svg>

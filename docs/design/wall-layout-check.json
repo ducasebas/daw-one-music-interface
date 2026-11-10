@@ -1,0 +1,162 @@
+{
+  "revision": "C1",
+  "checks": [
+    "PCB reservations inside enclosure",
+    "No pair of PCB/reserved-module rectangles overlaps",
+    "At least 3 mm between PCB rectangles",
+    "Local mounting coordinates inside each PCB rectangle",
+    "Nominal depth reservations fit"
+  ],
+  "not_checked": [
+    "connector bodies / inserted plugs",
+    "screw heads / tools / cable bends",
+    "screen PCB/posts at delivered revision",
+    "thermal contacts and temperatures",
+    "RF performance",
+    "carrier circuit design",
+    "electrical protection / bonding / power wiring"
+  ],
+  "minimum_gap_mm": 3.999,
+  "gaps": [
+    {
+      "a": "pi",
+      "b": "tsl",
+      "gap_mm": 80.0
+    },
+    {
+      "a": "pi",
+      "b": "radar",
+      "gap_mm": 9.0
+    },
+    {
+      "a": "hat",
+      "b": "pi",
+      "gap_mm": 14.0
+    },
+    {
+      "a": "hat",
+      "b": "pd",
+      "gap_mm": 4.187
+    },
+    {
+      "a": "hat",
+      "b": "ina",
+      "gap_mm": 7.999
+    },
+    {
+      "a": "hat",
+      "b": "pct",
+      "gap_mm": 4.624
+    },
+    {
+      "a": "hat",
+      "b": "tsl",
+      "gap_mm": 4.731
+    },
+    {
+      "a": "hat",
+      "b": "radar",
+      "gap_mm": 8.0
+    },
+    {
+      "a": "pd",
+      "b": "pi",
+      "gap_mm": 54.0
+    },
+    {
+      "a": "pd",
+      "b": "tsl",
+      "gap_mm": 70.416
+    },
+    {
+      "a": "pd",
+      "b": "radar",
+      "gap_mm": 23.0
+    },
+    {
+      "a": "ina",
+      "b": "pi",
+      "gap_mm": 87.0
+    },
+    {
+      "a": "ina",
+      "b": "pd",
+      "gap_mm": 36.932
+    },
+    {
+      "a": "ina",
+      "b": "pct",
+      "gap_mm": 36.044
+    },
+    {
+      "a": "ina",
+      "b": "tsl",
+      "gap_mm": 10.1
+    },
+    {
+      "a": "ina",
+      "b": "radar",
+      "gap_mm": 67.958
+    },
+    {
+      "a": "pct",
+      "b": "pi",
+      "gap_mm": 27.0
+    },
+    {
+      "a": "pct",
+      "b": "pd",
+      "gap_mm": 70.205
+    },
+    {
+      "a": "pct",
+      "b": "tsl",
+      "gap_mm": 27.6
+    },
+    {
+      "a": "pct",
+      "b": "radar",
+      "gap_mm": 74.0
+    },
+    {
+      "a": "carrier",
+      "b": "pi",
+      "gap_mm": 83.0
+    },
+    {
+      "a": "carrier",
+      "b": "hat",
+      "gap_mm": 3.999
+    },
+    {
+      "a": "carrier",
+      "b": "pd",
+      "gap_mm": 8.951
+    },
+    {
+      "a": "carrier",
+      "b": "ina",
+      "gap_mm": 8.5
+    },
+    {
+      "a": "carrier",
+      "b": "pct",
+      "gap_mm": 53.594
+    },
+    {
+      "a": "carrier",
+      "b": "tsl",
+      "gap_mm": 44.0
+    },
+    {
+      "a": "carrier",
+      "b": "radar",
+      "gap_mm": 52.345
+    },
+    {
+      "a": "radar",
+      "b": "tsl",
+      "gap_mm": 88.752
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420mm" height="297mm" viewBox="0 0 420 297">
+<title>DAW TuneBox C1 — maatvaste pasproef</title>
+<desc>PCB-reserveringen en montagecoördinaten, geen productievrijgave. Alle maten in mm.</desc>
+<rect x="0" y="0" width="420" height="297" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="0.25"/>
+<text x="14" y="15" font-family="DejaVu Sans, sans-serif" font-size="5.0" font-weight="700" fill="#23343a" text-anchor="start">DAW TUNEBOX  /  TECHNISCHE INDELING C1</text>
+<text x="14" y="23" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">1:1 pas- en positioneersjabloon — print op ware grootte, geen automatische schaling.</text>
+<line x1="14" y1="29" x2="406" y2="29" stroke="#ced6d8" stroke-width="0.25"/>
+<line x1="14" y1="277" x2="406" y2="277" stroke="#ced6d8" stroke-width="0.25"/>
+<text x="14" y="284" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="start">10 NOV 2026  ·  ALLE MATEN IN mm  ·  COÖRDINATEN VOOR PASPROEF</text>
+<text x="406" y="284" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="end">C1   /   3 van 3</text>
+<rect x="25" y="86" width="190" height="124" rx="6" fill="none" stroke="#23343a" stroke-width="0.3"/>
+<rect x="37" y="109" width="56" height="85" rx="0" fill="none" stroke="#236b8e" stroke-width="0.2"/>
+<circle cx="40.5" cy="112.5" r="1.5" fill="none" stroke="#236b8e" stroke-width="0.18"/>
+<line x1="37.5" y1="112.5" x2="43.5" y2="112.5" stroke="#236b8e" stroke-width="0.18"/>
+<line x1="40.5" y1="115.5" x2="40.5" y2="109.5" stroke="#236b8e" stroke-width="0.18"/>
+<circle cx="40.5" cy="170.5" r="1.5" fill="none" stroke="#236b8e" stroke-width="0.18"/>
+<line x1="37.5" y1="170.5" x2="43.5" y2="170.5" stroke="#236b8e" stroke-width="0.18"/>
+<line x1="40.5" y1="173.5" x2="40.5" y2="167.5" stroke="#236b8e" stroke-width="0.18"/>
+<circle cx="89.5" cy="112.5" r="1.5" fill="none" stroke="#236b8e" stroke-width="0.18"/>
+<line x1="86.5" y1="112.5" x2="92.5" y2="112.5" stroke="#236b8e" stroke-width="0.18"/>
+<line x1="89.5" y1="115.5" x2="89.5" y2="109.5" stroke="#236b8e" stroke-width="0.18"/>
+<circle cx="89.5" cy="170.5" r="1.5" fill="none" stroke="#236b8e" stroke-width="0.18"/>
+<line x1="86.5" y1="170.5" x2="92.5" y2="170.5" stroke="#236b8e" stroke-width="0.18"/>
+<line x1="89.5" y1="173.5" x2="89.5" y2="167.5" stroke="#236b8e" stroke-width="0.18"/>
+<rect x="107" y="114.624" width="65.001" height="61.376" rx="0" fill="none" stroke="#91602e" stroke-width="0.2"/>
+<circle cx="110.5" cy="118.714" r="1.5" fill="none" stroke="#91602e" stroke-width="0.18"/>
+<line x1="107.5" y1="118.714" x2="113.5" y2="118.714" stroke="#91602e" stroke-width="0.18"/>
+<line x1="110.5" y1="121.714" x2="110.5" y2="115.714" stroke="#91602e" stroke-width="0.18"/>
+<circle cx="168.501" cy="118.71699999999998" r="1.5" fill="none" stroke="#91602e" stroke-width="0.18"/>
+<line x1="165.501" y1="118.71699999999998" x2="171.501" y2="118.71699999999998" stroke="#91602e" stroke-width="0.18"/>
+<line x1="168.501" y1="121.71699999999998" x2="168.501" y2="115.71699999999998" stroke="#91602e" stroke-width="0.18"/>
+<circle cx="168.498" cy="167.716" r="1.5" fill="none" stroke="#91602e" stroke-width="0.18"/>
+<line x1="165.498" y1="167.716" x2="171.498" y2="167.716" stroke="#91602e" stroke-width="0.18"/>
+<line x1="168.498" y1="170.716" x2="168.498" y2="164.716" stroke="#91602e" stroke-width="0.18"/>
+<circle cx="110.5" cy="167.716" r="1.5" fill="none" stroke="#91602e" stroke-width="0.18"/>
+<line x1="107.5" y1="167.716" x2="113.5" y2="167.716" stroke="#91602e" stroke-width="0.18"/>
+<line x1="110.5" y1="170.716" x2="110.5" y2="164.716" stroke="#91602e" stroke-width="0.18"/>
+<rect x="147" y="180.187" width="20.32" height="27.813" rx="0" fill="none" stroke="#875a99" stroke-width="0.2"/>
+<circle cx="149.667" cy="205.45999999999998" r="1.5" fill="none" stroke="#875a99" stroke-width="0.18"/>
+<line x1="146.667" y1="205.45999999999998" x2="152.667" y2="205.45999999999998" stroke="#875a99" stroke-width="0.18"/>
+<line x1="149.667" y1="208.45999999999998" x2="149.667" y2="202.45999999999998" stroke="#875a99" stroke-width="0.18"/>
+<circle cx="164.907" cy="205.45999999999998" r="1.5" fill="none" stroke="#875a99" stroke-width="0.18"/>
+<line x1="161.907" y1="205.45999999999998" x2="167.907" y2="205.45999999999998" stroke="#875a99" stroke-width="0.18"/>
+<line x1="164.907" y1="208.45999999999998" x2="164.907" y2="202.45999999999998" stroke="#875a99" stroke-width="0.18"/>
+<circle cx="164.78" cy="182.727" r="1.5" fill="none" stroke="#875a99" stroke-width="0.18"/>
+<line x1="161.78" y1="182.727" x2="167.78" y2="182.727" stroke="#875a99" stroke-width="0.18"/>
+<line x1="164.78" y1="185.727" x2="164.78" y2="179.727" stroke="#875a99" stroke-width="0.18"/>
+<circle cx="149.54" cy="182.727" r="1.5" fill="none" stroke="#875a99" stroke-width="0.18"/>
+<line x1="146.54" y1="182.727" x2="152.54" y2="182.727" stroke="#875a99" stroke-width="0.18"/>
+<line x1="149.54" y1="185.727" x2="149.54" y2="179.727" stroke="#875a99" stroke-width="0.18"/>
+<rect x="180" y="120.1" width="20.32" height="25.4" rx="0" fill="none" stroke="#875a99" stroke-width="0.2"/>
+<circle cx="182.54" cy="142.96" r="1.5" fill="none" stroke="#875a99" stroke-width="0.18"/>
+<line x1="179.54" y1="142.96" x2="185.54" y2="142.96" stroke="#875a99" stroke-width="0.18"/>
+<line x1="182.54" y1="145.96" x2="182.54" y2="139.96" stroke="#875a99" stroke-width="0.18"/>
+<circle cx="182.54" cy="122.63999999999999" r="1.5" fill="none" stroke="#875a99" stroke-width="0.18"/>
+<line x1="179.54" y1="122.63999999999999" x2="185.54" y2="122.63999999999999" stroke="#875a99" stroke-width="0.18"/>
+<line x1="182.54" y1="125.63999999999999" x2="182.54" y2="119.63999999999999" stroke="#875a99" stroke-width="0.18"/>
+<rect x="120" y="92.22" width="25.4" height="17.78" rx="0" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<circle cx="122.54" cy="94.75999999999999" r="1.5" fill="none" stroke="#41836e" stroke-width="0.18"/>
+<line x1="119.54" y1="94.75999999999999" x2="125.54" y2="94.75999999999999" stroke="#41836e" stroke-width="0.18"/>
+<line x1="122.54" y1="97.75999999999999" x2="122.54" y2="91.75999999999999" stroke="#41836e" stroke-width="0.18"/>
+<circle cx="142.86" cy="94.75999999999999" r="1.5" fill="none" stroke="#41836e" stroke-width="0.18"/>
+<line x1="139.86" y1="94.75999999999999" x2="145.86" y2="94.75999999999999" stroke="#41836e" stroke-width="0.18"/>
+<line x1="142.86" y1="97.75999999999999" x2="142.86" y2="91.75999999999999" stroke="#41836e" stroke-width="0.18"/>
+<circle cx="122.54" cy="107.46000000000001" r="1.5" fill="none" stroke="#41836e" stroke-width="0.18"/>
+<line x1="119.54" y1="107.46000000000001" x2="125.54" y2="107.46000000000001" stroke="#41836e" stroke-width="0.18"/>
+<line x1="122.54" y1="110.46000000000001" x2="122.54" y2="104.46000000000001" stroke="#41836e" stroke-width="0.18"/>
+<circle cx="142.86" cy="107.46000000000001" r="1.5" fill="none" stroke="#41836e" stroke-width="0.18"/>
+<line x1="139.86" y1="107.46000000000001" x2="145.86" y2="107.46000000000001" stroke="#41836e" stroke-width="0.18"/>
+<line x1="142.86" y1="110.46000000000001" x2="142.86" y2="104.46000000000001" stroke="#41836e" stroke-width="0.18"/>
+<rect x="173" y="92.22" width="25.4" height="17.78" rx="0" fill="none" stroke="#41836e" stroke-width="0.2"/>
+<circle cx="175.54" cy="94.75999999999999" r="1.5" fill="none" stroke="#41836e" stroke-width="0.18"/>
+<line x1="172.54" y1="94.75999999999999" x2="178.54" y2="94.75999999999999" stroke="#41836e" stroke-width="0.18"/>
+<line x1="175.54" y1="97.75999999999999" x2="175.54" y2="91.75999999999999" stroke="#41836e" stroke-width="0.18"/>
+<circle cx="195.86" cy="94.75999999999999" r="1.5" fill="none" stroke="#41836e" stroke-width="0.18"/>
+<line x1="192.86" y1="94.75999999999999" x2="198.86" y2="94.75999999999999" stroke="#41836e" stroke-width="0.18"/>
+<line x1="195.86" y1="97.75999999999999" x2="195.86" y2="91.75999999999999" stroke="#41836e" stroke-width="0.18"/>
+<circle cx="175.54" cy="107.46000000000001" r="1.5" fill="none" stroke="#41836e" stroke-width="0.18"/>
+<line x1="172.54" y1="107.46000000000001" x2="178.54" y2="107.46000000000001" stroke="#41836e" stroke-width="0.18"/>
+<line x1="175.54" y1="110.46000000000001" x2="175.54" y2="104.46000000000001" stroke="#41836e" stroke-width="0.18"/>
+<circle cx="195.86" cy="107.46000000000001" r="1.5" fill="none" stroke="#41836e" stroke-width="0.18"/>
+<line x1="192.86" y1="107.46000000000001" x2="198.86" y2="107.46000000000001" stroke="#41836e" stroke-width="0.18"/>
+<line x1="195.86" y1="110.46000000000001" x2="195.86" y2="104.46000000000001" stroke="#41836e" stroke-width="0.18"/>
+<rect x="176" y="154" width="31" height="24" rx="0" fill="none" stroke="#875a99" stroke-width="0.2" stroke-dasharray="2 1.2"/>
+<rect x="102" y="184" width="22" height="18" rx="0" fill="none" stroke="#41836e" stroke-width="0.2" stroke-dasharray="2 1.2"/>
+<line x1="25" y1="222" x2="75" y2="222" stroke="#53676e" stroke-width="0.2"/>
+<line x1="24" y1="223.4" x2="26" y2="220.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="74" y1="223.4" x2="76" y2="220.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="50.0" y="220.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">50,00 mm controlemaat</text>
+<text x="246" y="90" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">MONTEREN VANUIT DEZELFDE ZIJDE</text>
+<text x="246" y="96" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">ALS DE TEKENING OP BLAD 1.</text>
+<text x="246" y="102" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start"></text>
+<text x="246" y="108" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">Dit sjabloon geeft harten, geen tap- of boormaten.</text>
+<text x="246" y="114" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">Controleer de geleverde print tegen het sjabloon.</text>
+<text x="246" y="120" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">Rev F is publiek; F1 kan afwijken.</text>
+<text x="246" y="126" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">Printen, stekkers en scherm moeten vrij liggen.</text>
+<text x="246" y="132" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start"></text>
+<text x="246" y="138" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">Sensoren komen in losse nylon houdertjes.</text>
+<text x="246" y="144" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">Carrier en radar zijn gereserveerde zones.</text>
+<text x="246" y="150" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">Schermgaten zijn bewust niet overgenomen</text>
+<text x="246" y="156" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">naar de achterplaat; het LCD heeft eigen montage.</text>
+<text x="246" y="162" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start"></text>
+<text x="246" y="168" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">Geef CNC pas vrij na de complete pasproef.</text>
+</svg>

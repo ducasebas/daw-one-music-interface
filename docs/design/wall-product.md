@@ -4,6 +4,8 @@ Status: exterior concept approved by owner on 7 November 2026. Native1280×800 r
 
 ![Approved wall-mounted exterior: walnut sides, black glass, no volume knob](wall-render.png)
 
+The public manufacturer CAD has now been checked for the screen, Pi4, Louder Plus1X RevF and the Adafruit sensor/power PCBs. **[Dimensioned C1 rear-plate layout, source dimensions, PDF, 1:1 template and STEP reservations](wall-mechanical-c1.md)** supersedes the earlier schematic mounting concepts. It establishes PCB positions and mounting centres for a fit prototype; the50mm body depth remains a design allocation pending the assembled screen, connector and thermal checks.
+
 Walnut side band around the depth of the enclosure; black glass front; fine champagne metal edge. Hidden wall bracket and cables, no feet, no physical volume knob. One physical standby pushbutton with LED ring on top; unobstructed vent insert at top rear. Touch volume uses the same application controls as playback. Wood must not be assumed to provide heatsinking; amplifier/Pi thermal paths need separate design.
 
 ## Provisional envelope — design targets, not measured assembled dimensions
@@ -15,11 +17,11 @@ Walnut side band around the depth of the enclosure; black glass front; fine cham
 | Wall mounting allowance | 5 mm | Proposed; bracket/cable bend geometry unverified |
 | Total wall projection | 55 mm | Body plus mounting allowance; may increase after thermal/connector layout |
 | Screen cover glass | 170.18 × 104.20 mm | Transcribed from owner's new supplier screenshot; delivered revision and physical drawing fit not yet verified |
-| Active screen area | approx.151.80 ×95.10 mm | Supplier screenshot; verify actual aperture before CAD |
+| Cover-glass visible window | 151.80 ×95.10 mm | Waveshare drawing2025-04-28; lens aperture, not an active-pixel-area measurement |
 | GUI panel | 16:10; 1280 ×800 logical pixels | Native resolution confirmed by owner; matches manufacturer1280×800 specification |
 | Front surround | approx.9.91 mm left/right;9.90 mm top/bottom outside glass | Arithmetic from proposed envelope, not screw/glass assembly tolerances |
 | Button diameter / ring wiring | TBD | Existing16mm button specification requires actual mounting drawing, depth and driver validation |
-| Pi / HAT / PD / carrier positions | TBD | No collision-free mechanical stack established |
+| Pi / HAT / PD / carrier positions | Defined in C1 | [PCB reservations and mounting centres](wall-mechanical-c1.md); PCB clearances checked, inserted plugs and thermal contacts require fit testing |
 | Ports, cable exits and service access | TBD | Must accommodate real connectors and cable bend radius |
 | Wall fixings, edge radii, vents, wood thickness | TBD | Material, load and thermal verification required |
 
