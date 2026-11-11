@@ -1,11 +1,12 @@
 import { updateSettings } from './update-settings.js';
-const commands=['status','policy','check','install','rollback','network','wifi','probe-music','save-music','audio-test','complete-setup'];
+const commands=['status','policy','check','install','rollback','network','wifi','probe-music','save-music','audio-test','complete-setup','power-off'];
 export function validateRequest(value) {
   if (!value || typeof value!=='object' || Array.isArray(value) || Object.keys(value).some(k=>!['command','args'].includes(k)) || !commands.includes(value.command)) throw Error('Unsupported device action');
   const args=value.args??{};
   if (!args || typeof args!=='object' || Array.isArray(args)) throw Error('Invalid device arguments');
-  const allowed={policy:['mode','windowEnabled','start','end','timeZone'],wifi:['interface','ssid','password'],'probe-music':['url','token'],'save-music':['url','token','playerId','allowControl'],'audio-test':['device']}[value.command]||[];
+  const allowed={policy:['mode','windowEnabled','start','end','timeZone'],wifi:['interface','ssid','password'],'probe-music':['url','token'],'save-music':['url','token','playerId','allowControl'],'audio-test':['device'],'power-off':['confirmed']}[value.command]||[];
   if(Object.keys(args).some(k=>!allowed.includes(k))) throw Error('Unexpected device argument');
+  if(value.command==='power-off'&&args.confirmed!==true)throw Error('Confirm power off on this device');
   if(value.command==='policy')return {command:value.command,args:updateSettings(args)};
   if(['probe-music','save-music'].includes(value.command)) {
     const url=new URL(args.url);const host=url.hostname.replace(/^\[|\]$/g,'');

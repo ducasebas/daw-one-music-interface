@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import React, { useRef, useState } from "react";
 export function VolumeControl({
   value,
@@ -22,7 +23,7 @@ export function VolumeControl({
       <div
         className="volume-dial reference-volume-scale"
         role="slider"
-        aria-label="Volume"
+        aria-label={tr("Volume")}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={actual ?? 0}
@@ -90,39 +91,39 @@ export function VolumeControl({
       >
         <div className="dial-face reference-face">
           <strong>
-            {shown ?? "—"}
+            {tr(shown ?? "—")}
             <small>%</small>
           </strong>
           <span>
-            {muted
+            {tr(muted
               ? "MUTED"
               : draft !== null
                 ? "RELEASE TO SET"
                 : live
                   ? "PLAYER VOLUME"
-                  : "PREVIEW"}
+                  : "PREVIEW")}
           </span>
           <b style={{ transform: `rotate(${(shown ?? 0) * 2.7 - 135}deg)` }} />
         </div>
       </div>
       <div className="volume-buttons">
         <button
-          aria-label="Decrease volume"
+          aria-label={tr("Decrease volume")}
           disabled={disabled || actual === null}
           onClick={() => adjust((actual ?? 0) - 1)}
         >
           −
         </button>
         <button
-          aria-label={muted ? "Unmute" : "Mute"}
+          aria-label={tr(muted ? "Unmute" : "Mute")}
           disabled={muteDisabled || disabled}
           aria-pressed={muted}
           onClick={onMute}
         >
-          {muted ? "◌" : "◉"}
+          {tr(muted ? "◌" : "◉")}
         </button>
         <button
-          aria-label="Increase volume"
+          aria-label={tr("Increase volume")}
           disabled={disabled || actual === null}
           onClick={() => adjust((actual ?? 0) + 1)}
         >
@@ -130,7 +131,7 @@ export function VolumeControl({
         </button>
       </div>
       <span className="volume-caption">
-        {live ? `LIVE PLAYER · LIMIT ${limit}%` : "SIMULATED OUTPUT"}
+        {tr(live ? `LIVE PLAYER · LIMIT ${limit}%` : "SIMULATED OUTPUT")}
       </span>
     </div>
   );

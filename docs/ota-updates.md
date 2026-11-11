@@ -32,7 +32,7 @@ Use `--updates notify` to check and announce updates without installing them aut
 sudo bash deploy/install.sh --target auto --prebuilt --music-assistant skip --updates notify --update-key ~/tunebox-ota-public.pem
 ```
 
-The initial installer installs the limited device manager and first-run wizard even with OTA off. It preserves existing configuration and never changes boot configuration or grants physical amplifier verification.
+The initial installer installs the limited device manager and first-run wizard even with OTA off. It preserves existing configuration and does not change boot configuration by default. The explicit `--quiet-boot` option backs up and changes console/boot presentation settings; see [GUI 3.1 installation](touch-update.md). Physical amplifier verification is never granted by installation.
 
 ## Existing installation
 

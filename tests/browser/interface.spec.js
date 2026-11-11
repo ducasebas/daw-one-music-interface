@@ -498,7 +498,7 @@ test("module loading failures show a readable startup message", async ({
 }) => {
   await page.route(/\/src\/main\.jsx(?:\?.*)?$/, (route) => route.abort());
   await page.goto("/?product=1");
-  await expect(page.locator("#boot-status")).toContainText("kon niet laden");
+  await expect(page.locator("#boot-status")).toContainText("could not load");
   await expect(page.locator("#boot-status")).toContainText("display-r3");
 });
 test("render failures show a recovery action instead of an empty page", async ({
@@ -508,10 +508,10 @@ test("render failures show a recovery action instead of an empty page", async ({
   await page.route("**/api/state", (route) => route.fulfill({ json: null }));
   await page.goto("/?lab=1");
   await expect(page.getByRole("alert")).toContainText(
-    "kon het scherm niet tekenen",
+    "could not display the interface",
   );
   await expect(
-    page.getByRole("button", { name: "Opnieuw laden" }),
+    page.getByRole("button", { name: "Reload" }),
   ).toBeVisible();
 });
 

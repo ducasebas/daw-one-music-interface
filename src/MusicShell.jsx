@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import { panelProfile } from "../shared/display.js";
 import { WallControls, SleepSurface } from "./WallExperience.jsx";
 import {AudioVisualizer} from "./AudioVisualizer.jsx";
@@ -18,6 +19,8 @@ import { endSync } from "../shared/video.js";
 import { SettingsPages } from "./SettingsPages.jsx";
 import { Icon } from "./Icon.jsx";
 import { StartupScreen } from "./StartupScreen.jsx";
+import { VideoArtwork } from './VideoArtwork.jsx';
+import {useTemperatureDisplay} from './useTemperatureDisplay.js';
 
 const duration = (n) =>
   Number.isFinite(n)
@@ -28,7 +31,7 @@ const sections = [
   ["library", "Mijn muziek"],
   ["search", "Zoeken"],
   ["queue", "Wachtrij"],
-  ["rooms", "Kamers"],
+  ["rooms", "Ruimtes"],
 ];
 const categories = [
   "Albums",
@@ -45,10 +48,7 @@ function Cover({ index = 0, small = false }) {
       className={`m2-cover m2-cover-${index % 3} ${small ? "m2-small" : ""}`}
     >
       <i />
-      <span>
-        TUNEBOX
-        <br />
-        SESSIONS {String(index + 1).padStart(2, "0")}
+      <span>{tr("TUNEBOX")}<br />{tr("SESSIONS ")}{tr(String(index + 1).padStart(2, "0"))}
       </span>
     </div>
   );
@@ -66,12 +66,23 @@ export function MusicShell({
   position,
   notice,
   startupPreview,
+  onReplayStartup,
 }) {
   const deviceUpdates=useDeviceUpdates();
   const wall = panelProfile(location.search) === "wall-16-10";
+  const headerTemperature=useTemperatureDisplay(snapshot.hardwareTelemetry?.temperature,offline);
   const [sleepPreview,setSleepPreview] = useState(false);
   const sleeping = wall && (sleepPreview || (!offline && snapshot.device.displayAwake === false));
-  const wake = () => { setSleepPreview(false); if(!offline) send({type:"activity"}); };
+  const [waking,setWaking]=useState(false);
+  const wake = async () => {
+    if(waking)return;
+    setWaking(true);
+    const begin=performance.now();
+    const ok=offline?true:await send({type:'activity'});
+    await new Promise(resolve=>setTimeout(resolve,Math.max(0,180-(performance.now()-begin))));
+    if(ok!==false)setSleepPreview(false);
+    setWaking(false);
+  };
 
   const [liveViews, setLiveViews] = useState({});
   const [settingsPage, setSettingsPage] = useState(0);
@@ -83,7 +94,7 @@ export function MusicShell({
     [offset, setOffset] = useState(0),
     [message, setMessage] = useState(""),
     [pending, setPending] = useState(false),
-    [video, setVideo] = useState(false),
+    [video, setVideo] = useState(prefs.artwork==='video'),
     [rooms, setRooms] = useState({ rivo: false, volume: 35 });
   const prompted=useRef(false);
   useEffect(()=>{const manager=deviceUpdates?.info?.manager;if(!prompted.current&&manager?.managed&&!manager.simulated&&manager.setupComplete===false){prompted.current=true;setSettingsPage(13);setPage("settings");}},[deviceUpdates?.info?.manager?.managed,deviceUpdates?.info?.manager?.setupComplete]);
@@ -170,6 +181,18 @@ export function MusicShell({
       setPending(false);
     }
   }
+  async function toggleVisualizer(){
+    const next=prefs.visualizer==='off'?'spectrum':prefs.visualizer==='spectrum'?'meters':'off';
+    setVideo(false);update('artwork','cover');
+    if(next!=='off'&&!offline){
+      try{
+        const r=await fetch('/api/audio?watch=1');if(!r.ok)throw Error();const audio=await r.json();
+        if(!audio.configured){setSettingsPage(14);go('settings');return;}
+        if(!audio.enabled){const enabled=await fetch('/api/audio/settings',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':deviceUpdates?.info?.controlToken||''},body:JSON.stringify({enabled:true})});if(!enabled.ok)throw Error();}
+      }catch{setMessage('Audio analysis is unavailable. Open Audio settings.');return;}
+    }
+    update('visualizer',next);
+  }
   const sample = tracks.filter((t) =>
     `${t.title} ${t.artist} ${t.album}`
       .toLocaleLowerCase()
@@ -219,7 +242,7 @@ export function MusicShell({
   );
   return (
     <main
-      className={"music2"+(page==="settings"&&settingsPage>=12?" immersive-settings":"")}
+      className={"music2"+(page==="settings"&&(wall||settingsPage>=12)?" immersive-settings":"")}
       data-panel={wall ? "wall-16-10" : "legacy-wide"}
       onPointerDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();wake();}:undefined}
       onKeyDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();wake();}:undefined}
@@ -232,45 +255,45 @@ export function MusicShell({
       data-diagnostics={theme.diagnostics}
       style={{
         ...themeVariables(theme),
-        "--brightness": prefs.brightness / 100,
+        "--brightness": wall ? 1 : prefs.brightness / 100,
       }}
       data-motion={direction}
     >
       <GlobalUpdateProgress />
-      {sleeping && <SleepSurface prefs={prefs} snapshot={snapshot} offline={offline} wake={wake} />}
+      {(sleeping||waking) && <SleepSurface prefs={prefs} snapshot={snapshot} offline={offline} wake={wake} waking={waking} />}
 
       <StartupScreen
         mode={device.mode}
         offline={offline}
         preview={startupPreview}
         staticOnly={prefs.lowPower}
+        animationMode={prefs.startupAnimation}
         boot={snapshot.boot}
       />
       <header className="m2-header">
-        <button className="m2-brand" onClick={() => go("discover")}>
-          DAW <b>TuneBox</b>
-          <span>v1 / MUSIC FIRST</span>
+        <button className="m2-brand" onClick={() => go("discover")}>{tr("DAW ")}<b>{tr("TuneBox")}</b>
         </button>
-        <nav aria-label="Muzieknavigatie">
+        <nav aria-label={tr("Muzieknavigatie")}>
           {sections.map(([id, label]) => (
             <button
               key={id}
-              aria-label={label}
+              aria-label={tr(label)}
               aria-current={page === id ? "page" : undefined}
               onClick={() => go(id)}
             >
               <Icon name={id} />
-              {label}
+              {tr(label)}
             </button>
           ))}
         </nav>
         <NetworkStatus snapshot={snapshot} offline={offline} />
+        {wall&&Number.isFinite(headerTemperature)&&<button className="header-temperature" aria-label={tr("Open sensors")} onClick={()=>{setSettingsPage(17);go('settings');}}>{tr(headerTemperature.toFixed(1))}{tr(" °C")}</button>}
         {wall && <WallControls snapshot={snapshot} offline={offline} prefs={prefs} updates={deviceUpdates}
           onSleep={()=>{setSleepPreview(true);if(!offline)send({type:"display-timeout"});}}
           onNavigate={id=>{if(id==="status"){setSettingsPage(11);go("settings");}else if(id==="updates"){setSettingsPage(12);go("settings");}else if(id==="screen"){setSettingsPage(15);go("settings");}else go(id);}} />}
 
         <button
-          aria-label="Instellingen"
+          aria-label={tr("Instellingen")}
           onClick={() => {
             setSettingsPage(0);
             go("settings");
@@ -285,48 +308,48 @@ export function MusicShell({
             <button
               className="m2-back"
               aria-label={
-                page === "playing"
+                tr(page === "playing"
                   ? "Terug naar muziek"
-                  : "Terug naar overzicht"
+                  : "Terug naar overzicht")
               }
               onClick={back}
             >
               <Icon name="back" />
             </button>
           )}
-          <h1>{title}</h1>
+          <h1>{tr(title)}</h1>
           {page === "discover" && !detail && (
-            <span>Jouw volgende ontdekking.</span>
+            <span>{tr("Jouw volgende ontdekking.")}</span>
           )}
         </div>
         <div className="m2-version-status">
           <div className="m2-build-boot">
             <button
               className="boot-shortcut"
-              aria-label="Open opstartcontrole"
+              aria-label={tr("Open opstartcontrole")}
               onClick={() => {
                 setSettingsPage(11);
                 go("settings");
               }}
             >
-              {offline
+              {tr(offline
                 ? "Offline"
-                : bootPhaseLabels[snapshot.boot?.phase] || "Opstartstatus"}
+                : bootPhaseLabels[snapshot.boot?.phase] || "Opstartstatus")}
             </button>
             <BuildBadge snapshot={snapshot} offline={offline} />
           </div>
           <small className={offline ? "m2-warning" : ""}>
-            {offline
+            {tr(offline
               ? "Offline · instellingen beschikbaar"
               : simulated
                 ? "● SIMULATIE · VOORBEELDBIBLIOTHEEK"
-                : "● MUSIC ASSISTANT · LIVE BIBLIOTHEEK"}
+                : "● MUSIC ASSISTANT · LIVE BIBLIOTHEEK")}
           </small>
         </div>
       </div>
       <section
         className="m2-content"
-        aria-label={title}
+        aria-label={tr(title)}
         key={`${page}-${detail?.id || "list"}`}
       >
         {!simulated && ["discover", "library", "search"].includes(page) ? (
@@ -343,10 +366,10 @@ export function MusicShell({
           <div className="m2-detail">
             <Cover index={tracks.findIndex((t) => t.id === detail.id)} />
             <div>
-              <small>VOORBEELDALBUM · {detail.artist}</small>
+              <small>{tr("VOORBEELDALBUM · ")}{detail.artist}</small>
               <h2>{detail.album}</h2>
               <p>
-                {detail.title} · {duration(detail.duration)}
+                {detail.title} · {tr(duration(detail.duration))}
               </p>
               <div className="m2-actions">
                 <button
@@ -359,10 +382,10 @@ export function MusicShell({
                     )
                   }
                 >
-                  <Icon name="heart" size={16} />{" "}
-                  {favorites.includes(detail.id)
+                  <Icon name="heart" size={16} />{tr(" ")}
+                  {tr(favorites.includes(detail.id)
                     ? "Favoriet opgeslagen"
-                    : "Bewaar favoriet"}
+                    : "Bewaar favoriet")}
                 </button>
                 <button
                   className="m2-primary"
@@ -376,25 +399,17 @@ export function MusicShell({
                     go("playing");
                   }}
                 >
-                  <Icon name="play" size={16} /> Speel nu
-                </button>
+                  <Icon name="play" size={16} />{tr(" Speel nu")}</button>
                 <button
                   disabled={!control || !simulated || pending}
                   onClick={() => act(detail, true)}
-                >
-                  Als volgende
-                </button>
+                >{tr("Als volgende")}</button>
                 <button
                   disabled={!control || !simulated || pending}
                   onClick={() => act(detail)}
-                >
-                  Voeg toe aan einde
-                </button>
+                >{tr("Voeg toe aan einde")}</button>
               </div>
-              <p className="m2-subtle">
-                Voorbeeldselectie · echte albums en aanbevelingen volgen via de
-                NUC.
-              </p>
+              <p className="m2-subtle">{tr("Voorbeeldselectie · echte albums en aanbevelingen volgen via de NUC.")}</p>
             </div>
           </div>
         ) : page === "discover" ? (
@@ -406,24 +421,16 @@ export function MusicShell({
                 go("library");
               }}
             >
-              <small>VOOR JOU / VOORBEELD</small>
-              <h2>
-                Laat de avond
-                <br />
-                maar beginnen.
-              </h2>
-              <span>Rustige ontdekkingen, grote klanken.</span>
+              <small>{tr("VOOR JOU / VOORBEELD")}</small>
+              <h2>{tr("Laat de avond")}<br />{tr("maar beginnen.")}</h2>
+              <span>{tr("Rustige ontdekkingen, grote klanken.")}</span>
               <div className="m2-feature-orb" />
             </button>
             <div className="m2-discover-right">
-              <div className="m2-section-label">
-                Verder luisteren <span>Spotify & Tidal · concept</span>
+              <div className="m2-section-label">{tr("Verder luisteren ")}<span>{tr("Spotify & Tidal · concept")}</span>
               </div>
-              {cards()}
-              <div className="m2-note">
-                Persoonlijke aanbevelingen sluiten we later aan op Music
-                Assistant op de NUC.
-              </div>
+              {tr(cards())}
+              <div className="m2-note">{tr("Persoonlijke aanbevelingen sluiten we later aan op Music Assistant op de NUC.")}</div>
             </div>
           </div>
         ) : page === "library" ? (
@@ -435,28 +442,25 @@ export function MusicShell({
                   aria-pressed={category === c}
                   onClick={() => setCategory(c)}
                 >
-                  {c}
+                  {tr(c)}
                 </button>
               ))}
             </div>
             {category === "Radio" ? (
               <div className="m2-empty">
                 <Icon name="radio" size={30} />
-                <h2>Een wereld aan stations.</h2>
-                <p>
-                  Je favoriete stations verschijnen hier zodra de radiobron is
-                  gekoppeld.
-                </p>
-                <small>Geen radiostream verbonden · voorbeeldscherm</small>
+                <h2>{tr("Een wereld aan stations.")}</h2>
+                <p>{tr("Je favoriete stations verschijnen hier zodra de radiobron is gekoppeld.")}</p>
+                <small>{tr("Geen radiostream verbonden · voorbeeldscherm")}</small>
               </div>
             ) : category === "Nummers" ? (
               <div className="m2-list">
                 {tracks.map((t, i) => (
                   <button key={t.id} onClick={() => choose(t)}>
-                    <span>0{i + 1}</span>
+                    <span>0{tr(i + 1)}</span>
                     <strong>{t.title}</strong>
                     <span>{t.artist}</span>
-                    <small>{duration(t.duration)} ›</small>
+                    <small>{tr(duration(t.duration))} ›</small>
                   </button>
                 ))}
               </div>
@@ -465,8 +469,8 @@ export function MusicShell({
                 cards(tracks.filter((t) => favorites.includes(t.id)))
               ) : (
                 <div className="m2-empty">
-                  <h2>Jouw muziek, dichtbij.</h2>
-                  <p>Open een voorbeeldalbum en kies Bewaar favoriet.</p>
+                  <h2>{tr("Jouw muziek, dichtbij.")}</h2>
+                  <p>{tr("Open een voorbeeldalbum en kies Bewaar favoriet.")}</p>
                 </div>
               )
             ) : (
@@ -479,22 +483,22 @@ export function MusicShell({
               <label className="m2-searchbox">
                 <Icon name="search" />
                 <input
-                  aria-label="Zoek muziek"
+                  aria-label={tr("Zoek muziek")}
                   value={query}
-                  placeholder="Artiest, album of nummer"
+                  placeholder={tr("Artiest, album of nummer")}
                   onChange={(e) => setQuery(e.target.value)}
                   onFocus={() => setKeyboard(true)}
                 />
                 {query && (
                   <button
-                    aria-label="Wis zoekopdracht"
+                    aria-label={tr("Wis zoekopdracht")}
                     onClick={() => setQuery("")}
                   >
                     <Icon name="close" size={16} />
                   </button>
                 )}
               </label>
-              <small>ZOEKEN IN VOORBEELDMUZIEK</small>
+              <small>{tr("ZOEKEN IN VOORBEELDMUZIEK")}</small>
               <div className="m2-list">
                 {sample.length ? (
                   sample.map((t) => (
@@ -505,26 +509,24 @@ export function MusicShell({
                     </button>
                   ))
                 ) : (
-                  <p>Geen resultaten voor “{query}”. Probeer Tycho.</p>
+                  <p>{tr("Geen resultaten voor “")}{tr(query)}{tr("”. Probeer Tycho.")}</p>
                 )}
               </div>
             </div>
-            <div className="m2-keyboard" aria-label="Schermtoetsenbord">
+            <div className="m2-keyboard" aria-label={tr("Schermtoetsenbord")}>
               {keyboard ? (
                 <>
-                  <div className="m2-keyboard-title">
-                    Zoeken zonder telefoon
-                    <button onClick={() => setKeyboard(false)}>Verberg</button>
+                  <div className="m2-keyboard-title">{tr("Zoeken zonder telefoon")}<button onClick={() => setKeyboard(false)}>{tr("Verberg")}</button>
                   </div>
                   {["qwertyuiop", "asdfghjkl", "zxcvbnm"].map((row) => (
                     <div key={row}>
                       {[...row].map((k) => (
                         <button
-                          aria-label={`Toets ${k}`}
+                          aria-label={tr(`Toets ${k}`)}
                           key={k}
                           onClick={() => setQuery((q) => q + k)}
                         >
-                          {k}
+                          {tr(k)}
                         </button>
                       ))}
                     </div>
@@ -533,42 +535,38 @@ export function MusicShell({
                     <button
                       className="m2-space"
                       onClick={() => setQuery((q) => q + " ")}
-                    >
-                      Spatie
-                    </button>
+                    >{tr("Spatie")}</button>
                     <button
-                      aria-label="Backspace"
+                      aria-label={tr("Backspace")}
                       onClick={() => setQuery((q) => q.slice(0, -1))}
                     >
                       <Icon name="backspace" />
                     </button>
-                    <button onClick={() => setKeyboard(false)}>Gereed</button>
+                    <button onClick={() => setKeyboard(false)}>{tr("Gereed")}</button>
                   </div>
                 </>
               ) : (
-                <button onClick={() => setKeyboard(true)}>
-                  Toon toetsenbord
-                </button>
+                <button onClick={() => setKeyboard(true)}>{tr("Toon toetsenbord")}</button>
               )}
             </div>
           </div>
         ) : page === "queue" ? (
           <div className="m2-queue">
             <div className="m2-section-label">
-              {playback.queue.length} nummers{" "}
+              {tr(playback.queue.length)}{tr(" nummers")}{tr(" ")}
               <span>
-                {simulated
+                {tr(simulated
                   ? "Gedeelde simulatorwachtrij"
-                  : "Live wachtrij · bewerken nog niet gekoppeld"}
+                  : "Live wachtrij · bewerken nog niet gekoppeld")}
               </span>
             </div>
             <div className="m2-list">
               {playback.queue.slice(offset, offset + 3).map((t, i) => (
                 <div className="m2-queue-row" key={t.id}>
                   <span>
-                    {offset + i === playback.index
+                    {tr(offset + i === playback.index
                       ? "▶"
-                      : String(offset + i + 1).padStart(2, "0")}
+                      : String(offset + i + 1).padStart(2, "0"))}
                   </span>
                   <button
                     disabled={!control || !simulated || pending}
@@ -577,7 +575,7 @@ export function MusicShell({
                     <strong>{t.title}</strong>
                     <small>{t.artist}</small>
                   </button>
-                  <span>{duration(t.duration)}</span>
+                  <span>{tr(duration(t.duration))}</span>
                   <button
                     aria-label={`Verwijder ${t.title}`}
                     disabled={
@@ -597,19 +595,15 @@ export function MusicShell({
               <button
                 disabled={offset === 0}
                 onClick={() => setOffset(Math.max(0, offset - 3))}
-              >
-                ‹ Vorige
-              </button>
+              >{tr("‹ Vorige")}</button>
               <span>
-                {Math.floor(offset / 3) + 1} /{" "}
-                {Math.ceil(playback.queue.length / 3)}
+                {tr(Math.floor(offset / 3) + 1)} /{tr(" ")}
+                {tr(Math.ceil(playback.queue.length / 3))}
               </span>
               <button
                 disabled={offset + 3 >= playback.queue.length}
                 onClick={() => setOffset(offset + 3)}
-              >
-                Volgende ›
-              </button>
+              >{tr("Volgende ›")}</button>
             </div>
           </div>
         ) : page === "rooms" ? (
@@ -619,17 +613,16 @@ export function MusicShell({
                 <Icon name="speaker" size={30} />
               </span>
               <div>
-                <small>DEZE RUIMTE</small>
-                <h2>TuneBox</h2>
+                <small>{tr("DEZE RUIMTE")}</small>
+                <h2>{tr("TuneBox")}</h2>
                 <p>
-                  {simulated
+                  {tr(simulated
                     ? "Gesimuleerde lokale speler"
-                    : playback.playerName || "Geen speler gekozen"}
+                    : playback.playerName || "Geen speler gekozen")}
                 </p>
-                <label>
-                  Volume{" "}
+                <label>{tr("Volume")}{tr(" ")}
                   <TouchVolume
-                    label="TuneBox kamervolume"
+                    label={tr("TuneBox kamervolume")}
                     value={volume}
                     muted={muted}
                     target={volumeRequests.target}
@@ -643,24 +636,23 @@ export function MusicShell({
                   />
                 </label>
               </div>
-              <b>{volume ?? "—"}%</b>
+              <b>{tr(volume ?? "—")}%</b>
             </article>
             <article>
               <span className="m2-room-icon">
                 <Icon name="rooms" size={30} />
               </span>
               <div>
-                <small>RIVO · ALLEEN VISUEEL VOORBEELD</small>
-                <h2>Volumio Rivo</h2>
+                <small>{tr("RIVO · ALLEEN VISUEEL VOORBEELD")}</small>
+                <h2>{tr("Volumio Rivo")}</h2>
                 <p>
-                  {rooms.rivo
+                  {tr(rooms.rivo
                     ? "Voorbeeldgroep met TuneBox"
-                    : "Protocol en synchronisatie nog te verifiëren"}
+                    : "Protocol en synchronisatie nog te verifiëren")}
                 </p>
-                <label>
-                  Voorbeeldvolume{" "}
+                <label>{tr("Voorbeeldvolume")}{tr(" ")}
                   <input
-                    aria-label="Rivo voorbeeldvolume"
+                    aria-label={tr("Rivo voorbeeldvolume")}
                     type="range"
                     value={rooms.volume}
                     onChange={(e) =>
@@ -673,19 +665,18 @@ export function MusicShell({
                 aria-pressed={rooms.rivo}
                 onClick={() => setRooms((r) => ({ ...r, rivo: !r.rivo }))}
               >
-                {rooms.rivo
+                {tr(rooms.rivo
                   ? "Verwijder uit voorbeeldgroep"
-                  : "Probeer voorbeeldgroep"}
+                  : "Probeer voorbeeldgroep")}
               </button>
             </article>
-            <small className="m2-note">
-              Rivo-bediening is uitsluitend een lokale visualisatie. Er wordt
-              geen netwerk- of audiocommando verstuurd.
-            </small>
+            <small className="m2-note">{tr("Rivo-bediening is uitsluitend een lokale visualisatie. Er wordt geen netwerk- of audiocommando verstuurd.")}</small>
           </div>
         ) : page === "settings" ? (
           <div className="m2-settings">
             <SettingsPages
+              onClose={()=>go('playing')}
+              onReplayStartup={onReplayStartup}
               offline={offline}
               initialPage={settingsPage}
               onPageChange={setSettingsPage}
@@ -707,8 +698,8 @@ export function MusicShell({
             )}
             <div>
               <small>
-                {simulated ? "SIMULATIE" : "MUSIC ASSISTANT"} /{" "}
-                {playback.playerName || "TuneBox"}
+                {tr(simulated ? "SIMULATIE" : "MUSIC ASSISTANT")} /{tr(" ")}
+                {tr(playback.playerName || "TuneBox")}
               </small>
               <h2>{current.title}</h2>
               <p>
@@ -716,7 +707,7 @@ export function MusicShell({
               </p>
               <label>
                 <input
-                  aria-label="Afspeelpositie"
+                  aria-label={tr("Afspeelpositie")}
                   type="range"
                   min="0"
                   max={current.duration ?? 1}
@@ -732,41 +723,26 @@ export function MusicShell({
                 />
               </label>
               <div className="m2-times">
-                <span>{duration(position)}</span>
-                <span>{duration(current.duration)}</span>
+                <span>{tr(duration(position))}</span>
+                <span>{tr(duration(current.duration))}</span>
               </div>
             </div>
             <aside>
               <div className="m2-artwork-controls"><button
                 disabled={prefs.lowPower}
                 aria-pressed={video}
-                onClick={() => setVideo((v) => !v)}
+                onClick={() => {setVideo((v) => !v);update('artwork',video?'cover':'video');}}
               >
-                <Icon name="film" size={16} />{" "}
-                {prefs.lowPower ? "Video uit · Pi 3 modus" : "Video Artwork"}
+                <Icon name="film" size={16} />{tr(" ")}
+                {tr(prefs.lowPower ? "Video uit · Pi 3 modus" : "Video Artwork")}
               </button>
-              <button aria-label="Visualizer wisselen" onClick={()=>{setVideo(false);update("visualizer",prefs.visualizer==="off"?"spectrum":prefs.visualizer==="spectrum"?"meters":"off");}}>Visualizer {prefs.visualizer==="off"?"uit":prefs.visualizer==="meters"?"meters":"spectrum"}</button></div>
+              <button aria-label={tr("Visualizer wisselen")} onClick={toggleVisualizer}>{tr("Visualizer ")}{tr(prefs.visualizer==="off"?"uit":prefs.visualizer==="meters"?"meters":"spectrum")}</button></div>
               {video ? (
                 <div className="m2-video">
-                  <strong>END-SYNC · MOCK</strong>
-                  <span>
-                    {sync.status} · {duration(sync.position)}
-                  </span>
-                  <label>
-                    Correctie (s)
-                    <input
-                      aria-label="Video correctie"
-                      type="number"
-                      value={prefs.correction}
-                      onChange={(e) => update("correction", +e.target.value)}
-                    />
-                  </label>
-                  <small>
-                    Offset {sync.offset ?? "—"} s · geen echte video
-                  </small>
+                  <VideoArtwork snapshot={snapshot} position={position} prefs={prefs} offline={offline} onConfigure={()=>{setSettingsPage(16);go('settings');}}/>
                 </div>
               ) : prefs.visualizer!=="off" ? (
-                <AudioVisualizer mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline}/>
+                <AudioVisualizer mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline} awake={device.displayAwake!==false&&!sleeping}/>
               ) : (
                 <SkinPanel
                   skin={
@@ -787,7 +763,7 @@ export function MusicShell({
         <button
           className="m2-current"
           onClick={() => go("playing")}
-          aria-label="Open Nu spelen"
+          aria-label={tr("Open Nu spelen")}
         >
           <span className="m2-current-cover" key={current.id}>
             {simulated ? (
@@ -803,7 +779,7 @@ export function MusicShell({
         </button>
         <div className="m2-transport">
           <button
-            aria-label="Vorig nummer"
+            aria-label={tr("Vorig nummer")}
             disabled={!control || pending}
             onClick={() => command({ type: "previous" })}
           >
@@ -811,7 +787,7 @@ export function MusicShell({
           </button>
           <button
             className="m2-play"
-            aria-label={playback.playing ? "Pauze" : "Afspelen"}
+            aria-label={tr(playback.playing ? "Pauze" : "Afspelen")}
             disabled={!control || pending}
             onClick={() =>
               command({ type: playback.playing ? "pause" : "play" })
@@ -820,7 +796,7 @@ export function MusicShell({
             <Icon name={playback.playing ? "pause" : "play"} />
           </button>
           <button
-            aria-label="Volgend nummer"
+            aria-label={tr("Volgend nummer")}
             disabled={!control || pending}
             onClick={() => command({ type: "next" })}
           >
@@ -838,7 +814,7 @@ export function MusicShell({
                 : "idle"
           }
         >
-          {pending
+          {tr(pending
             ? "Opdracht versturen…"
             : message ||
               notice ||
@@ -848,10 +824,10 @@ export function MusicShell({
                   ? "Apparaatfout · fysieke versterker uit"
                   : simulated
                     ? "SIMULATIE · GEEN AUDIO"
-                    : "MUSIC ASSISTANT")}
+                    : ""))}
         </div>
         <button
-          aria-label={muted ? "Geluid aan" : "Dempen"}
+          aria-label={tr(muted ? "Geluid aan" : "Dempen")}
           aria-pressed={!!muted}
           disabled={
             !control ||

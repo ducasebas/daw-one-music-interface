@@ -1,4 +1,7 @@
 import {AudioAnalysis} from "./audio-analysis.js";
+import { DisplayStore } from './display-store.js';
+import { VideoLibrary } from './video-library.js';
+import { readFileSync, writeFileSync, renameSync } from 'node:fs';
 import {deviceRequest,controlToken,validDeviceRequest} from "./device-client.js";
 import {simulatedDevice} from "./simulated-device.js";
 import {updateStatus, deploymentCommit} from "./update-status.js";
@@ -19,11 +22,15 @@ const startupStore = new BootStore(
   process.env.DAW_STATE_DIR || ".tunebox-state",
 );
 const liveBootMonitor = new BootMonitor();
+const displayStore = new DisplayStore(process.env.DAW_STATE_DIR || '.tunebox-state');
+const videos = new VideoLibrary(process.env.DAW_STATE_DIR || '.tunebox-state');
+let displayConfiguration = displayStore.load();
 let inventory = bootInventory();
 const config = musicConfig(),
   app = express(),
   runtime = new DeviceRuntime(Date.now(), startupStore.load()),
   clients = new Set();
+runtime.displayTimeoutMs = displayConfiguration.timeoutSeconds === 0 ? Infinity : displayConfiguration.timeoutSeconds * 1000;
 const music =
   config.mode === "music-assistant" ? new LiveMusicService(config) : null;
 const audioAnalysis=new AudioAnalysis({onStatus:status=>{runtime.record(Date.now(),"audio-analysis",runtime.device.mode,"Local PCM measurement: "+status);broadcast();}});
@@ -35,6 +42,7 @@ const snapshot = () => {
     ...runtime.snapshot(),
     build: release,
     hardwareTelemetry: readSensorTelemetry(process.env.DAW_SENSOR_FILE),
+    displaySettings: displayConfiguration,
   };
   if (music)
     return {
@@ -119,6 +127,47 @@ app.get("/api/health", (_q, r) =>
     musicAssistant: music?.publicStatus().status || "mock",
   }),
 );
+app.get('/api/display', (_q,r) => {
+  let backlight = { supported:false };
+  try {
+    const raw = readFileSync('/run/daw-one-display/status.json','utf8');
+    if (raw.length <= 4096) {
+      const value = JSON.parse(raw);
+      if (Number.isFinite(value.observedAt) && Date.now()-value.observedAt < 5000) backlight = value;
+    }
+  } catch {}
+  r.set('Cache-Control','no-store').json({ settings:displayConfiguration, backlight });
+});
+const currentVideoTrack=()=>{const p=music?.playback||runtime.playback;return p.queue[p.index];};
+app.get('/api/video',(_q,r)=>r.set('Cache-Control','no-store').json(videos.get(currentVideoTrack())));
+app.get('/api/video/file/:id',(q,r)=>{const path=videos.path(q.params.id);if(!path)return r.sendStatus(404);r.set('Cache-Control','private, max-age=600').sendFile(q.params.id,{root:videos.directory,dotfiles:'deny'});});
+app.post('/api/video/upload',async(q,r)=>{
+  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before linking a video'});
+  try{r.json(await videos.upload(q,currentVideoTrack(),q.get('Content-Type')?.split(';')[0],q.get('Content-Length')));}catch(error){if(!r.headersSent&&!r.destroyed)r.status(400).json({error:error.message});}
+});
+app.delete('/api/video', (q,r)=>{
+  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before removing a video'});
+  try{r.json(videos.remove(currentVideoTrack()));}catch(error){r.status(409).json({error:error.message});}
+});
+app.post('/api/display', (q,r) => {
+  if (!validDeviceRequest(q)) return r.status(403).json({error:'Reload TuneBox before changing display settings'});
+  try {
+    displayConfiguration = displayStore.save(q.body);
+    runtime.displayTimeoutMs = displayConfiguration.timeoutSeconds === 0 ? Infinity : displayConfiguration.timeoutSeconds * 1000;
+    runtime.dispatch({type:'activity'});
+    broadcast();
+    r.json({ settings:displayConfiguration });
+  } catch { r.status(400).json({error:'Invalid display settings'}); }
+});
+app.post('/api/display/ready', (q,r) => {
+  if (!validDeviceRequest(q)) return r.status(403).json({error:'Reload TuneBox before revealing the display'});
+  try {
+    const path='/run/daw-one-display/ready.json';
+    writeFileSync(path+'.tmp',JSON.stringify({ready:true,observedAt:Date.now()})+'\n',{mode:0o660});
+    renameSync(path+'.tmp',path);
+    r.json({ready:true});
+  } catch { r.json({ready:false,supported:false}); }
+});
 // User activity affects the shared display timer, never MA playback or verification.
 app.post("/api/activity", (_q, r) => {
   const awake = runtime.device.displayAwake;

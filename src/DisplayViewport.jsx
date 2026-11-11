@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import React, { useLayoutEffect, useRef, useState } from "react";
 import { displayGeometry, panelProfile } from "../shared/display.js";
 /** The actual product, with fixed logical dimensions; no second app or API client. */
@@ -21,7 +22,7 @@ export function DisplayViewport({ mode, children }) {
       className="display-viewport"
       data-display-mode={mode}
       data-panel={panelProfile(location.search)}
-      aria-label="Production display viewport"
+      aria-label={tr("Production display viewport")}
     >
       <div
         className="display-frame"
@@ -34,7 +35,7 @@ export function DisplayViewport({ mode, children }) {
           className="virtual-display-surface"
           style={{ width: geometry.width, height: geometry.height, transform: `scale(${geometry.scale})` }}
         >
-          {children}
+          {tr(children)}
         </div>
       </div>
     </div>

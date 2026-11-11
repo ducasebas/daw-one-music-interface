@@ -35,5 +35,7 @@ if /usr/bin/curl --fail --silent --max-time 2 http://127.0.0.1:3002/status >/dev
   url="http://127.0.0.1:3002/?display=$mode&panel=$panel"
   if [[ -r /opt/daw-one/deployment-target && $(cat /opt/daw-one/deployment-target) == pi3-experimental ]]; then url="$url&profile=pi3"; fi
 fi
-printf 'DAW ONE kiosk: %s, logical viewport 1280x400\n' "$mode"
+viewport=1280x400
+[[ $panel != wall-16-10 ]] || viewport=1280x800
+printf 'DAW ONE kiosk: %s, panel %s, logical viewport %s\n' "$mode" "$panel" "$viewport"
 exec /usr/bin/dbus-run-session -- /usr/bin/cage -- /usr/bin/chromium --ozone-platform=wayland --kiosk --force-device-scale-factor=1 --no-first-run --disable-session-crashed-bubble --user-data-dir=/var/lib/dawone/chromium "$url"

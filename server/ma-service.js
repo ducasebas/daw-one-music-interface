@@ -1,5 +1,6 @@
 import { mediaImage } from "../shared/media.js";
 import { EventEmitter } from "node:events";
+import {createHash} from 'node:crypto';
 import { MusicAssistantTransport } from "./ma-transport.js";
 const emptyTrack = {
   id: "none",
@@ -18,6 +19,7 @@ export function normalizeMusic(
     : player.current_media;
   const convert = (item) => ({
     id: String(item?.queue_item_id || item?.uri || "current"),
+    mediaKey: createHash('sha256').update(item?.media_item?.uri || item?.uri || JSON.stringify([item?.media_item?.name||item?.title||item?.name,item?.media_item?.artists||item?.artist,item?.media_item?.album?.name||item?.album,item?.duration])).digest('hex'),
     title:
       item?.media_item?.name || item?.title || item?.name || "Unknown title",
     artist:

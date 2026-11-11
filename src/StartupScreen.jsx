@@ -1,18 +1,22 @@
+import {tr} from "../shared/i18n.js";
 import { useStartupPreparation } from "./useStartupPreparation.js";
 import React, { useEffect, useRef, useState } from "react";
+import {useDeviceUpdates} from './DeviceUpdates.jsx';
 /** Branding is independent from hardware readiness and never enables audio. */
 export function StartupScreen({
   mode,
   offline,
   preview = 0,
   staticOnly = false,
+  animationMode = 'auto',
   boot,
 }) {
+  const updates=useDeviceUpdates();
   const preparation = useStartupPreparation();
   const [reduced, setReduced] = useState(
     () =>
-      staticOnly ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      staticOnly || animationMode==='still' ||
+      (animationMode!=='video'&&window.matchMedia("(prefers-reduced-motion: reduce)").matches),
   );
   const [cycle, setCycle] = useState(0);
   const [visible, setVisible] = useState(true);
@@ -21,6 +25,14 @@ export function StartupScreen({
     document.visibilityState === "visible",
   );
   const [renderer, setRenderer] = useState(reduced ? "still" : "loading");
+  useEffect(()=>{
+    try{localStorage.setItem('tunebox-startup-status',JSON.stringify({renderer,staticOnly,reduced,at:Date.now()}));}catch{}
+    if(renderer==='loading'&&visible||!updates?.info?.controlToken)return;
+    const frame=requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      fetch('/api/display/ready',{method:'POST',headers:{'X-TuneBox-Control':updates.info.controlToken}}).catch(()=>{});
+    }));
+    return()=>cancelAnimationFrame(frame);
+  },[renderer,visible,updates?.info?.controlToken]);
   const previous = useRef(mode),
     video = useRef(null);
   useEffect(() => {
@@ -40,7 +52,10 @@ export function StartupScreen({
       const timer = setTimeout(() => setRenderer("fallback"), 8000);
       return () => clearTimeout(timer);
     }
-    if (renderer === "primed") return;
+    if (renderer === "primed") {
+      const timer=setTimeout(()=>setRenderer('fallback'),6000);
+      return()=>clearTimeout(timer);
+    }
     // Video ends on its media clock, not wall time. A frozen decoder can still recover.
     const timer =
       renderer === "video"
@@ -51,12 +66,14 @@ export function StartupScreen({
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const change = () => {
-      setReduced(staticOnly || media.matches);
-      if (staticOnly || media.matches) setRenderer("still");
+      const still=staticOnly||animationMode==='still'||animationMode!=='video'&&media.matches;
+      setReduced(still);
+      if (still) setRenderer("still");
     };
+    change();
     media.addEventListener("change", change);
     return () => media.removeEventListener("change", change);
-  }, [staticOnly]);
+  }, [staticOnly,animationMode]);
   useEffect(() => {
     if (!visible || mode === "booting") return;
     const skip = () => setVisible(false);
@@ -119,7 +136,9 @@ export function StartupScreen({
   return (
     <section
       className="startup-screen"
-      aria-label="Startup animation"
+      style={{pointerEvents:'auto'}}
+      onPointerDown={event=>{event.preventDefault();event.stopPropagation();if(mode!=='booting')setVisible(false);}}
+      aria-label={tr("Startup animation")}
       role="status"
       data-renderer={renderer}
       data-preparation={preparation}
@@ -133,7 +152,7 @@ export function StartupScreen({
             : "visible",
         }}
         src="/media/startup-still.png"
-        alt="ONE · DUTCHAUDIOWORKS"
+        alt={tr("ONE · DUTCHAUDIOWORKS")}
       />
       {!reduced &&
         !elapsed &&
@@ -152,21 +171,21 @@ export function StartupScreen({
             onPlaying={() => setRenderer("video")}
             onEnded={() => setElapsed(true)}
             onError={() => setRenderer("fallback")}
-            aria-label="DAW ONE cold start video"
+            aria-label={tr("DAW ONE cold start video")}
           >
-            <source src="/media/startup.webm" type='video/webm; codecs="vp8"' />
             <source src="/media/startup.mp4" type="video/mp4" />
+            <source src="/media/startup.webm" type='video/webm; codecs="vp8"' />
           </video>
         )}
       <small className="startup-check-caption">
-        {offline
+        {tr(offline
           ? "Offline · lokale instellingen beschikbaar"
           : boot
             ? `${boot.simulated ? "SIMULATIE · " : ""}${boot.checks.filter((c) => c.status === "pass").length} controles OK · ${boot.phase}`
-            : "Lokale interface voorbereiden…"}
+            : "Lokale interface voorbereiden…")}
       </small>
       {elapsed && mode === "booting" && !offline && (
-        <span>Starting device…</span>
+        <span>{tr("Starting device…")}</span>
       )}
     </section>
   );

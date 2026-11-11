@@ -20,7 +20,7 @@ test("sensor readouts are distinct from simulation and become unknown offline", 
   );
   await page.goto("/?gui=2&product=1");
   await page
-    .getByRole("button", { name: "Open opstartcontrole", exact: true })
+    .getByRole("button", { name: "Open system status", exact: true })
     .click();
   await page.getByLabel("Boot page", { exact: true }).selectOption("4");
   await expect(page.getByLabel("Echte sensormetingen")).toContainText("19.5");
@@ -43,14 +43,14 @@ test("sensor readouts are distinct from simulation and become unknown offline", 
   ]) {
     await chooseSkin(page, skin);
     await page
-      .getByRole("button", { name: "Open opstartcontrole", exact: true })
+      .getByRole("button", { name: "Open system status", exact: true })
       .click();
     await page.getByLabel("Boot page", { exact: true }).selectOption("4");
     await expect(
-      page.getByRole("article", { name: "Omgevingstemperatuur", exact: true }),
+      page.getByRole("article", { name: "Ambient temperature", exact: true }),
     ).toContainText("19.5 °C");
     await expect(
-      page.getByRole("article", { name: "Lichtsterkte", exact: true }),
+      page.getByRole("article", { name: "Ambient light", exact: true }),
     ).toContainText("486 lux");
     expect(
       await page
@@ -62,7 +62,7 @@ test("sensor readouts are distinct from simulation and become unknown offline", 
     await page.route("**/api/**", (r) => r.abort());
     await context.setOffline(true);
     await expect(page.getByLabel("Echte sensormetingen")).toContainText(
-      "onbekend",
+      "unknown",
       { timeout: 10000 },
     );
   } finally {

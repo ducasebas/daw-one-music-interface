@@ -10,7 +10,7 @@ async function start(page) {
     data: { type: "mute", value: false },
   });
   await page.goto("/?gui=2&product=1");
-  await page.getByRole("button", { name: "Ontdek", exact: true }).click();
+  await page.getByRole("button", { name: "Discover", exact: true }).click();
   await expect(
     page.getByRole("slider", { name: "Volume", exact: true }),
   ).toHaveAttribute("aria-disabled", "false");
@@ -97,7 +97,7 @@ test("touch drag drafts smoothly, commits on release and cancels without changin
   await s.focus();
   await page.keyboard.press("Home");
   await expect.poll(() => volume(page)).toBe(0);
-  await page.getByRole("button", { name: "Volume hoger", exact: true }).click();
+  await page.getByRole("button", { name: "Volume up", exact: true }).click();
   await expect.poll(() => volume(page)).toBe(1);
   await c.detach();
 });
@@ -122,7 +122,7 @@ test("rapid volume changes retain latest intent without overlapping requests", a
     active--;
     await r.fulfill({ response });
   });
-  const plus = page.getByRole("button", { name: "Volume hoger", exact: true });
+  const plus = page.getByRole("button", { name: "Volume up", exact: true });
   await plus.click();
   await plus.click();
   await plus.click();
@@ -135,7 +135,7 @@ test("circular mode persists, supports touch rotation and keeps all skins within
   page,
 }) => {
   await start(page);
-  await page.getByRole("button", { name: "Instellingen", exact: true }).click();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page
     .getByLabel("Volume control", { exact: true })
     .selectOption("circular");
@@ -166,7 +166,7 @@ test("circular mode persists, supports touch rotation and keeps all skins within
         .evaluate((e) => e.scrollWidth <= e.clientWidth + 1),
     ).toBeTruthy();
   }
-  await page.getByRole("button", { name: "Instellingen", exact: true }).click();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.getByLabel("Volume control", { exact: true })).toHaveValue(
     "circular",
   );
@@ -180,7 +180,7 @@ test("rejected volume requests roll back preview and report the actual error", a
   await page.route("**/api/event", (r) =>
     r.fulfill({ status: 409, json: { error: "Player refused volume change" } }),
   );
-  await page.getByRole("button", { name: "Volume hoger", exact: true }).click();
+  await page.getByRole("button", { name: "Volume up", exact: true }).click();
   await expect(page.locator(".m2-player-status")).toContainText(
     "Player refused volume change",
   );
@@ -239,7 +239,7 @@ test("GUI2 every settings page fits without scrolling with both volume presentat
   await start(page);
   for (const mode of ["linear", "circular"]) {
     await page
-      .getByRole("button", { name: "Instellingen", exact: true })
+      .getByRole("button", { name: "Settings", exact: true })
       .click();
     await page.getByLabel("Settings page", { exact: true }).selectOption("0");
     await page.getByLabel("Volume control", { exact: true }).selectOption(mode);
@@ -274,7 +274,7 @@ test("large event log keeps the live stream connected during volume use", async 
   await page.keyboard.press("Home");
   await expect.poll(() => volume(page)).toBe(0);
   await expect(page.locator(".m2-player-status")).not.toContainText(
-    "Geen verbinding",
+    "Disconnected",
   );
   expect(errors).toBe(0);
 });
@@ -284,7 +284,7 @@ test("scaled workbench volume uses the same touch geometry as the product", asyn
 }) => {
   await start(page);
   await page.goto("/?gui=2&lab=1");
-  await page.getByRole("button", { name: "Ontdek", exact: true }).click();
+  await page.getByRole("button", { name: "Discover", exact: true }).click();
   const slider = page.getByRole("slider", { name: "Volume", exact: true });
   await expect(slider).toHaveAttribute("aria-disabled", "false");
   const b = await slider.boundingBox(),
@@ -303,14 +303,14 @@ test("mute greys both volume presentations without changing the stored volume or
   await start(page);
   for (const mode of ["linear", "circular"]) {
     await page
-      .getByRole("button", { name: "Instellingen", exact: true })
+      .getByRole("button", { name: "Settings", exact: true })
       .click();
     await page.getByLabel("Settings page", { exact: true }).selectOption("0");
     await page.getByLabel("Volume control", { exact: true }).selectOption(mode);
-    await page.getByRole("button", { name: "Open Nu spelen" }).click();
+    await page.getByRole("button", { name: "Open Now Playing" }).click();
     const slider = page.getByRole("slider", { name: "Volume", exact: true });
     const before = await slider.getAttribute("style");
-    await page.getByRole("button", { name: "Dempen", exact: true }).click();
+    await page.getByRole("button", { name: "Mute", exact: true }).click();
     await expect(page.locator(".m2-player>.touch-volume")).toHaveAttribute(
       "data-muted",
       "true",
@@ -320,7 +320,7 @@ test("mute greys both volume presentations without changing the stored volume or
     expect(await slider.getAttribute("style")).toBe(before);
     expect(await volume(page)).toBe(32);
     await page.screenshot({ path: `test-results/muted-${mode}.png` });
-    await page.getByRole("button", { name: "Geluid aan", exact: true }).click();
+    await page.getByRole("button", { name: "Unmute", exact: true }).click();
     await expect(page.locator(".m2-player>.touch-volume")).toHaveAttribute(
       "data-muted",
       "false",

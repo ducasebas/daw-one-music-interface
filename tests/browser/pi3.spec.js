@@ -10,10 +10,10 @@ test("Pi3 profile shares playback and skins with video disabled and a fixed view
   );
   await expect(page.locator("video")).toHaveCount(0);
   await page
-    .getByRole("button", { name: "Open Nu spelen", exact: true })
+    .getByRole("button", { name: "Open Now Playing", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Video uit · Pi 3 modus" }),
+    page.getByRole("button", { name: "Video off · Pi 3 mode" }),
   ).toBeDisabled();
   expect(
     await page
@@ -23,7 +23,7 @@ test("Pi3 profile shares playback and skins with video disabled and a fixed view
   expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(
     400,
   );
-  await page.getByRole("button", { name: "Instellingen", exact: true }).click();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByLabel("Settings page", { exact: true }).selectOption("1");
   const picker = page.getByLabel("Skin", { exact: true });
   const ids = await picker

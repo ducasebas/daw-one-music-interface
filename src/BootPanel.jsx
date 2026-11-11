@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import { useTemperatureDisplay } from "./useTemperatureDisplay.js";
 import React, { useState, useEffect } from "react";
 import { Pager } from "./Pager.jsx";
@@ -84,9 +85,9 @@ export function BootPanel({ snapshot, onSnapshot, offline = false }) {
       : temperatureCheck?.reason || "Hostmeting niet beschikbaar",
   };
   return (
-    <div className="boot-panel" aria-label="Opstartcontrole">
+    <div className="boot-panel" aria-label={tr("Opstartcontrole")}>
       <Pager
-        label="Boot"
+        label={tr("Boot")}
         items={[
           "Voeding en hardware",
           "Audio en koeling",
@@ -100,9 +101,9 @@ export function BootPanel({ snapshot, onSnapshot, offline = false }) {
         {page < 3 ? (
           <div className="boot-checks">
             <small>
-              {boot?.simulated
+              {tr(boot?.simulated
                 ? "GESIMULEERDE CHECKS"
-                : "HOSTMETINGEN · HARDWARE NIET GEVERIFIEERD"}
+                : "HOSTMETINGEN · HARDWARE NIET GEVERIFIEERD")}
             </small>
             {boot?.checks?.slice(page * 3, page * 3 + 3).map((entry) => {
               const check = offline
@@ -114,35 +115,32 @@ export function BootPanel({ snapshot, onSnapshot, offline = false }) {
                 : entry;
               return (
                 <article key={check.id} data-status={check.status}>
-                  <b>{check.label}</b>
-                  <span>{states[check.status]}</span>
-                  <small>{check.reason}</small>
+                  <b>{tr(check.label)}</b>
+                  <span>{tr(states[check.status])}</span>
+                  <small>{tr(check.reason)}</small>
                 </article>
               );
             })}
             {!boot && (
-              <p>Opstartstatus niet beschikbaar · backend controleren</p>
+              <p>{tr("Opstartstatus niet beschikbaar · backend controleren")}</p>
             )}
           </div>
         ) : page === 4 ? (
           <div
             className="boot-checks sensor-cards"
-            aria-label="Echte sensormetingen"
+            aria-label={tr("Echte sensormetingen")}
           >
-            <small>
-              Echte I²C-metingen · apart van CPU en simulatie · geen
-              versterkervrijgave
-            </small>
+            <small>{tr("Echte I²C-metingen · apart van CPU en simulatie · geen versterkervrijgave")}</small>
             {[...physicalSensors, cpuCard].map((card) => (
               <article
                 key={card.id}
                 data-status={card.status}
-                aria-label={card.label}
+                aria-label={tr(card.label)}
               >
-                <b>{card.label}</b>
-                <span>{states[card.status]}</span>
-                {card.value && <strong>{card.value}</strong>}
-                <small>{card.reason}</small>
+                <b>{tr(card.label)}</b>
+                <span>{tr(states[card.status])}</span>
+                {card.value && <strong>{tr(card.value)}</strong>}
+                <small>{tr(card.reason)}</small>
               </article>
             ))}
           </div>
@@ -150,34 +148,29 @@ export function BootPanel({ snapshot, onSnapshot, offline = false }) {
           <div className="boot-radio">
             <label>
               <input
-                aria-label="Autoradio bij koude boot"
+                aria-label={tr("Autoradio bij koude boot")}
                 type="checkbox"
                 checked={draft.radioEnabled}
                 disabled={live || offline}
                 onChange={(e) =>
                   setDraft({ ...draft, radioEnabled: e.target.checked })
                 }
-              />{" "}
-              Autoradio bij koude boot · simulatie
-            </label>
-            <label>
-              Voorbeeldstation
-              <select
-                aria-label="Voorbeeldstation"
+              />{tr(" ")}{tr("Autoradio bij koude boot · simulatie")}</label>
+            <label>{tr("Voorbeeldstation")}<select
+                aria-label={tr("Voorbeeldstation")}
                 disabled={live || offline}
                 value={draft.station}
                 onChange={(e) =>
                   setDraft({ ...draft, station: e.target.value })
                 }
               >
-                <option value="ambient">Ambient Radio</option>
-                <option value="classical">Classical Radio</option>
+                <option value="ambient">{tr("Ambient Radio")}</option>
+                <option value="classical">{tr("Classical Radio")}</option>
               </select>
             </label>
-            <label>
-              Startvolume {draft.volume}%
+            <label>{tr("Startvolume ")}{tr(draft.volume)}%
               <input
-                aria-label="Radio startvolume"
+                aria-label={tr("Radio startvolume")}
                 type="range"
                 min="0"
                 max="40"
@@ -189,13 +182,13 @@ export function BootPanel({ snapshot, onSnapshot, offline = false }) {
               />
             </label>
             <button disabled={live || offline || pending} onClick={save}>
-              {pending ? "Opslaan…" : "Opstartinstellingen opslaan"}
+              {tr(pending ? "Opslaan…" : "Opstartinstellingen opslaan")}
             </button>
             <small role="status">
-              {notice ||
+              {tr(notice ||
                 (live
                   ? "Live autoradio geblokkeerd: station/route-adapter nog niet geverifieerd"
-                  : `Koude boot: ${boot?.radioStatus || "onbekend"} · nooit automatisch bij reconnect of wake`)}
+                  : `Koude boot: ${boot?.radioStatus || "onbekend"} · nooit automatisch bij reconnect of wake`))}
             </small>
           </div>
         )}

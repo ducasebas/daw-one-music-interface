@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import "./audio-analysis.css";
 import "./device-settings.css";
 import {DeviceUpdatesProvider} from "./DeviceUpdates.jsx";
@@ -8,6 +9,7 @@ import {
 } from "../shared/profile.js";
 import { BuildBadge } from "./BuildBadge.jsx";
 import React, { useState, useEffect } from "react";
+import {useLanguage} from './LanguageSettings.jsx';
 import { createRoot } from "react-dom/client";
 import { initialDevice, transition } from "../shared/device.js";
 import { initialPlayback, positionAt } from "../shared/playback.js";
@@ -52,6 +54,7 @@ function loadThemes() {
 }
 const profile = deviceProfile(location.search);
 function App() {
+  useLanguage();
   const [snapshot, setSnapshot] = useState({
       device: transition(initialDevice(), { type: "boot-complete" }),
       playback: initialPlayback(),
@@ -278,6 +281,7 @@ function App() {
       position={position}
       notice={notice}
       startupPreview={startupPreview}
+      onReplayStartup={()=>setStartupPreview(v=>v+1)}
     />
   ) : (
     <main
@@ -307,28 +311,25 @@ function App() {
             e.preventDefault();
             setPage("playing");
           }}
-        >
-          DAW <b>ONE</b>
-          <span>INTELLIGENT STREAMING AMPLIFIER</span>
+        >{tr("DAW ")}<b>{tr("ONE")}</b>
+          <span>{tr("INTELLIGENT STREAMING AMPLIFIER")}</span>
         </a>
         <a
           href="?gui=2&product=1"
           style={{ color: "var(--accent)", fontSize: 11 }}
-        >
-          Probeer GUI 2.0 ↗
-        </a>
+        >{tr("Probeer GUI 2.0 ↗")}</a>
         <div className="status">
           <i className={offline ? "amber" : ""} />
-          {offline
+          {tr(offline
             ? "OFFLINE PREVIEW"
             : liveMusic
               ? "LIVE MUSIC · MOCK HARDWARE"
-              : "SIMULATED SYSTEM"}
-          <span className="divider" /> {device.mode.toUpperCase()}
+              : "SIMULATED SYSTEM")}
+          <span className="divider" /> {tr(device.mode.toUpperCase())}
         </div>
         <button
           className="power"
-          aria-label="Standby"
+          aria-label={tr("Standby")}
           disabled={liveMusic}
           onClick={() => send({ type: "standby" })}
         >
@@ -336,7 +337,7 @@ function App() {
         </button>
       </header>
       <div className="shell">
-        <nav aria-label="Main navigation">
+        <nav aria-label={tr("Main navigation")}>
           {[
             ["playing", "◉", "Now playing"],
             ["queue", "≋", "Queue"],
@@ -345,40 +346,40 @@ function App() {
           ].map(([id, icon, label]) => (
             <button
               key={id}
-              aria-label={label}
+              aria-label={tr(label)}
               aria-current={page === id ? "page" : undefined}
               className={page === id ? "selected" : ""}
               onClick={() => (id === "lab" ? openLab() : setPage(id))}
             >
-              <span>{icon}</span>
-              <small>{label}</small>
+              <span>{tr(icon)}</span>
+              <small>{tr(label)}</small>
             </button>
           ))}
         </nav>
         {page === "playing" ? (
-          <section className="now" aria-label="Now playing">
+          <section className="now" aria-label={tr("Now playing")}>
             <div
               className={`art ${videoActive && video.status === "active" ? "motion" : ""}`}
             >
               <div className="orb" />
               <span className="art-label">
-                {videoActive ? "VIDEO ARTWORK · MOCK" : "AMBIENT TRANSMISSIONS"}
+                {tr(videoActive ? "VIDEO ARTWORK · MOCK" : "AMBIENT TRANSMISSIONS")}
               </span>
               {videoActive && (
                 <div className="video-info">
-                  {video.status} · {time(video.position)}
-                  <small>End-Sync {video.offset ?? "—"}s</small>
+                  {tr(video.status)} · {tr(time(video.position))}
+                  <small>{tr("End-Sync ")}{tr(video.offset ?? "—")}{tr("s")}</small>
                 </div>
               )}
             </div>
             <div className="track">
               <div className="eyebrow">
-                {playback.connected
+                {tr(playback.connected
                   ? liveMusic
                     ? "MUSIC ASSISTANT"
                     : "MUSIC LIBRARY"
-                  : "SERVER UNAVAILABLE"}{" "}
-                <span>•</span> {liveMusic ? "PLAYER METADATA" : "MOCK LIBRARY"}
+                  : "SERVER UNAVAILABLE")}{tr(" ")}
+                <span>•</span> {tr(liveMusic ? "PLAYER METADATA" : "MOCK LIBRARY")}
               </div>
               <h1>{track.title}</h1>
               <p>
@@ -388,7 +389,7 @@ function App() {
               </p>
               <div className="progress">
                 <input
-                  aria-label="Playback position"
+                  aria-label={tr("Playback position")}
                   type="range"
                   min="0"
                   max={track.duration ?? 1}
@@ -403,14 +404,14 @@ function App() {
                   }
                 />
                 <div>
-                  <span>{time(position)}</span>
-                  <span>{time(track.duration)}</span>
+                  <span>{tr(time(position))}</span>
+                  <span>{tr(time(track.duration))}</span>
                 </div>
               </div>
               <div className="transport">
                 <button
                   disabled={!writable}
-                  aria-label="Previous track"
+                  aria-label={tr("Previous track")}
                   onClick={() => send({ type: "previous" })}
                 >
                   Ⅰ◀
@@ -418,16 +419,16 @@ function App() {
                 <button
                   className="play"
                   disabled={!writable}
-                  aria-label={playback.playing ? "Pause" : "Play"}
+                  aria-label={tr(playback.playing ? "Pause" : "Play")}
                   onClick={() =>
                     send({ type: playback.playing ? "pause" : "play" })
                   }
                 >
-                  {playback.playing ? "Ⅱ" : "▶"}
+                  {tr(playback.playing ? "Ⅱ" : "▶")}
                 </button>
                 <button
                   disabled={!writable}
-                  aria-label="Next track"
+                  aria-label={tr("Next track")}
                   onClick={() => send({ type: "next" })}
                 >
                   ▶Ⅰ
@@ -441,9 +442,9 @@ function App() {
                     )
                   }
                 >
-                  {prefs.artwork === "cover"
+                  {tr(prefs.artwork === "cover"
                     ? "◈ Video artwork"
-                    : "◈ Cover artwork"}
+                    : "◈ Cover artwork")}
                 </button>
               </div>
             </div>
@@ -454,7 +455,7 @@ function App() {
                 prefs={prefs}
                 update={update}
               />
-              <div className="eyebrow volume-title">VOLUME</div>
+              <div className="eyebrow volume-title">{tr("VOLUME")}</div>
               <VolumeControl
                 value={playerVolume}
                 muted={
@@ -480,18 +481,14 @@ function App() {
                   else send({ type: "mute", value: !snapshot.audio?.muted });
                 }}
               />
-              <small>
-                Hardware unverified
-                <br />
-                Amplifier physically disabled
-              </small>
+              <small>{tr("Hardware unverified")}<br />{tr("Amplifier physically disabled")}</small>
             </aside>
           </section>
         ) : (
           <section className="panel paginated-panel">
             <div className="panel-title">
-              <div className="eyebrow">DAW ONE CONTROL</div>
-              <h1>{page === "settings" ? "Make it yours" : "Up next"}</h1>
+              <div className="eyebrow">{tr("DAW ONE CONTROL")}</div>
+              <h1>{tr(page === "settings" ? "Make it yours" : "Up next")}</h1>
             </div>
             {page === "settings" ? (
               <SettingsPages
@@ -509,15 +506,15 @@ function App() {
                 {playback.queue.map((t, i) => (
                   <article key={t.id}>
                     <span>
-                      {i === playback.index
+                      {tr(i === playback.index
                         ? "◉"
-                        : String(i + 1).padStart(2, "0")}
+                        : String(i + 1).padStart(2, "0"))}
                     </span>
                     <div>
                       <b>{t.title}</b>
                       <small>{t.artist}</small>
                     </div>
-                    <span>{time(t.duration)}</span>
+                    <span>{tr(time(t.duration))}</span>
                   </article>
                 ))}
               </div>
@@ -527,22 +524,22 @@ function App() {
       </div>
       <footer>
         <span>
-          <i />{" "}
-          {offline
+          <i />{tr(" ")}
+          {tr(offline
             ? "BACKEND OFFLINE"
             : playback.connected
               ? liveMusic
                 ? "MUSIC ASSISTANT CONNECTED"
                 : "MOCK SOURCE CONNECTED"
-              : "MUSIC SERVER DISCONNECTED"}
+              : "MUSIC SERVER DISCONNECTED")}
         </span>
         <span role="status">
-          {notice ||
+          {tr(notice ||
             (device.faults.length
               ? "FAULT LATCHED · OUTPUT INHIBITED"
               : !device.displayAwake
                 ? "DISPLAY SLEEP SIMULATED · AUDIO INDEPENDENT"
-                : "DESIGNED FOR LISTENING")}
+                : "DESIGNED FOR LISTENING"))}
         </span>
         <span>
           <BuildBadge snapshot={snapshot} offline={offline} />
@@ -563,7 +560,7 @@ function App() {
       onReplayStartup={() => setStartupPreview((v) => v + 1)}
     />
   ) : mode ? (
-    <DisplayViewport mode={mode}>{product}</DisplayViewport>
+    <DisplayViewport mode={mode}>{tr(product)}</DisplayViewport>
   ) : (
     product
   );
@@ -579,11 +576,9 @@ class AppBoundary extends React.Component {
   render() {
     return this.state.error ? (
       <section role="alert" style={{ padding: 24 }}>
-        <h1>DAW ONE kon het scherm niet tekenen</h1>
-        <p>
-          Versie display-r3. Herlaad de pagina; je instellingen blijven bewaard.
-        </p>
-        <button onClick={() => location.reload()}>Opnieuw laden</button>
+        <h1>{tr("DAW ONE kon het scherm niet tekenen")}</h1>
+        <p>{tr("Versie display-r3. Herlaad de pagina; je instellingen blijven bewaard.")}</p>
+        <button onClick={() => location.reload()}>{tr("Opnieuw laden")}</button>
       </section>
     ) : (
       this.props.children

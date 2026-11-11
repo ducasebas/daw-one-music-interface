@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import React, { useRef, useEffect, useState } from "react";
 import { wifiReading } from "../shared/wall.js";
 import { Icon } from "./Icon.jsx";
@@ -53,7 +54,7 @@ export function NetworkStatus({ snapshot, offline }) {
       data-state={offline || wifi === false ? "unavailable" : "connected"}
       data-signal={reading.level===null?"unavailable":reading.level}
     >
-      <summary aria-label="Netwerkstatus">
+      <summary aria-label={tr("Netwerkstatus")}>
         <Icon
           name={
             offline || wifi === false
@@ -64,19 +65,19 @@ export function NetworkStatus({ snapshot, offline }) {
           }
           size={18}
         />
-        <span>{label}{reading.level!==null ? ` · ${reading.label}${reading.simulated ? " sim" : ""}` : ""}</span>
+        <span>{tr(label)}{tr(reading.level!==null ? ` · ${reading.label}${reading.simulated ? " sim" : ""}` : "")}</span>
       </summary>
       <div className="m2-network-info">
-        <strong>{label}</strong>
+        <strong>{tr(label)}</strong>
         <p>
-          {offline
+          {tr(offline
             ? "Geen verbinding met de app-backend."
             : simulated
               ? "Deze netwerkstatus is gesimuleerd."
-              : `De app-backend is bereikbaar. ${snapshot.musicAssistant?.connected ? "Music Assistant is verbonden." : "Music Assistant is niet verbonden."}`}
+              : `De app-backend is bereikbaar. ${snapshot.musicAssistant?.connected ? "Music Assistant is verbonden." : "Music Assistant is niet verbonden."}`)}
         </p>
         <small>
-          {reading.level===null ? "Wi-Fi-signaalsterkte niet gemeten. Een werkende appverbinding kan ook via ethernet lopen." : `Wi-Fi-signaalsterkte ${reading.label} · ${reading.simulated ? "gesimuleerd" : "NetworkManager-meting (maximaal 30 s oud)"}`}
+          {tr(reading.level===null ? "Wi-Fi-signaalsterkte niet gemeten. Een werkende appverbinding kan ook via ethernet lopen." : `Wi-Fi-signaalsterkte ${reading.label} · ${reading.simulated ? "gesimuleerd" : "NetworkManager-meting (maximaal 30 s oud)"}`)}
 
         </small>
       </div>

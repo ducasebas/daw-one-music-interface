@@ -64,6 +64,7 @@ export class DeviceRuntime {
     };
     this.audio = { volume: 32, muted: false };
     this.lastActivity = now;
+    this.displayTimeoutMs = policy.displayTimeoutMs;
     this.log = [];
     this.sequence = 0;
     this.startupSettings = bootSettings(startup);
@@ -267,7 +268,7 @@ export class DeviceRuntime {
         );
       }
       if (
-        now - this.lastActivity > policy.displayTimeoutMs &&
+        Number.isFinite(this.displayTimeoutMs) && now - this.lastActivity > this.displayTimeoutMs &&
         this.device.displayAwake
       )
         events.push({ type: "display-timeout" });

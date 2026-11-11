@@ -147,14 +147,14 @@ test("installed help and read-only doctor are reachable without GitHub login", a
 
 test('GUI2 production keeps volume choice offline without permitting device commands',async({page})=>{
  await page.goto('/?gui=2&product=1');
- await page.getByRole('button',{name:'Instellingen',exact:true}).click();
+ await page.getByRole('button',{name:"Settings",exact:true}).click();
  await page.getByLabel('Volume control',{exact:true}).selectOption('circular');
  await page.evaluate(()=>navigator.serviceWorker.ready);
- await page.reload();await page.getByRole('button',{name:'Instellingen',exact:true}).click();
+ await page.reload();await page.getByRole('button',{name:"Settings",exact:true}).click();
  await page.context().setOffline(true);await page.reload();
  await expect(page.locator('.touch-volume-circular')).toBeVisible();
  await expect(page.getByRole('slider',{name:'Volume',exact:true})).toHaveAttribute('aria-disabled','true');
- await page.getByRole('button',{name:'Instellingen',exact:true}).click();
+ await page.getByRole('button',{name:"Settings",exact:true}).click();
  await expect(page.getByLabel('Volume control',{exact:true})).toHaveValue('circular');
  await page.getByLabel('Volume control',{exact:true}).selectOption('linear');
  await expect(page.locator('.touch-volume-linear')).toBeVisible();

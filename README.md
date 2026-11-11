@@ -8,6 +8,18 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 *Current software screenshot using simulated playback and conceptual artwork; no Louder HAT is connected.*
 
+## GUI 3.1 · TOUCH — real-screen ergonomics
+
+Separate **Screen rest** and **Power off** controls: screen rest keeps music running; confirmed power off darkens the panel and shuts down the Pi. A hardware switch is still needed to disconnect its power supply completely.
+
+The owner has the interface running on the Waveshare 7inch DSI LCD (E). This update adds a larger playback bar, screen-filling rest views, instant wake feedback and full-height settings categories. **English is now the default; Dutch is selectable in Settings → Language.** Music First branding and the cursor are removed from the DSI kiosk.
+
+[Update the Pi and see implementation limits](docs/touch-update.md) · [Help translate TuneBox](docs/translations.md) · [Validation record](docs/touch-update-validation.md).
+
+The optional installed display service controls actual DSI brightness, with manual/automatic lux modes and a configurable screen timeout. Quiet boot and first-frame splash reveal need a physical reboot test. Sensors have their own large page. The real PCM visualizer requires Squeezelite export; Video Artwork now plays manually linked local MP4/WebM files. Automatic online video matching and an activated signed OTA channel still require separate integration/setup.
+
+![GUI 3.1 Now Playing — software simulation, not a hardware photograph](docs/images/touch-now-playing.png)
+
 ## GUI3.0 · WALL — approved exterior and new screen profile
 
 **[D1 material build-up and nominal 3D fit](docs/design/fit-d1.md): 176 × 110 × 45 mm prototype envelope**, using the existing touch glass, a birch-plywood/walnut shell and an aluminium rear plate. Pi and HAT sit side by side. The nominal check covered 31 CAD/reserved objects and 66 solid intersection operations with zero unexpected overlaps. Mounting, the complete harness and physical tests remain open.
@@ -276,7 +288,7 @@ Additional references: [API/protocol](docs/protocol-and-api.md), [hardware relea
 
 **Touch volume:** Settings → General → Volume control selects a wide touch slider or circular dial. Both support keyboard/fine steps, larger touch targets and commit on release; the interface separates preview/pending values from confirmed player volume. The choice persists locally. GUI 1.0 keeps its earlier reference control.
 
-**Check the running version:** the GUI 2.0 header and testbench show **GUI 2.12 · MUSIC** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
+**Check the running version:** the GUI 2.0 header and testbench show **GUI 3.1 · TOUCH** plus Git revision when available. Hover for build details. Missing or mismatched backend release information is flagged. If the marker is absent, the new frontend has not loaded. After pulling, restart the server and reload; production also requires a rebuild. The old display-r3 string is only a diagnostics marker.
 
 Open **`/?gui=2&product=1`** for the new music-first interface, or **`/?gui=2&lab=1`** to keep the shared hardware workbench visible. The existing GUI remains available. Simulation Discover/library content is labelled as example data. In live MA mode, GUI2 now loads actual library/search results and artwork through the shared backend. Rivo grouping is a visual example, not a connected player. See [preview, SVG icons and skin contribution guide](docs/gui-2-preview.md).
 

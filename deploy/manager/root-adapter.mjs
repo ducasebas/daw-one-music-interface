@@ -5,6 +5,7 @@ import {updateSettings} from '../../shared/update-settings.js';
 import {canUpdate} from '../ota/policy.mjs';
 import {MusicAssistantTransport} from '../../server/ma-transport.js';
 import {atomicJson,readJson,boundedJson} from './io.mjs';
+import {powerController} from './power.mjs';
 const exec=promisify(execFile);
 const configPath='/etc/daw-one-updater/config.json',base='/var/lib/daw-one-updater';
 const run=async(command,args,options={})=>(await exec(command,args,{timeout:15000,maxBuffer:32768,env:{...process.env,LC_ALL:"C"},...options})).stdout;
@@ -37,12 +38,14 @@ async function trigger(action){
  atomicJson(base+'/request.json',{action});
  try{await run('/usr/bin/systemctl',['start','--no-block','daw-one-update.service']);}catch{rmSync(base+'/request.json',{force:true});throw Error('Update service unavailable; rerun the OTA installer');}return {queued:true};
 }
-export function rootAdapter(){return {
+export function rootAdapter(){const power=powerController({run});return {
  async status(){
   const config=readJson(configPath,{}),installed=readJson(base+'/installed.json',{}),setup=readJson('/var/lib/daw-one-manager/setup.json',{});
-  return {managed:true,simulated:false,configured:existsSync('/etc/daw-one-updater/public.pem')&&['preview','stable'].includes(config.channel),channel:config.channel||null,policy:updateSettings(config.policy||{}),current:installed.commit||null,previousAvailable:typeof installed.previous==='string'&&existsSync(installed.previous),setupComplete:setup.complete===true,networkSupported:existsSync('/usr/bin/nmcli'),audioTestSupported:existsSync('/usr/bin/aplay'),progressDisplay:true};
+  return {managed:true,simulated:false,configured:existsSync('/etc/daw-one-updater/public.pem')&&['preview','stable'].includes(config.channel),channel:config.channel||null,policy:updateSettings(config.policy||{}),current:installed.commit||null,previousAvailable:typeof installed.previous==='string'&&existsSync(installed.previous),setupComplete:setup.complete===true,networkSupported:existsSync('/usr/bin/nmcli'),audioTestSupported:existsSync('/usr/bin/aplay'),progressDisplay:true,powerOffSupported:power.supported(),powerOffQueued:power.queued};
  },
  async perform(command,args){
+  if(power.queued)throw Error('Power off already queued');
+  if(command==='power-off')return power.queue();
   if(command==='policy'){const config=readJson(configPath,{});atomicJson(configPath,{...config,policy:args});return {saved:true,policy:args};}
   if(['check','install','rollback'].includes(command)){
    if(command==='rollback'&&!await idle())throw Error('Stop playback and clear faults before rollback');

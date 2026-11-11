@@ -101,11 +101,11 @@ test("live library browses albums/tracks, plays selected media, restores context
     .getByRole("button", { name: "Speel Real track", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Nu spelen", exact: true }),
+    page.getByRole("heading", { name: "Now Playing", exact: true }),
   ).toBeVisible();
   expect(actions).toEqual([{ id: "track1", option: "replace" }]);
   await page
-    .getByRole("button", { name: "Terug naar muziek", exact: true })
+    .getByRole("button", { name: "Back to music", exact: true })
     .click();
   await expect(
     page.getByRole("button", { name: "Speel Real track", exact: true }),
@@ -129,7 +129,7 @@ test("live search ignores late responses and offers touch entry with read-only c
       .catch(() => {});
   });
   await page.goto("/?gui=2&product=1");
-  await page.getByRole("button", { name: "Zoeken", exact: true }).click();
+  await page.getByRole("button", { name: "Search", exact: true }).click();
   await page.getByRole("textbox", { name: "Zoek echte muziek" }).fill("old");
   await page.waitForTimeout(350);
   await page.getByRole("textbox", { name: "Zoek echte muziek" }).fill("new");

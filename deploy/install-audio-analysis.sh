@@ -3,8 +3,10 @@ set -euo pipefail
 player_id=''
 enable_export=false
 remove=false
+detect=false
 while [[ $# -gt 0 ]]; do
  case "$1" in
+  --detect) detect=true;shift;;
   --player-id) [[ $# -ge 2 ]] || exit 2; player_id=${2,,};shift 2;;
   --enable-export) enable_export=true;shift;;
   --remove) remove=true;shift;;
@@ -24,6 +26,19 @@ if [[ $remove == true ]]; then
  systemctl restart daw-one.service
  echo 'Measurement integration removed; original player unit restored. No ALSA/boot configuration changed.'
  exit 0
+fi
+if [[ $detect == true && -z $player_id ]]; then
+ pid=$(systemctl show -p MainPID --value tunebox-player.service)
+ player_id=$(python3 - "$pid" <<'PY'
+from pathlib import Path
+import sys
+pid=sys.argv[1]
+if not pid.isdecimal() or int(pid)<2:raise SystemExit('Start tunebox-player.service before configuring the visualizer')
+args=Path('/proc/'+pid+'/cmdline').read_bytes().rstrip(b'\0').decode().split('\0')
+try: print(args[args.index('-m')+1].lower())
+except (ValueError,IndexError):raise SystemExit('The running player needs its existing explicit -m MAC; no identity is guessed or changed')
+PY
+ )
 fi
 [[ $player_id =~ ^([0-9a-f]{2}:){5}[0-9a-f]{2}$ ]] || { echo 'Specify the existing Squeezelite player MAC with --player-id';exit 2; }
 [[ $(uname -m) == aarch64 || $(uname -m) == x86_64 ]] || { echo 'This reader requires a native 64-bit glibc Linux player';exit 1; }

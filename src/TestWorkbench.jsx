@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import { panelProfile, panelProfiles } from "../shared/display.js";
 import { BuildBadge } from "./BuildBadge.jsx";
 import React, { useRef, useState, useEffect } from "react";
@@ -93,22 +94,19 @@ export function TestWorkbench({
   return (
     <div className="test-workbench" data-panel={panel}>
       <div className="bench-toolbar">
-        <b>
-          DAW ONE <span>TEST WORKBENCH</span>
+        <b>{tr("DAW ONE ")}<span>{tr("TEST WORKBENCH")}</span>
         </b>
         <span className="bench-mode">
-          {offline
+          {tr(offline
             ? "BACKEND OFFLINE"
             : live
               ? "LIVE MUSIC · HARDWARE SIMULATED"
-              : "SIMULATED DEVICE · SHARED RUNTIME"}
+              : "SIMULATED DEVICE · SHARED RUNTIME")}
         </span>
         <button
           disabled={offline || !view.displayAwake || d.mode === "fault"}
           onClick={onReplayStartup}
-        >
-          Replay startup
-        </button>
+        >{tr("Replay startup")}</button>
         <a
           className="bench-product-link"
           href={
@@ -116,41 +114,39 @@ export function TestWorkbench({
           }
           target="_blank"
           rel="noopener noreferrer"
-        >
-          Product only ↗
-        </a>
+        >{tr("Product only ↗")}</a>
         <div className="bench-build">
           <BuildBadge snapshot={snapshot} offline={offline} />
-          <small>display-r3 diagnostics</small>
+          <small>{tr("display-r3 diagnostics")}</small>
         </div>
       </div>
       <div className="bench-layout">
-        <section className="bench-preview" aria-label="Physical device preview">
+        <section className="bench-preview" aria-label={tr("Physical device preview")}>
           <div className="bench-preview-title">
-            <span>DEVICE EXTERIOR</span>
-            <strong>{offline ? "unknown" : d.mode}</strong>
+            <span>{tr("DEVICE EXTERIOR")}</span>
+            <strong>{tr(offline ? "unknown" : d.mode)}</strong>
           </div>
           <div className="bench-scene" ref={scene}>
             <div
               className="bench-speaker"
               data-driven={view.driven}
-              aria-label={`Left speaker ${view.driven ? "driven" : "silent"}`}
+              aria-label={tr(`Left speaker ${view.driven ? "driven" : "silent"}`)}
             >
               <i />
               <div />
-              <small>L · {view.driven ? "SIGNAL" : "SILENT"}</small>
+              <small>{tr("L · ")}{tr(view.driven ? "SIGNAL" : "SILENT")}</small>
             </div>
             <div
               className="physical-device"
               style={{ maxWidth: caseWidth }}
-              aria-label="DAW ONE exterior"
+              aria-label={tr("DAW ONE exterior")}
             >
               <div className="physical-top" ref={top}>
-                <span>DAW ONE</span>
+                <span>{tr("DAW ONE")}</span>
                 <button
                   className={`top-power ${view.led}`}
                   aria-label={
-                    d.mode === "standby" ? "Wake device" : "Case power button"
+                    tr(d.mode === "standby" ? "Wake device" : "Case power button")
                   }
                   aria-pressed={d.mode === "ready"}
                   disabled={
@@ -164,7 +160,7 @@ export function TestWorkbench({
                 </button>
                 <b
                   className={`top-status case-led ${view.led}`}
-                  aria-label={`Status LED ${view.led}`}
+                  aria-label={tr(`Status LED ${view.led}`)}
                 />
               </div>
               <div className="physical-front">
@@ -176,23 +172,23 @@ export function TestWorkbench({
                   <div
                     className="virtual-display-surface"
                     role="region"
-                    aria-label="DAW ONE product display"
+                    aria-label={tr("DAW ONE product display")}
                     style={{ width: dimensions.width, height: dimensions.height, transform: `scale(${scale})` }}
                   >
-                    {product}
+                    {tr(product)}
                   </div>
                   {!view.displayAwake && !live && panel !== "wall-16-10" && (
                     <button
                       className="screen-sleep"
-                      aria-label="Wake device display"
+                      aria-label={tr("Wake device display")}
                       disabled={offline}
                       onClick={() => send({ type: "presence", value: true })}
                     >
-                      <b>DAW ONE</b>
+                      <b>{tr("DAW ONE")}</b>
                       <span>
-                        {offline
+                        {tr(offline
                           ? "Telemetry unavailable"
-                          : "Touch to wake display"}
+                          : "Touch to wake display")}
                       </span>
                     </button>
                   )}
@@ -206,59 +202,49 @@ export function TestWorkbench({
             <div
               className="bench-speaker"
               data-driven={view.driven}
-              aria-label={`Right speaker ${view.driven ? "driven" : "silent"}`}
+              aria-label={tr(`Right speaker ${view.driven ? "driven" : "silent"}`)}
             >
               <i />
               <div />
-              <small>R · {view.driven ? "SIGNAL" : "SILENT"}</small>
+              <small>{tr("R · ")}{tr(view.driven ? "SIGNAL" : "SILENT")}</small>
             </div>
           </div>
-          <div className="bench-caption" aria-label="Safety explanation">
+          <div className="bench-caption" aria-label={tr("Safety explanation")}>
             {d.faults.length ? (
               <>
-                <span>
-                  SIMULATED · Latched: {d.faults.join(", ")}. Output inhibited.
-                </span>
+                <span>{tr("SIMULATED · Latched: ")}{tr(d.faults.join(", "))}{tr(". Output inhibited.")}</span>
                 <button
                   disabled={offline || live}
                   onClick={() => send({ type: "acknowledge" })}
-                >
-                  Acknowledge faults
-                </button>
+                >{tr("Acknowledge faults")}</button>
               </>
             ) : !d.verified && d.mode === "standby" ? (
-              <span>
-                Safe standby · amplifier remains unverified and off. Restore
-                sensors, then run Playback to verify the simulation.
-              </span>
+              <span>{tr("Safe standby · amplifier remains unverified and off. Restore sensors, then run Playback to verify the simulation.")}</span>
             ) : (
-              <span>
-                Concept enclosure · top-mounted illuminated button · dimensions
-                and electrical behaviour unverified
-              </span>
+              <span>{tr("Concept enclosure · top-mounted illuminated button · dimensions and electrical behaviour unverified")}</span>
             )}
           </div>
           <section
             className="bench-live-events"
-            aria-label="Latest state changes"
+            aria-label={tr("Latest state changes")}
           >
-            <span>LATEST EVENTS</span>
+            <span>{tr("LATEST EVENTS")}</span>
             {(primaryEvents.length ? primaryEvents : events)
               .slice(0, 2)
               .map((e) => (
                 <div key={e.id}>
-                  <time>{e.at.slice(11, 19)}</time>
-                  <b>{e.type}</b>
-                  <span>{e.reason}</span>
+                  <time>{tr(e.at.slice(11, 19))}</time>
+                  <b>{tr(e.type)}</b>
+                  <span>{tr(e.reason)}</span>
                 </div>
               ))}
           </section>
         </section>
         <aside
           className="bench-tools"
-          aria-label="Separate hardware test panel"
+          aria-label={tr("Separate hardware test panel")}
         >
-          <div className="bench-tabs" role="tablist" aria-label="Test panels">
+          <div className="bench-tabs" role="tablist" aria-label={tr("Test panels")}>
             {["Controls", "Modules", "States", "Events"].map((t) => (
               <button
                 key={t}
@@ -267,7 +253,7 @@ export function TestWorkbench({
                 aria-controls="bench-active-panel"
                 onClick={() => setTab(t)}
               >
-                {t}
+                {tr(t)}
               </button>
             ))}
           </div>
@@ -275,20 +261,17 @@ export function TestWorkbench({
             className="bench-tab-content"
             id="bench-active-panel"
             role="tabpanel"
-            aria-label={tab}
+            aria-label={tr(tab)}
           >
             {tab === "Controls" ? (
               live ? (
-                <p>
-                  Hardware simulation controls are disabled while live music is
-                  selected.
-                </p>
+                null
               ) : (
                 <SimulatorPages {...simulatorProps} />
               )
             ) : tab === "Modules" ? (
               <>
-                <div className="bench-modules" aria-label="Simulated modules">
+                <div className="bench-modules" aria-label={tr("Simulated modules")}>
                   {view.modules.map((m) => (
                     <button
                       key={m.id}
@@ -299,31 +282,27 @@ export function TestWorkbench({
                     >
                       <i />
                       <span>
-                        {m.label}
-                        <b>{m.status.toUpperCase()}</b>
+                        {tr(m.label)}
+                        <b>{tr(m.status.toUpperCase())}</b>
                       </span>
                     </button>
                   ))}
                 </div>
                 <div className="bench-module-detail">
-                  <b>{module.label}</b>
-                  <p>{module.detail}</p>
+                  <b>{tr(module.label)}</b>
+                  <p>{tr(module.detail)}</p>
                   <button
                     disabled={offline || live}
                     onClick={() => send(actions[selected][1])}
                   >
-                    {actions[selected][0]}
+                    {tr(actions[selected][0])}
                   </button>
                 </div>
               </>
             ) : tab === "States" ? (
-              <section className="bench-states" aria-label="Device states">
-                <h2>Shared device state</h2>
-                <div className="state-flow">
-                  BOOT → READY ⇄ STANDBY
-                  <br />
-                  FAULT → ACKNOWLEDGE → STANDBY
-                </div>
+              <section className="bench-states" aria-label={tr("Device states")}>
+                <h2>{tr("Shared device state")}</h2>
+                <div className="state-flow">{tr("BOOT → READY ⇄ STANDBY")}<br />{tr("FAULT → ACKNOWLEDGE → STANDBY")}</div>
                 <dl>
                   {[
                     ["Mode", offline ? "unknown" : d.mode],
@@ -337,36 +316,32 @@ export function TestWorkbench({
                     ["Latched faults", d.faults.join(", ") || "none"],
                   ].map(([k, v]) => (
                     <div key={k}>
-                      <dt>{k}</dt>
-                      <dd>{offline ? "unknown" : v}</dd>
+                      <dt>{tr(k)}</dt>
+                      <dd>{tr(offline ? "unknown" : v)}</dd>
                     </div>
                   ))}
                 </dl>
               </section>
             ) : (
-              <section className="bench-history" aria-label="Device timeline">
+              <section className="bench-history" aria-label={tr("Device timeline")}>
                 <div className="log-controls">
                   <button
                     disabled={eventPage === 0}
                     onClick={() => setHistory((v) => Math.max(0, v - 1))}
-                  >
-                    ← Newer
-                  </button>
+                  >{tr("← Newer")}</button>
                   <span>
-                    {eventPage + 1} / {maxPage + 1}
+                    {tr(eventPage + 1)} / {tr(maxPage + 1)}
                   </span>
                   <button
                     disabled={eventPage === maxPage}
                     onClick={() => setHistory((v) => v + 1)}
-                  >
-                    Older →
-                  </button>
+                  >{tr("Older →")}</button>
                 </div>
                 {events.slice(eventPage * 4, eventPage * 4 + 4).map((e) => (
                   <article key={e.id}>
-                    <time>{e.at}</time>
-                    <b>{e.type}</b>
-                    <p>{e.reason}</p>
+                    <time>{tr(e.at)}</time>
+                    <b>{tr(e.type)}</b>
+                    <p>{tr(e.reason)}</p>
                   </article>
                 ))}
               </section>

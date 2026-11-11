@@ -3,6 +3,7 @@ export default defineConfig({
   testDir: "tests/offline",
   outputDir: "test-results/offline",
   use: {
+    launchOptions: process.env.TUNEBOX_CHROMIUM_PATH ? { executablePath: process.env.TUNEBOX_CHROMIUM_PATH } : {},
     baseURL: "http://127.0.0.1:3001",
     viewport: { width: 1280, height: 400 },
     hasTouch: true,

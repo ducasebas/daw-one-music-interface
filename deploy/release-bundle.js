@@ -91,6 +91,7 @@ export function packRelease(root, output) {
       cpSync(join(root, name), join(staging, name), {
         recursive: true,
         dereference: false,
+        filter: path => !path.split(sep).includes('__pycache__') && !path.endsWith('.pyc'),
       });
     // Source workspaces can use restrictive umasks; the service user must read deployed code.
     files(staging); // Reject links/special files before changing any permissions.

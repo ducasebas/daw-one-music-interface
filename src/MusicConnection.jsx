@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import React, { useState } from "react";
 export function MusicConnection({ snapshot, onSnapshot }) {
   const [message, setMessage] = useState("");
@@ -20,50 +21,44 @@ export function MusicConnection({ snapshot, onSnapshot }) {
   return (
     <section
       className="connection-page"
-      aria-label="Music Assistant connection"
+      aria-label={tr("Music Assistant connection")}
     >
       <div className="control-grid">
         <div>
           <b>
-            {snapshot.mode === "music-assistant"
+            {tr(snapshot.mode === "music-assistant"
               ? "MUSIC ASSISTANT"
-              : "SIMULATION"}
+              : "SIMULATION")}
           </b>
           <p>
-            {status.status || "Live connection not configured"} ·{" "}
-            {status.serverVersion || "Server version unknown"}
+            {tr(status.status || "Live connection not configured")} ·{tr(" ")}
+            {tr(status.serverVersion || "Server version unknown")}
           </p>
-          <small>
-            Hardware remains simulated. Live controls target the selected
-            external player.
-          </small>
+          <small>{tr("Hardware remains simulated. Live controls target the selected external player.")}</small>
         </div>
-        <label>
-          Music Assistant player
-          <select
-            aria-label="Music Assistant player"
+        <label>{tr("Music Assistant player")}<select
+            aria-label={tr("Music Assistant player")}
             value={status.playerId || ""}
             disabled={!status.connected}
             onChange={(e) => select(e.target.value)}
           >
-            <option value="">Select a player explicitly</option>
+            <option value="">{tr("Select a player explicitly")}</option>
             {status.players?.map((p) => (
               <option key={p.id} value={p.id} disabled={!p.available}>
-                {p.name}
-                {!p.available ? " · unavailable" : ""}
+                {tr(p.name)}
+                {tr(!p.available ? " · unavailable" : "")}
               </option>
             ))}
           </select>
         </label>
         <p>
-          {status.controlEnabled ? "Control enabled" : "Read-only"} · Volume
-          ceiling {status.volumeLimit ?? "—"}%<br />
-          {status.error ||
-            "Configure URL and credentials on the backend, never in the browser."}
+          {tr(status.controlEnabled ? "Control enabled" : "Read-only")}{tr(" · Volume ceiling ")}{tr(status.volumeLimit ?? "—")}%<br />
+          {tr(status.error ||
+            "Configure URL and credentials on the backend, never in the browser.")}
         </p>
         <p role="status">
-          {message ||
-            "See docs/music-assistant.md for setup and local-network access."}
+          {tr(message ||
+            "See docs/music-assistant.md for setup and local-network access.")}
         </p>
       </div>
     </section>

@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import React, { useRef } from "react";
 export function Pager({ label, items, index, onChange, children }) {
   const start = useRef(null);
@@ -6,7 +7,7 @@ export function Pager({ label, items, index, onChange, children }) {
   return (
     <section
       className="pager"
-      aria-label={label}
+      aria-label={tr(label)}
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.target !== e.currentTarget) return;
@@ -43,29 +44,29 @@ export function Pager({ label, items, index, onChange, children }) {
     >
       <div className="pager-bar">
         <select
-          aria-label={`${label} page`}
+          aria-label={tr(`${label} page`)}
           value={index}
           onChange={(e) => onChange(+e.target.value)}
         >
           {items.map((title, i) => (
             <option key={title} value={i}>
-              {String(i + 1).padStart(2, "0")} · {title}
+              {tr(String(i + 1).padStart(2, "0"))} · {tr(title)}
             </option>
           ))}
         </select>
         <span className="page-count" aria-live="polite">
-          {index + 1} / {items.length}
+          {tr(index + 1)} / {tr(items.length)}
         </span>
-        <span className="swipe-hint">SWIPE TO EXPLORE</span>
+        <span className="swipe-hint">{tr("SWIPE TO EXPLORE")}</span>
         <button
-          aria-label={`Previous ${label} page`}
+          aria-label={tr(`Previous ${label} page`)}
           disabled={index === 0}
           onClick={() => move(-1)}
         >
           ←
         </button>
         <button
-          aria-label={`Next ${label} page`}
+          aria-label={tr(`Next ${label} page`)}
           disabled={index === items.length - 1}
           onClick={() => move(1)}
         >
@@ -73,7 +74,7 @@ export function Pager({ label, items, index, onChange, children }) {
         </button>
       </div>
       <div className="page-body" data-page={items[index]}>
-        {children}
+        {tr(children)}
       </div>
     </section>
   );

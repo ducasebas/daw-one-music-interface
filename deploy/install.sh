@@ -6,14 +6,18 @@ prebuilt=false
 ma_mode=ask
 updates_mode=ask
 update_key=""
+quiet_boot=false
+audio_analysis=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --quiet-boot) quiet_boot=true; shift ;;
+    --audio-analysis) audio_analysis=true; shift ;;
     --updates) [[ $# -ge 2 ]] || exit 2; updates_mode=$2; shift 2 ;;
     --update-key) [[ $# -ge 2 ]] || exit 2; update_key=$2; shift 2 ;;
     --target) [[ $# -ge 2 ]] || { echo 'Missing --target value' >&2; exit 2; }; target=$2; shift 2 ;;
     --prebuilt) prebuilt=true; shift ;;
     --music-assistant) [[ $# -ge 2 ]] || { echo "Missing --music-assistant value" >&2; exit 2; }; ma_mode=$2; shift 2 ;;
-    *) echo 'Usage: install.sh [--target auto|pi4|pi3-experimental|vm] [--prebuilt] [--music-assistant ask|skip|install] [--updates ask|auto|notify|skip] [--update-key PATH]' >&2; exit 2 ;;
+    *) echo 'Usage: install.sh [--target auto|pi4|pi3-experimental|vm] [--prebuilt] [--music-assistant ask|skip|install] [--updates ask|auto|notify|skip] [--update-key PATH] [--quiet-boot] [--audio-analysis]' >&2; exit 2 ;;
   esac
 done
 case "$target" in auto|pi4|pi3-experimental|vm) ;; *) echo 'Unknown installation target.' >&2; exit 2 ;; esac
@@ -51,6 +55,7 @@ model=''
 if [[ -r /proc/device-tree/model ]]; then model=$(tr -d '\0' </proc/device-tree/model); fi
 if [[ $target == auto ]]; then target=$(daw_detect_install_target "$model"); fi
 echo "Detected/selected TuneBox target: $target"
+if [[ $quiet_boot == true && $target != pi4 ]]; then echo 'Quiet boot requires a Raspberry Pi 4.' >&2; exit 2; fi
 if [[ $target == pi3-experimental && $prebuilt != true ]]; then
   echo 'Pi 3 experimental requires --prebuilt: build/package on the Mac first.' >&2; exit 2
 fi
@@ -110,6 +115,16 @@ if [[ ! -f /etc/daw-one.env ]]; then
   chmod 640 /etc/daw-one.env
 fi
 bash "$repo/deploy/install-manager.sh"
+if [[ $target == pi4 && -d /sys/class/backlight/10-0045 ]]; then bash "$repo/deploy/install-display.sh"; fi
+if [[ $quiet_boot == true ]]; then
+  [[ $target == pi4 ]] || { echo 'Quiet boot requires a Raspberry Pi 4.'; exit 2; }
+  python3 "$repo/deploy/display/quiet-boot.py"
+fi
+if [[ $audio_analysis == true ]]; then
+  if ! bash "$repo/deploy/install-audio-analysis.sh" --detect --enable-export; then
+    echo 'TuneBox installed; PCM analysis needs attention. See Settings > Audio and docs/audio-analysis.md.'
+  fi
+fi
 if [[ $updates_mode != skip ]]; then bash "$repo/deploy/install-ota.sh" "$update_key" preview "$updates_mode"; fi
 systemctl daemon-reload
 systemctl enable daw-one.service daw-one-health.timer
@@ -121,7 +136,7 @@ for attempt in {1..30}; do
   sleep 1
 done
 runuser -u dawone -- node /opt/daw-one/server/doctor.js
-echo 'Application backend installed; real hardware remains disabled. Read docs/pi-first-run.md before enabling kiosk. No boot configuration changed.'
+echo 'TuneBox installed. Amplifier control remains inhibited. See docs/touch-update.md for display services and quiet-boot options.'
 
 if [[ $ma_mode != skip ]]; then
   ma_action=--offer

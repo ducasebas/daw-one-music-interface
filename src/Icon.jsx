@@ -1,6 +1,9 @@
 import React from "react";
 // TuneBox outline icons: one 24-unit grid, rounded caps and shared stroke tokens.
 const paths = {
+  power: "M12 2v10M6 5a9 9 0 1 0 12 0",
+  temperature: "M10 4a2 2 0 0 1 4 0v10a4 4 0 1 1-4 0ZM12 8v9M10 19h4",
+  sun: "M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0M12 1v3M12 20v3M1 12h3M20 12h3M4 4l2 2M18 18l2 2M4 20l2-2M18 6l2-2",
   bell: "M5 17h14l-2-3V9a5 5 0 0 0-10 0v5ZM10 21h4",
   moon: "M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10Z",
   status: "M9 3h6v3H9ZM7 5H4v16h16V5h-3M7 13h3l2-4 2 8 2-4h2",

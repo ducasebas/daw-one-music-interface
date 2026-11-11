@@ -7,10 +7,12 @@ export const defaults = {
   brightness: 80,
   artwork: "cover",
   correction: 0,
+  startupAnimation: 'auto',
 };
 export function settings(input = {}) {
   input = input && typeof input === "object" ? input : {};
   return {
+    startupAnimation: ['auto','video','still'].includes(input.startupAnimation)?input.startupAnimation:'auto',
     screen: screenSettings(input.screen),
     visualizer: ["meters","spectrum"].includes(input.visualizer)?input.visualizer:"off",
     visualizerBands: input.visualizerBands===16?16:32,

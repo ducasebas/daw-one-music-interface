@@ -1,5 +1,5 @@
 [Unit]
-Description=DAW ONE virtual device (no real hardware control)
+Description=TuneBox music interface and device state
 After=network.target
 [Service]
 Type=simple

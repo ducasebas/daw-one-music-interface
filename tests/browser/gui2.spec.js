@@ -5,10 +5,10 @@ test("GUI2 music journey works at 1280x400 through the shared runtime", async ({
 }) => {
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&product=1");
-  await page.getByRole("button", { name: "Mijn muziek", exact: true }).click();
+  await page.getByRole("button", { name: "My music", exact: true }).click();
   await page.getByRole("button", { name: "Dive Tycho" }).click();
-  await page.getByRole("button", { name: "Als volgende", exact: true }).click();
-  await page.getByRole("button", { name: "Wachtrij", exact: true }).click();
+  await page.getByRole("button", { name: "Play next", exact: true }).click();
+  await page.getByRole("button", { name: "Queue", exact: true }).click();
   await expect
     .poll(
       async () =>
@@ -23,25 +23,25 @@ test("GUI2 music journey works at 1280x400 through the shared runtime", async ({
       return s.playback.queue[s.playback.index].title;
     })
     .toBe("A Walk");
-  await page.getByRole("button", { name: "Zoeken", exact: true }).click();
+  await page.getByRole("button", { name: "Search", exact: true }).click();
   for (const k of "tycho")
     await page.getByRole("button", { name: `Toets ${k}`, exact: true }).click();
-  await expect(page.getByRole("textbox", { name: "Zoek muziek" })).toHaveValue(
+  await expect(page.getByRole("textbox", { name: "Search music" })).toHaveValue(
     "tycho",
   );
   await expect(
     page.getByRole("button", { name: "A Walk Tycho ›" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Kamers", exact: true }).click();
-  await page.getByRole("button", { name: "Probeer voorbeeldgroep" }).click();
-  await expect(page.getByText("Voorbeeldgroep met TuneBox")).toBeVisible();
+  await page.getByRole("button", { name: "Spaces", exact: true }).click();
+  await page.getByRole("button", { name: "Try example group" }).click();
+  await expect(page.getByText("Example group with TuneBox")).toBeVisible();
   await expect(
-    page.getByText("Rivo-bediening is uitsluitend", { exact: false }),
+    page.getByText("Rivo grouping is a visual example.", { exact: false }),
   ).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(
     400,
   );
-  await page.getByRole("button", { name: "Ontdek", exact: true }).click();
+  await page.getByRole("button", { name: "Discover", exact: true }).click();
   await page.screenshot({ path: "test-results/gui2-discover.png" });
 });
 test("GUI2 all sections fit the native screen, use shared settings and show faults", async ({
@@ -50,12 +50,12 @@ test("GUI2 all sections fit the native screen, use shared settings and show faul
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&screen=1&display=dsi-production");
   for (const name of [
-    "Ontdek",
-    "Mijn muziek",
-    "Zoeken",
-    "Wachtrij",
-    "Kamers",
-    "Instellingen",
+    "Discover",
+    "My music",
+    "Search",
+    "Queue",
+    "Spaces",
+    "Settings",
   ]) {
     await page.getByRole("button", { name, exact: true }).click();
     const b = await page.locator(".music2").boundingBox();
@@ -70,14 +70,14 @@ test("GUI2 all sections fit the native screen, use shared settings and show faul
   await page.getByLabel("Settings page", { exact: true }).selectOption("1");
   await expect(page.getByLabel("Skin", { exact: true })).toBeVisible();
   await page.request.post("/api/event", { data: { type: "amplifier-fault" } });
-  await expect(page.locator(".m2-player-status")).toContainText("Apparaatfout");
+  await expect(page.locator(".m2-player-status")).toContainText("Device fault");
   const state = await (await page.request.get("/api/state")).json();
   expect(state.device.amplifierEnabled).toBe(false);
-  await page.getByRole("button", { name: "Open Nu spelen" }).click();
+  await page.getByRole("button", { name: "Open Now Playing" }).click();
   await page
     .getByRole("button", { name: "Video Artwork", exact: true })
     .click();
-  await expect(page.getByText("END-SYNC · MOCK")).toBeVisible();
+  await expect(page.getByText(/Video synced to Music Assistant|No video linked to this track/)).toBeVisible();
 });
 
 test("GUI2 album playback returns to the same search context", async ({
@@ -85,19 +85,19 @@ test("GUI2 album playback returns to the same search context", async ({
 }) => {
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&product=1");
-  await page.getByRole("button", { name: "Zoeken", exact: true }).click();
-  await page.getByLabel("Zoek muziek").fill("tycho");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await page.getByLabel("Search music").fill("tycho");
   await page.getByRole("button", { name: "A Walk Tycho ›" }).click();
-  await page.getByRole("button", { name: "Speel nu", exact: true }).click();
+  await page.getByRole("button", { name: "Play now", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "A Walk", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Terug naar muziek" }).click();
+  await page.getByRole("button", { name: "Back to music" }).click();
   await expect(
     page.getByRole("heading", { name: "Dive", exact: true, level: 1 }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Terug naar overzicht" }).click();
-  await expect(page.getByLabel("Zoek muziek")).toHaveValue("tycho");
+  await page.getByRole("button", { name: "Back to overview" }).click();
+  await expect(page.getByLabel("Search music")).toHaveValue("tycho");
   await expect(page.locator(".music2")).toHaveAttribute("data-motion", "back");
 });
 
@@ -110,7 +110,7 @@ test("GUI2 reduced motion and delayed command feedback keep navigation available
   const activity = page.waitForResponse(
     (r) => r.url().endsWith("/api/activity") && r.request().method() === "POST",
   );
-  await page.getByRole("button", { name: "Ontdek", exact: true }).click();
+  await page.getByRole("button", { name: "Discover", exact: true }).click();
   expect((await activity).status()).toBe(200);
   expect(
     await page
@@ -121,17 +121,17 @@ test("GUI2 reduced motion and delayed command feedback keep navigation available
     await new Promise((r) => setTimeout(r, 600));
     await route.continue();
   });
-  await page.getByRole("button", { name: "Volgend nummer" }).click();
+  await page.getByRole("button", { name: "Next track" }).click();
   await expect(page.locator(".m2-player-status")).toHaveAttribute(
     "data-feedback",
     "pending",
   );
   await expect(
-    page.getByRole("button", { name: "Volgend nummer" }),
+    page.getByRole("button", { name: "Next track" }),
   ).toBeDisabled();
-  await page.getByRole("button", { name: "Mijn muziek", exact: true }).click();
+  await page.getByRole("button", { name: "My music", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Mijn muziek", exact: true }),
+    page.getByRole("heading", { name: "My music", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".m2-player-status")).toHaveAttribute(
     "data-feedback",
@@ -140,7 +140,7 @@ test("GUI2 reduced motion and delayed command feedback keep navigation available
   await page.goto("/demo.html");
   await expect(page).toHaveURL(/gui=2&lab=1/);
   await expect(
-    page.getByRole("navigation", { name: "Muzieknavigatie" }),
+    page.getByRole("navigation", { name: "Music navigation" }),
   ).toBeVisible();
 });
 
@@ -162,11 +162,11 @@ test("GUI2 six skins keep shared navigation and native bounds with honest diagno
     await chooseSkin(page, id);
     await expect(page.locator(".music2")).toHaveAttribute("data-skin", id);
     for (const name of [
-      "Ontdek",
-      "Mijn muziek",
-      "Zoeken",
-      "Wachtrij",
-      "Kamers",
+      "Discover",
+      "My music",
+      "Search",
+      "Queue",
+      "Spaces",
     ]) {
       await page.getByRole("button", { name, exact: true }).click();
       expect(
@@ -175,17 +175,17 @@ test("GUI2 six skins keep shared navigation and native bounds with honest diagno
           .evaluate((e) => e.scrollHeight <= e.clientHeight + 1),
       ).toBeTruthy();
     }
-    await page.getByRole("button", { name: "Open Nu spelen" }).click();
+    await page.getByRole("button", { name: "Open Now Playing" }).click();
     const box = await page.locator(".music2").boundingBox();
     expect(box.width).toBe(1280);
     expect(box.height).toBe(400);
     if (id === "nerd-mode")
-      await expect(page.getByLabel("Apparaatdiagnostiek")).toContainText(
+      await expect(page.getByLabel("Device diagnostics")).toContainText(
         "UNVERIFIED",
       );
     if (["reference-dark", "warm-bronze"].includes(id))
       await expect(
-        page.getByLabel("Stereoniveau niet beschikbaar"),
+        page.getByLabel("Stereo levels unavailable"),
       ).toContainText("UNAVAILABLE");
     const icons = await page
       .locator("svg.tb-icon")
@@ -212,10 +212,10 @@ test("visible frontend release identifies missing and mismatched backend version
 }) => {
   await page.goto("/?gui=2&product=1");
   await expect(
-    page.getByLabel("Softwareversie", { exact: true }),
-  ).toContainText("GUI 3.0 · WALL");
+    page.getByLabel("Software version", { exact: true }),
+  ).toContainText("GUI 3.1 · TOUCH");
   await expect(
-    page.getByLabel("Softwareversie", { exact: true }),
+    page.getByLabel("Software version", { exact: true }),
   ).toHaveAttribute("data-alignment", "matched");
   await page.goto("/?gui=2&lab=1");
   const popup = page.waitForEvent("popup");
@@ -223,8 +223,8 @@ test("visible frontend release identifies missing and mismatched backend version
   const product = await popup;
   await expect(product).toHaveURL(/gui=2/);
   await expect(
-    product.getByLabel("Softwareversie", { exact: true }),
-  ).toContainText("GUI 3.0 · WALL");
+    product.getByLabel("Software version", { exact: true }),
+  ).toContainText("GUI 3.1 · TOUCH");
   await product.close();
   await page.goto("/?gui=2&product=1");
   const snapshot = await (await page.request.get("/api/state")).json();
@@ -234,8 +234,8 @@ test("visible frontend release identifies missing and mismatched backend version
   );
   await page.reload();
   await expect(
-    page.getByLabel("Softwareversie", { exact: true }),
-  ).toContainText("BACKEND ANDERE VERSIE");
+    page.getByLabel("Software version", { exact: true }),
+  ).toContainText("BACKEND VERSION MISMATCH");
 });
 
 test("primary play pause glyphs remain centred and symmetric across skins", async ({
@@ -253,7 +253,7 @@ test("primary play pause glyphs remain centred and symmetric across skins", asyn
     "nerd-mode",
   ]) {
     await chooseSkin(page, id);
-    const pause = page.getByRole("button", { name: "Pauze", exact: true });
+    const pause = page.getByRole("button", { name: "Pause", exact: true });
     const button = await pause.boundingBox(),
       icon = await pause.locator("svg").boundingBox();
     expect(
@@ -269,7 +269,7 @@ test("primary play pause glyphs remain centred and symmetric across skins", asyn
     expect(bars.x).toBe(12);
     expect(bars.y).toBe(12);
     await pause.click();
-    const play = page.getByRole("button", { name: "Afspelen", exact: true });
+    const play = page.getByRole("button", { name: "Play", exact: true });
     await expect(play.locator("svg")).toHaveAttribute("data-icon", "play");
     expect(
       await play.locator("path").evaluate((e) => {
@@ -288,29 +288,29 @@ test("music menu edge flows preserve favourites and show empty search and radio 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&product=1");
-  await page.getByRole("button", { name: "Mijn muziek", exact: true }).click();
-  await page.getByRole("button", { name: "Favorieten", exact: true }).click();
-  await expect(page.getByText("Jouw muziek, dichtbij.")).toBeVisible();
+  await page.getByRole("button", { name: "My music", exact: true }).click();
+  await page.getByRole("button", { name: "Favourites", exact: true }).click();
+  await expect(page.getByText("Your music, close by.")).toBeVisible();
   await page.getByRole("button", { name: "Albums", exact: true }).click();
   await page.getByRole("button", { name: "Dive Tycho" }).click();
   await page
-    .getByRole("button", { name: "Bewaar favoriet", exact: true })
+    .getByRole("button", { name: "Save favourite", exact: true })
     .click();
-  await page.getByRole("button", { name: "Terug naar overzicht" }).click();
-  await page.getByRole("button", { name: "Favorieten", exact: true }).click();
+  await page.getByRole("button", { name: "Back to overview" }).click();
+  await page.getByRole("button", { name: "Favourites", exact: true }).click();
   await expect(page.getByRole("button", { name: "Dive Tycho" })).toBeVisible();
   await page.reload();
-  await page.getByRole("button", { name: "Mijn muziek", exact: true }).click();
-  await page.getByRole("button", { name: "Favorieten", exact: true }).click();
+  await page.getByRole("button", { name: "My music", exact: true }).click();
+  await page.getByRole("button", { name: "Favourites", exact: true }).click();
   await expect(page.getByRole("button", { name: "Dive Tycho" })).toBeVisible();
   await page.getByRole("button", { name: "Radio", exact: true }).click();
   await expect(
-    page.getByText("Geen radiostream verbonden", { exact: false }),
+    page.getByText("No radio stream connected", { exact: false }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Zoeken", exact: true }).click();
-  await page.getByLabel("Zoek muziek").fill("no such track xyz");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await page.getByLabel("Search music").fill("no such track xyz");
   await expect(
-    page.getByText("Geen resultaten voor", { exact: false }),
+    page.getByText("No results for", { exact: false }),
   ).toBeVisible();
 });
 
@@ -320,7 +320,7 @@ test("transport visual hierarchy gives primary glyph more weight and mirrors ski
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&product=1");
-  await page.getByRole("button", { name: "Ontdek", exact: true }).click();
+  await page.getByRole("button", { name: "Discover", exact: true }).click();
   const group = page.locator(".m2-transport");
   const sizes = await group.locator("button").evaluateAll((buttons) =>
     buttons.map((b) => {
@@ -348,9 +348,9 @@ test("transport visual hierarchy gives primary glyph more weight and mirrors ski
     path: "test-results/transport-pause-close.png",
     scale: "css",
   });
-  await page.getByRole("button", { name: "Pauze", exact: true }).click();
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Afspelen", exact: true }),
+    page.getByRole("button", { name: "Play", exact: true }),
   ).toBeVisible();
   await group.screenshot({
     path: "test-results/transport-play-close.png",
@@ -365,9 +365,9 @@ test("music header has network status instead of skin configuration and never in
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&product=1");
   await expect(page.locator(".m2-header select")).toHaveCount(0);
-  await page.getByLabel("Netwerkstatus", { exact: true }).click();
+  await page.getByLabel("Network status", { exact: true }).click();
   await expect(
-    page.getByText("Wi-Fi-signaalsterkte niet gemeten.", { exact: false }),
+    page.getByText("Wi-Fi signal strength unavailable.", { exact: false }),
   ).toBeVisible();
   await expect(page.locator(".m2-network")).toHaveAttribute(
     "data-signal",
@@ -382,7 +382,7 @@ test("music header has network status instead of skin configuration and never in
     "data-state",
     "unavailable",
   );
-  await page.getByRole("button", { name: "Instellingen", exact: true }).click();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByLabel("Settings page", { exact: true }).selectOption("1");
   await expect(page.getByLabel("Skin", { exact: true })).toBeVisible();
 });

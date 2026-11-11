@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import React,{createContext,useContext,useEffect,useRef,useState,useCallback} from 'react';
 import {updatePhases} from '../shared/update-settings.js';
 const Context=createContext(null);
@@ -18,12 +19,12 @@ export function DeviceUpdatesProvider({children}){
   catch(error){setNotice(error.name==='TimeoutError'?'Verbinding onderbroken; controleer de apparaatstatus voordat je opnieuw probeert':error.message);throw error;}
   finally{setPending(false);}
  },[refresh]);
- return <Context.Provider value={{info,pending,notice,action,refresh}}>{children}</Context.Provider>;
+ return <Context.Provider value={{info,pending,notice,action,refresh}}>{tr(children)}</Context.Provider>;
 }
 export const useDeviceUpdates=()=>useContext(Context);
 export function UpdateProgress({info,compact=false}){
  const active=updatePhases.includes(info?.status),percent=typeof info?.percent==='number'?info.percent:null;
- return <section className={'update-progress '+(compact?'compact':'')} aria-label="Updatevoortgang" aria-live="polite"><small>{info?.manager?.simulated?'GESIMULEERDE UPDATE · GEEN SOFTWAREWIJZIGING':'DAW TUNEBOX · SOFTWARE'}</small><h3>{phaseLabels[info?.status]||info?.status||'Controleren…'}</h3>{active&&<progress aria-label="Updatevoortgang" max="100" {...(percent!==null?{value:percent}:{})}/>}<p>{info?.offline?'Backend start opnieuw · voortgang wordt hersteld zodra hij bereikbaar is':percent!==null?`${percent}% gedownload`:active?'Instellingen en Music Assistant-configuratie blijven behouden.':'Updates installeren zodra het apparaat veilig beschikbaar is.'}</p>{active&&<ol className="update-steps" aria-label="Updatestappen">{['downloading','verifying','preparing','installing','restarting','checking-health'].map((phase,i)=><li key={phase} aria-current={info.status===phase?'step':undefined}>{i+1}<span>{phaseLabels[phase]}</span></li>)}</ol>}</section>;
+ return <section className={'update-progress '+(compact?'compact':'')} aria-label={tr("Updatevoortgang")} aria-live="polite"><small>{tr(info?.manager?.simulated?'GESIMULEERDE UPDATE · GEEN SOFTWAREWIJZIGING':'DAW TUNEBOX · SOFTWARE')}</small><h3>{tr(phaseLabels[info?.status]||info?.status||'Controleren…')}</h3>{active&&<progress aria-label={tr("Updatevoortgang")} max="100" {...(percent!==null?{value:percent}:{})}/>}<p>{tr(info?.offline?'Backend start opnieuw · voortgang wordt hersteld zodra hij bereikbaar is':percent!==null?`${percent}% gedownload`:active?'Instellingen en Music Assistant-configuratie blijven behouden.':'Updates installeren zodra het apparaat veilig beschikbaar is.')}</p>{active&&<ol className="update-steps" aria-label={tr("Updatestappen")}>{['downloading','verifying','preparing','installing','restarting','checking-health'].map((phase,i)=><li key={phase} aria-current={info.status===phase?'step':undefined}>{tr(i+1)}<span>{tr(phaseLabels[phase])}</span></li>)}</ol>}</section>;
 }
 export function GlobalUpdateProgress(){
  const {info}=useDeviceUpdates();const wasBusy=useRef(false);

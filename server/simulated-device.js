@@ -11,8 +11,9 @@ export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,o
  const report=status=>{progress={status,checkedAt:new Date().toISOString(),percent:null};onEvent(status);};
  const phase=async status=>{report(status);await new Promise(r=>setTimeout(r,delay));};
  const manager=new DeviceManager({
-  status:async()=>({managed:true,simulated:true,configured:true,channel:'preview',policy,current:current.commit,previousAvailable:!!previous,setupComplete:saved.setupComplete!==false,networkSupported:true,audioTestSupported:true,progressDisplay:false}),
+  status:async()=>({managed:true,simulated:true,configured:true,channel:'preview',policy,current:current.commit,previousAvailable:!!previous,setupComplete:saved.setupComplete!==false,networkSupported:true,audioTestSupported:true,progressDisplay:false,powerOffSupported:true}),
   async perform(command,args){
+   if(command==='power-off'){if(running)throw Error('Wait for the software update to finish before powering off');return {queued:true,simulated:true,powerOff:true};}
    if(command==='policy'){policy=args;save();return {saved:true,policy};}
    if(command==='network')return {supported:true,connected:true,simulated:true,interfaces:[{name:'wlan0',type:'wifi',state:'connected'}]};
    if(command==='wifi')return {connected:true,simulated:true};

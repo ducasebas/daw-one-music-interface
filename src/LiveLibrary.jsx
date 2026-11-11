@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import React, { useState, useEffect, useRef } from "react";
 import { Artwork } from "./Artwork.jsx";
 import { Icon } from "./Icon.jsx";
@@ -129,23 +130,23 @@ export function LiveLibrary({
       <div className="live-library-bar">
         {parent ? (
           <button
-            aria-label="Terug naar bibliotheek"
+            aria-label={tr("Terug naar bibliotheek")}
             onClick={() => {
               const last = trail.at(-1) || { parent: null, offset: 0 };
               change({ ...last, trail: trail.slice(0, -1) });
             }}
           >
-            ← {parent.name}
+            ← {tr(parent.name)}
           </button>
         ) : view === "search" ? (
           <label className="live-search-input">
             <Icon name="search" />
             <input
-              aria-label="Zoek echte muziek"
+              aria-label={tr("Zoek echte muziek")}
               value={q}
               maxLength={120}
               onChange={(e) => change({ q: e.target.value, offset: 0 })}
-              placeholder="Zoek in Music Assistant"
+              placeholder={tr("Zoek in Music Assistant")}
             />
           </label>
         ) : (
@@ -156,38 +157,31 @@ export function LiveLibrary({
                 aria-pressed={kind === id}
                 onClick={() => change({ kind: id, offset: 0, parent: null })}
               >
-                {label}
+                {tr(label)}
               </button>
             ))}
             <label>
               <input
-                aria-label="Alleen favorieten"
+                aria-label={tr("Alleen favorieten")}
                 type="checkbox"
                 checked={favorite}
                 onChange={(e) =>
                   change({ favorite: e.target.checked, offset: 0 })
                 }
-              />{" "}
-              Favorieten
-            </label>
+              />{tr(" ")}{tr("Favorieten")}</label>
           </>
         )}
       </div>
       <div className="live-library-results" aria-busy={loading}>
         {loading ? (
-          <p role="status">Muziek laden…</p>
+          <p role="status">{tr("Muziek laden…")}</p>
         ) : error ? (
           <div role="alert">
-            {error}
-            <button onClick={() => change({ offset, refresh: Date.now() })}>
-              Opnieuw proberen
-            </button>
+            {tr(error)}
+            <button onClick={() => change({ offset, refresh: Date.now() })}>{tr("Opnieuw proberen")}</button>
           </div>
         ) : !result.items.length ? (
-          <p>
-            Geen muziek gevonden · controleer je bibliotheek en gekoppelde
-            bronnen in Music Assistant
-          </p>
+          <p>{tr("Geen muziek gevonden · controleer je bibliotheek en gekoppelde bronnen in Music Assistant")}</p>
         ) : (
           <div className="live-media-grid">
             {result.items.map((item) => (
@@ -199,14 +193,14 @@ export function LiveLibrary({
                     pending
                   }
                   onClick={() => open(item)}
-                  aria-label={`Open ${item.name}`}
+                  aria-label={tr(`Open ${item.name}`)}
                 >
-                  <Artwork src={item.artwork} alt={item.name} />
+                  <Artwork src={item.artwork} alt={tr(item.name)} />
                   <span>
-                    <b>{item.name}</b>
+                    <b>{tr(item.name)}</b>
                     <small>
-                      {item.artist || item.type}
-                      {item.favorite ? " · ♥" : ""}
+                      {tr(item.artist || item.type)}
+                      {tr(item.favorite ? " · ♥" : "")}
                     </small>
                   </span>
                 </button>
@@ -214,22 +208,20 @@ export function LiveLibrary({
                   {item.type !== "artist" && (
                     <>
                       <button
-                        aria-label={`Speel ${item.name}`}
+                        aria-label={tr(`Speel ${item.name}`)}
                         disabled={!controls || !item.available || pending}
                         onClick={() => play(item, "replace")}
                       >
                         <Icon name="play" size={14} />
-                        <span>Speel</span>
+                        <span>{tr("Speel")}</span>
                       </button>
                       <button
-                        aria-label={`Als volgende ${item.name}`}
+                        aria-label={tr(`Als volgende ${item.name}`)}
                         disabled={!controls || !item.available || pending}
                         onClick={() => play(item, "next")}
-                      >
-                        Volgende
-                      </button>
+                      >{tr("Volgende")}</button>
                       <button
-                        aria-label={`Voeg toe ${item.name}`}
+                        aria-label={tr(`Voeg toe ${item.name}`)}
                         disabled={!controls || !item.available || pending}
                         onClick={() => play(item, "add")}
                       >
@@ -237,7 +229,7 @@ export function LiveLibrary({
                       </button>
                     </>
                   )}
-                  {!item.available && <small>Niet beschikbaar</small>}
+                  {!item.available && <small>{tr("Niet beschikbaar")}</small>}
                 </div>
               </article>
             ))}
@@ -248,47 +240,41 @@ export function LiveLibrary({
         <button
           disabled={loading || offset === 0}
           onClick={() => change({ offset: Math.max(0, offset - 3) })}
-        >
-          ← Vorige
-        </button>
+        >{tr("← Vorige")}</button>
         <small role="status">
-          {message ||
-            `${parent?.name || kinds.find((k) => k[0] === kind)?.[1] || "Muziek"} · pagina ${Math.floor(offset / 3) + 1}${!snapshot.musicAssistant?.controlEnabled ? " · alleen-lezen" : ""}`}
+          {tr(message ||
+            `${parent?.name || kinds.find((k) => k[0] === kind)?.[1] || "Muziek"} · pagina ${Math.floor(offset / 3) + 1}${!snapshot.musicAssistant?.controlEnabled ? " · alleen-lezen" : ""}`)}
         </small>
         <button
           disabled={loading || !result.hasMore}
           onClick={() => change({ offset: offset + 3 })}
-        >
-          Volgende →
-        </button>
+        >{tr("Volgende →")}</button>
       </div>
     </>
   );
   return (
     <div
       className={`live-library ${view === "search" && !parent ? "with-keyboard" : ""}`}
-      aria-label="Music Assistant bibliotheek"
+      aria-label={tr("Music Assistant bibliotheek")}
     >
-      <div className="live-library-main">{body}</div>
+      <div className="live-library-main">{tr(body)}</div>
       {view === "search" && !parent && (
-        <div className="live-keyboard" aria-label="Zoektoetsenbord">
+        <div className="live-keyboard" aria-label={tr("Zoektoetsenbord")}>
           {"qwertyuiopasdfghjklzxcvbnm".split("").map((k) => (
             <button
               key={k}
-              aria-label={`Zoektoets ${k}`}
+              aria-label={tr(`Zoektoets ${k}`)}
               onClick={() => change({ q: q + k, offset: 0 })}
             >
-              {k}
+              {tr(k)}
             </button>
           ))}
           <button
-            aria-label="Zoekspatie"
+            aria-label={tr("Zoekspatie")}
             onClick={() => change({ q: q + " ", offset: 0 })}
-          >
-            Spatie
-          </button>
+          >{tr("Spatie")}</button>
           <button
-            aria-label="Zoekwissen"
+            aria-label={tr("Zoekwissen")}
             onClick={() => change({ q: q.slice(0, -1), offset: 0 })}
           >
             ⌫

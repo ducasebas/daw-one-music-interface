@@ -1,8 +1,9 @@
+import {tr} from "../shared/i18n.js";
 import {AudioVisualizer} from "./AudioVisualizer.jsx";
 import React from "react";
 export function StereoMeters() {
   return (
-    <div className="stereo-meters" aria-label="Audio meters unavailable">
+    <div className="stereo-meters" aria-label={tr("Audio meters unavailable")}>
       {["L", "R"].map((channel) => (
         <div className="stereo-meter" key={channel}>
           <svg viewBox="0 0 150 88" aria-hidden="true">
@@ -24,12 +25,12 @@ export function StereoMeters() {
               +6
             </text>
             <text x="75" y="78" textAnchor="middle">
-              {channel}
+              {tr(channel)}
             </text>
           </svg>
         </div>
       ))}
-      <small>LEVEL SIGNAL UNAVAILABLE</small>
+      <small>{tr("LEVEL SIGNAL UNAVAILABLE")}</small>
     </div>
   );
 }
@@ -40,8 +41,8 @@ export function ReferenceAside({ layout, snapshot, prefs, update }) {
   if(prefs.visualizer&&prefs.visualizer!=="off")return <AudioVisualizer mode={prefs.visualizer} bands={prefs.visualizerBands}/>;
   if (layout === "nerd-mode")
     return (
-      <section className="reference-diagnostics" aria-label="Nerd diagnostics">
-        <h2>SYSTEM & DIAGNOSTICS</h2>
+      <section className="reference-diagnostics" aria-label={tr("Nerd diagnostics")}>
+        <h2>{tr("SYSTEM & DIAGNOSTICS")}</h2>
         <dl>
           {[
             ["Source", live ? "Music Assistant" : "Mock library"],
@@ -61,8 +62,8 @@ export function ReferenceAside({ layout, snapshot, prefs, update }) {
             ],
           ].map(([k, v]) => (
             <div key={k}>
-              <dt>{k}</dt>
-              <dd>{v}</dd>
+              <dt>{tr(k)}</dt>
+              <dd>{tr(v)}</dd>
             </div>
           ))}
         </dl>
@@ -70,42 +71,41 @@ export function ReferenceAside({ layout, snapshot, prefs, update }) {
     );
   if (["minimal-dark", "cinematic"].includes(layout))
     return (
-      <section className="reference-up-next" aria-label="Upcoming tracks">
-        <h2>
-          UP NEXT{" "}
-          <span>{Math.max(0, p.queue.length - p.index - 1)} tracks</span>
+      <section className="reference-up-next" aria-label={tr("Upcoming tracks")}>
+        <h2>{tr("UP NEXT")}{tr(" ")}
+          <span>{tr(Math.max(0, p.queue.length - p.index - 1))}{tr(" tracks")}</span>
         </h2>
         {p.queue.slice(p.index + 1, p.index + 4).map((t, i) => (
           <article key={t.id}>
-            <span>{String(i + 1).padStart(2, "0")}</span>
+            <span>{tr(String(i + 1).padStart(2, "0"))}</span>
             <div>
               <b>{t.title}</b>
               <small>{t.artist}</small>
             </div>
           </article>
         ))}
-        {p.queue.length <= p.index + 1 && <p>No upcoming tracks</p>}
+        {p.queue.length <= p.index + 1 && <p>{tr("No upcoming tracks")}</p>}
       </section>
     );
   if (layout === "champagne-gold")
     return (
       <section className="reference-options">
         <div>
-          <small>SOURCE</small>
-          <b>{live ? "Music Assistant" : "Mock library"}</b>
+          <small>{tr("SOURCE")}</small>
+          <b>{tr(live ? "Music Assistant" : "Mock library")}</b>
         </div>
         <div>
-          <small>ZONE / OUTPUT</small>
-          <b>{p.playerName || "Simulated stereo player"}</b>
+          <small>{tr("ZONE / OUTPUT")}</small>
+          <b>{tr(p.playerName || "Simulated stereo player")}</b>
         </div>
         <div>
-          <small>DSP PRESET</small>
-          <b>Unavailable</b>
+          <small>{tr("DSP PRESET")}</small>
+          <b>{tr("Unavailable")}</b>
         </div>
         <label>
-          <small>BRIGHTNESS · {prefs.brightness}%</small>
+          <small>{tr("BRIGHTNESS · ")}{tr(prefs.brightness)}%</small>
           <input
-            aria-label="Display brightness"
+            aria-label={tr("Display brightness")}
             type="range"
             min="10"
             max="100"

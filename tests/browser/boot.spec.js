@@ -32,7 +32,7 @@ test("all skins show paged startup checks and saved autoradio without scrolling 
   ]) {
     await chooseSkin(page, skin);
     await page
-      .getByRole("button", { name: "Open opstartcontrole", exact: true })
+      .getByRole("button", { name: "Open system status", exact: true })
       .click();
     await expect(page.getByLabel("Settings page", { exact: true })).toHaveValue(
       "11",
@@ -56,21 +56,21 @@ test("all skins show paged startup checks and saved autoradio without scrolling 
       ).toBe(400);
     }
   }
-  await page.getByLabel("Autoradio bij koude boot").check();
-  await page.getByLabel("Voorbeeldstation").selectOption("classical");
+  await page.getByLabel("Radio on cold boot").check();
+  await page.getByLabel("Example station").selectOption("classical");
   await page
-    .getByRole("button", { name: "Opstartinstellingen opslaan", exact: true })
+    .getByRole("button", { name: "Save startup settings", exact: true })
     .click();
   await expect(
-    page.getByText("Opgeslagen · geldt vanaf volgende koude simulatieboot"),
+    page.getByText("Saved · applies from the next simulated cold boot"),
   ).toBeVisible();
   await page.reload();
   await page
-    .getByRole("button", { name: "Open opstartcontrole", exact: true })
+    .getByRole("button", { name: "Open system status", exact: true })
     .click();
   await page.getByLabel("Boot page", { exact: true }).selectOption("3");
-  await expect(page.getByLabel("Autoradio bij koude boot")).toBeChecked();
-  await expect(page.getByLabel("Voorbeeldstation")).toHaveValue("classical");
+  await expect(page.getByLabel("Radio on cold boot")).toBeChecked();
+  await expect(page.getByLabel("Example station")).toHaveValue("classical");
 });
 test("low PD and offline results stay accessible and inhibit the shared amplifier", async ({
   page,
@@ -80,10 +80,10 @@ test("low PD and offline results stay accessible and inhibit the shared amplifie
     data: { type: "startup-signal", key: "pdWatts", value: 60 },
   });
   await page
-    .getByRole("button", { name: "Open opstartcontrole", exact: true })
+    .getByRole("button", { name: "Open system status", exact: true })
     .click();
   await expect(
-    page.getByText("60 W contract · minder dan 100 W"),
+    page.getByText("60 W contract · below 100 W"),
   ).toBeVisible();
   const state = await (await page.request.get("/api/state")).json();
   expect(state.device.amplifierEnabled).toBe(false);
@@ -92,7 +92,7 @@ test("low PD and offline results stay accessible and inhibit the shared amplifie
   });
   await page.getByLabel("Boot page", { exact: true }).selectOption("2");
   await expect(
-    page.getByText("Geen netwerkverbinding", { exact: true }),
+    page.getByText("No network connection", { exact: true }),
   ).toBeVisible();
   await expect(page.locator("video")).toHaveCount(0);
 });
@@ -102,18 +102,18 @@ test("backend loss marks startup telemetry unknown and prevents saving server se
 }) => {
   await page.goto("/?gui=2&product=1");
   await page
-    .getByRole("button", { name: "Open opstartcontrole", exact: true })
+    .getByRole("button", { name: "Open system status", exact: true })
     .click();
   await page.context().setOffline(true);
   await expect(
     page
-      .getByText("Backend offline · actuele status onbekend", { exact: true })
+      .getByText("Backend offline · current status unknown", { exact: true })
       .first(),
   ).toBeVisible({ timeout: 10000 });
   await page.getByLabel("Boot page", { exact: true }).selectOption("3");
   await expect(
     page.getByRole("button", {
-      name: "Opstartinstellingen opslaan",
+      name: "Save startup settings",
       exact: true,
     }),
   ).toBeDisabled();

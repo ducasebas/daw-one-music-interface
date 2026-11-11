@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import React, { useState } from "react";
 import {
   presets,
@@ -13,9 +14,9 @@ export function ThemeSettings({ preferences, theme, onChange, section }) {
       onChange(normalizeThemePreferences({ ...preferences, ...patch }));
   const choose = (key, label) => (
     <label key={key}>
-      {label}
+      {tr(label)}
       <select
-        aria-label={label}
+        aria-label={tr(label)}
         value={preferences[key]}
         onChange={(e) =>
           change({
@@ -28,7 +29,7 @@ export function ThemeSettings({ preferences, theme, onChange, section }) {
         }
       >
         {preferences.draft && key === "selected" && (
-          <option value="draft">Custom preview</option>
+          <option value="draft">{tr("Custom preview")}</option>
         )}
         {all.map((t) => (
           <option key={t.id} value={t.id}>
@@ -71,20 +72,16 @@ export function ThemeSettings({ preferences, theme, onChange, section }) {
     Finish: ["panelOpacity", "radius", "borderWidth", "glow", "meter"],
   };
   return (
-    <section className="theme-page" aria-label="Theme engine">
-      <div className="theme-reason" role="status">
-        Active: {theme.name} · {theme.reason}
-        {section === "Schedule"
+    <section className="theme-page" aria-label={tr("Theme engine")}>
+      <div className="theme-reason" role="status">{tr("Active: ")}{tr(theme.name)} · {tr(theme.reason)}
+        {tr(section === "Schedule"
           ? " · Browser local time; equal hours: night all day"
-          : ""}
+          : "")}
       </div>
       {section === "Skins" ? (
         <div className="control-grid">
-          {choose("selected", "Skin")}
-          <p>
-            Choose a skin. Customize it on Palette, Accents, Typography and
-            Finish; save your version on Save theme.
-          </p>
+          {tr(choose("selected", "Skin"))}
+          <p>{tr("Choose a skin. Customize it on Palette, Accents, Typography and Finish; save your version on Save theme.")}</p>
         </div>
       ) : groups[section] ? (
         <div
@@ -94,20 +91,20 @@ export function ThemeSettings({ preferences, theme, onChange, section }) {
             const schema = tokenSchema[key];
             return (
               <label key={key}>
-                {schema.label}
+                {tr(schema.label)}
                 {schema.type === "enum" ? (
                   <select
-                    aria-label={schema.label}
+                    aria-label={tr(schema.label)}
                     value={theme.tokens[key]}
                     onChange={(e) => token(key, e.target.value)}
                   >
                     {schema.values.map((v) => (
-                      <option key={v}>{v}</option>
+                      <option key={v}>{tr(v)}</option>
                     ))}
                   </select>
                 ) : (
                   <input
-                    aria-label={schema.label}
+                    aria-label={tr(schema.label)}
                     type={schema.type === "color" ? "color" : "number"}
                     min={schema.min}
                     max={schema.max}
@@ -129,35 +126,30 @@ export function ThemeSettings({ preferences, theme, onChange, section }) {
         </div>
       ) : section === "Automation" ? (
         <div className="control-grid">
-          <label>
-            Automatic switching
-            <select
-              aria-label="Automatic switching"
+          <label>{tr("Automatic switching")}<select
+              aria-label={tr("Automatic switching")}
               value={preferences.mode}
               onChange={(e) => change({ mode: e.target.value })}
             >
-              <option value="manual">Manual</option>
-              <option value="schedule">Day / night schedule</option>
-              <option value="state">Device state</option>
+              <option value="manual">{tr("Manual")}</option>
+              <option value="schedule">{tr("Day / night schedule")}</option>
+              <option value="state">{tr("Device state")}</option>
             </select>
           </label>
-          <p>
-            Configure day/night on Schedule and state choices on State mapping.
-            Fault → offline → standby → playback. Safety is unaffected.
-          </p>
+          <p>{tr("Configure day/night on Schedule and state choices on State mapping. Fault → offline → standby → playback. Safety is unaffected.")}</p>
         </div>
       ) : section === "Schedule" ? (
         <div className="control-grid">
-          {choose("day", "Day skin")}
-          {choose("night", "Night skin")}
+          {tr(choose("day", "Day skin"))}
+          {tr(choose("night", "Night skin"))}
           {[
             ["dayStart", "Day begins (hour)"],
             ["nightStart", "Night begins (hour)"],
           ].map(([key, label]) => (
             <label key={key}>
-              {label}
+              {tr(label)}
               <input
-                aria-label={label}
+                aria-label={tr(label)}
                 type="number"
                 min="0"
                 max="23"
@@ -170,10 +162,9 @@ export function ThemeSettings({ preferences, theme, onChange, section }) {
       ) : section === "State mapping" ? (
         <div className="control-grid">
           {Object.entries(preferences.stateThemes).map(([state, id]) => (
-            <label key={state}>
-              Skin when {state}
+            <label key={state}>{tr("Skin when ")}{tr(state)}
               <select
-                aria-label={`Skin when ${state}`}
+                aria-label={tr(`Skin when ${state}`)}
                 value={id}
                 onChange={(e) =>
                   change({
@@ -195,17 +186,15 @@ export function ThemeSettings({ preferences, theme, onChange, section }) {
         </div>
       ) : (
         <div className="control-grid">
-          <label>
-            Custom theme name
-            <input
-              aria-label="Custom theme name"
+          <label>{tr("Custom theme name")}<input
+              aria-label={tr("Custom theme name")}
               value={name}
               maxLength="48"
               onChange={(e) => setName(e.target.value)}
             />
           </label>
           <div className="button-row">
-            <button onClick={save}>Save custom theme</button>
+            <button onClick={save}>{tr("Save custom theme")}</button>
             {preferences.selected.startsWith("custom-") && (
               <button
                 onClick={() =>
@@ -216,13 +205,11 @@ export function ThemeSettings({ preferences, theme, onChange, section }) {
                     selected: "reference-dark",
                   })
                 }
-              >
-                Delete custom theme
-              </button>
+              >{tr("Delete custom theme")}</button>
             )}
           </div>
           <p role="status">
-            {message || "Saved on this browser. Works offline."}
+            {tr(message || "Saved on this browser. Works offline.")}
           </p>
         </div>
       )}

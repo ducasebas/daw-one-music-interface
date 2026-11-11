@@ -1,3 +1,4 @@
+import {tr} from "../shared/i18n.js";
 import React, { useRef, useState, useEffect } from "react";
 import { Icon } from "./Icon.jsx";
 import {
@@ -77,11 +78,11 @@ export function TouchVolume({
     <div className={`touch-volume touch-volume-${mode}`} data-muted={muted}>
       <div className="touch-volume-readout">
         <strong>
-          {shown ?? "—"}
+          {tr(shown ?? "—")}
           <small>%</small>
         </strong>
         <span>
-          {draft !== null
+          {tr(draft !== null
             ? "Loslaten om in te stellen"
             : target !== null
               ? `Versturen · bevestigd ${actual ?? "—"}%`
@@ -91,13 +92,13 @@ export function TouchVolume({
                   ? `Speler · limiet ${max}%`
                   : muted
                     ? "Gedempt · waarde behouden"
-                    : "Volume"}
+                    : "Volume")}
         </span>
       </div>
       <div
         className="touch-volume-slider"
         role="slider"
-        aria-label={label}
+        aria-label={tr(label)}
         aria-valuemin={0}
         aria-valuemax={max}
         aria-valuenow={clipped}
@@ -222,7 +223,7 @@ export function TouchVolume({
       </div>
       <button
         className="touch-volume-step"
-        aria-label={`${label} lager`}
+        aria-label={tr(`${label} lager`)}
         disabled={disabled}
         onClick={() => change((shown ?? 0) - 1)}
       >
@@ -230,7 +231,7 @@ export function TouchVolume({
       </button>
       <button
         className="touch-volume-step"
-        aria-label={`${label} hoger`}
+        aria-label={tr(`${label} hoger`)}
         disabled={disabled}
         onClick={() => change((shown ?? 0) + 1)}
       >
