@@ -42,4 +42,4 @@ Maak een 1:1 pasmodel. Controleer scherm, stekkers, kabels, knop, bediening, dem
 
 De fabrikantmaten en bronbestanden blijven bruikbaar. [C1](wall-mechanical-c1.md) is een bewaarde verpakkingsstudie. Zijn 190 × 124 × 50 mm en 5 mm wandafstand zijn geen door de eigenaar goedgekeurde constructiematen. De later genoemde circa 175 × 109 mm en 2–3 mm extra rand zijn ook niet vastgesteld. Geen van deze getallen wordt als definitieve maat doorgegeven naar de volgende ontwerpfase.
 
-Huidige stap: de visuele basis is beschreven; de materiaalopbouw volgt. Er wordt nu geen nieuw frontprofiel of boorplan als definitief ingevoerd.
+Huidige stap: berkenmultiplex met walnootfineer is de materiaalbasis; MDF kan voor een pasmodel. De [D1-binnenindeling is nominaal gecontroleerd](fit-d1-status.md). Bevestiging, volledige kabelroute en fysieke pasproef volgen voordat afmetingen worden vrijgegeven. De volledige CAD-upload staat nog open door een fout bij het starten van de werkruimte.

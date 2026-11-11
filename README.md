@@ -10,6 +10,8 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 ## GUI3.0 · WALL — approved exterior and new screen profile
 
+**[D1 fit-study result and placement diagram](docs/design/fit-d1-status.md): 176 × 110 × 45 mm prototype envelope**, using the existing touch glass, a birch-plywood/walnut shell and an aluminium rear plate. The nominal check covered 31 CAD/reserved objects and 66 solid intersection operations with zero unexpected overlaps. Mounting, the complete harness and physical tests remain open; the full CAD/PDF upload is pending.
+
 **Mechanical workflow, 10 November: [approved visual direction and design sequence](docs/design/design-workflow.md)**. Work from the render to materials, then internal fit/dimensions, then mounting and a complete fit prototype. The [C1 layout and manufacturer sources](docs/design/wall-mechanical-c1.md) are retained as a packing study; its enclosure size and construction are not approved design decisions.
 
 The chosen exterior is a wall-mounted enclosure with **wooden sides, a black glossy front and a top standby button with LED ring; no physical volume knob**. The [approved render](docs/design/wall-product.md) establishes appearance. The narrow warm-coloured edge does not establish a metal profile, and final enclosure dimensions follow the material and fit work. Selected screen: **Waveshare7inch DSI LCD (E), manufacturer SKU29112**, matching the owner-supplied1280×800, ten-point-touch, optical-bonding product description. Native1280×800 /16:10 is confirmed for the project. The cover-glass drawing gives170.18×104.20mm; the delivered revision remains part of the fit check. Old1280×400 installations retain their existing profile by default.
