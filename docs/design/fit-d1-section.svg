@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420mm" height="297mm" viewBox="0 0 420 297">
+<title>DAW TuneBox D1 — maatvaste pasproef</title>
+<desc>PCB-reserveringen en montagecoördinaten, geen productievrijgave. Alle maten in mm.</desc>
+<rect x="0" y="0" width="420" height="297" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="0.25"/>
+<text x="14" y="15" font-family="DejaVu Sans, sans-serif" font-size="5" font-weight="700" fill="#23343a" text-anchor="start">DAW TUNEBOX  /  D1  /  MATERIAAL → PASSING</text>
+<text x="14" y="23" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">Doorsnede en vrije lagen — Z loopt vanaf het glas naar de achterzijde.</text>
+<line x1="14" y1="29" x2="406" y2="29" stroke="#ced6d8" stroke-width="0.25"/>
+<line x1="14" y1="277" x2="406" y2="277" stroke="#ced6d8" stroke-width="0.25"/>
+<text x="14" y="284" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="start">MAATVAST PASMODEL · GEEN PRODUCTIEVRIJGAVE · ALLE MATEN IN mm</text>
+<text x="406" y="284" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="end">D1  /  2 van 3</text>
+<rect x="27.0" y="78" width="2.94" height="55" rx="0" fill="#273038" stroke="#23343a" stroke-width="0.3"/>
+<line x1="27.0" y1="141" x2="29.94" y2="141" stroke="#53676e" stroke-width="0.2"/>
+<line x1="26.0" y1="142.4" x2="28.0" y2="139.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="28.94" y1="142.4" x2="30.94" y2="139.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="28.47" y="139.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">0,7</text>
+<rect x="29.94" y="78" width="61.32" height="55" rx="0" fill="#dfe4e6" stroke="#23343a" stroke-width="0.3"/>
+<text x="60.6" y="109" font-family="DejaVu Sans, sans-serif" font-size="2.7" font-weight="400" fill="#23343a" text-anchor="middle">SCHERMMODULE</text>
+<line x1="29.94" y1="141" x2="91.26" y2="141" stroke="#53676e" stroke-width="0.2"/>
+<line x1="28.94" y1="142.4" x2="30.94" y2="139.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="90.26" y1="142.4" x2="92.26" y2="139.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="60.6" y="139.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">14,6</text>
+<rect x="91.26" y="78" width="15.540000000000001" height="55" rx="0" fill="#ffffff" stroke="#23343a" stroke-width="0.3"/>
+<text x="99.03000000000002" y="109" font-family="DejaVu Sans, sans-serif" font-size="2.7" font-weight="400" fill="#23343a" text-anchor="middle">TUSSENRUIMTE</text>
+<line x1="91.26" y1="141" x2="106.8" y2="141" stroke="#53676e" stroke-width="0.2"/>
+<line x1="90.26" y1="142.4" x2="92.26" y2="139.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="105.8" y1="142.4" x2="107.8" y2="139.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="99.03" y="139.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">3,7</text>
+<rect x="106.8" y="78" width="92.4" height="55" rx="0" fill="#e3eff5" stroke="#23343a" stroke-width="0.3"/>
+<text x="153.0" y="109" font-family="DejaVu Sans, sans-serif" font-size="2.7" font-weight="400" fill="#23343a" text-anchor="middle">Pi-RESERVE</text>
+<line x1="106.8" y1="141" x2="199.20000000000002" y2="141" stroke="#53676e" stroke-width="0.2"/>
+<line x1="105.8" y1="142.4" x2="107.8" y2="139.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="198.20000000000002" y1="142.4" x2="200.20000000000002" y2="139.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="153.0" y="139.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">22,0</text>
+<rect x="199.20000000000002" y="78" width="4.2" height="55" rx="0" fill="#ffffff" stroke="#23343a" stroke-width="0.3"/>
+<line x1="199.20000000000002" y1="141" x2="203.4" y2="141" stroke="#53676e" stroke-width="0.2"/>
+<line x1="198.20000000000002" y1="142.4" x2="200.20000000000002" y2="139.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="202.4" y1="142.4" x2="204.4" y2="139.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="201.3" y="139.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">1,0</text>
+<rect x="203.4" y="78" width="12.600000000000001" height="55" rx="0" fill="#aab7bd" stroke="#23343a" stroke-width="0.3"/>
+<line x1="203.4" y1="141" x2="216.0" y2="141" stroke="#53676e" stroke-width="0.2"/>
+<line x1="202.4" y1="142.4" x2="204.4" y2="139.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="215.0" y1="142.4" x2="217.0" y2="139.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="209.7" y="139.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">3,0</text>
+<line x1="27" y1="153" x2="216.0" y2="153" stroke="#53676e" stroke-width="0.2"/>
+<line x1="26" y1="154.4" x2="28" y2="151.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="215.0" y1="154.4" x2="217.0" y2="151.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="121.5" y="151.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">45 mm kastdiepte, vanaf glasvoorzijde</text>
+<text x="253" y="72" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">SCHERM: GEEN DIKTESCHATTING</text>
+<text x="253" y="78" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">STEP-omhullende: 15,30 mm.</text>
+<text x="253" y="84" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Incl. gemodelleerde connectoren en bussen.</text>
+<text x="253" y="90" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Pluggen zijn afzonderlijk gereserveerd.</text>
+<text x="253" y="112" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">HOUTEN SPONNING</text>
+<text x="253" y="118" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">0,8 mm afwerkingsruimte.</text>
+<text x="253" y="124" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">4 mm nominale kernwand achterin.</text>
+<text x="253" y="130" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Voorin vrijgefreesd rond schermmodule.</text>
+<text x="253" y="136" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Circa 2,9 mm zichtbare houten kant.</text>
+<text x="18" y="182" font-family="DejaVu Sans, sans-serif" font-size="3.7" font-weight="700" fill="#23343a" text-anchor="start">PLAATSELIJK GEBRUIK VAN DE DIEPTE</text>
+<text x="18" y="193" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">WAGO-reserves: Z 9–18 vóór de Pi; daar is het scherm ondieper dan op zijn hoogste punten.</text>
+<text x="18" y="200" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Zekeringhouder: Z 10–23 vóór de bovenste carrier; de werkelijke houder moet binnen zijn reservering vallen.</text>
+<text x="18" y="207" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Temperatuur-PCB: Z 12–29,78. Licht-PCB: Z 22–39,78. Zo kruisen de QT-pluggen elkaar niet.</text>
+<text x="18" y="214" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Routinglaag: Z 16,5–18,5, alleen waar de modellen die ruimte vrijlaten.</text>
+<text x="18" y="221" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Dat is een vrije laag voor ontwerp, geen bewijs van de volledige kabelroute of toegestane FPC-buigradius.</text>
+<text x="18" y="243" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="700" fill="#23343a" text-anchor="start">VOLGENDE FASE: bevestiging, montagevolgorde en echte kabels; daarna pas afmetingen vrijgeven.</text>
+</svg>

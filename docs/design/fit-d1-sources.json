@@ -1,0 +1,60 @@
+{
+  "revision": "D1",
+  "vendor_files_not_redistributed": true,
+  "sources": [
+    {
+      "local_name": "screen.step",
+      "url": "https://www.waveshare.net/w/upload/5/59/7inch_DSI_LCD_%28E%29_20250428_stp.zip",
+      "sha256": "6ae28f717897efab9b3c5bbf295390e8bff136a998184d07676ef3ff85d00ecf",
+      "bytes": 8768412
+    },
+    {
+      "local_name": "screen-dimensions.pdf",
+      "url": "https://www.waveshare.net/w/upload/f/ff/7inch_DSI_LCD_%28E%29-20250428.pdf",
+      "sha256": "0e6151dc436aed28de1b70197a58b5f9a933e54af084d002bcca4e0977c269ff",
+      "bytes": 30228
+    },
+    {
+      "local_name": "hat.step",
+      "url": "https://github.com/sonocotta/raspberry-media-center/blob/main/hardware/5-Louder-Plus/Rev%20F%20-%201X%20Hat/2601-louder-raspberry-hat-plus-1x-f.step",
+      "sha256": "84f0732614c575a98365861e74376fbf0b549f508ee53a1ba808341e6a04e75e",
+      "bytes": 18264735
+    },
+    {
+      "local_name": "pd.step",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/5991%20HUSB238%20USBC/5991%20HUSB238%20USBC.step",
+      "sha256": "cd03f9201576935825f9e2d81374495e4edb06400486944a3006fbe287cfa319",
+      "bytes": 2409971
+    },
+    {
+      "local_name": "ina.step",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/5832%20INA228%20STEMMA%20QT/5832%20INA228%20STEMMA%20QT.step",
+      "sha256": "701a1218ebb487fcea3885c3fbee4d62b44c5e3f696c0d88083ee149094fb82b",
+      "bytes": 1237408
+    },
+    {
+      "local_name": "button.step",
+      "url": "https://raw.githubusercontent.com/adafruit/Adafruit_CAD_Parts/main/3350%20RGB%20button/3350%20RGB%20button.step",
+      "sha256": "2d219395c2cf543dabed98a79dd9025178e302a3617a6e52fc6af74eee32b7ae",
+      "bytes": 331200
+    },
+    {
+      "local_name": "pct.brd",
+      "url": "https://github.com/adafruit/Adafruit-PCT2075-PCB/blob/master/Adafruit_PCT2075.brd",
+      "sha256": "ab46f92a8ec108a24bc480aa511d66f27e083a2bd3ed110227af062211721d1d",
+      "bytes": 252883
+    },
+    {
+      "local_name": "tsl.brd",
+      "url": "https://github.com/adafruit/Adafruit-TSL2591-Breakout-PCB/blob/master/Adafruit%20TSL2591.brd",
+      "sha256": "7937a98cc343e0269e4518916525a844591c1ad5ddf6a66be0d3049da2d82a4a",
+      "bytes": 253444
+    },
+    {
+      "local_name": "pi4-datasheet.pdf",
+      "url": "https://pip-assets.raspberrypi.com/categories/545-raspberry-pi-4-model-b/documents/RP-008341-DS-1-raspberry-pi-4-datasheet.pdf",
+      "sha256": "8febd042d004c7a2897a60fe6e1b2c007a941c3c4119f4fb791dc0afb669a860",
+      "bytes": 413147
+    }
+  ]
+}

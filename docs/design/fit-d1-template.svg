@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420mm" height="297mm" viewBox="0 0 420 297">
+<title>DAW TuneBox D1 — maatvaste pasproef</title>
+<desc>PCB-reserveringen en montagecoördinaten, geen productievrijgave. Alle maten in mm.</desc>
+<rect x="0" y="0" width="420" height="297" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="0.25"/>
+<text x="14" y="15" font-family="DejaVu Sans, sans-serif" font-size="5" font-weight="700" fill="#23343a" text-anchor="start">DAW TUNEBOX  /  D1  /  MATERIAAL → PASSING</text>
+<text x="14" y="23" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">1:1 front- en binnenruimtecontrole; print op 100%, controleer de 50 mm maatbalk.</text>
+<line x1="14" y1="29" x2="406" y2="29" stroke="#ced6d8" stroke-width="0.25"/>
+<line x1="14" y1="277" x2="406" y2="277" stroke="#ced6d8" stroke-width="0.25"/>
+<text x="14" y="284" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="start">MAATVAST PASMODEL · GEEN PRODUCTIEVRIJGAVE · ALLE MATEN IN mm</text>
+<text x="406" y="284" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="end">D1  /  3 van 3</text>
+<rect x="25" y="96.0" width="176.0" height="110.0" rx="7.4" fill="none" stroke="#23343a" stroke-width="0.3"/>
+<rect x="27.909999999999997" y="98.89999999999999" width="170.18" height="104.2" rx="4.5" fill="none" stroke="#26323b" stroke-width="0.25"/>
+<rect x="28.459999999999997" y="100.04999999999998" width="163.8" height="101.9" rx="0.8" fill="none" stroke="#9b693b" stroke-width="0.2" stroke-dasharray="2 1.2"/>
+<rect x="29.8" y="100.79999999999998" width="166.4" height="100.4" rx="2.6" fill="none" stroke="#41836e" stroke-width="0.2" stroke-dasharray="2 1.2"/>
+<line x1="25" y1="218" x2="75" y2="218" stroke="#53676e" stroke-width="0.2"/>
+<line x1="24" y1="219.4" x2="26" y2="216.6" stroke="#53676e" stroke-width="0.25"/>
+<line x1="74" y1="219.4" x2="76" y2="216.6" stroke="#53676e" stroke-width="0.25"/>
+<text x="50.0" y="216.4" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">50,00 mm controlemaat</text>
+<text x="240" y="82" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Zwart: bestaande glasomtrek.</text>
+<text x="240" y="89" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Bruin: vrijruimte van de voorste sponning.</text>
+<text x="240" y="96" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Groen: nominale holte achterin.</text>
+<text x="240" y="103" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start"></text>
+<text x="240" y="110" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Buitenmaat volgt uit materiaal + passing.</text>
+<text x="240" y="117" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Dit blad is geen boor- of CNC-vrijgave.</text>
+<text x="240" y="124" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">Geen montagegaten toegevoegd voordat</text>
+<text x="240" y="131" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#53676e" text-anchor="start">de complete bevestiging is uitgewerkt.</text>
+</svg>

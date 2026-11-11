@@ -1,5 +1,7 @@
 # DAW TuneBox v1 — approved visual direction
 
+**Werkmaat van het D1-pasmodel: 176 × 110 × 45 mm, exclusief wandophanging.** De materiaalopbouw, nominale 3D-controle en alle downloadbare tekeningen staan in [de D1-uitwerking](fit-d1.md). Bevestiging, complete kabelroute en fysieke pasproef volgen nog; dit is geen definitieve productiemaat.
+
 Status revised10 November 2026: the render establishes appearance. Follow the owner's [design sequence](design-workflow.md): render, materials, internal fit/dimensions, then mounting. A metal edge profile and final enclosure size have not been selected. Native1280×800 resolution is confirmed; the product description matches [Waveshare7inch DSI LCD (E), SKU29112](https://www.waveshare.com/7inch-dsi-lcd-e.htm).
 
 ![Approved wall-mounted exterior: walnut sides, black glass, no volume knob](wall-render.png)

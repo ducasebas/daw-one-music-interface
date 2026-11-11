@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420mm" height="297mm" viewBox="0 0 420 297">
+<title>DAW TuneBox D1 — maatvaste pasproef</title>
+<desc>PCB-reserveringen en montagecoördinaten, geen productievrijgave. Alle maten in mm.</desc>
+<rect x="0" y="0" width="420" height="297" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="0.25"/>
+<text x="14" y="15" font-family="DejaVu Sans, sans-serif" font-size="5" font-weight="700" fill="#23343a" text-anchor="start">DAW TUNEBOX  /  D1  /  MATERIAAL → PASSING</text>
+<text x="14" y="23" font-family="DejaVu Sans, sans-serif" font-size="3.0" font-weight="400" fill="#53676e" text-anchor="start">Scherm en hoofdprinten: fabrikant-CAD waar beschikbaar; overige volumes herkenbaar als reservering.</text>
+<line x1="14" y1="29" x2="406" y2="29" stroke="#ced6d8" stroke-width="0.25"/>
+<line x1="14" y1="277" x2="406" y2="277" stroke="#ced6d8" stroke-width="0.25"/>
+<text x="14" y="284" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="start">MAATVAST PASMODEL · GEEN PRODUCTIEVRIJGAVE · ALLE MATEN IN mm</text>
+<text x="406" y="284" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="400" fill="#53676e" text-anchor="end">D1  /  1 van 3</text>
+<rect x="18.0" y="53.5" width="255.2" height="159.5" rx="10.73" fill="#8b6543" stroke="#23343a" stroke-width="0.4"/>
+<rect x="24.96" y="60.46000000000001" width="241.28" height="145.58" rx="3.77" fill="#fbfcfb" stroke="#ced6d8" stroke-width="0.3"/>
+<rect x="22.219499999999996" y="57.70500000000001" width="246.761" height="151.09" rx="6.5249999999999995" fill="none" stroke="#abb3b7" stroke-width="0.2" stroke-dasharray="2 1.2"/>
+<rect x="170.25" y="70.9" width="87.0" height="18.849999999999998" rx="0" fill="none" stroke="#a64f46" stroke-width="0.35" stroke-dasharray="2 1.2"/>
+<text x="213.75" y="80.32500000000002" font-family="DejaVu Sans, sans-serif" font-size="2.3" font-weight="700" fill="#a64f46" text-anchor="middle">ZEKERING · VOORSTE LAAG</text>
+<rect x="29.6" y="153.55" width="29.0" height="29.0" rx="0" fill="none" stroke="#bc7139" stroke-width="0.35" stroke-dasharray="2 1.2"/>
+<text x="44.099999999999994" y="168.05" font-family="DejaVu Sans, sans-serif" font-size="2.3" font-weight="700" fill="#bc7139" text-anchor="middle">WAGO</text>
+<rect x="29.6" y="115.85000000000002" width="29.0" height="29.0" rx="0" fill="none" stroke="#bc7139" stroke-width="0.35" stroke-dasharray="2 1.2"/>
+<text x="44.099999999999994" y="130.35000000000002" font-family="DejaVu Sans, sans-serif" font-size="2.3" font-weight="700" fill="#bc7139" text-anchor="middle">WAGO</text>
+<rect x="181.85" y="192.7" width="17.4" height="20.3" rx="0" fill="none" stroke="#637177" stroke-width="0.35" stroke-dasharray="2 1.2"/>
+<text x="190.54999999999998" y="202.85" font-family="DejaVu Sans, sans-serif" font-size="2.3" font-weight="700" fill="#637177" text-anchor="middle">L</text>
+<rect x="209.4" y="192.7" width="17.4" height="20.3" rx="0" fill="none" stroke="#637177" stroke-width="0.35" stroke-dasharray="2 1.2"/>
+<text x="218.1" y="202.85" font-family="DejaVu Sans, sans-serif" font-size="2.3" font-weight="700" fill="#637177" text-anchor="middle">R</text>
+<rect x="27.424999999999997" y="70.9" width="87.0" height="133.4" rx="0" fill="none" stroke="#236b8e" stroke-width="0.45"/>
+<text x="70.925" y="135.60000000000002" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="700" fill="#236b8e" text-anchor="middle">Pi4</text>
+<text x="70.925" y="140.10000000000002" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#236b8e" text-anchor="middle">reservering incl. poorten</text>
+<rect x="118.0502175" y="96.96295250000001" width="95.45477599999998" height="89.93649649999999" rx="0" fill="none" stroke="#9b693b" stroke-width="0.45"/>
+<text x="165.77760550000002" y="139.93120075000002" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="700" fill="#9b693b" text-anchor="middle">Louder Plus1X</text>
+<text x="165.77760550000002" y="144.43120075000002" font-family="DejaVu Sans, sans-serif" font-size="3" font-weight="400" fill="#9b693b" text-anchor="middle">Rev F · echte CAD</text>
+<rect x="232.6" y="171.780705" width="29.463999999999988" height="41.944222499999995" rx="0" fill="none" stroke="#86599c" stroke-width="0.45"/>
+<text x="247.332" y="190.75281625" font-family="DejaVu Sans, sans-serif" font-size="2.55" font-weight="700" fill="#86599c" text-anchor="middle">USB-C PD</text>
+<rect x="223.9" y="125.42" width="29.463999999999988" height="36.83" rx="0" fill="none" stroke="#86599c" stroke-width="0.45"/>
+<text x="238.63199999999998" y="141.83499999999998" font-family="DejaVu Sans, sans-serif" font-size="2.55" font-weight="700" fill="#86599c" text-anchor="middle">INA228</text>
+<rect x="223.9" y="73.80000000000001" width="34.8" height="40.6" rx="0" fill="none" stroke="#86599c" stroke-width="0.45"/>
+<text x="241.29999999999998" y="92.10000000000002" font-family="DejaVu Sans, sans-serif" font-size="2.55" font-weight="700" fill="#86599c" text-anchor="middle">TSR + ULN</text>
+<text x="241.29999999999998" y="96.60000000000002" font-family="DejaVu Sans, sans-serif" font-size="2.55" font-weight="400" fill="#86599c" text-anchor="middle">carrierreserve</text>
+<rect x="126.75" y="194.15" width="37.699999999999996" height="10.15" rx="0" fill="none" stroke="#41836e" stroke-width="0.45"/>
+<text x="145.6" y="197.225" font-family="DejaVu Sans, sans-serif" font-size="2.55" font-weight="700" fill="#41836e" text-anchor="middle">RADAR</text>
+<text x="145.6" y="201.725" font-family="DejaVu Sans, sans-serif" font-size="2.55" font-weight="400" fill="#41836e" text-anchor="middle">naar onderzijde</text>
+<rect x="174.6" y="62.20000000000001" width="36.830000000000005" height="7.975" rx="0" fill="#e8f3ed" stroke="#41836e" stroke-width="0.3"/>
+<text x="193.015" y="67.275" font-family="DejaVu Sans, sans-serif" font-size="2.2" font-weight="700" fill="#41836e" text-anchor="middle">TEMPERATUUR</text>
+<rect x="215.92499999999998" y="62.20000000000001" width="36.830000000000005" height="7.975" rx="0" fill="#e8f3ed" stroke="#41836e" stroke-width="0.3"/>
+<text x="234.33999999999997" y="67.275" font-family="DejaVu Sans, sans-serif" font-size="2.2" font-weight="700" fill="#41836e" text-anchor="middle">LICHT</text>
+<circle cx="145.6" cy="60.75" r="4.5" fill="#f7f0df" stroke="#a97d38" stroke-width="0.35"/>
+<text x="145.6" y="83.95000000000002" font-family="DejaVu Sans, sans-serif" font-size="2.6" font-weight="700" fill="#9b693b" text-anchor="middle">KNOP</text>
+<line x1="18.0" y1="46.25" x2="273.2" y2="46.25" stroke="#53676e" stroke-width="0.2"/>
+<line x1="17.0" y1="47.650000000000006" x2="19.0" y2="44.849999999999994" stroke="#53676e" stroke-width="0.25"/>
+<line x1="272.2" y1="47.650000000000006" x2="274.2" y2="44.849999999999994" stroke="#53676e" stroke-width="0.25"/>
+<text x="145.6" y="44.650000000000006" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">176  kastbreedte van pasmodel</text>
+<line x1="22.219499999999996" y1="224.6" x2="268.9805" y2="224.6" stroke="#53676e" stroke-width="0.2"/>
+<line x1="21.219499999999996" y1="226.0" x2="23.219499999999996" y2="223.2" stroke="#53676e" stroke-width="0.25"/>
+<line x1="267.9805" y1="226.0" x2="269.9805" y2="223.2" stroke="#53676e" stroke-width="0.25"/>
+<text x="145.6" y="223.0" font-family="DejaVu Sans, sans-serif" font-size="2.8" font-weight="400" fill="#53676e" text-anchor="middle">170,18  bestaand glas</text>
+<text x="296" y="47" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">MATERIAALBASIS</text>
+<text x="296" y="53" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Bestaand glazen touchfront.</text>
+<text x="296" y="59" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Berkenmultiplex + walnootfineer.</text>
+<text x="296" y="65" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Aluminium achterplaat 3 mm.</text>
+<text x="296" y="71" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Geen metalen voorrand toegevoegd.</text>
+<text x="296" y="92" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">AFGELEIDE PASMAAT</text>
+<text x="296" y="98" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">176 × 110 × 45 mm kast.</text>
+<text x="296" y="104" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Glasrand → hout: circa 2.9 mm.</text>
+<text x="296" y="110" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Knop steekt 1,5 mm boven de kast.</text>
+<text x="296" y="116" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Wandophanging komt daar nog achter.</text>
+<text x="296" y="137" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">SLIM RUIMTEGEBRUIK</text>
+<text x="296" y="143" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Pi en HAT naast elkaar.</text>
+<text x="296" y="149" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Sensoren tegen bovenwand.</text>
+<text x="296" y="155" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Lage delen vóór hoofdprinten.</text>
+<text x="296" y="161" font-family="DejaVu Sans, sans-serif" font-size="3.1" font-weight="400" fill="#53676e" text-anchor="start">Sensorstekkers versprongen in diepte.</text>
+<text x="296" y="182" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">CONTROLEGRENZEN</text>
+<text x="296" y="188" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">Pi is een conservatieve omhullende.</text>
+<text x="296" y="194" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">Carrier / klemmen zijn reserveringen.</text>
+<text x="296" y="200" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">Kabelloop en bevestiging volgen.</text>
+<text x="296" y="206" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">Thermisch en RF nog op hardware testen.</text>
+<text x="18" y="243" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">Doorgetrokken: hoofdonderdelen. Gestreept: lage voorste delen / reserveringen. Kijkrichting vanaf het scherm.</text>
+<text x="18" y="252" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="400" fill="#53676e" text-anchor="start">PCBs liggen naast elkaar; losse aansluitdelen benutten plaatselijk een andere dieptelaag.</text>
+<text x="18" y="261" font-family="DejaVu Sans, sans-serif" font-size="2.9" font-weight="700" fill="#23343a" text-anchor="start">De kastmaat komt uit de sponning en 3D-opstelling; de render levert geen millimeters.</text>
+</svg>

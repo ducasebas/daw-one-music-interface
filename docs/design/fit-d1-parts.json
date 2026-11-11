@@ -1,0 +1,405 @@
+{
+  "screen": {
+    "kind": "manufacturer CAD",
+    "description": "Waveshare 29112, 25 solids",
+    "source": "screen.step",
+    "bbox": [
+      2.91,
+      173.09,
+      2.9,
+      107.1,
+      -0.0,
+      15.3
+    ]
+  },
+  "pi": {
+    "kind": "conservative envelope",
+    "description": "Pi4: 85x56 PCB plus SD/port margins; component side toward rear plate",
+    "source": null,
+    "bbox": [
+      6.5,
+      66.5,
+      6.0,
+      98.0,
+      19.0,
+      41.0
+    ]
+  },
+  "hat": {
+    "kind": "manufacturer CAD",
+    "description": "Louder Plus1X Rev F, mirrored by physical Y rotation",
+    "source": "hat.step",
+    "bbox": [
+      69.00015,
+      134.83103,
+      18.00038,
+      80.02555,
+      25.18997,
+      36.39997
+    ]
+  },
+  "pd": {
+    "kind": "manufacturer CAD",
+    "description": "Adafruit 5991; USB opening 0.5 mm beyond bottom",
+    "source": "pd.step",
+    "bbox": [
+      148.0,
+      168.32,
+      -0.49995,
+      28.4271,
+      24.90982,
+      37.00982
+    ]
+  },
+  "ina": {
+    "kind": "manufacturer CAD",
+    "description": "Adafruit 5832; QT toward top/bottom",
+    "source": "ina.step",
+    "bbox": [
+      142.0,
+      162.32,
+      35.0,
+      60.4,
+      24.93,
+      37.03
+    ]
+  },
+  "button": {
+    "kind": "manufacturer CAD",
+    "description": "3350; model differs from product overall size, nut reserve added",
+    "source": "button.step",
+    "bbox": [
+      79.0,
+      97.0,
+      90.0,
+      111.5,
+      19.0,
+      37.0
+    ]
+  },
+  "button_nut": {
+    "kind": "reservation",
+    "description": "22 mm nut reserve; fastener/detail design follows",
+    "source": null,
+    "bbox": [
+      77.0,
+      99.0,
+      102.2,
+      105.2,
+      17.0,
+      39.0
+    ]
+  },
+  "pct": {
+    "kind": "PCB + JST CAD + package envelopes",
+    "description": "Adafruit 25.4x17.78; top-facing, staggered in depth",
+    "source": "pct.brd",
+    "bbox": [
+      108.0,
+      133.4,
+      99.43,
+      103.96,
+      12.0,
+      29.78
+    ]
+  },
+  "pct_qt_l": {
+    "kind": "plug reservation",
+    "description": "QT cable plug; nominal reserved volume, not actual harness",
+    "source": null,
+    "bbox": [
+      102.0,
+      108.0,
+      101.0,
+      104.0,
+      17.89,
+      23.89
+    ]
+  },
+  "pct_qt_r": {
+    "kind": "plug reservation",
+    "description": "QT cable plug; nominal reserved volume, not actual harness",
+    "source": null,
+    "bbox": [
+      133.4,
+      139.4,
+      101.0,
+      104.0,
+      17.89,
+      23.89
+    ]
+  },
+  "tsl": {
+    "kind": "PCB + JST CAD + package envelopes",
+    "description": "Adafruit 25.4x17.78; top-facing, staggered in depth",
+    "source": "tsl.brd",
+    "bbox": [
+      136.5,
+      161.9,
+      99.43,
+      103.96,
+      22.0,
+      39.78
+    ]
+  },
+  "tsl_qt_l": {
+    "kind": "plug reservation",
+    "description": "QT cable plug; nominal reserved volume, not actual harness",
+    "source": null,
+    "bbox": [
+      130.5,
+      136.5,
+      101.0,
+      104.0,
+      27.89,
+      33.89
+    ]
+  },
+  "tsl_qt_r": {
+    "kind": "plug reservation",
+    "description": "QT cable plug; nominal reserved volume, not actual harness",
+    "source": null,
+    "bbox": [
+      161.9,
+      167.9,
+      101.0,
+      104.0,
+      27.89,
+      33.89
+    ]
+  },
+  "carrier": {
+    "kind": "reservation",
+    "description": "TSR + ULN on cuttable prototype PCB; circuit layout not yet designed",
+    "source": null,
+    "bbox": [
+      142.0,
+      166.0,
+      68.0,
+      96.0,
+      24.0,
+      37.0
+    ]
+  },
+  "radar": {
+    "kind": "reservation",
+    "description": "18x22 radar module plus bracket/wire allowance; antenna faces bottom",
+    "source": null,
+    "bbox": [
+      75.0,
+      101.0,
+      6.0,
+      13.0,
+      21.0,
+      41.0
+    ]
+  },
+  "fuse": {
+    "kind": "reservation",
+    "description": "47.5x11 mm Littelfuse150-sized holder plus lead allowance; electrical fuse choice not approved",
+    "source": null,
+    "bbox": [
+      105.0,
+      165.0,
+      85.0,
+      98.0,
+      10.0,
+      23.0
+    ]
+  },
+  "wago1": {
+    "kind": "reservation",
+    "description": "WAGO 221-413 body allowance; lever access with Pi removed",
+    "source": null,
+    "bbox": [
+      8.0,
+      28.0,
+      21.0,
+      41.0,
+      9.0,
+      18.0
+    ]
+  },
+  "wago2": {
+    "kind": "reservation",
+    "description": "WAGO 221-413 body allowance; lever access with Pi removed",
+    "source": null,
+    "bbox": [
+      8.0,
+      28.0,
+      47.0,
+      67.0,
+      9.0,
+      18.0
+    ]
+  },
+  "speaker_l": {
+    "kind": "reservation",
+    "description": "Insulated speaker-terminal allocation; actual panel part remains unspecified",
+    "source": null,
+    "bbox": [
+      113.0,
+      125.0,
+      0.0,
+      14.0,
+      9.0,
+      21.0
+    ]
+  },
+  "speaker_r": {
+    "kind": "reservation",
+    "description": "Insulated speaker-terminal allocation; actual panel part remains unspecified",
+    "source": null,
+    "bbox": [
+      132.0,
+      144.0,
+      0.0,
+      14.0,
+      9.0,
+      21.0
+    ]
+  },
+  "screen_power_plug": {
+    "kind": "plug reservation",
+    "description": "Display PH2 power plug allowance",
+    "source": null,
+    "bbox": [
+      100.5,
+      110.0,
+      11.2,
+      18.2,
+      6.6,
+      10.6
+    ]
+  },
+  "hat_power_plug": {
+    "kind": "plug reservation",
+    "description": "Right-angle barrel plug allowance; size to check against actual lead",
+    "source": null,
+    "bbox": [
+      110.0,
+      130.0,
+      5.0,
+      19.0,
+      24.0,
+      37.0
+    ]
+  },
+  "hat_gpio_plug": {
+    "kind": "plug reservation",
+    "description": "GPIO connector + lead allowance",
+    "source": null,
+    "bbox": [
+      76.0,
+      128.0,
+      72.0,
+      80.0,
+      20.0,
+      30.0
+    ]
+  },
+  "ina_qt_bottom": {
+    "kind": "plug reservation",
+    "description": "QT plug allowance",
+    "source": null,
+    "bbox": [
+      147.89,
+      153.89,
+      29.0,
+      35.6,
+      30.4,
+      33.5
+    ]
+  },
+  "ina_qt_top": {
+    "kind": "plug reservation",
+    "description": "QT plug allowance",
+    "source": null,
+    "bbox": [
+      147.89,
+      153.89,
+      59.5,
+      66.4,
+      30.4,
+      33.5
+    ]
+  },
+  "pd_qt": {
+    "kind": "plug reservation",
+    "description": "QT plug allowance",
+    "source": null,
+    "bbox": [
+      142.0,
+      148.64,
+      9.17,
+      15.17,
+      30.4,
+      33.5
+    ]
+  },
+  "button_leads": {
+    "kind": "reservation",
+    "description": "Crimp/solder + first wire bend allowance",
+    "source": null,
+    "bbox": [
+      81.0,
+      95.0,
+      84.0,
+      91.0,
+      22.0,
+      34.0
+    ]
+  },
+  "routing_layer": {
+    "kind": "routing reservation",
+    "description": "2 mm nominal routing layer only; does not validate a complete FPC/cable path",
+    "source": null,
+    "bbox": [
+      35.0,
+      154.0,
+      14.0,
+      84.0,
+      16.5,
+      18.5
+    ]
+  },
+  "core": {
+    "kind": "case geometry",
+    "description": "4 mm nominal birch-plywood rear wall; front rebated",
+    "source": null,
+    "bbox": [
+      0.79801,
+      175.20204,
+      0.79796,
+      109.20258,
+      0.89796,
+      45.00204
+    ]
+  },
+  "veneer": {
+    "kind": "case geometry",
+    "description": "0.8 mm finishing allowance; not veneer-only thickness",
+    "source": null,
+    "bbox": [
+      -0.0,
+      176.0,
+      -0.0,
+      110.0,
+      0.89801,
+      45.00199
+    ]
+  },
+  "rear": {
+    "kind": "case geometry",
+    "description": "3 mm aluminium rear plate; mounting holes belong to step 4",
+    "source": null,
+    "bbox": [
+      3.8,
+      172.2,
+      3.8,
+      106.2,
+      42.0,
+      45.0
+    ]
+  }
+}

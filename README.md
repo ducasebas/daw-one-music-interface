@@ -10,7 +10,9 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 ## GUI3.0 · WALL — approved exterior and new screen profile
 
-**[D1 fit-study result and placement diagram](docs/design/fit-d1-status.md): 176 × 110 × 45 mm prototype envelope**, using the existing touch glass, a birch-plywood/walnut shell and an aluminium rear plate. The nominal check covered 31 CAD/reserved objects and 66 solid intersection operations with zero unexpected overlaps. Mounting, the complete harness and physical tests remain open; the full CAD/PDF upload is pending.
+**[D1 material build-up and nominal 3D fit](docs/design/fit-d1.md): 176 × 110 × 45 mm prototype envelope**, using the existing touch glass, a birch-plywood/walnut shell and an aluminium rear plate. Pi and HAT sit side by side. The nominal check covered 31 CAD/reserved objects and 66 solid intersection operations with zero unexpected overlaps. Mounting, the complete harness and physical tests remain open.
+
+**Downloads:** [three-sheet A3 PDF](docs/design/fit-d1.pdf) · [CAD package (our geometry and reference envelopes)](docs/design/fit-d1-cad.zip) · [open-back CAD illustration](docs/design/fit-d1-cad-preview.png) · [check report](docs/design/fit-d1-check.json). The complete generated D1 files and reproduction scripts are published; this is a fit prototype, not a manufacturing release.
 
 **Mechanical workflow, 10 November: [approved visual direction and design sequence](docs/design/design-workflow.md)**. Work from the render to materials, then internal fit/dimensions, then mounting and a complete fit prototype. The [C1 layout and manufacturer sources](docs/design/wall-mechanical-c1.md) are retained as a packing study; its enclosure size and construction are not approved design decisions.
 
