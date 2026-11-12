@@ -32,6 +32,8 @@ This refreshes root updater/manager files; it does not run the ordinary app inst
 
 Automatic activation waits while MA is disconnected, the selected player is unknown, playback is running, a room measurement is active or device state prevents updating. Stop playback for the first transaction and observe the independent progress display. If publication is still running, `no-release` is expected: the timer will check again. `installed`/health with the expected commit proves an application transaction; a running timer alone does not.
 
+**Local HTTP helper refresh:** the first real Pi attempt downloaded and verified the signed GUI 3.2.3 release, completed npm with exit 0 and left all signed payload hashes unchanged, then failed on a local backend request (`UND_ERR_SOCKET`). The updater now uses bounded native HTTP GETs with a fresh connection for state, health and asset checks. Root logs include the failed phase and request error code. Refresh `update.mjs` together with `local-http.mjs` from a trusted current source, or rerun the current trusted OTA installer once. An application-slot update cannot replace these privileged helpers. The GUI code/release ID remains 3.2.3.
+
 Root helper paths and state are described in [OTA recovery](ota-updates.md). The first real activation and subsequent rollback remain operator-run acceptance tests; local fixture tests do not certify them.
 
 ## 3. Install the optional PCM reader

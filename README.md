@@ -24,6 +24,8 @@ Splash Animation now overrides the automatic still policy and changing presentat
 
 **[OTA and PCM commissioning](docs/ota-pcm-setup.md)**. A signed release, pinned public key, active timer and an observed device transaction are separate requirements. PCM remains an optional local Squeezelite reader; an unconfigured reader is not a failed audio decoder.
 
+The first real Pi activation exposed a local HTTP socket failure after successful npm preparation. The trusted updater now uses a fresh, bounded native connection for backend checks and records useful failure details in its journal. That helper needs a one-time refresh alongside `local-http.mjs`; the already signed GUI 3.2.3 can then be installed from Settings → Updates. Its public signature and archive checksum have been independently verified against the owner's pinned project-key fingerprint.
+
 The PCM installer also reads the original systemd command instead of Squeezelite's tokenised `/proc` arguments. This fixes detection returning only the first MAC byte and prevents writing a broken MAC/server/debug command into the export drop-in.
 
 ## GUI 3.2.1 · SPLASH — new TuneBox cold start

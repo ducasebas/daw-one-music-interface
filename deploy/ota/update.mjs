@@ -5,16 +5,18 @@ import {repository,verifyManifest,verifyArchive,canUpdate,activate,restorePrevio
 import {updateSettings,installationDecision} from './settings.mjs';
 import {verifyTree} from './verify-tree.mjs';
 import {prepareRuntime} from './prepare-runtime.mjs';
+import {localHttp} from './local-http.mjs';
 const base='/var/lib/daw-one-updater',slots='/opt/daw-one-releases',app='/opt/daw-one';
 const run=(cmd,args)=>execFileSync(cmd,args,{stdio:'pipe',timeout:180000});
 const json=(path,fallback={})=>{try{return JSON.parse(readFileSync(path,'utf8'));}catch{return fallback;}};
 const atomic=(path,value)=>{writeFileSync(path+'.tmp',JSON.stringify(value)+'\n',{mode:0o600});renameSync(path+'.tmp',path);};
 const configPath='/etc/daw-one-updater/config.json';
-let config=json(configPath),channel=config.channel||null,current=json(base+'/installed.json'),available=null,kiosk=false;
+let config=json(configPath),channel=config.channel||null,current=json(base+'/installed.json'),available=null,kiosk=false,lastPhase='startup';
 function report(status,extra={}){
+ if(status!=='error')lastPhase=status;
  const path='/var/lib/daw-one-update-status/status.json';
  atomic(path,{status,channel,checkedAt:new Date().toISOString(),current:{release:current.release,commit:current.commit},available,percent:null,...extra});run('chmod',['644',path]);
- console.log(JSON.stringify({component:'tunebox-update',status,commit:available?.commit||current.commit||null,percent:extra.percent??null}));
+ console.log(JSON.stringify({component:'tunebox-update',status,commit:available?.commit||current.commit||null,percent:extra.percent??null,...(extra.error?{error:extra.error,failedPhase:extra.failedPhase}:{})}));
 }
 async function download(url,max,onProgress){
  for(let redirects=0;redirects<5;redirects++){
@@ -29,8 +31,8 @@ async function download(url,max,onProgress){
  }throw Error('Too many redirects');
 }
 async function local(path){
- const response=await fetch('http://127.0.0.1:3001'+path,{signal:AbortSignal.timeout(3000)});if(!response.ok)throw Error('Backend unavailable');
- let size=0;const chunks=[];for await(const chunk of response.body){size+=chunk.length;if(size>1048576)throw Error('Backend response too large');chunks.push(chunk);}return JSON.parse(Buffer.concat(chunks));
+ const response=await localHttp(path);if(!response.ok)throw Error(`Backend GET ${path}: HTTP ${response.status}`);
+ try{return JSON.parse(response.body.toString('utf8'));}catch{throw Error(`Backend GET ${path}: invalid JSON`);}
 }
 function slot(value){const target=value.startsWith(slots+'/')?value:slots+'/'+value;if(!new RegExp('^'+slots+'/(?:[a-f0-9]{40}|legacy-[0-9]+)$').test(target)||!existsSync(target)||lstatSync(target).isSymbolicLink())throw Error('Invalid release slot');return target;}
 const host={
@@ -45,9 +47,9 @@ const host={
    try{
     const health=await local('/api/health');
     if(health.ok&&(!manifest||health.build.id===manifest.release&&health.deploymentCommit===manifest.commit)){
-     const response=await fetch('http://127.0.0.1:3001/',{signal:AbortSignal.timeout(3000)});
-     if(response.ok){const html=await response.text();const assets=[...html.matchAll(/(?:src|href)="(\/assets\/[a-zA-Z0-9_.-]+\.(?:js|css))"/g)].map(x=>x[1]);
-      if(html.includes('<html')&&assets.some(a=>a.endsWith('.js'))){let ready=true;for(const path of assets){const asset=await fetch('http://127.0.0.1:3001'+path,{signal:AbortSignal.timeout(3000)});if(!asset.ok)ready=false;await asset.body?.cancel();}if(ready)return true;}
+     const response=await localHttp('/');
+     if(response.ok){const html=response.body.toString('utf8');const assets=[...html.matchAll(/(?:src|href)="(\/assets\/[a-zA-Z0-9_.-]+\.(?:js|css))"/g)].map(x=>x[1]);
+      if(html.includes('<html')&&assets.some(a=>a.endsWith('.js'))){let ready=true;for(const path of assets){const asset=await localHttp(path,{maxBytes:8388608});if(!asset.ok)ready=false;}if(ready)return true;}
      }
     }
    }catch{}
@@ -103,4 +105,4 @@ try{
  await activate(host,manifest,report);report('installed');
  const previous=current.previous?.split('/').pop();const entries=readdirSync(slots).filter(name=>lstatSync(slots+'/'+name).isDirectory()&&!lstatSync(slots+'/'+name).isSymbolicLink()).map(name=>({name,modified:lstatSync(slots+'/'+name).mtimeMs}));
  for(const name of prunableSlots(entries,manifest.commit,previous))rmSync(slots+'/'+name,{recursive:true});
-}catch(error){report('error',{error:String(error.message).slice(0,180)});process.exitCode=1;}
+}catch(error){const code=error.cause?.code||error.code;const detail=String(error.message)+(typeof code==='string'&&!String(error.message).includes(code)?` (${code})`:'');report('error',{error:detail.slice(0,180),failedPhase:lastPhase});process.exitCode=1;}
