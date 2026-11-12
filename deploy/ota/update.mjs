@@ -41,7 +41,7 @@ const host={
  // Chromium stays alive: its independent update page is served by the manager.
  stop:async()=>run('systemctl',['stop','daw-one.service']),
  select:async value=>{const target=slot(value),tmp='/opt/.daw-one-'+randomUUID();symlinkSync(target,tmp);renameSync(tmp,app);},
- start:async()=>run('systemctl',['start','daw-one.service']),
+ start:async()=>{run('systemctl',['start','daw-one.service']);if(kiosk)run('systemctl',['start','daw-one-kiosk.service']);},
  healthy:async manifest=>{
   for(let attempt=0;attempt<30;attempt++){
    try{
@@ -63,7 +63,7 @@ const host={
 async function prepareDisplay(){report('installing');await new Promise(resolve=>setTimeout(resolve,5000));if(!canUpdate(await local('/api/state')))throw Error('Playback/state changed before activation; update deferred');}
 try{
  if(existsSync(base+'/pending.json')){
-  const pending=json(base+'/pending.json');report('rolling-back');await host.stop();await host.select(pending.previous);await host.start();if(!await host.healthy(null))throw Error('Recovery requires manual service repair');await host.clearJournal();report('rolled-back');process.exit(0);
+  const pending=json(base+'/pending.json');kiosk=pending.kiosk===true;report('rolling-back');await host.stop();await host.select(pending.previous);await host.start();if(!await host.healthy(null))throw Error('Recovery requires manual service repair');await host.clearJournal();report('rolled-back');process.exit(0);
  }
  if(process.argv.includes('--recover'))process.exit(0);
  const request=json(base+'/request.json',{action:'auto'});rmSync(base+'/request.json',{force:true});

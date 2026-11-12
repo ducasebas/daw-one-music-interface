@@ -55,6 +55,9 @@ export async function checkApplication(
           : type.includes("javascript");
       });
   }
+  await check("/media/startup.webp", "Startup WebP", (r) =>
+    r.headers.get("content-type")?.startsWith("image/webp"),
+  );
   await check("/media/startup.mp4", "Startup MP4", (r) =>
     r.headers.get("content-type")?.startsWith("video/"),
   );

@@ -108,12 +108,15 @@ test('Wi-Fi header uses measured fan bars, with percentages only in details',asy
  }
  await page.route('**/api/network',r=>r.fulfill({json:{connected:null,signal:null}}));await page.reload();await expect(page.locator('.wifi-signal')).toHaveCount(0);
 });
-test('explicit animation plays even with reduced motion, advances decoded frames and records diagnostics',async({page})=>{
+test('explicit WebP animation plays even with reduced motion and records honest diagnostics',async({page})=>{
  await open(page,'Playback');await page.getByLabel('Startup animation',{exact:true}).selectOption('still');await page.getByRole('button',{name:'Replay startup',exact:true}).click();const splash=page.getByRole('status',{name:'Startup animation',exact:true});await expect(splash).toHaveAttribute('data-renderer','still');await splash.click();
  await page.getByLabel('Startup animation',{exact:true}).selectOption('video');await page.getByRole('button',{name:'Replay startup',exact:true}).click();
- await expect(splash).toHaveAttribute('data-renderer','video');await expect.poll(()=>splash.locator('video').evaluate(v=>v.currentTime)).toBeGreaterThan(.4);
- const source=await splash.locator('video').getAttribute('src');expect(['/media/startup.mp4','/media/startup.webm']).toContain(source);
- await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('tunebox-startup-status')).frames)).toBeGreaterThan(1);
+ await expect(splash).toHaveAttribute('data-renderer','image-animation');
+ const image=splash.locator('.startup-frame-animation');await expect(image).toHaveJSProperty('naturalWidth',1280);
+ const first=await image.screenshot();await page.waitForTimeout(900);expect((await image.screenshot()).equals(first)).toBe(false);
+ const source='/media/startup.webp';
+ await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('tunebox-startup-status')).time)).toBeGreaterThan(.4);
+ expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('tunebox-startup-status')).frames)).toBeNull();
  await splash.click();await page.getByText('Splash diagnostics',{exact:true}).click();await expect(page.locator('.startup-diagnostics')).toContainText(source);
 });
 test('manual moon wake stays available in live read-only mode with Music Assistant disconnected',async({page})=>{
@@ -125,8 +128,8 @@ test('manual moon wake stays available in live read-only mode with Music Assista
  await page.getByRole('button',{name:'Screen rest',exact:true}).tap();const wake=page.getByRole('button',{name:'Wake display',exact:true});await expect(wake).toBeVisible();await wake.tap();await expect(wake).not.toBeVisible();
  const after=await(await page.request.get('/api/state')).json();expect(after.playback.playing).toBe(before.playback.playing);expect(after.device.amplifierEnabled).toBe(before.device.amplifierEnabled);await expect(page.locator('.m2-player-status')).not.toContainText('Simulation controls are disabled');
 });
-test('explicit video overrides the Pi3 automatic still policy and MP4 failure retries WebM',async({page})=>{
+test('explicit animation overrides Pi3 automatic still policy and missing WebP plus MP4 retries WebM',async({page})=>{
  await page.goto(url+'&profile=pi3');await open(page,'Playback');await page.getByLabel('Startup animation',{exact:true}).selectOption('video');
- await page.route('**/media/startup.mp4',r=>r.abort());await page.getByRole('button',{name:'Replay startup',exact:true}).click();
+ await page.route('**/media/startup.webp*',r=>r.abort());await page.route('**/media/startup.mp4',r=>r.abort());await page.getByRole('button',{name:'Replay startup',exact:true}).click();
  const splash=page.getByRole('status',{name:'Startup animation',exact:true});await expect(splash).toHaveAttribute('data-renderer','video');await expect(splash.locator('video')).toHaveAttribute('src','/media/startup.webm');await expect.poll(()=>splash.locator('video').evaluate(v=>v.currentTime)).toBeGreaterThan(.3);
 });

@@ -1,12 +1,27 @@
-# DAW ONE startup assets
+# TuneBox startup assets
 
-Supplied by the project owner, used without visual edits:
+The project owner's four-second Canva animation is the source. The high-resolution master remains at `design/brand/tunebox-cold-start-master.mp4` (3642 × 2276); these are display exports with the same composition and no audio.
 
-- `startup.mp4`: H.264, 1280 × 400, 30 fps, 2.800 seconds, no audio stream, 49,817 bytes.
-- `startup-still.png`: 1280 × 400 fallback/end image, 34,141 bytes.
+| File | Encoding | Display size | Timing | Bytes | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `startup.webp` | Animated WebP, quality 88 | 1280 × 800 | 24 fps source, 95 stored frames, 3999 ms, one play | 438998 | Default animation |
+| `startup.mp4` | H.264 Main | 1280 × 800 | 30 fps, 4 s | 150399 | First video reserve |
+| `startup.webm` | VP8 | 1280 × 800 | 30 fps, 4 s | 292484 | Second video reserve |
+| `startup-still.png` | PNG | 1280 × 800 | Static | 160738 | Still/end frame |
 
-The React startup layer is branding, not a firmware/OS boot screen. It does not enable hardware or mark services ready. It shows the still if video loading/autoplay fails; a booting device holds the still after the clip until its real application state changes. Fault/shutdown take priority. `Replay startup` in the workbench replays branding in the same product iframe without changing backend state. The still is included in the offline shell cache; video caching depends on successful prior requests and is not required for offline startup.
+The WebP export merges identical frames. Its one-millisecond duration difference is encoding rounding. Reproduce it with FFmpeg:
 
-With reduced motion enabled, only the still is shown. Any pointer/keyboard input on a ready screen dismisses branding immediately; animation does not delay controls or hardware readiness.
+```sh
+ffmpeg -i design/brand/tunebox-cold-start-master.mp4 \
+  -vf scale=1280:800:flags=lanczos,fps=24 \
+  -c:v libwebp_anim -lossless 0 -quality 88 -compression_level 6 \
+  -loop 1 -an public/media/startup.webp
+```
 
-`startup.webm` is a VP8 transcode of the owner-supplied MP4, retaining 1280×400, 30 fps and the same animation. It is preferred by the browser to avoid relying on H.264 availability in Linux Chromium. The MP4 is retained as an alternate source. Playback timing starts on actual video playback, with a 8-second load deadline. If media cannot play, a CSS fade/scale of the supplied PNG provides a clearly identified fallback renderer. Reduced-motion uses the static PNG. No hardware readiness or amplifier state is inferred from branding.
+WebP avoids the browser video-player/codec path for this short branding sequence. It is not inherently smaller or cheaper to decode than video: here MP4 is the smallest file. Auto mode retains a static image on Pi 3 and when reduced motion is requested. Explicit Animation overrides that policy; Still and Off remain available.
+
+Loading the WebP has an eight-second deadline. A failure tries MP4, then WebM, then the identified PNG/CSS fallback. A ready screen can dismiss branding immediately; a device still booting holds the end image. Fault and shutdown have priority. Branding neither enables audio nor proves hardware readiness.
+
+A unique image URL restarts each replay. The production service worker stores one canonical offline WebP copy and the still; it bypasses video and Range requests. It must never insert an HTTP 206 partial response into CacheStorage or replace a valid response when caching fails. Production browser tests cover these paths with the real worker active.
+
+See [startup reliability and Pi checks](../../docs/startup-reliability.md).

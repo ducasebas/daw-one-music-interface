@@ -1,7 +1,7 @@
 [Unit]
 Description=DAW ONE Wayland kiosk (simulation)
 After=systemd-user-sessions.service daw-one.service
-Requires=daw-one.service
+Wants=daw-one.service
 Conflicts=getty@tty1.service
 [Service]
 User=dawone

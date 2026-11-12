@@ -25,22 +25,26 @@ export function StartupScreen({
   const [foreground, setForeground] = useState(
     document.visibilityState === "visible",
   );
-  const [renderer, setRenderer] = useState(reduced ? "still" : "loading");
+  const [renderer, setRenderer] = useState(reduced ? "still" : "image-loading");
   const [sourceIndex,setSourceIndex]=useState(0);
+  const [imageToken,setImageToken]=useState(()=>Date.now());
+  const imageClock=useRef(null);
   const failure=useRef(null),progress=useRef({time:0,frames:0}),lastReport=useRef(0);
   const report=()=>{
     const v=video.current;
     if(v){const quality=v.getVideoPlaybackQuality?.();progress.current={time:Math.round(v.currentTime*100)/100,frames:quality?.totalVideoFrames??null,droppedFrames:quality?.droppedVideoFrames??null};}
-    try{localStorage.setItem('tunebox-startup-status',JSON.stringify({renderer,source:['still','fallback'].includes(renderer)?'/media/startup-still.png':startupSources[sourceIndex],animationMode,staticOnly,reduced,reason:animationMode==='off'?'disabled':animationMode==='still'?'still-selected':reduced?(staticOnly?'low-power-auto':'reduced-motion'):failure.current,...progress.current,at:Date.now()}));}catch{}
+    if(renderer==='image-animation')progress.current={time:Math.min(4,Math.round((performance.now()-imageClock.current)/10)/100),frames:null,droppedFrames:null};
+    try{localStorage.setItem('tunebox-startup-status',JSON.stringify({renderer,source:['still','fallback'].includes(renderer)?'/media/startup-still.png':renderer.startsWith('image-')?'/media/startup.webp':startupSources[sourceIndex],animationMode,staticOnly,reduced,reason:animationMode==='off'?'disabled':animationMode==='still'?'still-selected':reduced?(staticOnly?'low-power-auto':'reduced-motion'):failure.current,...progress.current,at:Date.now()}));}catch{}
   };
   const nextSource=(reason)=>{
     failure.current=typeof reason==='string'?reason:video.current?.error?`media-error-${video.current.error.code}`:'playback-did-not-advance';
     if(sourceIndex<startupSources.length-1){setSourceIndex(sourceIndex+1);setRenderer('loading');}
     else setRenderer('fallback');
   };
+  const imageFailed=(reason)=>{failure.current=reason;setSourceIndex(0);setRenderer('loading');};
   useEffect(()=>{
     report();
-    if(animationMode!=='off'&&renderer==='loading'&&visible||!updates?.info?.controlToken)return;
+    if(animationMode!=='off'&&['loading','image-loading'].includes(renderer)&&visible||!updates?.info?.controlToken)return;
     const frame=requestAnimationFrame(()=>requestAnimationFrame(()=>{
       fetch('/api/display/ready',{method:'POST',headers:{'X-TuneBox-Control':updates.info.controlToken}}).catch(()=>{});
     }));
@@ -57,7 +61,8 @@ export function StartupScreen({
     setVisible(true);
     setElapsed(false);
     setSourceIndex(0);
-    setRenderer(reduced ? "still" : "loading");
+    setImageToken(Date.now());imageClock.current=null;
+    setRenderer(reduced ? "still" : "image-loading");
     failure.current=null;progress.current={time:0,frames:0};
   }, [cycle, preview]);
   useEffect(() => {
@@ -71,6 +76,14 @@ export function StartupScreen({
       const timer=setTimeout(nextSource,6000);
       return()=>clearTimeout(timer);
     }
+    if(renderer==='image-loading'){
+      const timer=setTimeout(()=>imageFailed('animated-image-timeout'),8000);
+      return()=>clearTimeout(timer);
+    }
+    if(renderer==='image-animation'){
+      const poll=setInterval(report,500),timer=setTimeout(()=>{report();setElapsed(true);},4000);
+      return()=>{clearInterval(poll);clearTimeout(timer);};
+    }
     // Video ends on its media clock, not wall time. A frozen decoder can still recover.
     const timer =
       renderer === "video"
@@ -83,7 +96,7 @@ export function StartupScreen({
     const change = () => {
       const still=stillPolicy(staticOnly,animationMode,media.matches);
       setReduced(still);
-      setRenderer(old=>still?'still':old==='still'?'loading':old);
+      setRenderer(old=>still?'still':old==='still'?'image-loading':old);
     };
     change();
     media.addEventListener("change", change);
@@ -160,13 +173,22 @@ export function StartupScreen({
         key={`${cycle}-${preview}-${renderer}`}
         className={renderer === "fallback" ? "startup-logo-motion" : undefined}
         style={{
-          visibility: ["loading", "primed", "video"].includes(renderer)
+          visibility: !elapsed && ["loading", "primed", "video", "image-loading", "image-animation"].includes(renderer)
             ? "hidden"
             : "visible",
         }}
         src="/media/startup-still.png"
         alt={tr("TuneBox · DUTCHAUDIOWORKS")}
       />
+      {!reduced&&!elapsed&&['image-loading','image-animation'].includes(renderer)&&<img
+        key={`animated-${cycle}-${preview}-${imageToken}`}
+        src={`/media/startup.webp?play=${imageToken}`}
+        className="startup-frame-animation"
+        alt={tr('TuneBox cold start animation')}
+        style={{visibility:renderer==='image-animation'?'visible':'hidden'}}
+        onLoad={()=>{imageClock.current=performance.now();setRenderer('image-animation');}}
+        onError={()=>imageFailed('animated-image-unavailable')}
+      />}
       {!reduced &&
         !elapsed &&
         ["loading", "primed", "video"].includes(renderer) && (

@@ -8,9 +8,19 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 *Current software screenshot using simulated playback and conceptual artwork; no Louder HAT is connected.*
 
+## GUI 3.2.4 · STARTUP — animated WebP and reliable update display
+
+**Current build: `GUI 3.2.4 · STARTUP` / `2026.11.12-startup.1`.** The four-second splash now uses a 1280 × 800 animated WebP by default. Its compact export is 439 KB; MP4/WebM remain reserves, with Still/Off and automatic Pi 3/reduced-motion policies retained. Replay starts afresh and the animation is available offline.
+
+Production testing reproduced the Pi's `media error 4`: the service worker tried to cache HTTP 206 video byte ranges and turned a successful network response into an error. Video/range requests now bypass that cache. An independent kiosk unit also stays running when OTA restarts the backend; the trusted installer migrates older units with a backup.
+
+The owner has confirmed the real PCM spectrum and a first signed OTA activation to GUI 3.2.3. The kiosk dependency and quiet-boot configuration have been repaired on that Pi. A physical cold boot and WebP playback on the Pi remain to be confirmed for this release.
+
+**[Release notes, actual findings and hardware acceptance](docs/startup-reliability.md)**.
+
 ## GUI 3.2.3 · TOUCH — settings, wake and larger audio controls
 
-**Current build: `GUI 3.2.3 · TOUCH` / `2026.11.12-touch.1`.** Settings uses a 5 × 3 topic grid, a fixed Save/Cancel bar and the persistent playback footer. All settings → Now Playing and the footer provide a clear return route, with Save/Discard/Stay for unsaved edits. A single checkbox change activates Save; cancelling no longer leaves a phantom DSP edit.
+**Touch release: `GUI 3.2.3 · TOUCH` / `2026.11.12-touch.1`.** Settings uses a 5 × 3 topic grid, a fixed Save/Cancel bar and the persistent playback footer. All settings → Now Playing and the footer provide a clear return route, with Save/Discard/Stay for unsaved edits. A single checkbox change activates Save; cancelling no longer leaves a phantom DSP edit.
 
 The wall volume dial is 112 px; PCM spectrum/meters have larger views in Audio & DSP and Now Playing. The Wi-Fi header uses measured signal arcs, with the percentage in its details. The adjustable volume ceiling is persisted and enforced by TuneBox; increasing it never changes the actual player volume. Local sleep/wake events now bypass Music Assistant in live mode. Browser text/image gestures are suppressed outside editable fields.
 
@@ -182,7 +192,7 @@ Music Assistant needs a separately configured server and a working player. The b
 | Safety | Simulated fault latching, watchdog and denied enable for unverified/faulted hardware | Independent physical disable, controller firmware and electrical tests |
 | Music | Mock playback, MA adapter/fixtures; owner-reported MA 2.10.9 and Pi-jack playback | Stable track changes, reconnect and measured multiroom sync; live browsing/artwork/queue edits |
 | Video Artwork | Mock video clock, End-Sync arithmetic and fallback states | Real video matching, embed availability and end-to-end synchronisation |
-| Startup | MP4/WebM branding, decoded-first-frame playback and fallback | Final Pi startup/decoding checks; Pi3 profile intentionally static |
+| Startup | Animated WebP, MP4/WebM reserves and offline still | Final Pi startup/decoding checks; Pi3 profile intentionally static |
 | Deployment | Pi/ARM64 VM installer, experimental Pi3 profile; owner-reported HDMI kiosk | Undervoltage, cursor stutter, cold boot, recovery and final DSI/touch |
 | Local Mac | Owner reports GUI 2.0 runs directly on macOS; previous UTM rehearsal is historical | Physical Safari interaction review and real Pi validation |
 
@@ -320,7 +330,7 @@ Additional references: [API/protocol](docs/protocol-and-api.md), [hardware relea
 
 - **Blank/unavailable page:** start `npm run dev` and use port **5173**. Port 3001 may serve an older production build. The loading shell and React error boundary expose startup failures.
 - **Latched amplifier fault:** restore simulated inputs, acknowledge, then run a fresh Playback scenario. Refreshing the browser does not clear backend faults.
-- **No startup animation:** reduced-motion intentionally uses a still. Otherwise WebM/MP4 playback falls back to a logo fade if unavailable; **Replay startup** does not reboot or enable hardware.
+- **No startup animation:** reduced-motion intentionally uses a still. Otherwise animated WebP uses MP4/WebM reserves and a logo fade if unavailable; **Replay startup** does not reboot or enable hardware.
 - **Private guide inaccessible on GitHub:** use the installed app's `/docs/` page or local files.
 - **No sound in simulation:** expected. Real sound requires a configured Music Assistant player and validated audio hardware.
 

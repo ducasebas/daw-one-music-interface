@@ -26,6 +26,7 @@ writeFileSync(path,JSON.stringify({...previous,channel:process.argv[2],policy:{m
 JS
 install -m 644 "$repo"/deploy/ota/{update.mjs,policy.mjs,prepare-runtime.mjs,local-http.mjs,verify-tree.mjs,safe-extract.py} /usr/local/lib/daw-one-updater/
 install -m 644 "$repo/shared/update-settings.js" /usr/local/lib/daw-one-updater/settings.mjs
+if [[ -f /etc/systemd/system/daw-one-kiosk.service ]]; then python3 "$repo/deploy/ota/migrate-kiosk.py"; fi
 cat > /etc/systemd/system/daw-one-update.service <<'UNIT'
 [Unit]
 Description=TuneBox signed release update (idle only)

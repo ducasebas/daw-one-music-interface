@@ -12,6 +12,7 @@ const responses = {
   ],
   "/assets/main.js": ["console.log(1)", "text/javascript"],
   "/assets/main.css": ["body{}", "text/css"],
+  "/media/startup.webp": ["animated image", "image/webp"],
   "/media/startup.mp4": ["video", "video/mp4"],
   "/media/startup-still.png": ["image", "image/png"],
   "/docs/pi-first-run.md": ["Installation", "text/plain"],

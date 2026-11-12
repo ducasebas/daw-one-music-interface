@@ -398,6 +398,7 @@ test("startup media falls back to supplied still and never stalls a ready device
   page,
 }) => {
   await reset(page);
+  await page.route("**/media/startup.webp*", (r) => r.abort());
   await page.route("**/media/startup.mp4", (r) => r.abort());
   await page.route("**/media/startup.webm", (r) => r.abort());
   await page.goto("/?product=1");
@@ -451,6 +452,7 @@ test("branding holds at boot and gives fault state priority", async ({
   await expect(page.getByText("Starting device…", { exact: true })).toBeVisible(
     { timeout: 6000 },
   );
+  await expect(page.getByAltText("TuneBox · DUTCHAUDIOWORKS", {exact:true})).toBeVisible();
   await page.request.post("/api/event", { data: { type: "thermal-alarm" } });
   await expect(page.getByLabel("Startup animation")).toHaveCount(0);
   await expect(page.locator(".status")).toContainText("FAULT");
@@ -550,10 +552,11 @@ test("default browser keeps test bench visible during navigation and fault ackno
   await expect(page.getByLabel("Left speaker silent")).toBeVisible();
 });
 
-test("startup really plays decoded animation frames in Chromium", async ({
+test("video reserve plays decoded animation when WebP is unavailable", async ({
   page,
 }) => {
   await reset(page);
+  await page.route("**/media/startup.webp*", (r) => r.abort());
   await page.goto("/?screen=1");
   const startup = page.getByLabel("Startup animation");
   await expect(startup).toHaveAttribute("data-renderer", "video");
@@ -571,6 +574,7 @@ test("startup really plays decoded animation frames in Chromium", async ({
 test("startup retries WebM after an MP4 decode error and plays the new wall splash", async ({page}) => {
   await reset(page);
   await page.setViewportSize({width:1280,height:800});
+  await page.route('**/media/startup.webp*',route=>route.abort());
   await page.route('**/media/startup.mp4',route=>route.fulfill({status:200,contentType:'video/mp4',body:'Unsupported MP4 fixture'}));
   await page.goto('/?gui=2&screen=1&display=dsi-production&panel=wall-16-10');
   const splash=page.getByLabel('Startup animation',{exact:true});
@@ -586,6 +590,7 @@ test("missing video uses animated logo fallback and reduced-motion stays static"
   page,
 }) => {
   await reset(page);
+  await page.route("**/media/startup.webp*", (route) => route.abort());
   await page.route("**/media/startup.webm", (route) => route.abort());
   await page.route("**/media/startup.mp4", (route) => route.abort());
   await page.goto("/?screen=1");
@@ -613,6 +618,7 @@ test("startup primes a visible first frame and never cuts video short by wall cl
   page,
 }) => {
   await reset(page);
+  await page.route("**/media/startup.webp*", (r) => r.abort());
   await page.addInitScript(() => {
     window.startupStarts = [];
     const original = HTMLMediaElement.prototype.play;

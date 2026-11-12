@@ -1,5 +1,7 @@
 # GUI 3.2.3 · TOUCH
 
+Follow-up: [GUI 3.2.4 startup reliability](startup-reliability.md) switches the default to animated WebP and fixes the production video cache and OTA kiosk lifecycle. The owner has since confirmed the first OTA activation to GUI 3.2.3.
+
 Release `2026.11.12-touch.1`, 12 November 2026. Native wall layout: 1280 × 800. The 1280 × 400 legacy layout remains available. Music Assistant credentials, Squeezelite identity, audio routing and the installed PCM reader are retained.
 
 ## Settings and everyday controls
@@ -52,4 +54,4 @@ Never paste `private.pem`, Music Assistant credentials or the browser control to
 
 Automated coverage includes local live-mode wake while Music Assistant is unavailable, volume-cap persistence through a backend restart, no implicit volume command on changing the limit, checkbox Save/Cancel, unsaved navigation, tile/content/footer geometry across all six skins, larger PCM/dial geometry, measured Wi-Fi fan levels, video frame progression and retained input/scroll controls. Production offline suites run serially because they share a mutable simulator backend; parallel Cold boot/Playback scenarios were interfering with each other and blocking signed publication.
 
-Software/browser checks do not replace the real Pi acceptance sequence above. The physical PCM spectrum has been confirmed by the owner; cold-boot animation and the first successful OTA/rollback transaction require device results.
+Software/browser checks do not replace the real Pi acceptance sequence above. The physical PCM spectrum has been confirmed by the owner; the first OTA activation to GUI 3.2.3 has also been confirmed. Cold-boot animation and rollback still require device results.

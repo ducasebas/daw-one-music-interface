@@ -1,5 +1,5 @@
 // Static shell only. Device APIs are never cached or represented as online.
-const CACHE = "daw-one-shell-v31";
+const CACHE = "daw-one-shell-v32";
 self.addEventListener("install", (event) =>
   event.waitUntil(
     (async () => {
@@ -13,6 +13,7 @@ self.addEventListener("install", (event) =>
         "./",
         ...paths,
         "/media/startup-still.png",
+        "/media/startup.webp",
         "/fonts/Manrope-Variable.ttf",
       ]);
       self.skipWaiting();
@@ -33,20 +34,27 @@ self.addEventListener("fetch", (event) => {
   if (
     event.request.method !== "GET" ||
     url.origin !== self.location.origin ||
-    url.pathname.startsWith("/api/")
+    url.pathname.startsWith("/api/") ||
+    event.request.headers.has("range") ||
+    event.request.destination === "video" ||
+    /\.(?:mp4|webm)$/i.test(url.pathname)
   )
     return;
   event.respondWith(
     (async () => {
       try {
         const response = await fetch(event.request);
-        if (response.ok) {
-          const cache = await caches.open(CACHE);
-          await cache.put(event.request, response.clone());
+        if (response.status === 200) {
+          // Cache failures must never turn a valid network response into an error.
+          // Animated-image replays have a unique query but share one offline copy.
+          try {
+            const cache = await caches.open(CACHE);
+            await cache.put(url.pathname === '/media/startup.webp' ? url.pathname : event.request, response.clone());
+          } catch {}
         }
         return response;
       } catch {
-        const cached = await caches.match(event.request);
+        const cached = await caches.match(url.pathname === '/media/startup.webp' ? url.pathname : event.request);
         if (cached) return cached;
         if (event.request.mode === "navigate") return caches.match("./");
         return Response.error();
