@@ -112,8 +112,9 @@ test('explicit animation plays even with reduced motion, advances decoded frames
  await open(page,'Playback');await page.getByLabel('Startup animation',{exact:true}).selectOption('still');await page.getByRole('button',{name:'Replay startup',exact:true}).click();const splash=page.getByRole('status',{name:'Startup animation',exact:true});await expect(splash).toHaveAttribute('data-renderer','still');await splash.click();
  await page.getByLabel('Startup animation',{exact:true}).selectOption('video');await page.getByRole('button',{name:'Replay startup',exact:true}).click();
  await expect(splash).toHaveAttribute('data-renderer','video');await expect.poll(()=>splash.locator('video').evaluate(v=>v.currentTime)).toBeGreaterThan(.4);
+ const source=await splash.locator('video').getAttribute('src');expect(['/media/startup.mp4','/media/startup.webm']).toContain(source);
  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('tunebox-startup-status')).frames)).toBeGreaterThan(1);
- await splash.click();await page.getByText('Splash diagnostics',{exact:true}).click();await expect(page.locator('.startup-diagnostics')).toContainText('startup.mp4');
+ await splash.click();await page.getByText('Splash diagnostics',{exact:true}).click();await expect(page.locator('.startup-diagnostics')).toContainText(source);
 });
 test('manual moon wake stays available in live read-only mode with Music Assistant disconnected',async({page})=>{
  const live=s=>({...s,mode:'music-assistant',musicAssistant:{connected:false,controlEnabled:false,volumeLimit:40}});
