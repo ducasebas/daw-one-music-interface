@@ -16,7 +16,7 @@ Production testing reproduced the Pi's `media error 4`: the service worker tried
 
 The owner has confirmed the real PCM spectrum and a first signed OTA activation to GUI 3.2.3. The kiosk dependency and quiet-boot configuration have been repaired on that Pi. A physical cold boot and WebP playback on the Pi remain to be confirmed for this release.
 
-**[Release notes, actual findings and hardware acceptance](docs/startup-reliability.md)**.
+**[Release notes, actual findings and hardware acceptance](docs/startup-reliability.md)**. The first post-publication check exposed an additional discovery issue: GitHub listed an older release first. The trusted updater now ranks verified signed sequence numbers rather than list position; existing devices need that helper repair once.
 
 ## GUI 3.2.3 · TOUCH — settings, wake and larger audio controls
 

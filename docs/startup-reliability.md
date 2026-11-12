@@ -22,6 +22,14 @@ New units use `Wants=daw-one.service`. The trusted OTA installer migrates older 
 
 The owner has already changed the dependency and run `deploy/display/quiet-boot.py` on the current Pi. Its output confirmed backups and successful configuration. The boot text settings take effect at the next reboot. No new signing key, PCM installation or repeat of those repair commands is needed.
 
+## Follow-up: discovery order
+
+The first GUI check on the Pi remained on `dbeef5c8...` and reported up-to-date, although `b69e7513...` was public. GitHub returned the older release first. The updater had used the first matching list entry, so successful publication alone did not prove that discovery would select it.
+
+The trusted updater now verifies matching channel manifests and ranks their signed sequence numbers. API list order, dates and arbitrary asset links do not choose the version. Invalid metadata/signatures cannot win; an incomplete check cannot certify the installed version as current. Explicit reinstall after rollback retains its previous semantics.
+
+Regression tests reproduce the real old-first/new-second order, reversed orders, misleading dates, wrong signatures/tags, unavailable manifests and conflicting sequences. Before declaring the channel ready, run the same discovery helper against the actual public GitHub inventory and the pinned project public key, and confirm its selected commit. Application-only OTA cannot replace the root updater, so an older device needs the discovery-helper repair once.
+
 ## Pi acceptance
 
 1. Wait for the signed preview release for GUI 3.2.4. Pause playback on TuneBox and its group, keep Music Assistant connected, then use **Settings → Updates → Check updates → Install update**. Observe whether the progress page stays visible through the backend restart.

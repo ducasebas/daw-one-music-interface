@@ -1,11 +1,12 @@
 import {readFileSync,writeFileSync,mkdirSync,existsSync,renameSync,symlinkSync,realpathSync,rmSync,copyFileSync,readdirSync,statfsSync,lstatSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
-import {repository,verifyManifest,verifyArchive,canUpdate,activate,restorePrevious,prunableSlots} from './policy.mjs';
+import {repository,verifyArchive,canUpdate,activate,restorePrevious,prunableSlots} from './policy.mjs';
 import {updateSettings,installationDecision} from './settings.mjs';
 import {verifyTree} from './verify-tree.mjs';
 import {prepareRuntime} from './prepare-runtime.mjs';
 import {localHttp} from './local-http.mjs';
+import {selectRelease,releaseIsCurrent} from './releases.mjs';
 const base='/var/lib/daw-one-updater',slots='/opt/daw-one-releases',app='/opt/daw-one';
 const run=(cmd,args)=>execFileSync(cmd,args,{stdio:'pipe',timeout:180000});
 const json=(path,fallback={})=>{try{return JSON.parse(readFileSync(path,'utf8'));}catch{return fallback;}};
@@ -77,13 +78,10 @@ try{
  if(request.action==='auto'&&policy.mode==='paused'){report('paused');process.exit(0);}
  report('checking');
  const releases=JSON.parse((await download('https://api.github.com/repos/'+repository+'/releases?per_page=30',1048576)).toString());
- const candidate=releases.find(r=>!r.draft&&new RegExp('^ota-'+channel+'-[a-f0-9]{40}$').test(r.tag_name));
- if(!candidate){report('no-release');process.exit(0);}
- const url='https://github.com/'+repository+'/releases/download/'+candidate.tag_name+'/';
- const raw=await download(url+'ota-manifest.json',8192),signature=await download(url+'ota-manifest.sig',256);
- const manifest=verifyManifest(raw,Buffer.from(signature.toString().trim(),'base64'),readFileSync('/etc/daw-one-updater/public.pem'),channel,0);
- if(candidate.tag_name!=='ota-'+channel+'-'+manifest.commit)throw Error('Tag mismatch');
- if(manifest.sequence<(current.sequence||0)||manifest.sequence===current.sequence&&manifest.commit===current.commit){report('up-to-date');process.exit(0);}
+ const selection=await selectRelease(releases,{channel,key:readFileSync('/etc/daw-one-updater/public.pem'),download});
+ if(!selection){report('no-release');process.exit(0);}
+ const {url,manifest}=selection;
+ if(releaseIsCurrent(selection,current)){report('up-to-date');process.exit(0);}
  available={release:manifest.release,commit:manifest.commit,notes:manifest.notes||'Verified TuneBox build'};
  const needsIdle=request.action==='install'||request.action==='auto'&&policy.mode==='auto';
  const decision=installationDecision(policy,request.action,needsIdle?canUpdate(await local('/api/state')):false);
