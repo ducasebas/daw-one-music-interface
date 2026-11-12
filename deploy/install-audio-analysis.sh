@@ -10,7 +10,7 @@ while [[ $# -gt 0 ]]; do
   --player-id) [[ $# -ge 2 ]] || exit 2; player_id=${2,,};shift 2;;
   --enable-export) enable_export=true;shift;;
   --remove) remove=true;shift;;
-  *) echo 'Usage: install-audio-analysis.sh --player-id EXISTING_MAC [--enable-export] | --remove' >&2;exit 2;;
+  *) echo 'Usage: install-audio-analysis.sh (--detect | --player-id EXISTING_MAC) [--enable-export] | --remove' >&2;exit 2;;
  esac
 done
 [[ $EUID == 0 ]] || { echo 'Run with sudo';exit 1; }
@@ -29,16 +29,7 @@ if [[ $remove == true ]]; then
 fi
 if [[ $detect == true && -z $player_id ]]; then
  pid=$(systemctl show -p MainPID --value tunebox-player.service)
- player_id=$(python3 - "$pid" <<'PY'
-from pathlib import Path
-import sys
-pid=sys.argv[1]
-if not pid.isdecimal() or int(pid)<2:raise SystemExit('Start tunebox-player.service before configuring the visualizer')
-args=Path('/proc/'+pid+'/cmdline').read_bytes().rstrip(b'\0').decode().split('\0')
-try: print(args[args.index('-m')+1].lower())
-except (ValueError,IndexError):raise SystemExit('The running player needs its existing explicit -m MAC; no identity is guessed or changed')
-PY
- )
+ player_id=$(python3 "$repo/deploy/audio/player-export.py" detect "$pid")
 fi
 [[ $player_id =~ ^([0-9a-f]{2}:){5}[0-9a-f]{2}$ ]] || { echo 'Specify the existing Squeezelite player MAC with --player-id';exit 2; }
 [[ $(uname -m) == aarch64 || $(uname -m) == x86_64 ]] || { echo 'This reader requires a native 64-bit glibc Linux player';exit 1; }

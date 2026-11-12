@@ -8,9 +8,17 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 *Current software screenshot using simulated playback and conceptual artwork; no Louder HAT is connected.*
 
+## GUI 3.2.2 · OTA — readable runtime dependencies
+
+**Current build: `GUI 3.2.2 · OTA` / `2026.11.12-ota.1`.** OTA preparation now normalises runtime read/traverse permissions after dependencies install under the updater's private umask. Without this, the unprivileged application cannot read the new `node_modules` and activation can roll back. An offline npm fixture reproduces the failure and verifies the correction, including executable files and external symlinks. The root-installed updater needs one manual installer refresh before the first OTA transaction; an application update cannot replace trusted root helpers.
+
+**[OTA and PCM commissioning](docs/ota-pcm-setup.md)**. A signed release, pinned public key, active timer and an observed device transaction are separate requirements. PCM remains an optional local Squeezelite reader; an unconfigured reader is not a failed audio decoder.
+
+The PCM installer also reads the original systemd command instead of Squeezelite's tokenised `/proc` arguments. This fixes detection returning only the first MAC byte and prevents writing a broken MAC/server/debug command into the export drop-in.
+
 ## GUI 3.2.1 · SPLASH — new TuneBox cold start
 
-**Current build: `GUI 3.2.1 · SPLASH` / `2026.11.12-splash.1`.** The owner-created TuneBox / DUTCHAUDIOWORKS animation now fills the 1280 × 800 wall screen: four seconds, 30 fps, muted, with the warm lower-edge glow. H.264 MP4 is tried first; a decode or playback failure retries VP8/WebM before the still-image fallback. The large Canva export is retained under `design/brand`.
+**Splash release: `GUI 3.2.1 · SPLASH` / `2026.11.12-splash.1`.** The owner-created TuneBox / DUTCHAUDIOWORKS animation now fills the 1280 × 800 wall screen: four seconds, 30 fps, muted, with the warm lower-edge glow. H.264 MP4 is tried first; a decode or playback failure retries VP8/WebM before the still-image fallback. The large Canva export is retained under `design/brand`.
 
 **[Release notes, verification and Pi installation](docs/splash-update.md)**. A source commit and manual package are separate from an active, signed OTA release.
 

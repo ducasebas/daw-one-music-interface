@@ -4,6 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {repository,verifyManifest,verifyArchive,canUpdate,activate,restorePrevious,prunableSlots} from './policy.mjs';
 import {updateSettings,installationDecision} from './settings.mjs';
 import {verifyTree} from './verify-tree.mjs';
+import {prepareRuntime} from './prepare-runtime.mjs';
 const base='/var/lib/daw-one-updater',slots='/opt/daw-one-releases',app='/opt/daw-one';
 const run=(cmd,args)=>execFileSync(cmd,args,{stdio:'pipe',timeout:180000});
 const json=(path,fallback={})=>{try{return JSON.parse(readFileSync(path,'utf8'));}catch{return fallback;}};
@@ -91,9 +92,7 @@ try{
  report('verifying');verifyArchive(bytes,manifest);
  const dest=slots+'/'+manifest.commit;if(realpathSync(app)===dest)throw Error('Candidate is already active');if(readdirSync(slots).length>=8)throw Error('Release storage full; remove unused slots through SSH');if(existsSync(dest))rmSync(dest,{recursive:true});mkdirSync(dest,{mode:0o755});
  const archive=base+'/candidate.tar.gz';writeFileSync(archive,bytes,{mode:0o600});run('python3',[new URL('./safe-extract.py',import.meta.url).pathname,archive,dest]);verifyTree(dest,manifest.release);
- report('preparing');run('chown',['-R','dawupdatebuild:dawupdatebuild',dest]);
- run('runuser',['-u','dawupdatebuild','--','env','-i','PATH=/usr/bin:/bin','HOME=/var/lib/daw-one-update-build','npm','ci','--prefix',dest,'--omit=dev','--ignore-scripts','--no-audit','--no-fund']);
- run('chown',['-R','root:root',dest]);run('chmod',['-R','go-w',dest]);verifyTree(dest,manifest.release);
+ report('preparing');prepareRuntime(dest,run);verifyTree(dest,manifest.release);
  for(const file of ['kiosk.sh','set-display-mode.sh','health.sh','deployment-target','panel-profile','read-sensors.py'])if(existsSync(app+'/'+file))copyFileSync(app+'/'+file,dest+'/'+file);
  for(const file of ['kiosk.sh','set-display-mode.sh','health.sh'])if(existsSync(dest+'/'+file))run('chmod',['755',dest+'/'+file]);
  atomic(dest+'/deployment-ota.json',{commit:manifest.commit});run('chmod',['644',dest+'/deployment-ota.json']);

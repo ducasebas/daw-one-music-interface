@@ -4,6 +4,8 @@ TuneBox follows a signed GitHub **preview** channel. A successful Verify run for
 
 ## One-time project setup (maintainer, on your Mac)
 
+The guided alternative is `bash deploy/ota/setup-project.sh SSH_USER@PI_HOST`. It checks GitHub CLI authentication, stores or reuses an Ed25519 key in `~/.config/tunebox/ota`, creates the repository secret only if absent, dispatches Verify and copies only the public key to the Pi. Set `TUNEBOX_OTA_KEY_DIR` to an existing key directory to reuse it. An existing GitHub secret without a local private key stops setup; the script never silently replaces it. Follow [commissioning](ota-pcm-setup.md) to refresh the trusted Pi helper and observe an actual update after publication. Node 22+ and `gh` are required; install them first with your chosen trusted package manager.
+
 With Node 22.12+ and GitHub CLI, from a trusted checkout:
 
 ```sh
@@ -35,6 +37,8 @@ sudo bash deploy/install.sh --target auto --prebuilt --music-assistant skip --up
 The initial installer installs the limited device manager and first-run wizard even with OTA off. It preserves existing configuration and does not change boot configuration by default. The explicit `--quiet-boot` option backs up and changes console/boot presentation settings; see [GUI 3.1 installation](touch-update.md). Physical amplifier verification is never granted by installation.
 
 ## Existing installation
+
+**GUI 3.2.2 runtime fix:** refresh the root helper from the new extracted bundle once before the first OTA activation. Earlier helpers leave npm dependencies unreadable when created under their private umask. `install-ota.sh` now installs `prepare-runtime.mjs` as part of that refresh. Merely installing the new application through OTA cannot replace the old root helper. See [the OTA/PCM commissioning sequence](ota-pcm-setup.md).
 
 Install this application release normally first. To enable OTA separately:
 
