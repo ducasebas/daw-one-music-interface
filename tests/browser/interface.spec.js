@@ -406,7 +406,7 @@ test("startup media falls back to supplied still and never stalls a ready device
     "data-renderer",
     "fallback",
   );
-  await expect(page.getByAltText("ONE · DUTCHAUDIOWORKS")).toBeVisible();
+  await expect(page.getByAltText("TuneBox · DUTCHAUDIOWORKS")).toBeVisible();
   await expect(page.getByLabel("Startup animation")).toHaveCount(0, {
     timeout: 6000,
   });
@@ -568,6 +568,20 @@ test("startup really plays decoded animation frames in Chromium", async ({
     )
     .toBe(1280);
 });
+test("startup retries WebM after an MP4 decode error and plays the new wall splash", async ({page}) => {
+  await reset(page);
+  await page.setViewportSize({width:1280,height:800});
+  await page.route('**/media/startup.mp4',route=>route.fulfill({status:200,contentType:'video/mp4',body:'Unsupported MP4 fixture'}));
+  await page.goto('/?gui=2&screen=1&display=dsi-production&panel=wall-16-10');
+  const splash=page.getByLabel('Startup animation',{exact:true});
+  await expect(splash).toHaveAttribute('data-renderer','video');
+  const video=splash.locator('video');
+  const media=await video.evaluate(v=>({source:v.currentSrc,width:v.videoWidth,height:v.videoHeight,duration:v.duration,muted:v.muted}));
+  expect(media.source).toMatch(/\/media\/startup\.webm$/);
+  expect(media).toMatchObject({width:1280,height:800,muted:true});
+  expect(media.duration).toBeCloseTo(4,1);
+  await expect.poll(()=>video.evaluate(v=>v.currentTime)).toBeGreaterThan(.1);
+});
 test("missing video uses animated logo fallback and reduced-motion stays static", async ({
   page,
 }) => {
@@ -603,7 +617,7 @@ test("startup primes a visible first frame and never cuts video short by wall cl
     window.startupStarts = [];
     const original = HTMLMediaElement.prototype.play;
     HTMLMediaElement.prototype.play = function () {
-      if (this.getAttribute("aria-label") === "DAW ONE cold start video")
+      if (this.getAttribute("aria-label") === "TuneBox cold start video")
         window.startupStarts.push({
           time: this.currentTime,
           autoplay: this.autoplay,

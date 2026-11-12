@@ -1,0 +1,36 @@
+{
+  "source": {
+    "name": "tunebox-cold-start-master.mp4",
+    "width": 3642,
+    "height": 2276,
+    "durationSeconds": 4,
+    "fps": 30
+  },
+  "output": {
+    "width": 1280,
+    "height": 800,
+    "durationSeconds": 4,
+    "fps": 30,
+    "audio": false,
+    "h264Profile": "Main",
+    "h264Level": "3.2"
+  },
+  "verification": "Both 1280x800 videos fully decoded without errors. Physical Pi playback remains a hardware acceptance test.",
+  "files": [
+    {
+      "name": "startup.mp4",
+      "bytes": 150399,
+      "sha256": "0773d594f4e3cb9baa682f13c07806c164645d5e6249987448fefbf6460bc9ba"
+    },
+    {
+      "name": "startup.webm",
+      "bytes": 292484,
+      "sha256": "e5a17d46bfb742f8eb0210c7249a983c72df7f1a5a803df58120ee9d14baa932"
+    },
+    {
+      "name": "startup-still.png",
+      "bytes": 160738,
+      "sha256": "91b91d03c8923c9824e62374e7ecc39bade76b881c923e6df5ad1a4aa4b8e917"
+    }
+  ]
+}

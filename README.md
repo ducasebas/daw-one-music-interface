@@ -8,9 +8,15 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 *Current software screenshot using simulated playback and conceptual artwork; no Louder HAT is connected.*
 
+## GUI 3.2.1 · SPLASH — new TuneBox cold start
+
+**Current build: `GUI 3.2.1 · SPLASH` / `2026.11.12-splash.1`.** The owner-created TuneBox / DUTCHAUDIOWORKS animation now fills the 1280 × 800 wall screen: four seconds, 30 fps, muted, with the warm lower-edge glow. H.264 MP4 is tried first; a decode or playback failure retries VP8/WebM before the still-image fallback. The large Canva export is retained under `design/brand`.
+
+**[Release notes, verification and Pi installation](docs/splash-update.md)**. A source commit and manual package are separate from an active, signed OTA release.
+
 ## GUI 3.2 · SETUP — device settings, diagnostics and room measurement
 
-**Current build: `GUI 3.2 · SETUP` / `2026.11.11-setup.1`.** Fifteen visible settings topics, explicit Save/Cancel/defaults, six-digit PIN, touch Wi-Fi/phone setup, repeatable first-start wizard and Music Assistant server/player setup. A local MA install is offered only after a capacity check; your NUC connection is retained until explicitly changed.
+**Setup release: `GUI 3.2 · SETUP` / `2026.11.11-setup.1`.** Fifteen visible settings topics, explicit Save/Cancel/defaults, six-digit PIN, touch Wi-Fi/phone setup, repeatable first-start wizard and Music Assistant server/player setup. A local MA install is offered only after a capacity check; your NUC connection is retained until explicitly changed.
 
 **[How every feature works, Pi update commands and remaining hardware tests](docs/setup-update.md)** · **[USB microphone measurement and selectable listening targets](docs/room-measurement.md)** · **[OTA activation](docs/ota-updates.md)** · **[Software validation](docs/setup-validation.md)**.
 

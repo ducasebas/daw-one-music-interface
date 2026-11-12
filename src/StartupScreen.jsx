@@ -2,6 +2,7 @@ import {tr} from "../shared/i18n.js";
 import { useStartupPreparation } from "./useStartupPreparation.js";
 import React, { useEffect, useRef, useState } from "react";
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
+const startupSources=['/media/startup.mp4','/media/startup.webm'];
 /** Branding is independent from hardware readiness and never enables audio. */
 export function StartupScreen({
   mode,
@@ -25,14 +26,19 @@ export function StartupScreen({
     document.visibilityState === "visible",
   );
   const [renderer, setRenderer] = useState(reduced ? "still" : "loading");
+  const [sourceIndex,setSourceIndex]=useState(0);
+  const nextSource=()=>{
+    if(sourceIndex<startupSources.length-1){setSourceIndex(sourceIndex+1);setRenderer('loading');}
+    else setRenderer('fallback');
+  };
   useEffect(()=>{
-    try{localStorage.setItem('tunebox-startup-status',JSON.stringify({renderer,staticOnly,reduced,at:Date.now()}));}catch{}
+    try{localStorage.setItem('tunebox-startup-status',JSON.stringify({renderer,source:['still','fallback'].includes(renderer)?'/media/startup-still.png':startupSources[sourceIndex],staticOnly,reduced,at:Date.now()}));}catch{}
     if(animationMode!=='off'&&renderer==='loading'&&visible||!updates?.info?.controlToken)return;
     const frame=requestAnimationFrame(()=>requestAnimationFrame(()=>{
       fetch('/api/display/ready',{method:'POST',headers:{'X-TuneBox-Control':updates.info.controlToken}}).catch(()=>{});
     }));
     return()=>cancelAnimationFrame(frame);
-  },[renderer,visible,updates?.info?.controlToken]);
+  },[renderer,visible,sourceIndex,updates?.info?.controlToken]);
   const previous = useRef(mode),
     video = useRef(null);
   useEffect(() => {
@@ -43,26 +49,27 @@ export function StartupScreen({
   useEffect(() => {
     setVisible(true);
     setElapsed(false);
+    setSourceIndex(0);
     setRenderer(reduced ? "still" : "loading");
   }, [cycle, preview]);
   useEffect(() => {
     if (!visible || !foreground) return;
     // Slow VM decoders must not consume the whole animation window while loading.
     if (renderer === "loading") {
-      const timer = setTimeout(() => setRenderer("fallback"), 8000);
+      const timer = setTimeout(nextSource, 8000);
       return () => clearTimeout(timer);
     }
     if (renderer === "primed") {
-      const timer=setTimeout(()=>setRenderer('fallback'),6000);
+      const timer=setTimeout(nextSource,6000);
       return()=>clearTimeout(timer);
     }
     // Video ends on its media clock, not wall time. A frozen decoder can still recover.
     const timer =
       renderer === "video"
-        ? setTimeout(() => setRenderer("fallback"), 12000)
+        ? setTimeout(nextSource, 12000)
         : setTimeout(() => setElapsed(true), 2800);
     return () => clearTimeout(timer);
-  }, [renderer, cycle, preview, visible, foreground]);
+  }, [renderer, sourceIndex, cycle, preview, visible, foreground]);
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const change = () => {
@@ -105,9 +112,7 @@ export function StartupScreen({
         timer = setTimeout(() => {
           if (!current || !video.current) return;
           video.current.currentTime = 0;
-          video.current.play().catch(() => {
-            if (current) setRenderer("fallback");
-          });
+          video.current.play().catch(() => {if(current)nextSource();});
         }, 300);
       });
     });
@@ -117,7 +122,7 @@ export function StartupScreen({
       cancelAnimationFrame(second);
       clearTimeout(timer);
     };
-  }, [visible, renderer, cycle, preview, reduced, foreground]);
+  }, [visible, renderer, sourceIndex, cycle, preview, reduced, foreground]);
   const prime = (event) => {
     if (renderer !== "loading" || event.currentTarget.readyState < 2) return;
     event.currentTarget.pause();
@@ -152,14 +157,15 @@ export function StartupScreen({
             : "visible",
         }}
         src="/media/startup-still.png"
-        alt={tr("ONE · DUTCHAUDIOWORKS")}
+        alt={tr("TuneBox · DUTCHAUDIOWORKS")}
       />
       {!reduced &&
         !elapsed &&
         ["loading", "primed", "video"].includes(renderer) && (
           <video
-            key={`${cycle}-${preview}`}
+            key={`${cycle}-${preview}-${sourceIndex}`}
             ref={video}
+            src={startupSources[sourceIndex]}
             style={{
               visibility: renderer !== "loading" ? "visible" : "hidden",
             }}
@@ -170,12 +176,9 @@ export function StartupScreen({
             onCanPlay={prime}
             onPlaying={() => setRenderer("video")}
             onEnded={() => setElapsed(true)}
-            onError={() => setRenderer("fallback")}
-            aria-label={tr("DAW ONE cold start video")}
-          >
-            <source src="/media/startup.mp4" type="video/mp4" />
-            <source src="/media/startup.webm" type='video/webm; codecs="vp8"' />
-          </video>
+            onError={nextSource}
+            aria-label={tr("TuneBox cold start video")}
+          />
         )}
       <small className="startup-check-caption">
         {tr(offline
