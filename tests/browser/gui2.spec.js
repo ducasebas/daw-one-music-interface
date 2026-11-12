@@ -1,5 +1,6 @@
 import { chooseSkin } from "./skin-helpers.js";
 import { test, expect } from "@playwright/test";
+import { release } from "../../shared/release.js";
 test("GUI2 music journey works at 1280x400 through the shared runtime", async ({
   page,
 }) => {
@@ -213,7 +214,10 @@ test("visible frontend release identifies missing and mismatched backend version
   await page.goto("/?gui=2&product=1");
   await expect(
     page.getByLabel("Software version", { exact: true }),
-  ).toContainText("GUI 3.2.1 · SPLASH");
+  ).toContainText(release.label);
+  await expect(
+    page.getByLabel("Software version", { exact: true }),
+  ).toHaveAttribute("data-build", release.id);
   await expect(
     page.getByLabel("Software version", { exact: true }),
   ).toHaveAttribute("data-alignment", "matched");
@@ -224,7 +228,7 @@ test("visible frontend release identifies missing and mismatched backend version
   await expect(product).toHaveURL(/gui=2/);
   await expect(
     product.getByLabel("Software version", { exact: true }),
-  ).toContainText("GUI 3.2.1 · SPLASH");
+  ).toContainText(release.label);
   await product.close();
   await page.goto("/?gui=2&product=1");
   const snapshot = await (await page.request.get("/api/state")).json();
