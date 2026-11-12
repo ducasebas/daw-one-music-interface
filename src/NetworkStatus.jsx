@@ -19,6 +19,7 @@ export function NetworkStatus({ snapshot, offline }) {
     read();return()=>{active=false;clearTimeout(timer);controller?.abort();};
   },[offline]);
   const reading=wifiReading(network,offline);
+  const bars=reading.level===null?null:reading.level>=67?3:reading.level>=34?2:reading.level>0?1:0;
 
   useEffect(() => {
     const outside = (e) => {
@@ -55,7 +56,12 @@ export function NetworkStatus({ snapshot, offline }) {
       data-signal={reading.level===null?"unavailable":reading.level}
     >
       <summary aria-label={tr("Netwerkstatus")}>
-        <Icon
+        {bars!==null?<svg className="tb-icon wifi-signal" data-bars={bars} width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <path d="M2 8a16 16 0 0 1 20 0" opacity={bars>=3?1:.22}/>
+          <path d="M5 11a11 11 0 0 1 14 0" opacity={bars>=2?1:.22}/>
+          <path d="M8 14a6 6 0 0 1 8 0" opacity={bars>=1?1:.22}/>
+          <circle cx="12" cy="18" r="1" fill="currentColor" stroke="none"/>
+        </svg>:<Icon
           name={
             offline || wifi === false
               ? "wifi-off"
@@ -63,9 +69,9 @@ export function NetworkStatus({ snapshot, offline }) {
                 ? "wifi"
                 : "network"
           }
-          size={18}
-        />
-        <span>{tr(label)}{tr(reading.level!==null ? ` · ${reading.label}${reading.simulated ? " sim" : ""}` : "")}</span>
+          size={28}
+        />}
+        <span className="network-label">{tr(label)}{tr(reading.level!==null ? ` · ${reading.label}${reading.simulated ? " sim" : ""}` : "")}</span>
       </summary>
       <div className="m2-network-info">
         <strong>{tr(label)}</strong>

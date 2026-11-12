@@ -174,6 +174,7 @@ test("settings whitelist, clamp and safe defaults", () => {
       visualizerBands: 32,
       volume: 100,
       volumeControl: "linear",
+      volumeLimitConfigured: false,
       brightness: 10,
       artwork: "cover",
       correction: 0,

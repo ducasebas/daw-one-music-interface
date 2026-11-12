@@ -1,6 +1,6 @@
 # DAW TuneBox v1 — Raspberry Pi streaming amplifier prototype
 
-DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifier controller with a premium **touchscreen interface with a new16:10 wall profile and retained1280 ×400 legacy profile**, Music Assistant playback integration and clearly modelled standby, display and safety states.
+DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifier controller with a premium **touchscreen interface with a 16:10 wall profile and retained 1280 × 400 legacy profile**, Music Assistant playback integration and clearly modelled standby, display and safety states.
 
 **Current release: a runnable software prototype with simulated hardware.** The interface, simulator and automated software tests are implemented. The owner has reported live Music Assistant/Squeezelite playback through a Pi 3 headphone jack. Playback reliability, kiosk performance, the Sonocotta Louder HAT and electrical protection remain under validation. No physical amplifier is enabled by this application.
 
@@ -8,9 +8,19 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 *Current software screenshot using simulated playback and conceptual artwork; no Louder HAT is connected.*
 
+## GUI 3.2.3 · TOUCH — settings, wake and larger audio controls
+
+**Current build: `GUI 3.2.3 · TOUCH` / `2026.11.12-touch.1`.** Settings uses a 5 × 3 topic grid, a fixed Save/Cancel bar and the persistent playback footer. All settings → Now Playing and the footer provide a clear return route, with Save/Discard/Stay for unsaved edits. A single checkbox change activates Save; cancelling no longer leaves a phantom DSP edit.
+
+The wall volume dial is 112 px; PCM spectrum/meters have larger views in Audio & DSP and Now Playing. The Wi-Fi header uses measured signal arcs, with the percentage in its details. The adjustable volume ceiling is persisted and enforced by TuneBox; increasing it never changes the actual player volume. Local sleep/wake events now bypass Music Assistant in live mode. Browser text/image gestures are suppressed outside editable fields.
+
+Splash Animation now overrides the automatic still policy and changing presentation preferences does not replay the splash unexpectedly. Playback diagnostics report source, renderer, media time and decoded frames. The owner has confirmed a working real PCM spectrum on TuneBox; real Pi wake, splash and OTA acceptance checks remain to be recorded for this release.
+
+**[Release notes and the OTA / Pi acceptance sequence](docs/touch-refinement.md)**.
+
 ## GUI 3.2.2 · OTA — readable runtime dependencies
 
-**Current build: `GUI 3.2.2 · OTA` / `2026.11.12-ota.1`.** OTA preparation now normalises runtime read/traverse permissions after dependencies install under the updater's private umask. Without this, the unprivileged application cannot read the new `node_modules` and activation can roll back. An offline npm fixture reproduces the failure and verifies the correction, including executable files and external symlinks. The root-installed updater needs one manual installer refresh before the first OTA transaction; an application update cannot replace trusted root helpers.
+**OTA foundation: `GUI 3.2.2 · OTA` / `2026.11.12-ota.1`.** OTA preparation now normalises runtime read/traverse permissions after dependencies install under the updater's private umask. Without this, the unprivileged application cannot read the new `node_modules` and activation can roll back. An offline npm fixture reproduces the failure and verifies the correction, including executable files and external symlinks. The root-installed updater needs one manual installer refresh before the first OTA transaction; an application update cannot replace trusted root helpers.
 
 **[OTA and PCM commissioning](docs/ota-pcm-setup.md)**. A signed release, pinned public key, active timer and an observed device transaction are separate requirements. PCM remains an optional local Squeezelite reader; an unconfigured reader is not a failed audio decoder.
 

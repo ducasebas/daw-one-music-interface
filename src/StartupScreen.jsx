@@ -3,6 +3,7 @@ import { useStartupPreparation } from "./useStartupPreparation.js";
 import React, { useEffect, useRef, useState } from "react";
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
 const startupSources=['/media/startup.mp4','/media/startup.webm'];
+const stillPolicy=(staticOnly,animationMode,motion)=>animationMode==='still'||animationMode==='off'||animationMode!=='video'&&(staticOnly||motion);
 /** Branding is independent from hardware readiness and never enables audio. */
 export function StartupScreen({
   mode,
@@ -16,8 +17,7 @@ export function StartupScreen({
   const preparation = useStartupPreparation();
   const [reduced, setReduced] = useState(
     () =>
-      staticOnly || animationMode==='still'||animationMode==='off' ||
-      (animationMode!=='video'&&window.matchMedia("(prefers-reduced-motion: reduce)").matches),
+      stillPolicy(staticOnly,animationMode,window.matchMedia("(prefers-reduced-motion: reduce)").matches),
   );
   const [cycle, setCycle] = useState(0);
   const [visible, setVisible] = useState(true);
@@ -27,12 +27,19 @@ export function StartupScreen({
   );
   const [renderer, setRenderer] = useState(reduced ? "still" : "loading");
   const [sourceIndex,setSourceIndex]=useState(0);
-  const nextSource=()=>{
+  const failure=useRef(null),progress=useRef({time:0,frames:0}),lastReport=useRef(0);
+  const report=()=>{
+    const v=video.current;
+    if(v){const quality=v.getVideoPlaybackQuality?.();progress.current={time:Math.round(v.currentTime*100)/100,frames:quality?.totalVideoFrames??null,droppedFrames:quality?.droppedVideoFrames??null};}
+    try{localStorage.setItem('tunebox-startup-status',JSON.stringify({renderer,source:['still','fallback'].includes(renderer)?'/media/startup-still.png':startupSources[sourceIndex],animationMode,staticOnly,reduced,reason:animationMode==='off'?'disabled':animationMode==='still'?'still-selected':reduced?(staticOnly?'low-power-auto':'reduced-motion'):failure.current,...progress.current,at:Date.now()}));}catch{}
+  };
+  const nextSource=(reason)=>{
+    failure.current=typeof reason==='string'?reason:video.current?.error?`media-error-${video.current.error.code}`:'playback-did-not-advance';
     if(sourceIndex<startupSources.length-1){setSourceIndex(sourceIndex+1);setRenderer('loading');}
     else setRenderer('fallback');
   };
   useEffect(()=>{
-    try{localStorage.setItem('tunebox-startup-status',JSON.stringify({renderer,source:['still','fallback'].includes(renderer)?'/media/startup-still.png':startupSources[sourceIndex],staticOnly,reduced,at:Date.now()}));}catch{}
+    report();
     if(animationMode!=='off'&&renderer==='loading'&&visible||!updates?.info?.controlToken)return;
     const frame=requestAnimationFrame(()=>requestAnimationFrame(()=>{
       fetch('/api/display/ready',{method:'POST',headers:{'X-TuneBox-Control':updates.info.controlToken}}).catch(()=>{});
@@ -51,6 +58,7 @@ export function StartupScreen({
     setElapsed(false);
     setSourceIndex(0);
     setRenderer(reduced ? "still" : "loading");
+    failure.current=null;progress.current={time:0,frames:0};
   }, [cycle, preview]);
   useEffect(() => {
     if (!visible || !foreground) return;
@@ -73,9 +81,9 @@ export function StartupScreen({
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const change = () => {
-      const still=staticOnly||animationMode==='still'||animationMode==='off'||animationMode!=='video'&&media.matches;
+      const still=stillPolicy(staticOnly,animationMode,media.matches);
       setReduced(still);
-      if (still) setRenderer("still");
+      setRenderer(old=>still?'still':old==='still'?'loading':old);
     };
     change();
     media.addEventListener("change", change);
@@ -112,7 +120,7 @@ export function StartupScreen({
         timer = setTimeout(() => {
           if (!current || !video.current) return;
           video.current.currentTime = 0;
-          video.current.play().catch(() => {if(current)nextSource();});
+          video.current.play().catch(error => {if(current)nextSource('play-rejected-'+(error.name||'unknown'));});
         }, 300);
       });
     });
@@ -175,7 +183,8 @@ export function StartupScreen({
             onLoadedData={prime}
             onCanPlay={prime}
             onPlaying={() => setRenderer("video")}
-            onEnded={() => setElapsed(true)}
+            onTimeUpdate={()=>{if(performance.now()-lastReport.current>500){lastReport.current=performance.now();report();}}}
+            onEnded={() => {report();setElapsed(true);}}
             onError={nextSource}
             aria-label={tr("TuneBox cold start video")}
           />
@@ -192,4 +201,10 @@ export function StartupScreen({
       )}
     </section>
   );
+}
+
+export function StartupDiagnostics(){
+ const [status,setStatus]=useState(null);
+ useEffect(()=>{const read=()=>{try{setStatus(JSON.parse(localStorage.getItem('tunebox-startup-status')));}catch{}};read();const t=setInterval(read,1000);return()=>clearInterval(t);},[]);
+ return <details className="startup-diagnostics"><summary>{tr('Splash diagnostics')}</summary>{status?<dl><dt>{tr('Renderer')}</dt><dd>{status.renderer}</dd><dt>{tr('Source')}</dt><dd>{status.source}</dd><dt>{tr('Playback time')}</dt><dd>{status.time??0}s · {status.frames??'—'} {tr('decoded frames')} · {status.droppedFrames??'—'} {tr('dropped frames')}</dd><dt>{tr('Reason')}</dt><dd>{status.reason||'—'}</dd></dl>:<p>{tr('Replay startup to collect diagnostics.')}</p>}</details>;
 }

@@ -83,7 +83,7 @@
 
 /* Native 1280 × 800 touch layout. SVGs stay vector; no expensive DPR upscaling. */
 html[data-tunebox-kiosk="true"],html[data-tunebox-kiosk="true"] *{cursor:none!important}
-.music2[data-panel="wall-16-10"]{--icon-stroke:2;grid-template-rows:88px 56px minmax(0,1fr) 164px;font-size:19px}
+.music2[data-panel="wall-16-10"]{--icon-stroke:2;--divider:var(--border-color);--panel:var(--surface);--font-body:var(--font);grid-template-rows:88px 56px minmax(0,1fr) 164px;font-size:19px}
 .music2[data-panel="wall-16-10"] button{border-radius:12px;min-height:52px;font-size:18px}
 .music2[data-panel="wall-16-10"] .m2-header{gap:8px}
 .music2[data-panel="wall-16-10"] .m2-brand{min-width:148px;letter-spacing:0;font-size:22px}
@@ -93,7 +93,7 @@ html[data-tunebox-kiosk="true"],html[data-tunebox-kiosk="true"] *{cursor:none!im
 .music2[data-panel="wall-16-10"] .m2-heading h1{font-size:25px}
 .music2[data-panel="wall-16-10"] .m2-build-boot .boot-shortcut{font-size:13px;min-height:32px}
 .music2[data-panel="wall-16-10"] .m2-version-status>small{display:none}
-.music2[data-panel="wall-16-10"] .m2-player{position:relative;height:164px;grid-template-columns:minmax(200px,1fr) 284px 64px 340px;gap:18px;align-items:center;border-top:2px solid var(--divider);padding:12px 0 18px}
+.music2[data-panel="wall-16-10"] .m2-player{position:relative;height:164px;grid-template-columns:minmax(200px,1fr) 284px 64px 380px;gap:18px;align-items:center;border-top:2px solid var(--divider);padding:12px 0 18px}
 .music2[data-panel="wall-16-10"] .m2-current{height:110px;gap:18px}
 .music2[data-panel="wall-16-10"] .m2-current-cover{width:80px;height:80px;flex:none}
 .music2[data-panel="wall-16-10"] .m2-current strong{font-size:21px}
@@ -112,7 +112,7 @@ html[data-tunebox-kiosk="true"],html[data-tunebox-kiosk="true"] *{cursor:none!im
 .music2[data-panel="wall-16-10"] .touch-volume-track{height:8px}
 .music2[data-panel="wall-16-10"] .touch-volume-track i{width:30px;height:30px;border:2px solid var(--accent)}
 .music2[data-panel="wall-16-10"] .touch-volume output{font-size:24px;min-width:55px}
-.music2[data-panel="wall-16-10"] .touch-volume-knob{width:88px;height:88px;flex:none}
+.music2[data-panel="wall-16-10"] .touch-volume-circular .touch-volume-slider{width:112px;height:112px;min-width:112px;min-height:112px;flex:none}.music2[data-panel="wall-16-10"] .touch-volume-circular .touch-volume-slider>svg{width:100%;height:100%}.music2[data-panel="wall-16-10"] .touch-volume-circular .touch-volume-slider:before{inset:14%}.music2[data-panel="wall-16-10"] .touch-volume-needle{width:4px;left:calc(50% - 2px);height:21%;top:20%;transform-origin:50% 143%}
 .music2[data-panel="wall-16-10"] .m2-playing{grid-template-columns:310px minmax(0,1fr) 256px;gap:26px}
 .music2[data-panel="wall-16-10"] .m2-playing>.m2-cover,.music2[data-panel="wall-16-10"] .m2-playing>.real-artwork{width:310px;height:310px;min-height:310px;max-height:310px}
 .music2[data-panel="wall-16-10"] .m2-playing h2{font-size:38px}
@@ -137,8 +137,9 @@ html[data-tunebox-kiosk="true"],html[data-tunebox-kiosk="true"] *{cursor:none!im
 .wake-spinner{width:24px;height:24px;border:2px solid var(--muted);border-top-color:var(--accent);border-radius:50%;animation:wake-spin .7s linear infinite}
 .sleep-surface[data-waking=true] .sleep-wake-hint{visibility:hidden}
 @keyframes wake-spin{to{transform:rotate(360deg)}}
-.music2[data-panel="wall-16-10"].immersive-settings{grid-template-rows:88px minmax(0,1fr)}
-.music2[data-panel="wall-16-10"].immersive-settings>.m2-heading,.music2[data-panel="wall-16-10"].immersive-settings>.m2-player{display:none}
+.music2[data-panel="wall-16-10"].immersive-settings{grid-template-rows:88px minmax(0,1fr) 164px}
+.music2[data-panel="wall-16-10"].immersive-settings>.m2-heading{display:none}
+.music2[data-panel="wall-16-10"].immersive-settings>.m2-player{display:grid;grid-row:3}
 .music2[data-panel="wall-16-10"] .m2-settings{height:100%;padding-top:14px}
 .settings-hub{display:grid;grid-template-columns:210px minmax(0,1fr);gap:30px;height:100%;min-height:0;padding-bottom:20px}
 .music2 .settings-categories{display:flex;flex-direction:column;gap:5px;overflow-y:auto;border-right:2px solid var(--divider);padding-right:18px}
@@ -221,3 +222,36 @@ html[data-tunebox-kiosk="true"],html[data-tunebox-kiosk="true"] *{cursor:none!im
 .system-power-button{display:flex;align-items:center;gap:16px;margin-bottom:24px}.settings-detail .boot-panel{height:auto}
 .music2[data-panel="wall-16-10"] .sleep-surface{animation:none}
 .music2[data-panel="wall-16-10"] .sleep-clock{animation:wall-fade 180ms ease-out}
+
+/* Kiosk gestures keep scrolling and editable fields, without browser selection. */
+.music2,.music2 *{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.music2 input,.music2 textarea,.music2 [contenteditable="true"],.music2 [contenteditable="true"] *{user-select:text;-webkit-user-select:text}
+.music2 img{-webkit-user-drag:none}
+.music2 .m2-network .network-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.music2[data-panel="wall-16-10"] .m2-network summary{width:52px;min-height:52px;justify-content:center}
+.music2[data-panel="wall-16-10"] .touch-volume-readout{width:76px;flex:none}
+.music2[data-panel="wall-16-10"] .touch-volume-readout strong{font-size:30px;line-height:1.15}
+.music2[data-panel="wall-16-10"] .touch-volume-readout span{font-size:11px;line-height:1.3;min-height:29px}
+.music2[data-panel="wall-16-10"] .touch-volume-readout strong small{font-size:16px}
+.music2[data-panel="wall-16-10"] .m2-current:disabled{opacity:1;cursor:default}
+.music2[data-panel="wall-16-10"] .m2-current>span:last-child{min-width:0}
+.m2-return{display:flex;align-items:center;gap:8px;color:var(--accent);font-size:13px;margin-bottom:5px}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]{grid-template-columns:240px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);align-items:start;gap:20px 28px}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]>.m2-cover,.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]>.real-artwork{width:240px;height:240px;min-height:240px;max-height:240px;grid-column:1;grid-row:1/-1;align-self:center}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]>div:nth-child(2){grid-column:2;grid-row:1}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] h2{font-size:32px;margin:8px 0}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] p{margin:8px 0}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]>aside{grid-column:2;grid-row:2;display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:20px;height:100%;min-height:0;width:100%;padding:0;border:0}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .m2-artwork-controls{grid-column:2;grid-row:1;flex-direction:column;align-self:center}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .real-audio{grid-column:1;grid-row:1;height:100%;max-height:none;justify-content:center;overflow:visible;gap:8px}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-spectrum{height:190px;min-height:140px}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-meter-pair,.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-meter-pair svg{height:165px;max-height:none}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-readouts{font-size:22px}
+
+.music2[data-panel="wall-16-10"] .m2-player{line-height:1.2}.music2[data-panel="wall-16-10"] .m2-current-cover>.m2-cover{width:100%;height:100%}
+
+.music2 .m2-current:disabled:hover{background:transparent}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] h2{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .real-audio{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto;justify-content:stretch;justify-items:stretch;min-height:0;overflow:hidden}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-spectrum,.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-meter-pair,.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-meter-pair svg{height:100%;min-height:0;max-height:none}

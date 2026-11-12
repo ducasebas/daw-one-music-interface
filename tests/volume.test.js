@@ -6,7 +6,10 @@ import {
   knobVolume,
   rotateVolume,
   knobAngle,
+  savedVolumeLimit,
+  controlVolumeLimit,
 } from "../shared/volume.js";
+import {preferenceDefaults,validatePreferences} from '../shared/preferences.js';
 import { settings } from "../shared/settings.js";
 test("touch volume maps track positions with limits and bounds", () => {
   assert.equal(linearVolume(50, 0, 100), 50);
@@ -36,4 +39,17 @@ test("volume presentation setting is validated and survives serialization", () =
     "circular",
   );
   assert.equal(settings({ volumeControl: "script" }).volumeControl, "linear");
+});
+test('only an explicitly saved ceiling can raise the installation limit; defaults and old preferences retain it',()=>{
+ const initial=preferenceDefaults();
+ assert.equal(savedVolumeLimit(initial,40),40);
+ assert.equal(savedVolumeLimit({...initial,maxVolume:20},40),20);
+ const saved=validatePreferences({...initial,maxVolume:65,prefs:{...initial.prefs,volumeLimitConfigured:true}});
+ assert.equal(savedVolumeLimit(saved,40),65);
+ assert.equal(savedVolumeLimit(validatePreferences(JSON.parse(JSON.stringify(saved))),40),65);
+ assert.equal(controlVolumeLimit({mode:'music-assistant',musicAssistant:{volumeLimit:65},preferences:saved}),65);
+ assert.equal(controlVolumeLimit({mode:'simulation',preferences:{maxVolume:30}}),30);
+ assert.equal(savedVolumeLimit(preferenceDefaults(),40),40);
+ assert.equal(validatePreferences({...initial,prefs:{volumeLimitConfigured:'yes'}}).prefs.volumeLimitConfigured,false);
+ assert.equal(Object.hasOwn(saved,'maxVolumeConfigured'),false); // Keep the older top-level schema valid for rollback.
 });

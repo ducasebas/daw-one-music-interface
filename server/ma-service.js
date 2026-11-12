@@ -72,7 +72,8 @@ export class LiveMusicService extends EventEmitter {
     { transport = new MusicAssistantTransport(config), retryMs = 1000 } = {},
   ) {
     super();
-    this.config = config;
+    this.config = {...config};
+    this.defaultVolumeLimit = config.volumeLimit;
     this.transport = transport;
     this.retryMs = retryMs;
     this.retryCount = 0;
@@ -121,6 +122,7 @@ export class LiveMusicService extends EventEmitter {
       playerId: this.playerId,
       controlEnabled: this.config.controlEnabled,
       volumeLimit: this.config.volumeLimit,
+      defaultVolumeLimit: this.defaultVolumeLimit,
       players: this.players.map((p) => ({
         id: p.player_id,
         name: p.name || p.player_id,
@@ -130,6 +132,10 @@ export class LiveMusicService extends EventEmitter {
   }
   notify() {
     this.emit("change");
+  }
+  setVolumeLimit(value) {
+    if(!Number.isInteger(value)||value<0||value>100)throw Error('Invalid volume limit');
+    this.config.volumeLimit=value;
   }
   async start() {
     this.stopped = false;

@@ -122,7 +122,7 @@ export function TouchVolume({
               e.clientX - (rect.left + rect.width / 2),
               e.clientY - (rect.top + rect.height / 2),
             ) <
-              14 * scale;
+              rect.width * .22;
           const start = centerDrag
             ? null
             : mode === "circular"

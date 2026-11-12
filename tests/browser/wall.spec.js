@@ -25,7 +25,7 @@ test('large settings categories, sensor cards and all six skins remain usable',a
  const state=await(await page.request.get('/api/state')).json();state.hardwareTelemetry={enabled:true,temperature:{status:'ok',value:21.5,observedAt:Date.now()},light:{status:'ok',value:485.74,observedAt:Date.now()}};
  await page.route('**/api/state',r=>r.fulfill({json:state}));await page.reload();
  for(const name of ['Playback','Display','Appearance','Audio','Video','Connections','Sensors','Updates','System','Language']){
-  await settings(page,name);await expect(page.locator('.settings-detail')).toBeVisible();await expect(page.locator('.m2-player')).not.toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBe(800);
+  await settings(page,name);await expect(page.locator('.settings-detail')).toBeVisible();await expect(page.locator('.m2-player')).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBe(800);
  }
  await settings(page,'Sensors');await expect(page.locator('.system-dashboard')).toContainText('21.5 °C');await expect(page.locator('.system-dashboard')).toContainText('486 lux');await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-sensors.png'});
  await settings(page,'Appearance');
@@ -54,7 +54,7 @@ test('timeout saves on the backend and survives reload; all rest modes remain av
 test('a real uploaded video replaces the mock and follows music pause and seek',async({page})=>{
  await page.request.post('/api/event',{data:{type:'pause'}});await page.request.post('/api/event',{data:{type:'seek',position:0}});
  await settings(page,'Video');await page.getByLabel('Choose video',{exact:true}).setInputFiles({name:'example.webm',mimeType:'video/webm',buffer:readFileSync('public/media/startup.webm')});await expect(page.getByRole('status').filter({hasText:'Video linked.'})).toBeVisible();
- await page.getByLabel('Video sync correction',{exact:true}).fill('487');await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByRole('button',{name:'Done',exact:true}).click();await page.getByRole('button',{name:'Video Artwork',exact:true}).click();const video=page.getByLabel('Linked music video',{exact:true});await expect(video).toBeVisible();await expect.poll(()=>video.evaluate(v=>v.currentTime)).toBeGreaterThan(.5);expect(await video.evaluate(v=>v.paused)).toBe(true);expect(await video.evaluate(v=>v.muted)).toBe(true);
+ await page.getByLabel('Video sync correction',{exact:true}).fill('487');await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();await page.getByRole('button',{name:'Video Artwork',exact:true}).click();const video=page.getByLabel('Linked music video',{exact:true});await expect(video).toBeVisible();await expect.poll(()=>video.evaluate(v=>v.currentTime)).toBeGreaterThan(.5);expect(await video.evaluate(v=>v.paused)).toBe(true);expect(await video.evaluate(v=>v.muted)).toBe(true);
  await page.request.post('/api/event',{data:{type:'play'}});await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(false);
  await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-linked-video.png'});
 });

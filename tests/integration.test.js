@@ -194,6 +194,20 @@ test("metadata, queue, timing, actual volume and unknown radio duration normaliz
   assert.equal(p.position, 12);
   assert.equal(normalizeMusic({ player }, 12000).queue[0].duration, null);
 });
+test('changing a live control ceiling never sends a volume command until the user moves the control',async()=>{
+ FixtureSocket.calls=[];const t=transport(),service=new LiveMusicService({...configuration,playerId:'pi',controlEnabled:true},{transport:t});
+ try{
+  await service.start();const before=service.playback.volume,calls=FixtureSocket.calls.length;
+  service.setVolumeLimit(65);
+  assert.equal(service.publicStatus().volumeLimit,65);
+  assert.equal(service.publicStatus().defaultVolumeLimit,40);
+  assert.equal(service.playback.volume,before);
+  assert.equal(FixtureSocket.calls.length,calls);
+  await service.control({type:'volume',value:62});
+  assert.ok(FixtureSocket.calls.some(c=>c.command==='players/cmd/volume_set'&&c.args.volume_level===62));
+  assert.throws(()=>service.setVolumeLimit(101));
+ }finally{service.stop();}
+});
 test("live volume ceiling, read-only mode and no automatic play or volume on connect", async () => {
   FixtureSocket.calls = [];
   const s = service();

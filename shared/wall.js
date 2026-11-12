@@ -46,7 +46,7 @@ export function wallNotifications(snapshot,updates,offline=false) {
     {id:'update',icon:'update',title:'Update',detail:updates?.offline?'Updateservice niet bereikbaar':updates?.status||'Nog geen updatestatus',action:'updates'},
     {id:'hardware',icon:'alert',title:'Hardware alert',detail:faults.length?faults.join(', '):power?.reason||'PD-contract onbekend · 100 W niet bevestigd',attention:faults.length>0||power?.status!=='pass',simulated,action:'status'},
     {id:'newsletter',icon:'mail',title:'Newsletter',detail:'Geen nieuwsbrief gekoppeld. Er wordt niets automatisch opgehaald of verstuurd.'},
-    {id:'whatsnew',icon:'discover',title:'What’s new',detail:'GUI 3.2 · Save/Cancel · Wi-Fi setup · PIN · sensors · debug · room measurement and listening targets.'},
+    {id:'whatsnew',icon:'discover',title:'What’s new',detail:'GUI 3.2.3 · Settings, Save/Cancel, Now Playing return, larger PCM and volume controls, touch wake and splash diagnostics.'},
     {id:'tutorial',icon:'tutorial',title:'Tutorial',detail:'Tik op de hoes voor Nu spelen. Veeg instellingenpagina’s. Schermrust stopt de muziek niet; de eerste aanraking wekt alleen het scherm.'},
   ];
 }

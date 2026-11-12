@@ -1,7 +1,7 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.12-ota.1",
-  label: "GUI 3.2.2 · OTA",
+  id: "2026.11.12-touch.1",
+  label: "GUI 3.2.3 · TOUCH",
 });
 export function buildAlignment(frontend, backend, offline = false) {
   if (offline) return "offline";

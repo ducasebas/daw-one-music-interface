@@ -10,6 +10,7 @@ import {HomeReadouts} from './SystemDashboard.jsx';
 import { NetworkStatus } from "./NetworkStatus.jsx";
 import { BuildBadge } from "./BuildBadge.jsx";
 import { TouchVolume, useVolumeRequests } from "./TouchVolume.jsx";
+import {controlVolumeLimit} from '../shared/volume.js';
 import React, { useState, useRef, useEffect } from "react";
 import { flushSync } from "react-dom";
 import { SkinPanel } from "./SkinPanel.jsx";
@@ -246,6 +247,8 @@ export function MusicShell({
     <main
       className={"music2"+(page==="settings"&&(wall||settingsPage>=12)?" immersive-settings":"")}
       data-panel={wall ? "wall-16-10" : "legacy-wide"}
+      onContextMenu={e=>{if(!e.target.closest('input,textarea,[contenteditable="true"]'))e.preventDefault();}}
+      onDragStart={e=>{if(e.target.tagName==='IMG')e.preventDefault();}}
       onPointerDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();wake();}:undefined}
       onKeyDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();wake();}:undefined}
       data-theme={theme.id}
@@ -677,7 +680,7 @@ export function MusicShell({
         ) : page === "settings" ? (
           <div className="m2-settings">
             <SettingsPages
-              onClose={()=>go('playing')}
+              onClose={()=>navigate(()=>{setPage('playing');setDetail(null);setMessage('');})}
               onReplayStartup={onReplayStartup}
               offline={offline}
               initialPage={settingsPage}
@@ -692,7 +695,7 @@ export function MusicShell({
             />
           </div>
         ) : (
-          <div className="m2-playing">
+          <div className="m2-playing" data-visualizer={!video&&prefs.visualizer!=="off"}>
             {simulated ? (
               <Cover index={playback.index} />
             ) : (
@@ -703,7 +706,7 @@ export function MusicShell({
                 {tr(simulated ? "SIMULATIE" : "MUSIC ASSISTANT")} /{tr(" ")}
                 {tr(playback.playerName || "TuneBox")}
               </small>
-              <h2>{current.title}</h2>
+              <h2 title={current.title}>{current.title}</h2>
               <p>
                 {current.artist} <span>— {current.album}</span>
               </p>
@@ -764,7 +767,8 @@ export function MusicShell({
       <footer className="m2-player">
         <button
           className="m2-current"
-          onClick={() => go("playing")}
+          onClick={page==='playing'?undefined:() => go("playing")}
+          disabled={page==='playing'}
           aria-label={tr("Open Nu spelen")}
         >
           <span className="m2-current-cover" key={current.id}>
@@ -775,6 +779,7 @@ export function MusicShell({
             )}
           </span>
           <span>
+            {page!=='playing'&&<span className="m2-return"><Icon name="back" size={20}/>{tr('Now Playing')}</span>}
             <strong>{current.title}</strong>
             <small>{current.artist}</small>
           </span>
@@ -846,7 +851,7 @@ export function MusicShell({
           target={volumeRequests.target}
           onValue={volumeRequests.request}
           disabled={!canVolume}
-          limit={simulated ? 100 : (snapshot.musicAssistant?.volumeLimit ?? 40)}
+          limit={controlVolumeLimit(snapshot)}
           mode={prefs.volumeControl}
         />
       </footer>

@@ -1,6 +1,7 @@
 import {existsSync} from 'node:fs';
 import { defineConfig } from "@playwright/test";
 export default defineConfig({
+  workers: 1, // Offline suites mutate the same simulator, just like the dev suites.
   testDir: "tests/offline",
   outputDir: "test-results/offline",
   use: {

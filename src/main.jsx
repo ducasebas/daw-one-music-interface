@@ -30,6 +30,7 @@ import { StartupScreen } from "./StartupScreen.jsx";
 import { DisplayViewport } from "./DisplayViewport.jsx";
 import { displayMode, panelProfile } from "../shared/display.js";
 import { VolumeControl } from "./VolumeControl.jsx";
+import {controlVolumeLimit} from '../shared/volume.js';
 import "../design/brand-tokens.css";
 import "./style.css";
 import { MusicShell } from "./MusicShell.jsx";
@@ -468,7 +469,7 @@ function App() {
                 }
                 live={liveMusic}
                 limit={
-                  liveMusic ? (snapshot.musicAssistant?.volumeLimit ?? 40) : 100
+                  controlVolumeLimit(snapshot)
                 }
                 disabled={!volumeEnabled}
                 muteDisabled={

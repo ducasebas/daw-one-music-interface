@@ -27,6 +27,7 @@ import { fileURLToPath } from "node:url";
 import { DeviceRuntime, runScenario, scenarios } from "../shared/runtime.js";
 import { musicConfig } from "./ma-config.js";
 import { LiveMusicService } from "./ma-service.js";
+import {savedVolumeLimit} from '../shared/volume.js';
 const startupStore = new BootStore(
   process.env.DAW_STATE_DIR || ".tunebox-state",
 );
@@ -50,6 +51,7 @@ const config = musicConfig(),
 runtime.displayTimeoutMs = displayConfiguration.timeoutSeconds === 0 ? Infinity : displayConfiguration.timeoutSeconds * 1000;
 const music =
   config.mode === "music-assistant" ? new LiveMusicService(config) : null;
+if(music)music.setVolumeLimit(savedVolumeLimit(preferences.get(),music.defaultVolumeLimit));
 const audioAnalysis=new AudioAnalysis({onStatus:status=>{runtime.record(Date.now(),"audio-analysis",runtime.device.mode,"Local PCM measurement: "+status);broadcast();}});
 const library = music ? new MusicLibrary(music) : null;
 const artwork = music ? new ArtworkCache(config) : null;
@@ -143,7 +145,7 @@ app.post('/api/security/:action',(q,r)=>{
  try{const action=q.params.action;let value;if(action==='unlock')value=security.unlock(q.body.pin,q,r);else if(action==='set-pin')value=security.setPin(q.body.pin,q.body.confirmation,q,r);else if(action==='lock'){security.lock(q,r);value=security.status(q);}else if(action==='disable'){security.requireAdmin(q);security.clear(q,r);value=security.status(q);}else throw Error('Unknown security action');r.set('Cache-Control','no-store').json(value);}catch(e){r.status(e.status||400).json({error:e.message});}
 });
 app.post('/api/setup/pair',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload setup'});try{r.json(security.pair(q.body.token,r));}catch(e){r.status(403).json({error:e.message});}});
-function applyPreferences(value){if(value.audioEnabled!==audioAnalysis.enabled)audioAnalysis.setEnabled(value.audioEnabled);displayConfiguration=value.display;runtime.displayTimeoutMs=value.display.timeoutSeconds===0?Infinity:value.display.timeoutSeconds*1000;broadcast();}
+function applyPreferences(value){if(value.audioEnabled!==audioAnalysis.enabled)audioAnalysis.setEnabled(value.audioEnabled);if(music)music.setVolumeLimit(savedVolumeLimit(value,music.defaultVolumeLimit));displayConfiguration=value.display;runtime.displayTimeoutMs=value.display.timeoutSeconds===0?Infinity:value.display.timeoutSeconds*1000;broadcast();}
 app.get('/api/preferences',(_q,r)=>r.set('Cache-Control','no-store').json(preferences.get()));
 app.post('/api/preferences',(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before saving settings'});
@@ -372,7 +374,9 @@ app.post("/api/scenario", (q, r) => {
 app.post("/api/event", async (q, r) => {
   try {
     if(q.body.type==='volume'&&Number.isFinite(q.body.value)&&q.body.value>preferences.get().maxVolume&&preferences.get().revision>0)throw Error('Volume exceeds the saved limit');
-    if (music) {
+    if (['activity','display-timeout'].includes(q.body.type)) {
+      runtime.dispatch(q.body);
+    } else if (music) {
       await music.control(q.body);
       runtime.record(
         Date.now(),

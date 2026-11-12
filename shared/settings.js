@@ -4,6 +4,7 @@ export const defaults = {
   visualizerBands: 32,
   volume: 32,
   volumeControl: "linear",
+  volumeLimitConfigured: false,
   brightness: 80,
   artwork: "cover",
   correction: 0,
@@ -12,6 +13,7 @@ export const defaults = {
 export function settings(input = {}) {
   input = input && typeof input === "object" ? input : {};
   return {
+    volumeLimitConfigured: input.volumeLimitConfigured===true,
     startupAnimation: ['off','auto','video','still'].includes(input.startupAnimation)?input.startupAnimation:'auto',
     screen: screenSettings(input.screen),
     visualizer: ["meters","spectrum"].includes(input.visualizer)?input.visualizer:"off",
