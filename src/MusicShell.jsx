@@ -6,6 +6,7 @@ import {GlobalUpdateProgress,useDeviceUpdates} from "./DeviceUpdates.jsx";
 import { LiveLibrary } from "./LiveLibrary.jsx";
 import { Artwork } from "./Artwork.jsx";
 import { bootPhaseLabels } from "./BootPanel.jsx";
+import {HomeReadouts} from './SystemDashboard.jsx';
 import { NetworkStatus } from "./NetworkStatus.jsx";
 import { BuildBadge } from "./BuildBadge.jsx";
 import { TouchVolume, useVolumeRequests } from "./TouchVolume.jsx";
@@ -153,6 +154,7 @@ export function MusicShell({
     } else commit();
   }
   const go = (id) => {
+    if(page==='settings'&&id!=='settings'&&window.tuneboxBeforeSettingsLeave){window.tuneboxBeforeSettingsLeave(()=>{navigate(()=>{setPage(id);setDetail(null);setMessage('');});});return;} 
     if (id === "playing" && page !== "playing")
       returnTo.current = { page, detail };
     navigate(() => {
@@ -413,7 +415,7 @@ export function MusicShell({
             </div>
           </div>
         ) : page === "discover" ? (
-          <div className="m2-discover">
+          <div className={"discover-wrap "+(snapshot.preferences?.dashboard?.visible?.length?"has-readouts":"")}><HomeReadouts snapshot={snapshot} offline={offline}/><div className="m2-discover">
             <button
               className="m2-feature"
               onClick={() => {
@@ -433,7 +435,7 @@ export function MusicShell({
               <div className="m2-note">{tr("Persoonlijke aanbevelingen sluiten we later aan op Music Assistant op de NUC.")}</div>
             </div>
           </div>
-        ) : page === "library" ? (
+        </div>) : page === "library" ? (
           <div className="m2-library">
             <div className="m2-filters">
               {categories.map((c) => (

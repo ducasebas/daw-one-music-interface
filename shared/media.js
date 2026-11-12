@@ -27,6 +27,7 @@ export function publicMedia(item, key) {
   const type = item.media_type;
   return {
     id: key,
+    sources: mediaSources(item),
     type,
     name: String(item.name || item.title || "Naam onbekend").slice(0, 300),
     artist: (item.artists || [])
@@ -44,3 +45,5 @@ export function publicMedia(item, key) {
     artwork: mediaImage(item) ? `/api/artwork/${mediaImage(item)}` : null,
   };
 }
+
+export function mediaSources(item){const values=[item?.provider,...(item?.provider_mappings||[]).map(p=>p.provider_domain||p.provider_instance)].filter(v=>typeof v==='string').map(v=>v.toLowerCase());return [...new Set(values.map(v=>/^filesystem(?:_|$)|^local(?:_|$)|^smb(?:_|$)|^sftp(?:_|$)/.test(v)?'local':v.startsWith('spotify')?'spotify':v.startsWith('tidal')?'tidal':null).filter(Boolean))];}

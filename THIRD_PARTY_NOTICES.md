@@ -11,3 +11,5 @@ The project’s own software and documentation are licensed under MIT; see LICEN
 - Do not add commercial album covers, artist photography or other provider content as bundled demo assets without permission. The application's current conceptual covers do not establish access to a provider's artwork library.
 
 Squeezelite is an optional external player, not bundled by TuneBox. The real-audio integration reads its VISEXPORT interoperability format; the independently implemented reader/FFT/UI are in this repository. Upstream Squeezelite is distributed separately under its own GPL terms. Protocol source evidence and the exact reviewed revision are recorded in docs/audio-analysis.md.
+
+QR symbols are generated with the optional npm dependency qrcode-generator 2.0.4 (MIT); its licence is included by npm. The transparent Xcursor asset and room-measurement signal/analysis source are original repository code. External ALSA, NetworkManager, Squeezelite and Music Assistant programs retain their respective upstream licences and are installed separately.

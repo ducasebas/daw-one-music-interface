@@ -24,6 +24,7 @@ export function LiveLibrary({
     offset = 0,
     parent = null,
     favorite = false,
+    source = "all",
     trail = [],
   } = state;
   const [result, setResult] = useState({ items: [], hasMore: false }),
@@ -64,6 +65,7 @@ export function LiveLibrary({
           if (view === "search") params.set("q", q);
           if (parent) params.set("parent", parent.id);
           if (favorite) params.set("favorite", "true");
+          if(source!=="all")params.set("source",source);
           const r = await fetch(`/api/library?${params}`, {
             signal: abort.signal,
           });
@@ -87,7 +89,7 @@ export function LiveLibrary({
       clearTimeout(timer);
       abort.abort();
     };
-  }, [view, kind, q, offset, parent?.id, favorite, available, state.refresh]);
+  }, [view, kind, q, offset, parent?.id, favorite, source, available, state.refresh]);
   async function play(item, option) {
     if (lock.current) return;
     lock.current = true;
@@ -127,7 +129,7 @@ export function LiveLibrary({
   }
   const body = (
     <>
-      <div className="live-library-bar">
+      <div className="live-library-bar"><label className="library-source">{tr('Source')}<select aria-label={tr('Music source')} value={source} onChange={e=>change({source:e.target.value,offset:0,parent:null,trail:[]})}><option value="all">{tr('All sources')}</option><option value="local">{tr('Local files')}</option><option value="spotify">Spotify</option><option value="tidal">Tidal</option></select></label>
         {parent ? (
           <button
             aria-label={tr("Terug naar bibliotheek")}
@@ -247,7 +249,7 @@ export function LiveLibrary({
         </small>
         <button
           disabled={loading || !result.hasMore}
-          onClick={() => change({ offset: offset + 3 })}
+          onClick={() => change({ offset: result.nextOffset ?? offset + 3 })}
         >{tr("Volgende →")}</button>
       </div>
     </>

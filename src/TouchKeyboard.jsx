@@ -1,0 +1,9 @@
+import React,{useState} from 'react';
+import {createPortal} from 'react-dom';
+import {tr} from '../shared/i18n.js';
+export function KeyboardField({label,value,onChange,type='text',numeric=false,keyboard=true,...rest}){
+ const [open,setOpen]=useState(false),[shift,setShift]=useState(false),[symbols,setSymbols]=useState(false);
+ const phone=new URLSearchParams(location.search).get('setup')==='phone';
+ const rows=numeric?['123','456','789','0']:symbols?['1234567890','@#€%&*()-_','.:/\\+!?=;','[]{}<>"\'']:['qwertyuiop','asdfghjkl','zxcvbnm'];
+ return <><label className="touch-field">{tr(label)}<input {...rest} type={type} value={value??''} aria-label={tr(label)} inputMode={keyboard&&!phone?'none':numeric?'numeric':undefined} onFocus={()=>{if(keyboard&&!phone)setOpen(true);}} onChange={e=>onChange(e.target.value)}/></label>{open&&createPortal(<section className="touch-keyboard" role="dialog" aria-label={tr('Touch keyboard')}><header><span>{tr(label)}</span><output>{type==='password'?'•'.repeat(String(value||'').length):value}</output><button onClick={()=>setOpen(false)}>{tr('Done typing')}</button></header>{rows.map((row,i)=><div className="keyboard-row" key={i}>{[...row].map(key=><button type="button" key={key} onPointerDown={e=>e.preventDefault()} onClick={()=>onChange(String(value||'')+(shift?key.toUpperCase():key))}>{shift?key.toUpperCase():key}</button>)}</div>)}<div className="keyboard-row">{!numeric&&<><button aria-pressed={shift} onClick={()=>setShift(v=>!v)}>⇧</button><button aria-pressed={symbols} onClick={()=>setSymbols(v=>!v)}>123 / ABC</button><button className="keyboard-space" onClick={()=>onChange(String(value||'')+' ')}>{tr('Space')}</button></>}<button aria-label={tr('Backspace')} onClick={()=>onChange(String(value||'').slice(0,-1))}>⌫</button><button onClick={()=>onChange('')}>{tr('Clear')}</button></div></section>,document.body)}</>;
+}

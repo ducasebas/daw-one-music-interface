@@ -1,0 +1,3 @@
+export function clockController({run}){
+ return {async get(){const raw=await run('/usr/bin/timedatectl',['show','--property=Timezone,NTP,NTPSynchronized']);const values=Object.fromEntries(String(raw).trim().split('\n').map(l=>l.split('=')));return {supported:true,timeZone:values.Timezone,automatic:values.NTP==='yes',synchronized:values.NTPSynchronized==='yes',iso:new Date().toISOString()};},async set(args){await run('/usr/bin/timedatectl',['set-timezone',args.timeZone]);await run('/usr/bin/timedatectl',['set-ntp',args.automatic?'true':'false']);if(!args.automatic&&args.iso)await run('/usr/bin/timedatectl',['set-time',new Date(args.iso).toISOString().slice(0,19).replace('T',' ')+' UTC']);return {saved:true,...await this.get()};}};
+}

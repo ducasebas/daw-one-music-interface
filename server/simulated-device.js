@@ -15,7 +15,21 @@ export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,o
   async perform(command,args){
    if(command==='power-off'){if(running)throw Error('Wait for the software update to finish before powering off');return {queued:true,simulated:true,powerOff:true};}
    if(command==='policy'){policy=args;save();return {saved:true,policy};}
+   if(command==='measurement-status')return {supported:false,simulated:true,running:false,microphones:[],phase:'unavailable'};
+   if(command==='measurement-start')throw Error('A room sweep requires real USB microphone and audio output support');
+   if(['measurement-apply','measurement-undo'].includes(command))throw Error('A verified Louder measurement and real DSP controls are required');
+   if(command==='measurement-stop')return {stopped:true,simulated:true};
+   if(command==='local-ma-status')return {supported:true,simulated:true,dockerAvailable:false,installing:false,job:{},capacity:{eligible:false,reasons:['The browser simulation cannot install a server.'],host:{}},url:'http://127.0.0.1:8095'};
+   if(command==='local-ma-install')throw Error('Local server installation is unavailable in simulation');
    if(command==='network')return {supported:true,connected:true,simulated:true,interfaces:[{name:'wlan0',type:'wifi',state:'connected'}]};
+   if(command==='wifi-scan')return {supported:true,simulated:true,interface:'wlan0',interfaces:[{name:'wlan0',state:'connected'}],hotspotSupported:true,networks:[{ssid:'TuneBox demo Wi-Fi',signal:82,security:'WPA2'},{ssid:'Guest network',signal:54,security:'WPA2'}]};
+   if(command==='hotspot-start')return {simulated:true,ssid:'TuneBox-DEMO',password:'simulation-only-1234',url:'http://10.42.0.1:3003/?setup=phone',expires:Date.now()+600000};
+   if(command==='hotspot-stop')return {stopped:true,simulated:true};
+   if(command==='clock')return {supported:true,simulated:true,timeZone:'Europe/Amsterdam',automatic:true,synchronized:false,iso:new Date().toISOString()};
+   if(command==='clock-set')return {saved:true,supported:true,simulated:true,...args};
+   if(command==='local-standby')return {muted:args.enabled,simulated:true,supported:true};
+   if(command==='dsp')return {supported:false,simulated:true,controls:[],faults:[]};
+   if(command==='erase-setup')return {erased:false,simulated:true};
    if(command==='wifi')return {connected:true,simulated:true};
    if(command==='probe-music')return {simulated:true,serverVersion:'simulation',players:[{id:'simulated-tunebox',name:'TuneBox · simulation',available:true}]};
    if(command==='save-music')return {saved:false,simulated:true,message:'Simulation only; live server configuration unchanged'};

@@ -6,6 +6,11 @@ import {canUpdate} from '../ota/policy.mjs';
 import {MusicAssistantTransport} from '../../server/ma-transport.js';
 import {atomicJson,readJson,boundedJson} from './io.mjs';
 import {powerController} from './power.mjs';
+import {networkController} from './network.mjs';
+import {clockController} from './clock.mjs';
+import {measurementController} from './measurement.mjs';
+import {localMaController} from './local-ma.mjs';
+import {dspController} from './dsp.mjs';
 const exec=promisify(execFile);
 const configPath='/etc/daw-one-updater/config.json',base='/var/lib/daw-one-updater';
 const run=async(command,args,options={})=>(await exec(command,args,{timeout:15000,maxBuffer:32768,env:{...process.env,LC_ALL:"C"},...options})).stdout;
@@ -17,14 +22,15 @@ export async function networkStatus(){
  try{
   const raw=await run('/usr/bin/nmcli',['--terse','--escape','no','--fields','DEVICE,TYPE,STATE','device','status']);
   const interfaces=raw.trim().split('\n').map(line=>{const [name,type,state]=line.split(':');return {name,type,state};}).filter(x=>x.type==='wifi'&&/^wl[a-zA-Z0-9_-]{0,20}$/.test(x.name));
-  let signal=null;
+  let signal=null,link={};
   try {
     const rows=await run('/usr/bin/nmcli',['--terse','--escape','no','--fields','IN-USE,SIGNAL','device','wifi','list','--rescan','no']);
     const active=rows.split('\n').find(line=>line.startsWith('*:'));
     const value=active&&/^\*:[0-9]{1,3}$/.test(active)?Number(active.split(':')[1]):NaN;
     if(Number.isFinite(value)&&value>=0&&value<=100)signal=value;
   } catch {}
-  return {supported:true,interfaces,connected:interfaces.some(x=>x.state==='connected'),signal,observedAt:Date.now(),simulated:false};
+  const activeInterface=interfaces.find(x=>x.state==='connected');if(activeInterface)try{const raw=await run('/usr/sbin/iw',['dev',activeInterface.name,'link']);const speed=raw.match(/tx bitrate:\s*([0-9.]+)\s*MBit\/s/i),dbm=raw.match(/signal:\s*(-?[0-9.]+)\s*dBm/),ssid=raw.match(/SSID: ([^\n]{1,64})/);link={interface:activeInterface.name,linkMbps:speed?Number(speed[1]):null,signalDbm:dbm?Number(dbm[1]):null,ssid:ssid?ssid[1]:null};}catch{}
+  return {...link,supported:true,interfaces,connected:interfaces.some(x=>x.state==='connected'),signal,observedAt:Date.now(),simulated:false};
  }catch{return {supported:false,interfaces:[],connected:null};}
 }
 async function musicProbe(args){
@@ -38,25 +44,46 @@ async function trigger(action){
  atomicJson(base+'/request.json',{action});
  try{await run('/usr/bin/systemctl',['start','--no-block','daw-one-update.service']);}catch{rmSync(base+'/request.json',{force:true});throw Error('Update service unavailable; rerun the OTA installer');}return {queued:true};
 }
-export function rootAdapter(){const power=powerController({run});return {
+export function rootAdapter(){const power=powerController({run}),network=networkController({run}),clock=clockController({run}),dsp=dspController({run}),localMa=localMaController({run}),measurement=measurementController({run});return {
  async status(){
   const config=readJson(configPath,{}),installed=readJson(base+'/installed.json',{}),setup=readJson('/var/lib/daw-one-manager/setup.json',{});
   return {managed:true,simulated:false,configured:existsSync('/etc/daw-one-updater/public.pem')&&['preview','stable'].includes(config.channel),channel:config.channel||null,policy:updateSettings(config.policy||{}),current:installed.commit||null,previousAvailable:typeof installed.previous==='string'&&existsSync(installed.previous),setupComplete:setup.complete===true,networkSupported:existsSync('/usr/bin/nmcli'),audioTestSupported:existsSync('/usr/bin/aplay'),progressDisplay:true,powerOffSupported:power.supported(),powerOffQueued:power.queued};
  },
  async perform(command,args){
   if(power.queued)throw Error('Power off already queued');
+  if(['dsp-set','local-standby','measurement-apply','measurement-undo','local-ma-install'].includes(command)&&(await measurement.status()).running)throw Error('Stop the room measurement before changing audio hardware or installing a server');
   if(command==='power-off')return power.queue();
   if(command==='policy'){const config=readJson(configPath,{});atomicJson(configPath,{...config,policy:args});return {saved:true,policy:args};}
   if(['check','install','rollback'].includes(command)){
    if(command==='rollback'&&!await idle())throw Error('Stop playback and clear faults before rollback');
    return trigger(command);
   }
+  if(command==='measurement-status')return measurement.status();
+  if(command==='measurement-start'){if(!await idle())throw Error('Stop playback before the audible room measurement');return measurement.start(args);}
+  if(command==='measurement-apply')return measurement.apply(args.target);
+  if(command==='measurement-undo')return measurement.undo();
+  if(command==='measurement-stop')return measurement.stop();
+  if(command==='local-ma-status')return localMa.status();
+  if(command==='local-ma-install'){if(!await idle())throw Error('Stop playback before installing a local server');return localMa.install();}
   if(command==='network')return networkStatus();
+  if(command==='wifi-scan')return network.scan(args.interface);
+  if(command==='hotspot-start'){if(!await idle())throw Error('Stop playback before starting the setup hotspot');return network.hotspot(args);}
+  if(command==='hotspot-stop')return network.stop();
+  if(command==='clock')return clock.get();
+  if(command==='clock-set')return clock.set(args);
+  if(command==='dsp')return dsp.get();
+  if(command==='local-standby')return dsp.standby(args.enabled);
+  if(command==='dsp-set')return dsp.set(args.controls);
+  if(command==='erase-setup'){
+   if(!await idle())throw Error('Stop playback before erasing setup');if((await measurement.status()).running)throw Error('Stop the room measurement before erasing setup');for(const path of ['/var/lib/daw-one-measurement/status.json','/var/lib/daw-one-measurement/request.json'])rmSync(path,{force:true});
+   const previous=existsSync('/etc/daw-one/connection.env')?readFileSync('/etc/daw-one/connection.env','utf8'):'';
+   const clean=setEnvironment(previous,{DAW_PLAYBACK_MODE:'simulation',MA_URL:'',MA_TOKEN:'',MA_TOKEN_FILE:'',MA_PLAYER_ID:'',MA_ALLOW_CONTROL:'false'});
+   if(existsSync('/etc/daw-one.env'))writeFileSync('/etc/daw-one.env',setEnvironment(readFileSync('/etc/daw-one.env','utf8'),{DAW_PLAYBACK_MODE:'simulation',MA_URL:'',MA_TOKEN:'',MA_TOKEN_FILE:'',MA_PLAYER_ID:'',MA_ALLOW_CONTROL:'false'}),{mode:0o640});
+   writeFileSync('/etc/daw-one/connection.env',clean,{mode:0o640});await run('/usr/bin/chown',['root:dawone','/etc/daw-one/connection.env']);rmSync('/etc/daw-one/music-assistant.token',{force:true});
+   atomicJson('/var/lib/daw-one-manager/setup.json',{complete:false});setTimeout(()=>run('/usr/bin/systemctl',['restart','--no-block','daw-one.service']).catch(()=>{}),1200);return {erased:true,restarting:true};
+  }
   if(command==='wifi'){
-   const network=await networkStatus();if(!network.interfaces.some(x=>x.name===args.interface))throw Error('Wi-Fi interface not available');
-   if(!await idle())throw Error('Stop playback before changing Wi-Fi');
-   await new Promise((resolve,reject)=>{const child=spawn('/usr/bin/nmcli',['--ask','device','wifi','connect',args.ssid,'ifname',args.interface],{stdio:['pipe','ignore','ignore']});const timer=setTimeout(()=>{child.kill('SIGTERM');reject(Error('Wi-Fi connection timed out'));},20000);child.on('error',()=>{clearTimeout(timer);reject(Error('Wi-Fi connection failed'));});child.on('close',code=>{clearTimeout(timer);code===0?resolve():reject(Error('Wi-Fi connection failed; existing profiles were retained'));});child.stdin.on('error',()=>{});child.stdin.end(args.password+'\n');});
-   return {connected:true,reconnect:true};
+   if(!await idle())throw Error('Stop playback before changing Wi-Fi');return network.connect(args);
   }
   if(command==='probe-music')return musicProbe(args);
   if(command==='save-music'){

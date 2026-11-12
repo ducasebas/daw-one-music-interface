@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mediaKinds, publicMedia } from "../shared/media.js";
+import { mediaKinds, publicMedia,mediaSources } from "../shared/media.js";
 export class MusicLibrary {
   constructor(service) {
     this.service = service;
@@ -47,11 +47,12 @@ export class MusicLibrary {
     offset = 0,
     parent = "",
     favorite = false,
+    source = "all",
   }) {
     if (this.service.status !== "connected")
       throw Error("Music Assistant is niet verbonden");
     if (
-      !mediaKinds.includes(kind) ||
+      !mediaKinds.includes(kind) || !["all","local","spotify","tidal"].includes(source) ||
       !Number.isInteger(offset) ||
       offset < 0 ||
       offset > 100000 ||
@@ -59,10 +60,10 @@ export class MusicLibrary {
       q.length > 120
     )
       throw Error("Ongeldige bibliotheekquery");
-    const key = JSON.stringify([kind, q, offset, parent, favorite]);
+    const key = JSON.stringify([kind, q, offset, parent, favorite, source]);
     const cached = this.pages.get(key);
     if (cached && Date.now() - cached.at < 20000) return cached.result;
-    let raw;
+    let raw,nextOffset,sourceMore;
     if (parent) {
       const item = this.get(parent);
       const commands = {
@@ -90,11 +91,20 @@ export class MusicLibrary {
       raw = mediaKinds
         .flatMap((type) => (Array.isArray(found?.[type]) ? found[type] : []))
         .slice(offset, offset + 4);
+    } else if(source!=='all'){
+      raw=[];let cursor=offset,ended=false;
+      for(let pass=0;pass<10&&raw.length<4&&!ended;pass++){
+        const response=await this.service.transport.command(`music/${kind}/library_items`,{limit:20,offset:cursor,...(favorite?{favorite:true}:{})});const rows=Array.isArray(response)?response:response?.items;if(!Array.isArray(rows))throw Error('Unexpected library response');
+        for(let i=0;i<rows.length;i++){if(mediaSources(rows[i]).includes(source)){raw.push(rows[i]);if(raw.length===4){nextOffset=cursor+i;break;}}}
+        if(raw.length<4){cursor+=rows.length;nextOffset=cursor;ended=rows.length<20;}
+      }
+      sourceMore=raw.length>3||!ended;
     } else
       raw = await this.service.transport.command(
         `music/${kind}/library_items`,
         { limit: 4, offset, ...(favorite ? { favorite: true } : {}) },
       );
+    if(source!=='all'&&(parent||q.trim()))raw=(Array.isArray(raw)?raw:raw?.items||[]).filter(i=>mediaSources(i).includes(source));
     const list = Array.isArray(raw)
       ? raw
       : Array.isArray(raw?.items)
@@ -106,10 +116,11 @@ export class MusicLibrary {
         .slice(0, 3)
         .map((i) => this.remember(i))
         .filter(Boolean),
-      hasMore: list.length > 3,
+      hasMore: sourceMore??list.length > 3,
       offset,
       limit: 3,
       source: "music-assistant",
+      ...(source!=="all"?{filter:source,nextOffset}:{}),
     };
     this.pages.set(key, { at: Date.now(), result });
     while (this.pages.size > 40)

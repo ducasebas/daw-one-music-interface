@@ -15,7 +15,7 @@ export function StartupScreen({
   const preparation = useStartupPreparation();
   const [reduced, setReduced] = useState(
     () =>
-      staticOnly || animationMode==='still' ||
+      staticOnly || animationMode==='still'||animationMode==='off' ||
       (animationMode!=='video'&&window.matchMedia("(prefers-reduced-motion: reduce)").matches),
   );
   const [cycle, setCycle] = useState(0);
@@ -27,7 +27,7 @@ export function StartupScreen({
   const [renderer, setRenderer] = useState(reduced ? "still" : "loading");
   useEffect(()=>{
     try{localStorage.setItem('tunebox-startup-status',JSON.stringify({renderer,staticOnly,reduced,at:Date.now()}));}catch{}
-    if(renderer==='loading'&&visible||!updates?.info?.controlToken)return;
+    if(animationMode!=='off'&&renderer==='loading'&&visible||!updates?.info?.controlToken)return;
     const frame=requestAnimationFrame(()=>requestAnimationFrame(()=>{
       fetch('/api/display/ready',{method:'POST',headers:{'X-TuneBox-Control':updates.info.controlToken}}).catch(()=>{});
     }));
@@ -66,7 +66,7 @@ export function StartupScreen({
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const change = () => {
-      const still=staticOnly||animationMode==='still'||animationMode!=='video'&&media.matches;
+      const still=staticOnly||animationMode==='still'||animationMode==='off'||animationMode!=='video'&&media.matches;
       setReduced(still);
       if (still) setRenderer("still");
     };
@@ -132,7 +132,7 @@ export function StartupScreen({
     )
       setVisible(false);
   }, [mode, offline, elapsed]);
-  if (!visible) return null;
+  if (!visible||animationMode==='off') return null;
   return (
     <section
       className="startup-screen"

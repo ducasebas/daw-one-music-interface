@@ -35,6 +35,9 @@ if /usr/bin/curl --fail --silent --max-time 2 http://127.0.0.1:3002/status >/dev
   url="http://127.0.0.1:3002/?display=$mode&panel=$panel"
   if [[ -r /opt/daw-one/deployment-target && $(cat /opt/daw-one/deployment-target) == pi3-experimental ]]; then url="$url&profile=pi3"; fi
 fi
+if [[ $mode == dsi-production && -f /usr/local/share/icons/tunebox-invisible/index.theme ]]; then
+  export XCURSOR_THEME=tunebox-invisible XCURSOR_PATH=/usr/local/share/icons
+fi
 viewport=1280x400
 [[ $panel != wall-16-10 ]] || viewport=1280x800
 printf 'DAW ONE kiosk: %s, panel %s, logical viewport %s\n' "$mode" "$panel" "$viewport"

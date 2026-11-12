@@ -2,6 +2,7 @@ import { readFileSync, statfsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { cpus, loadavg, arch } from "node:os";
 import { localServerAssessment } from "../shared/host-capacity.js";
+import {pathToFileURL} from 'node:url';
 function read(path) {
   try {
     return readFileSync(path, "utf8");
@@ -9,6 +10,7 @@ function read(path) {
     return "";
   }
 }
+export function assessHost(target){
 const memory = read("/proc/meminfo");
 const mib = (key) => {
   const match = memory.match(new RegExp(`^${key}:\\s+(\\d+)`, "m"));
@@ -30,7 +32,7 @@ try {
 } catch {}
 const temperature = read("/sys/class/thermal/thermal_zone0/temp").trim();
 const report = localServerAssessment({
-  target: process.argv[2],
+  target,
   arch: arch(),
   totalMiB: mib("MemTotal"),
   availableMiB: mib("MemAvailable"),
@@ -40,5 +42,6 @@ const report = localServerAssessment({
   load1: loadavg()[0],
   cores: cpus().length,
 });
-console.log(JSON.stringify(report, null, 2));
-process.exitCode = report.eligible ? 0 : 3;
+return report;
+}
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){const report=assessHost(process.argv[2]);console.log(JSON.stringify(report,null,2));process.exitCode=report.eligible?0:3;}

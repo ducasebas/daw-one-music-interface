@@ -8,11 +8,25 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 *Current software screenshot using simulated playback and conceptual artwork; no Louder HAT is connected.*
 
-## GUI 3.1 · TOUCH — real-screen ergonomics
+## GUI 3.2 · SETUP — device settings, diagnostics and room measurement
 
-Separate **Screen rest** and **Power off** controls: screen rest keeps music running; confirmed power off darkens the panel and shuts down the Pi. A hardware switch is still needed to disconnect its power supply completely.
+**Current build: `GUI 3.2 · SETUP` / `2026.11.11-setup.1`.** Fifteen visible settings topics, explicit Save/Cancel/defaults, six-digit PIN, touch Wi-Fi/phone setup, repeatable first-start wizard and Music Assistant server/player setup. A local MA install is offered only after a capacity check; your NUC connection is retained until explicitly changed.
 
-The owner has the interface running on the Waveshare 7inch DSI LCD (E). This update adds a larger playback bar, screen-filling rest views, instant wake feedback and full-height settings categories. **English is now the default; Dutch is selectable in Settings → Language.** Music First branding and the cursor are removed from the DSI kiosk.
+**[How every feature works, Pi update commands and remaining hardware tests](docs/setup-update.md)** · **[USB microphone measurement and selectable listening targets](docs/room-measurement.md)** · **[OTA activation](docs/ota-updates.md)** · **[Software validation](docs/setup-validation.md)**.
+
+Sensors includes CPU/case temperature, lux, actual brightness, fan/RAM/network/power status, software/hardware details and up to four chosen home widgets. Developer adds bounded debug capture, report download, history and update/rollback access. Unknown physical readings stay unavailable. Room measurement keeps the measured baseline, offers Neutral/Warm/Bass/Vocal/Quiet/Custom targets and genre-based suggestions, then requires a separate confirmation for supported Louder DSP changes. The USB measurement worker is optional and requires verified physical routing.
+
+[Open the simulator locally](http://localhost:5173/?gui=2&screen=1&display=hdmi-development&panel=wall-16-10) after `npm ci` and `npm run dev`. Browser simulation never emits a real sweep, creates a Wi-Fi access point or installs a local MA server.
+
+![GUI 3.2 settings overview — software simulation](docs/images/setup-overview.png)
+
+![Selectable listening targets — software simulation; no physical measurement](docs/images/setup-targets.png)
+
+## Earlier GUI 3.1 · TOUCH — real-screen ergonomics
+
+Separate **Screen rest** and **Power off** controls: screen rest keeps music running; confirmed power off darkens the panel and shuts down the Pi. The intended off state is a clean software halt with the supply connected. Pi 4 GPIO3 wake needs appropriate EEPROM configuration and wiring that does not hold the shared sensor I²C clock low; see the new setup guide.
+
+The owner has the interface running on the Waveshare 7inch DSI LCD (E). This update adds a larger playback bar, screen-filling rest views, instant wake feedback and full-height settings categories. **English is now the default; Dutch is selectable in Settings → Language.** Music First branding is removed; CSS plus a transparent cursor theme suppress the DSI pointer and need physical confirmation.
 
 [Update the Pi and see implementation limits](docs/touch-update.md) · [Help translate TuneBox](docs/translations.md) · [Validation record](docs/touch-update-validation.md).
 

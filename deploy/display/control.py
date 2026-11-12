@@ -49,14 +49,18 @@ def loop():
     was_revealed = False
     while True:
         now = time.time()
-        settings = read_json('/var/lib/daw-one-state/display.json')
+        preferences = read_json('/var/lib/daw-one-state/preferences.json')
+        settings = preferences.get('display', read_json('/var/lib/daw-one-state/display.json'))
+        activity = read_json('/run/daw-one-display/activity.json')
+        fresh_activity = isinstance(activity.get('observedAt'),(int,float)) and -1000 <= now*1000-activity['observedAt'] <= 5000
+        screen_off = fresh_activity and activity.get('awake') is False and preferences.get('prefs',{}).get('screen',{}).get('mode') == 'black'
         target_level, mode, lux = target(settings,read_json('/run/daw-one-sensors/readings.json'),now)
         ready = read_json('/run/daw-one-display/ready.json')
         # A local kiosk handshake reveals the decoded first frame. Fail open after
         # 90 seconds, so a broken browser cannot leave the display permanently dark.
         uptime = float(Path('/proc/uptime').read_text().split()[0])
         powering_off = Path('/run/daw-one-display/power-off').exists()
-        reveal = not powering_off and (ready.get('ready') is True or uptime > 90)
+        reveal = not powering_off and not screen_off and (ready.get('ready') is True or uptime > 90)
         wanted = target_level if reveal else 0
         if current is None:
             try: current = int((BACKLIGHT/'brightness').read_text())/int((BACKLIGHT/'max_brightness').read_text())*100

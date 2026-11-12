@@ -1,5 +1,7 @@
 # Raspberry Pi 4 deployment
 
+**Current GUI 3.2 update:** [device settings, exact install steps and hardware acceptance](setup-update.md). [USB microphone measurements and DSP targets](room-measurement.md) require the optional trusted worker.
+
 **New wall product:** see the [GUI3.0 install/profile and hardware checklist](wall-hardware-test.md). The new16:10 profile is explicit and provisional; existing1280×400 devices are not switched automatically.
 
 **Pi 3 B+ update:** use the explicit [experimental Pi 3 guide](pi3-experimental.md). It preserves the Pi 4 default and requires a prebuilt bundle. Hardware performance is still unverified. Pi3 has owner-reported basic operation; see the field report for limitations.

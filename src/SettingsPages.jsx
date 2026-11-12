@@ -12,6 +12,7 @@ import { DisplaySettings, SensorDashboard } from './DisplaySettings.jsx';
 import { panelProfile } from '../shared/display.js';
 import { LanguageSettings } from './LanguageSettings.jsx';
 import { VideoSettings } from './VideoArtwork.jsx';
+import {SettingsHub} from './SettingsHub.jsx';
 import {PowerOffButton} from './PowerControls.jsx';
 const pages = [
   "General",
@@ -130,6 +131,7 @@ export function SettingsPages({
       )}
     </Pager>
   );
+  if(wall)return <SettingsHub snapshot={snapshot} offline={offline} prefs={prefs} update={update} themePreferences={themePreferences} setThemePreferences={setThemePreferences} onSnapshot={onSnapshot} onClose={onClose} initialPage={initialPage} onReplayStartup={onReplayStartup}/>;
   if(!wall)return body;
   return <div className="settings-hub" data-section={selected[1]}><nav className="settings-categories" aria-label={tr("Settings categories")}>{groups.map(([name,id])=><button key={id} aria-current={selected[1]===id?'page':undefined} onClick={()=>setIndex(id)}>{tr(name)}</button>)}</nav><section className="settings-detail" aria-label={tr(selected[0])}><header className="settings-detail-heading"><h2>{tr(selected[0])}</h2><button onClick={onClose}>{tr('Done')}</button></header>{selected[1]===1&&<label className="appearance-section">{tr("Appearance section")}<select aria-label={tr("Appearance section")} value={index} onChange={e=>setIndex(Number(e.target.value))}>{pages.slice(1,10).map((name,i)=><option key={name} value={i+1}>{tr(name)}</option>)}</select></label>}{tr(body)}</section></div>;
 }

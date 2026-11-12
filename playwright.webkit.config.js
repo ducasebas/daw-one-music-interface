@@ -2,5 +2,5 @@ import { defineConfig } from "@playwright/test";
 import config from "./playwright.config.js";
 export default defineConfig({
   ...config,
-  use: { ...config.use, browserName: "webkit" },
+  use: { ...config.use, browserName: "webkit", launchOptions:{} },
 });

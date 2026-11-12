@@ -1,3 +1,6 @@
+import {setLanguage} from '../shared/i18n.js';
+import {PhoneSetup} from './NetworkWizard.jsx';
+import {FirstStartWizard} from './FirstStartWizard.jsx';
 import {tr} from "../shared/i18n.js";
 import "./audio-analysis.css";
 import "./device-settings.css";
@@ -25,13 +28,14 @@ import { TestWorkbench } from "./TestWorkbench.jsx";
 import { ReferenceAside } from "./ReferenceAside.jsx";
 import { StartupScreen } from "./StartupScreen.jsx";
 import { DisplayViewport } from "./DisplayViewport.jsx";
-import { displayMode } from "../shared/display.js";
+import { displayMode, panelProfile } from "../shared/display.js";
 import { VolumeControl } from "./VolumeControl.jsx";
 import "../design/brand-tokens.css";
 import "./style.css";
 import { MusicShell } from "./MusicShell.jsx";
 import "./music-shell.css";
 import "./wall.css";
+import "./settings-hub.css";
 function load() {
   try {
     return normalize(JSON.parse(localStorage.getItem("daw-settings") || "{}"));
@@ -77,6 +81,7 @@ function App() {
     [matched, setMatched] = useState(true),
     [scenario, setScenario] = useState("Cold boot");
   const prefs = profileSettings(storedPrefs, profile);
+  useEffect(()=>{if(panelProfile(location.search)!=='wall-16-10')return;const value=snapshot.preferences;if(!value||value.revision===0)return;setPrefs(normalize(value.prefs));setThemePreferences(normalizeThemePreferences(value.themePreferences));setLanguage(value.language);},[snapshot.preferences?.revision]);
   useEffect(() => {
     try {
       localStorage.setItem("daw-settings", JSON.stringify(storedPrefs));
@@ -547,6 +552,7 @@ function App() {
       </footer>
     </main>
   );
+  if(snapshot.onboardingRequired&&new URLSearchParams(location.search).get('screen')==='1')return <FirstStartWizard snapshot={snapshot} offline={offline} onComplete={()=>fetch('/api/state').then(r=>r.json()).then(setSnapshot)}/>;
   return lab && !embedded ? (
     <TestWorkbench
       gui2={gui2}
@@ -587,7 +593,7 @@ class AppBoundary extends React.Component {
 }
 createRoot(document.getElementById("root")).render(
   <AppBoundary>
-    <DeviceUpdatesProvider><App /></DeviceUpdatesProvider>
+    <DeviceUpdatesProvider>{new URLSearchParams(location.search).get('setup')==='phone'?<PhoneSetup/>:<App />}</DeviceUpdatesProvider>
   </AppBoundary>,
 );
 if (import.meta.env.PROD && "serviceWorker" in navigator)

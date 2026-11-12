@@ -78,7 +78,7 @@ if [[ $ma_mode == install ]]; then
   node "$repo/deploy/host-capacity.js" "$target"
 fi
 apt-get update
-apt-get install -y --no-install-recommends cage chromium curl alsa-utils libinput-tools wlr-randr seatd dbus-user-session libpam-systemd
+apt-get install -y --no-install-recommends cage chromium curl alsa-utils libinput-tools wlr-randr seatd dbus-user-session libpam-systemd network-manager dnsmasq-base iw
 getent group dawone >/dev/null || groupadd --system dawone
 id dawone >/dev/null 2>&1 || useradd --system --gid dawone --create-home --home-dir /var/lib/dawone --shell /usr/sbin/nologin dawone
 usermod -aG video,render,input dawone
@@ -110,10 +110,13 @@ install -m 755 "$repo/deploy/set-display-mode.sh" /opt/daw-one/set-display-mode.
 install -m 755 "$repo/deploy/set-panel-profile.sh" /opt/daw-one/set-panel-profile.sh
 printf '%s\n' "$target" > /opt/daw-one/deployment-target
 if [[ ! -f /etc/daw-one.env ]]; then
+  install -d -m 700 -o dawone -g dawone /var/lib/daw-one-state
+  install -m 600 -o dawone -g dawone /dev/null /var/lib/daw-one-state/first-start
   printf 'DAW_PLAYBACK_MODE=simulation\nMA_ALLOW_CONTROL=false\nMA_VOLUME_LIMIT=40\n' > /etc/daw-one.env
   chown root:dawone /etc/daw-one.env
   chmod 640 /etc/daw-one.env
 fi
+python3 "$repo/deploy/display/cursor-theme.py"
 bash "$repo/deploy/install-manager.sh"
 if [[ $target == pi4 && -d /sys/class/backlight/10-0045 ]]; then bash "$repo/deploy/install-display.sh"; fi
 if [[ $quiet_boot == true ]]; then

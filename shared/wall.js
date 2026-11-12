@@ -1,11 +1,13 @@
 /** Wall display presentation contracts. Never grant actuator permissions. */
-export const sleepModes = ['clock','widgets','sunset','glow','playing','black'];
+export const sleepModes = ['clock','widgets','sunset','glow','playing','black','vu','spectrum','bars'];
 export function screenSettings(value = {}) {
   value = value && typeof value === 'object' ? value : {};
+  const extended=value.extended===true;
   return {
     mode: sleepModes.includes(value.mode) ? value.mode : 'clock',
     latitude: Number.isFinite(value.latitude) && Math.abs(value.latitude)<=90 ? value.latitude : null,
     longitude: Number.isFinite(value.longitude) && Math.abs(value.longitude)<=180 ? value.longitude : null,
+    ...(extended?{extended:true,showDate:value.showDate!==false,showHint:value.showHint!==false,leftColor:/^#[a-f0-9]{6}$/i.test(value.leftColor||'')?value.leftColor:'#c8a56c',rightColor:/^#[a-f0-9]{6}$/i.test(value.rightColor||'')?value.rightColor:'#c8a56c',meterReference:[-24,-20,-18,-16,-14].includes(value.meterReference)?value.meterReference:-18}:{}),
   };
 }
 export function wifiReading(network, offline=false) {
@@ -44,7 +46,7 @@ export function wallNotifications(snapshot,updates,offline=false) {
     {id:'update',icon:'update',title:'Update',detail:updates?.offline?'Updateservice niet bereikbaar':updates?.status||'Nog geen updatestatus',action:'updates'},
     {id:'hardware',icon:'alert',title:'Hardware alert',detail:faults.length?faults.join(', '):power?.reason||'PD-contract onbekend · 100 W niet bevestigd',attention:faults.length>0||power?.status!=='pass',simulated,action:'status'},
     {id:'newsletter',icon:'mail',title:'Newsletter',detail:'Geen nieuwsbrief gekoppeld. Er wordt niets automatisch opgehaald of verstuurd.'},
-    {id:'whatsnew',icon:'discover',title:'What’s new',detail:'Wandontwerp · 16:10-profiel · schermrust · meldingen · grotere touchbediening.'},
+    {id:'whatsnew',icon:'discover',title:'What’s new',detail:'GUI 3.2 · Save/Cancel · Wi-Fi setup · PIN · sensors · debug · room measurement and listening targets.'},
     {id:'tutorial',icon:'tutorial',title:'Tutorial',detail:'Tik op de hoes voor Nu spelen. Veeg instellingenpagina’s. Schermrust stopt de muziek niet; de eerste aanraking wekt alleen het scherm.'},
   ];
 }

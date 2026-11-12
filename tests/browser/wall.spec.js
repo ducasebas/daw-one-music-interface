@@ -4,7 +4,7 @@ import {presets} from '../../shared/themes.js';
 const url='/?gui=2&screen=1&display=dsi-production&panel=wall-16-10';
 test.use({viewport:{width:1280,height:800}});
 const settings=async(page,name)=>{await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByRole('navigation',{name:'Settings categories'}).getByRole('button',{name,exact:true}).click();};
-test.beforeEach(async({page})=>{await page.request.post('/api/scenario',{data:{name:'Playback'}});await page.goto(url);});
+test.beforeEach(async({page})=>{const token=(await(await page.request.get('/api/updates')).json()).controlToken;await page.request.post('/api/reset',{headers:{'X-TuneBox-Control':token},data:{kind:'preferences',confirmed:true}});await page.request.post('/api/scenario',{data:{name:'Playback'}});await page.goto(url);});
 test('English default, larger transport and all top-level routes fit the physical screen',async({page})=>{
  for(const name of ['Discover','My music','Search','Queue','Spaces']){
   await page.getByRole('button',{name,exact:true}).click();
@@ -27,14 +27,14 @@ test('large settings categories, sensor cards and all six skins remain usable',a
  for(const name of ['Playback','Display','Appearance','Audio','Video','Connections','Sensors','Updates','System','Language']){
   await settings(page,name);await expect(page.locator('.settings-detail')).toBeVisible();await expect(page.locator('.m2-player')).not.toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBe(800);
  }
- await settings(page,'Sensors');await expect(page.locator('.sensor-dashboard')).toContainText('21.5 °C');await expect(page.locator('.sensor-dashboard')).toContainText('486 lux');await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-sensors.png'});
+ await settings(page,'Sensors');await expect(page.locator('.system-dashboard')).toContainText('21.5 °C');await expect(page.locator('.system-dashboard')).toContainText('486 lux');await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-sensors.png'});
  await settings(page,'Appearance');
- for(const {id} of presets){await page.getByLabel('Skin',{exact:true}).selectOption(id);await expect(page.locator('.music2')).toHaveAttribute('data-theme',id);}
- await settings(page,'Display');await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-display-settings.png'});
+ for(const {id,name} of presets){await page.getByRole('button',{name,exact:true}).click();await expect(page.locator('.music2')).toHaveAttribute('data-theme',id);}
+ await page.getByRole('button',{name:'Save',exact:true}).click();await settings(page,'Display');await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-display-settings.png'});
 });
 test('language changes immediately, persists and uses the requested Dutch Spaces label',async({page})=>{
- await settings(page,'Language');await page.getByRole('button',{name:'Nederlands',exact:true}).click();await expect(page.getByRole('button',{name:'Ruimtes',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Instellingen',exact:true})).toBeVisible();
- expect(await page.evaluate(()=>document.documentElement.lang)).toBe('nl');await page.reload();await page.getByRole('button',{name:'Instellingen',exact:true}).click();await page.getByRole('navigation',{name:'Instellingscategorieën'}).getByRole('button',{name:'Taal',exact:true}).click();await page.getByRole('button',{name:'English',exact:true}).click();await expect(page.getByRole('button',{name:'Spaces',exact:true})).toBeVisible();
+ await settings(page,'Language');await page.getByRole('button',{name:'Nederlands',exact:true}).click();await expect(page.getByRole('button',{name:'Ruimtes',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Instellingen',exact:true})).toBeVisible();await page.getByRole('button',{name:'Opslaan',exact:true}).click();
+ expect(await page.evaluate(()=>document.documentElement.lang)).toBe('nl');await page.reload();await page.getByRole('button',{name:'Instellingen',exact:true}).click();await page.getByRole('navigation',{name:'Instellingscategorieën'}).getByRole('button',{name:'Taal',exact:true}).click();await page.getByRole('button',{name:'English',exact:true}).click();await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.getByRole('button',{name:'Spaces',exact:true})).toBeVisible();
 });
 test('clock fills the rest view; a single touch shows wake feedback and never toggles playback',async({page})=>{
  await settings(page,'Display');await page.getByLabel('Screen rest view').selectOption('widgets');
@@ -46,15 +46,15 @@ test('clock fills the rest view; a single touch shows wake feedback and never to
  const after=await(await page.request.get('/api/state')).json();expect(after.playback.playing).toBe(before.playback.playing);expect(after.device.amplifierEnabled).toBe(before.device.amplifierEnabled);
 });
 test('timeout saves on the backend and survives reload; all rest modes remain available',async({page})=>{
- await settings(page,'Display');await page.getByLabel('Screen timeout',{exact:true}).selectOption('600');await expect(page.getByRole('status').filter({hasText:'Saved'})).toBeVisible();
+ await settings(page,'Display');await page.getByLabel('Screen timeout',{exact:true}).selectOption('600');await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('[data-saved="true"]')).toBeVisible();
  expect((await(await page.request.get('/api/display')).json()).settings.timeoutSeconds).toBe(600);
  await page.reload();await settings(page,'Display');await expect(page.getByLabel('Screen timeout',{exact:true})).toHaveValue('600');
- for(const mode of ['clock','widgets','sunset','glow','playing','black']){await page.getByLabel('Screen rest view').selectOption(mode);await page.getByRole('button',{name:'Screen rest',exact:true}).click();const sleep=page.getByRole('button',{name:'Wake display',exact:true});await expect(sleep).toHaveAttribute('data-mode',mode);if(mode==='black')expect(await sleep.innerText()).toBe('');await sleep.tap();await expect(sleep).not.toBeVisible();}
+ for(const mode of ['clock','widgets','sunset','glow','playing','black']){await page.getByLabel('Screen rest view').selectOption(mode);await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByRole('button',{name:'Screen rest',exact:true}).click();const sleep=page.getByRole('button',{name:'Wake display',exact:true});await expect(sleep).toHaveAttribute('data-mode',mode);if(mode==='black')expect(await sleep.innerText()).toBe('');await sleep.tap();await expect(sleep).not.toBeVisible();}
 });
 test('a real uploaded video replaces the mock and follows music pause and seek',async({page})=>{
  await page.request.post('/api/event',{data:{type:'pause'}});await page.request.post('/api/event',{data:{type:'seek',position:0}});
  await settings(page,'Video');await page.getByLabel('Choose video',{exact:true}).setInputFiles({name:'example.webm',mimeType:'video/webm',buffer:readFileSync('public/media/startup.webm')});await expect(page.getByRole('status').filter({hasText:'Video linked.'})).toBeVisible();
- await page.getByLabel('Video sync correction',{exact:true}).fill('487');await page.getByRole('button',{name:'Done',exact:true}).click();await page.getByRole('button',{name:'Video Artwork',exact:true}).click();const video=page.getByLabel('Linked music video',{exact:true});await expect(video).toBeVisible();await expect.poll(()=>video.evaluate(v=>v.currentTime)).toBeGreaterThan(.5);expect(await video.evaluate(v=>v.paused)).toBe(true);expect(await video.evaluate(v=>v.muted)).toBe(true);
+ await page.getByLabel('Video sync correction',{exact:true}).fill('487');await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByRole('button',{name:'Done',exact:true}).click();await page.getByRole('button',{name:'Video Artwork',exact:true}).click();const video=page.getByLabel('Linked music video',{exact:true});await expect(video).toBeVisible();await expect.poll(()=>video.evaluate(v=>v.currentTime)).toBeGreaterThan(.5);expect(await video.evaluate(v=>v.paused)).toBe(true);expect(await video.evaluate(v=>v.muted)).toBe(true);
  await page.request.post('/api/event',{data:{type:'play'}});await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(false);
  await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-linked-video.png'});
 });

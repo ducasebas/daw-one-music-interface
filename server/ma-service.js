@@ -37,6 +37,8 @@ export function normalizeMusic(
         : null,
   });
   const track = media ? convert(media) : emptyTrack;
+  const format=media?.streamdetails?.audio_format;
+  const sourceFormat=format?{codec:typeof format.content_type==='string'?format.content_type.slice(0,40):null,sampleRate:Number.isFinite(format.sample_rate)?format.sample_rate:null,bitDepth:Number.isFinite(format.bit_depth)?format.bit_depth:null}:null;
   let list = activeQueue ? items.map(convert) : [];
   if (!list.length || list[0].id !== track.id)
     list = [track, ...list.filter((t) => t.id !== track.id)];
@@ -61,6 +63,7 @@ export function normalizeMusic(
     playerId: player.player_id,
     capabilities: player.supported_features || [],
     source: "music-assistant",
+    sourceFormat,
   };
 }
 export class LiveMusicService extends EventEmitter {
