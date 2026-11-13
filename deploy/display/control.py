@@ -44,6 +44,22 @@ def set_level(percent):
         raise ValueError('Unsupported backlight range')
     (BACKLIGHT/'brightness').write_text(str(round(maximum*percent/100)))
 
+def ready_to_reveal(ready, uptime):
+    start=ready.get('startedUptime',0)
+    if not isinstance(start,(int,float)) or not math.isfinite(start) or start<0 or start>uptime:
+        start=0
+    return ready.get('ready') is True or uptime-start>90
+
+def begin_frame():
+    p=STATE.parent/'ready.json'
+    if p.parent.is_dir():
+        temporary=p.with_suffix('.kiosk.tmp')
+        temporary.write_text(json.dumps({'ready':False,'startedUptime':float(Path('/proc/uptime').read_text().split()[0])})+'\n')
+        temporary.chmod(0o660)
+        temporary.replace(p)
+    try:set_level(0)
+    except (OSError,ValueError):pass
+
 def loop():
     current = None
     was_revealed = False
@@ -60,7 +76,7 @@ def loop():
         # 90 seconds, so a broken browser cannot leave the display permanently dark.
         uptime = float(Path('/proc/uptime').read_text().split()[0])
         powering_off = Path('/run/daw-one-display/power-off').exists()
-        reveal = not powering_off and not screen_off and (ready.get('ready') is True or uptime > 90)
+        reveal = not powering_off and not screen_off and ready_to_reveal(ready,uptime)
         wanted = target_level if reveal else 0
         if current is None:
             try: current = int((BACKLIGHT/'brightness').read_text())/int((BACKLIGHT/'max_brightness').read_text())*100
@@ -76,8 +92,10 @@ def loop():
         time.sleep(.25)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(); parser.add_argument('--hide',action='store_true'); parser.add_argument('--restore',action='store_true'); args=parser.parse_args()
-    if args.hide or args.restore:
+    parser = argparse.ArgumentParser(); parser.add_argument('--hide',action='store_true'); parser.add_argument('--restore',action='store_true'); parser.add_argument('--begin',action='store_true'); args=parser.parse_args()
+    if args.begin:
+        begin_frame()
+    elif args.hide or args.restore:
         try: set_level(0 if args.hide or Path('/run/daw-one-display/power-off').exists() else 80)
         except (OSError,ValueError): pass
     else:

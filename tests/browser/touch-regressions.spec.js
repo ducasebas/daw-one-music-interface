@@ -1,3 +1,4 @@
+import {chooseSettingsSection} from './settings-helpers.js';
 import {test,expect} from '@playwright/test';
 import {presets} from '../../shared/themes.js';
 const url='/?gui=2&screen=1&display=dsi-production&panel=wall-16-10';
@@ -5,7 +6,7 @@ test.use({viewport:{width:1280,height:800},reducedMotion:'reduce'});
 async function token(page){return (await(await page.request.get('/api/updates')).json()).controlToken;}
 async function open(page,name){
  await page.getByRole('button',{name:'Settings',exact:true}).click();
- if(name)await page.getByRole('navigation',{name:'Settings categories'}).getByRole('button',{name,exact:true}).click();
+ if(name)await chooseSettingsSection(page,name);
 }
 async function preferences(page,patch){
  const saved=await(await page.request.get('/api/preferences')).json();
@@ -35,7 +36,7 @@ test('a single checkbox edit enables Save, persists and can be undone',async({pa
   const checkbox=page.getByLabel(name,{exact:true});await checkbox.setChecked(!await checkbox.isChecked());await expect(save).toBeEnabled();
   await checkbox.setChecked(!await checkbox.isChecked());await expect(save).toBeDisabled();
  }
- await page.getByRole('navigation',{name:'Settings categories'}).getByRole('button',{name:'Display',exact:true}).click();
+ await chooseSettingsSection(page,'Display');
  for(const name of ['Show date','Show wake hint']){
   const checkbox=page.getByLabel(name,{exact:true});await checkbox.setChecked(!await checkbox.isChecked());await expect(save).toBeEnabled();
   await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(save).toBeDisabled();
@@ -46,14 +47,14 @@ test('all settings tiles and each topic fit all six skins, including the fixed s
  for(const skin of presets){
   const old=await(await page.request.get('/api/preferences')).json();
   await preferences(page,{themePreferences:{...old.themePreferences,selected:skin.id,mode:'manual'}});await page.reload();
-  await open(page);const nav=page.getByRole('navigation',{name:'Settings categories'});await expect(nav.getByRole('button')).toHaveCount(15);
+  await open(page);const nav=page.getByRole('navigation',{name:'Settings categories'});await expect(nav.getByRole('button')).toHaveCount(5);
   for(const tile of await nav.getByRole('button').all()){
    await expect(tile).toBeInViewport();await unclipped(tile);expect(await tile.evaluate(e=>e.scrollHeight<=e.clientHeight+1),`${skin.id}: ${await tile.innerText()}`).toBe(true);
    const box=await tile.boundingBox();expect(box.height).toBeGreaterThanOrEqual(90);
   }
   await page.screenshot({path:`test-results/overview-${skin.id}.png`});
   for(const name of ['Playback','Display','Appearance','Audio','Video','Connections','Sensors','Presence','Date & time','Security','Updates','System','Language','Developer','Room measurement']){
-   await nav.getByRole('button',{name,exact:true}).click();
+   await chooseSettingsSection(page,name);
    await expect(page.locator('.hub-body')).toBeVisible();await unclipped(page.locator('.hub-body'));
    await page.locator('.hub-body').evaluate(e=>e.scrollTo(0,e.scrollHeight));
    expect(await page.locator('.hub-body').evaluate(e=>e.scrollTop+e.clientHeight>=e.scrollHeight-2)).toBe(true);
@@ -69,19 +70,19 @@ test('All settings leads to Now Playing, and the footer always returns without l
  await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:'Stay here'}).click();
  await expect(page.locator('.music2')).toHaveAttribute('data-page','settings');
  await page.getByRole('button',{name:'All settings',exact:true}).click();await dialog.getByRole('button',{name:'Save and continue'}).click();
- await expect(page.locator('.settings-overview')).toBeVisible();await page.getByRole('button',{name:'Now Playing',exact:true}).click();
+ await expect(page.locator('.settings-overview')).toBeVisible();await page.locator('.hub-back').click();
  await expect(page.locator('.music2')).toHaveAttribute('data-page','playing');await expect(page.getByRole('button',{name:'Open Now Playing',exact:true})).toBeDisabled();
- for(const name of ['Discover','My music','Search','Queue','Spaces']){
-  await page.getByRole('button',{name,exact:true}).click();await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();await expect(page.locator('.music2')).toHaveAttribute('data-page','playing');
+ for(const name of ['Discover','My music','Search','Queue','Rooms']){
+  await page.getByRole('button',{name,exact:true}).click();if(name==='Search')await page.getByRole('button',{name:'Done typing',exact:true}).click();await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();await expect(page.locator('.music2')).toHaveAttribute('data-page','playing');
  }
  await open(page,'Presence');await page.getByLabel('Night schedule',{exact:true}).check();await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();
  await dialog.getByRole('button',{name:'Discard changes',exact:true}).click();await expect(page.locator('.music2')).toHaveAttribute('data-page','playing');
  expect((await(await page.request.get('/api/preferences')).json()).presence.nightEnabled).toBe(false);
 });
 test('tap and double tap never select kiosk text; inputs and scrolling still work',async({page})=>{
- await page.locator('.m2-feature h2').dblclick();expect(await page.evaluate(()=>getSelection().toString())).toBe('');
+ await page.locator('.m2-playing h2').dblclick();expect(await page.evaluate(()=>getSelection().toString())).toBe('');
  await open(page,'Presence');const input=page.getByLabel('Maximum distance (m)',{exact:true});await input.fill('4');await expect(input).toHaveValue('4');await expect(page.getByRole('button',{name:'Save',exact:true})).toBeEnabled();
- expect(await input.evaluate(e=>getComputedStyle(e).userSelect)).toBe('text');
+ expect(await input.evaluate(e=>getComputedStyle(e).userSelect)).toBe('none');
  await page.locator('.hub-body').evaluate(e=>e.scrollTo(0,e.scrollHeight));expect(await page.locator('.hub-body').evaluate(e=>e.scrollTop)).toBeGreaterThan(0);
  await page.locator('.hub-heading h2').dblclick();expect(await page.evaluate(()=>getSelection().toString())).toBe('');
 });
@@ -92,7 +93,7 @@ test('volume dial and real PCM preview are large; a saved cap changes the contro
  await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('[data-saved=true]')).toBeVisible();
  const dial=page.getByRole('slider',{name:'Volume',exact:true});await expect(dial).toHaveAttribute('aria-valuemax','65');expect((await dial.boundingBox()).width).toBeGreaterThanOrEqual(112);expect((await dial.locator('svg').boundingBox()).width).toBeGreaterThanOrEqual(112);
  expect((await(await page.request.get('/api/state')).json()).audio.volume).toBe(current);
- await page.getByRole('navigation',{name:'Settings categories'}).getByRole('button',{name:'Audio',exact:true}).click();
+ await chooseSettingsSection(page,'Audio');
  await expect(page.locator('.hub-audio .audio-spectrum')).toBeVisible();expect((await page.locator('.hub-audio .audio-spectrum').boundingBox()).height).toBeGreaterThanOrEqual(240);
  await page.getByLabel('Visualizer',{exact:true}).selectOption('spectrum');await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('[data-saved=true]')).toBeVisible();
  await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();await expect(page.locator('.m2-playing .audio-spectrum')).toBeVisible();expect((await page.locator('.m2-playing .audio-spectrum').boundingBox()).width).toBeGreaterThan(650);await page.screenshot({path:'test-results/touch-pcm-large.png'});

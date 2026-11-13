@@ -83,9 +83,9 @@ export function TouchVolume({
         </strong>
         <span>
           {tr(draft !== null
-            ? "Loslaten om in te stellen"
+            ? "Adjusting volume"
             : target !== null
-              ? `Versturen · bevestigd ${actual ?? "—"}%`
+              ? "Adjusting volume"
               : actual === null
                 ? "Niet beschikbaar"
                 : actual > max
@@ -145,6 +145,7 @@ export function TouchVolume({
             angle,
             value: v,
             changed: start !== null && v !== (shown ?? 0),
+            sentAt: 0,
           };
           e.currentTarget.setPointerCapture(e.pointerId);
           setDraft(v);
@@ -172,6 +173,8 @@ export function TouchVolume({
           g.angle = a;
           g.changed = true;
           setDraft(clampVolume(g.value, max));
+          // Keep one serialized request in flight and coalesce intermediate moves.
+          if(performance.now()-g.sentAt>=80){g.sentAt=performance.now();onValue(clampVolume(g.value,max));}
         }}
         onPointerUp={(e) => finish(e)}
         onPointerCancel={(e) => finish(e, true)}

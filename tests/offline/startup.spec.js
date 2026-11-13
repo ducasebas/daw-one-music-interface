@@ -37,6 +37,6 @@ test('WebP is the moving default, replays from a fresh image and remains animate
  await context.setOffline(true);await page.reload();
  await expect(splash).toHaveAttribute('data-renderer','image-animation');expect(await image.getAttribute('src')).not.toBe(source);
  const replay=await image.screenshot();await page.waitForTimeout(800);expect((await image.screenshot()).equals(replay)).toBe(false);
- const copies=await page.evaluate(async()=>{const cache=await caches.open('daw-one-shell-v32');return (await cache.keys()).map(r=>new URL(r.url)).filter(u=>u.pathname==='/media/startup.webp').map(u=>u.search);});
+ const copies=await page.evaluate(async()=>{const key=(await caches.keys()).find(k=>k.startsWith('daw-one-shell-v'));if(!key)throw Error('No active shell cache');const cache=await caches.open(key);return (await cache.keys()).map(r=>new URL(r.url)).filter(u=>u.pathname==='/media/startup.webp').map(u=>u.search);});
  expect(copies).toEqual(['']);
 });

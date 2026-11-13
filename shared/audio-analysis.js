@@ -14,7 +14,22 @@ export class PcmAnalyser{
   for(let i=1,j=0;i<FFT_SIZE;i++){let bit=FFT_SIZE>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){const value=re[i];re[i]=re[j];re[j]=value;}}
   for(let length=2;length<=FFT_SIZE;length<<=1){const angle=-2*Math.PI/length,wr=Math.cos(angle),wi=Math.sin(angle);for(let start=0;start<FFT_SIZE;start+=length){let ur=1,ui=0;for(let j=0;j<length/2;j++){const a=start+j,b=a+length/2,tr=ur*re[b]-ui*im[b],ti=ur*im[b]+ui*re[b];re[b]=re[a]-tr;im[b]=im[a]-ti;re[a]+=tr;im[a]+=ti;const next=ur*wr-ui*wi;ui=ur*wi+ui*wr;ur=next;}}}
   const powers=[];
-  for(let band=0;band<BAND_COUNT;band++){const from=Math.max(1,Math.ceil(bandEdges[band]*FFT_SIZE/rate)),to=Math.min(FFT_SIZE/2,Math.ceil(bandEdges[band+1]*FFT_SIZE/rate)-1);if(from>to){powers.push(null);continue;}let energy=0;for(let k=from;k<=to;k++)energy+=(re[k]*re[k]+im[k]*im[k])*(k===FFT_SIZE/2?1:2);powers.push(energy/(FFT_SIZE*FFT_SIZE*this.windowPower));}
+  // Integrate the overlap of each logarithmic band with each FFT bin's width.
+  // At 44.1/48 kHz a narrow bass band can contain no bin centre; a centre-only
+  // assignment left a permanent gap. Fractional bin power preserves energy and
+  // shows honest finite-resolution band estimates without inventing extra bins.
+  const width=rate/FFT_SIZE;
+  for(let band=0;band<BAND_COUNT;band++){
+   const low=bandEdges[band],high=Math.min(rate/2,bandEdges[band+1]);
+   if(low>=high){powers.push(null);continue;}
+   const from=Math.max(1,Math.floor(low/width-.5)),to=Math.min(FFT_SIZE/2,Math.ceil(high/width+.5));
+   let energy=0;
+   for(let k=from;k<=to;k++){
+    const overlap=Math.max(0,Math.min(high,(k+.5)*width)-Math.max(low,(k-.5)*width))/width;
+    energy+=(re[k]*re[k]+im[k]*im[k])*(k===FFT_SIZE/2?1:2)*overlap;
+   }
+   powers.push(energy/(FFT_SIZE*FFT_SIZE*this.windowPower));
+  }
   return powers;
  }
  analyse(samples,rate){

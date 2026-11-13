@@ -246,6 +246,19 @@ export class LiveMusicService extends EventEmitter {
       throw Error(
         "Music Assistant is read-only; set MA_ALLOW_CONTROL=true on server",
       );
+    if(['queue-select','queue-remove'].includes(event.type)) {
+      if(typeof event.id!=='string'||event.id==='none'||!this.playback.queue.some(t=>t.id===event.id))throw Error('Queue selection expired. Refresh the queue.');
+      if(!this.queueId)throw Error('The selected player has no Music Assistant queue.');
+      const player=this.players.find(p=>p.player_id===this.playerId);
+      if(player?.synced_to&&player.synced_to!==this.playerId)throw Error('Select the group leader to edit this queue.');
+      if(event.type==='queue-select'&&(!Number.isFinite(this.playback.volume)||this.playback.volume>this.config.volumeLimit))throw Error('Lower the player volume to the saved limit first.');
+      if(event.type==='queue-remove'&&event.id===this.playback.queue[this.playback.index]?.id)throw Error('Skip the current track before removing it.');
+      await this.transport.command(event.type==='queue-select'?'player_queues/play_index':'player_queues/delete_item',{
+        queue_id:this.queueId,...(event.type==='queue-select'?{index:event.id}:{item_id_or_index:event.id}),
+      });
+      await this.refresh();
+      return;
+    }
     const map = {
       play: "play",
       pause: "pause",

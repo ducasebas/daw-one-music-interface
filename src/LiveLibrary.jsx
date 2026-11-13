@@ -1,7 +1,9 @@
-import {tr} from "../shared/i18n.js";
+import {tr,getLanguage,translateFormat} from "../shared/i18n.js";
 import React, { useState, useEffect, useRef } from "react";
 import { Artwork } from "./Artwork.jsx";
 import { Icon } from "./Icon.jsx";
+import {KeyboardField} from "./TouchKeyboard.jsx";
+import {panelProfile} from "../shared/display.js";
 const kinds = [
   ["albums", "Albums"],
   ["artists", "Artiesten"],
@@ -15,9 +17,11 @@ export function LiveLibrary({
   offline,
   onSnapshot,
   onPlaying,
+  onConfigure,
   state,
   onState,
 }) {
+  const touch=panelProfile(location.search)==="wall-16-10";
   const {
     kind = "albums",
     q = "",
@@ -31,7 +35,7 @@ export function LiveLibrary({
     [loading, setLoading] = useState(true),
     [error, setError] = useState(""),
     [pending, setPending] = useState(false),
-    [message, setMessage] = useState("");
+    [message, setMessage] = useState(""),[pendingId,setPendingId]=useState(null),[keyboardCycle,setKeyboardCycle]=useState(0);
   const mounted = useRef(true);
   useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
   const generation = useRef(0),
@@ -93,8 +97,8 @@ export function LiveLibrary({
   async function play(item, option) {
     if (lock.current) return;
     lock.current = true;
-    setPending(true);
-    setMessage("Verzoek versturen…");
+    setPending(true);setPendingId(item.id);
+    setMessage("");
     try {
       const r = await fetch("/api/library/play", {
         method: "POST",
@@ -114,7 +118,7 @@ export function LiveLibrary({
       setMessage(e.message || "Actie mislukt; niet opnieuw verstuurd");
     } finally {
       lock.current = false;
-      setPending(false);
+      setPending(false);setPendingId(null);
     }
   }
   function open(item) {
@@ -129,6 +133,7 @@ export function LiveLibrary({
   }
   const body = (
     <>
+      {!controls&&available&&<div className="music-connection-hint" role="status"><span>{tr(snapshot.musicAssistant?.controlEnabled?'Choose your TuneBox player to start listening.':'Playback control is off. Enable it in Connections.')}</span>{onConfigure&&<button onClick={onConfigure}>{tr('Connections')}</button>}</div>}
       <div className="live-library-bar"><label className="library-source">{tr('Source')}<select aria-label={tr('Music source')} value={source} onChange={e=>change({source:e.target.value,offset:0,parent:null,trail:[]})}><option value="all">{tr('All sources')}</option><option value="local">{tr('Local files')}</option><option value="spotify">Spotify</option><option value="tidal">Tidal</option></select></label>
         {parent ? (
           <button
@@ -138,10 +143,10 @@ export function LiveLibrary({
               change({ ...last, trail: trail.slice(0, -1) });
             }}
           >
-            ← {tr(parent.name)}
+            ← {parent.name}
           </button>
         ) : view === "search" ? (
-          <label className="live-search-input">
+          touch ? <div className="live-search-field"><KeyboardField key={keyboardCycle} label="Search music" value={q} onChange={value=>change({q:value,offset:0})} maxLength={120} autoOpen/><button onClick={()=>{change({q:'',offset:0});setKeyboardCycle(v=>v+1);}}>{tr('New search')}</button></div> : <label className="live-search-input">
             <Icon name="search" />
             <input
               aria-label={tr("Zoek echte muziek")}
@@ -187,22 +192,20 @@ export function LiveLibrary({
         ) : (
           <div className="live-media-grid">
             {result.items.map((item) => (
-              <article key={item.id}>
+              <article key={item.id} data-pending={pendingId===item.id}>
                 <button
                   className="live-media-open"
-                  disabled={
-                    !["artist", "album", "playlist"].includes(item.type) ||
-                    pending
-                  }
-                  onClick={() => open(item)}
-                  aria-label={tr(`Open ${item.name}`)}
+                  disabled={pending || !["artist", "album", "playlist"].includes(item.type)&&(!controls||!item.available)}
+                  aria-busy={pendingId===item.id}
+                  onClick={() => ["artist", "album", "playlist"].includes(item.type)?open(item):play(item,"replace")}
+                  aria-label={translateFormat(item.type==='track'?'Play track {name}':'Open {name}',{name:item.name})}
                 >
-                  <Artwork src={item.artwork} alt={tr(item.name)} />
+                  <Artwork src={item.artwork} alt={item.name} />
                   <span>
-                    <b>{tr(item.name)}</b>
+                    <b>{item.name}</b>
                     <small>
-                      {tr(item.artist || item.type)}
-                      {tr(item.favorite ? " · ♥" : "")}
+                      {item.artist || tr(item.type)}
+                      {item.releaseDate ? ` · ${new Date(item.releaseDate+'T00:00:00Z').toLocaleDateString(getLanguage()==='nl'?'nl-NL':'en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})}` : item.year ? ` · ${item.year}` : ''}{tr(item.favorite ? " · ♥" : "")}
                     </small>
                   </span>
                 </button>
@@ -210,7 +213,7 @@ export function LiveLibrary({
                   {item.type !== "artist" && (
                     <>
                       <button
-                        aria-label={tr(`Speel ${item.name}`)}
+                        aria-label={translateFormat('Play {name}',{name:item.name})}
                         disabled={!controls || !item.available || pending}
                         onClick={() => play(item, "replace")}
                       >
@@ -218,12 +221,12 @@ export function LiveLibrary({
                         <span>{tr("Speel")}</span>
                       </button>
                       <button
-                        aria-label={tr(`Als volgende ${item.name}`)}
+                        aria-label={translateFormat('Play next {name}',{name:item.name})}
                         disabled={!controls || !item.available || pending}
                         onClick={() => play(item, "next")}
                       >{tr("Volgende")}</button>
                       <button
-                        aria-label={tr(`Voeg toe ${item.name}`)}
+                        aria-label={translateFormat('Add {name}',{name:item.name})}
                         disabled={!controls || !item.available || pending}
                         onClick={() => play(item, "add")}
                       >
@@ -256,11 +259,11 @@ export function LiveLibrary({
   );
   return (
     <div
-      className={`live-library ${view === "search" && !parent ? "with-keyboard" : ""}`}
+      className={`live-library ${view === "search" && !parent && !touch ? "with-keyboard" : ""}`}
       aria-label={tr("Music Assistant bibliotheek")}
     >
       <div className="live-library-main">{tr(body)}</div>
-      {view === "search" && !parent && (
+      {view === "search" && !parent && !touch && (
         <div className="live-keyboard" aria-label={tr("Zoektoetsenbord")}>
           {"qwertyuiopasdfghjklzxcvbnm".split("").map((k) => (
             <button

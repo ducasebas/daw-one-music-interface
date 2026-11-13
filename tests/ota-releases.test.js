@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {generateKeyPairSync,sign} from 'node:crypto';
 import {selectRelease,releaseIsCurrent} from '../deploy/ota/releases.mjs';
 import {repository} from '../deploy/ota/policy.mjs';
+import {checkChannel} from '../deploy/ota/check-channel.mjs';
+import {release as appRelease} from '../shared/release.js';
 const keys=generateKeyPairSync('ed25519');
 function release(sequence,commit,changes={}){
  const manifest={schema:1,repository,channel:'preview',sequence,commit,release:'build-'+sequence,bytes:1,sha256:'a'.repeat(64),...changes};
@@ -61,4 +63,20 @@ test('conflicting highest signed sequences and malformed inventories fail explic
  await assert.rejects(selectRelease([a,b],fixture([a,b])),/Conflicting/);
  await assert.rejects(selectRelease({},fixture([])),/Invalid/);
  await assert.rejects(selectRelease(Array(101).fill(a),fixture([a])),/Invalid/);
+});
+
+test('post-publication smoke check reads the real inventory path and fails if the intended release is not selected',async()=>{
+ const old=release(4,'a'.repeat(40),{release:appRelease.id}),next=release(5,'b'.repeat(40),{release:appRelease.id});
+ const options=fixture([old,next]);
+ const download=async(url,max)=>url==='https://api.github.com/repos/'+repository+'/releases?per_page=30'?Buffer.from(JSON.stringify([old,next])):options.download(url,max);
+ const result=await checkChannel({expectedCommit:next.manifest.commit,key:keys.publicKey,download});
+ assert.equal(result.commit,next.manifest.commit);
+ await assert.rejects(checkChannel({expectedCommit:old.manifest.commit,key:keys.publicKey,download}),/does not select/);
+});
+test('post-publication smoke check rejects incomplete discovery and invalid expected versions',async()=>{
+ const good=release(5,'a'.repeat(40),{release:appRelease.id}),missing=release(6,'b'.repeat(40));
+ const options=fixture([good]);
+ const download=async(url,max)=>url.includes('/releases?')?Buffer.from(JSON.stringify([good,missing])):options.download(url,max);
+ await assert.rejects(checkChannel({expectedCommit:good.manifest.commit,key:keys.publicKey,download}),/does not select/);
+ await assert.rejects(checkChannel({expectedCommit:'main',key:keys.publicKey,download}),/commit required/);
 });

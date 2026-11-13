@@ -70,3 +70,11 @@ test('HTTP audio API uses the real native pipe, requires its nonce, rejects sour
   assert.equal((await post({enabled:false},updates.controlToken)).status,200);assert.equal((await(await fetch(origin+'/api/audio?watch=1')).json()).measurement,null);
  }finally{child.kill('SIGTERM');await new Promise(resolve=>{if(child.exitCode!==null)return resolve();const timer=setTimeout(()=>{child.kill('SIGKILL');resolve();},1500);child.once('exit',()=>{clearTimeout(timer);resolve();});});}
 });
+
+test('narrow bass bands retain fractional FFT-bin power instead of leaving the second bar absent',()=>{
+ for(const rate of [44100,48000,96000]){
+  const result=new PcmAnalyser().analyse(tone(.4,.3),rate);
+  assert.equal(result.bandsDb.length,32);
+  assert.ok(result.bandsDb.every(Number.isFinite),String(rate));
+ }
+});

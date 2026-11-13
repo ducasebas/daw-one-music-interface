@@ -25,20 +25,29 @@ url="$url&panel=$panel"
 if [[ -r /opt/daw-one/deployment-target ]] && [[ $(cat /opt/daw-one/deployment-target) == pi3-experimental ]]; then
   url="$url&profile=pi3"
 fi
-# Readiness means the HTTP app responds, not that physical hardware is verified.
+# Each compositor launch waits for a newly painted frame, including warm restarts.
+if [[ $mode == dsi-production && -d /run/daw-one-display && -f /usr/local/lib/daw-one-display/control.py ]]; then
+  /usr/bin/python3 /usr/local/lib/daw-one-display/control.py --begin || true
+fi
+# Prefer the independent progress/recovery screen, including while the app starts.
+manager_url="http://127.0.0.1:3002/?display=$mode&panel=$panel"
+if [[ -r /opt/daw-one/deployment-target && $(cat /opt/daw-one/deployment-target) == pi3-experimental ]]; then manager_url="$manager_url&profile=pi3"; fi
 for attempt in {1..30}; do
+  if /usr/bin/curl --fail --silent --max-time 2 http://127.0.0.1:3002/status >/dev/null; then url=$manager_url;break;fi
   if /usr/bin/curl --fail --silent --max-time 2 http://127.0.0.1:3001/api/health >/dev/null; then break; fi
-  if [[ $attempt == 30 ]]; then echo 'DAW ONE backend unavailable; kiosk not started' >&2; exit 1; fi
+  if [[ $attempt == 30 ]]; then echo 'TuneBox display services unavailable; retrying startup' >&2; exit 1; fi
   sleep 1
 done
-if /usr/bin/curl --fail --silent --max-time 2 http://127.0.0.1:3002/status >/dev/null; then
-  url="http://127.0.0.1:3002/?display=$mode&panel=$panel"
-  if [[ -r /opt/daw-one/deployment-target && $(cat /opt/daw-one/deployment-target) == pi3-experimental ]]; then url="$url&profile=pi3"; fi
-fi
 if [[ $mode == dsi-production && -f /usr/local/share/icons/tunebox-invisible/index.theme ]]; then
   export XCURSOR_THEME=tunebox-invisible XCURSOR_PATH=/usr/local/share/icons
 fi
 viewport=1280x400
 [[ $panel != wall-16-10 ]] || viewport=1280x800
 printf 'DAW ONE kiosk: %s, panel %s, logical viewport %s\n' "$mode" "$panel" "$viewport"
-exec /usr/bin/dbus-run-session -- /usr/bin/cage -- /usr/bin/chromium --ozone-platform=wayland --kiosk --force-device-scale-factor=1 --no-first-run --disable-session-crashed-bubble --user-data-dir=/var/lib/dawone/chromium "$url"
+exec /usr/bin/dbus-run-session -- /usr/bin/cage -- /usr/bin/chromium \
+  --ozone-platform=wayland --kiosk \
+  --force-device-scale-factor=1 --no-first-run --no-default-browser-check \
+  --disable-session-crashed-bubble --noerrdialogs --disable-extensions \
+  --disable-pinch --overscroll-history-navigation=0 \
+  --disable-features=Translate,MediaRouter,GlobalMediaControls,AutofillServerCommunication \
+  --user-data-dir=/var/lib/dawone/chromium "$url"

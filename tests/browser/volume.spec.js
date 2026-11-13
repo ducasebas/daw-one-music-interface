@@ -62,7 +62,7 @@ async function gesture(page, steps, end = "touchEnd") {
   await c.send("Input.dispatchTouchEvent", { type: end, touchPoints: [] });
   await c.detach();
 }
-test("touch drag drafts smoothly, commits on release and cancels without changing volume", async ({
+test("touch drag changes volume while moving and cancellation stops without a second commit", async ({
   page,
 }) => {
   await start(page);
@@ -79,7 +79,7 @@ test("touch drag drafts smoothly, commits on release and cancels without changin
     touchPoints: [{ x: b.x + b.width - 12, y }],
   });
   await expect(s).toHaveAttribute("aria-valuenow", "100");
-  expect(await volume(page)).toBe(32);
+  await expect.poll(() => volume(page)).toBe(100);
   await c.send("Input.dispatchTouchEvent", {
     type: "touchEnd",
     touchPoints: [],
@@ -93,7 +93,7 @@ test("touch drag drafts smoothly, commits on release and cancels without changin
     ],
     "touchCancel",
   );
-  expect(await volume(page)).toBe(100);
+  await expect.poll(() => volume(page)).toBe(50);
   await s.focus();
   await page.keyboard.press("Home");
   await expect.poll(() => volume(page)).toBe(0);

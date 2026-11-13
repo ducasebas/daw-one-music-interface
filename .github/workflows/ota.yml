@@ -56,3 +56,8 @@ jobs:
           fi
           gh release upload "$tag" tunebox-release.tar.gz ota-manifest.json ota-manifest.sig --clobber
           gh release edit "$tag" --draft=false
+      - if: steps.ready.outputs.publish == 'true'
+        name: Verify public channel selects this signed release
+        env:
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: node deploy/ota/check-channel.mjs "$TESTED_SHA"

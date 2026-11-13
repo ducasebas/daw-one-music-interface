@@ -1,17 +1,18 @@
+import {chooseSettingsSection} from './settings-helpers.js';
 import {test,expect} from '@playwright/test';
 import {readFileSync} from 'node:fs';
 import {presets} from '../../shared/themes.js';
 const url='/?gui=2&screen=1&display=dsi-production&panel=wall-16-10';
 test.use({viewport:{width:1280,height:800}});
-const settings=async(page,name)=>{await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByRole('navigation',{name:'Settings categories'}).getByRole('button',{name,exact:true}).click();};
+const settings=async(page,name)=>chooseSettingsSection(page,name,{open:true});
 test.beforeEach(async({page})=>{const token=(await(await page.request.get('/api/updates')).json()).controlToken;await page.request.post('/api/reset',{headers:{'X-TuneBox-Control':token},data:{kind:'preferences',confirmed:true}});await page.request.post('/api/scenario',{data:{name:'Playback'}});await page.goto(url);});
 test('English default, larger transport and all top-level routes fit the physical screen',async({page})=>{
- for(const name of ['Discover','My music','Search','Queue','Spaces']){
-  await page.getByRole('button',{name,exact:true}).click();
+ for(const name of ['Discover','My music','Search','Queue','Rooms']){
+  await page.getByRole('button',{name,exact:true}).click();if(name==='Search')await page.getByRole('button',{name:'Done typing',exact:true}).click();
   expect(await page.locator('.music2').boundingBox()).toMatchObject({width:1280,height:800});
   expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBe(800);
  }
- await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();
+ await page.getByRole('navigation',{name:'Music navigation'}).getByRole('button',{name:'Now Playing',exact:true}).click();
  const play=await page.locator('.m2-play').boundingBox();expect(play.width).toBeGreaterThanOrEqual(100);expect(play.height).toBeGreaterThanOrEqual(100);
  const footer=await page.locator('.m2-player').boundingBox();expect(footer.height).toBeGreaterThanOrEqual(160);
  for(const name of ['Previous track','Next track']){const b=await page.getByRole('button',{name,exact:true}).boundingBox();expect(b.width).toBeGreaterThanOrEqual(64);expect(b.height).toBeGreaterThanOrEqual(64);}
@@ -27,14 +28,14 @@ test('large settings categories, sensor cards and all six skins remain usable',a
  for(const name of ['Playback','Display','Appearance','Audio','Video','Connections','Sensors','Updates','System','Language']){
   await settings(page,name);await expect(page.locator('.settings-detail')).toBeVisible();await expect(page.locator('.m2-player')).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBe(800);
  }
- await settings(page,'Sensors');await expect(page.locator('.system-dashboard')).toContainText('21.5 °C');await expect(page.locator('.system-dashboard')).toContainText('486 lux');await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-sensors.png'});
+ await settings(page,'Sensors');await expect(page.locator('[data-section=sensors] .system-dashboard')).toContainText('21.5 °C');await expect(page.locator('[data-section=sensors] .system-dashboard')).toContainText('486 lux');await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-sensors.png'});
  await settings(page,'Appearance');
  for(const {id,name} of presets){await page.getByRole('button',{name,exact:true}).click();await expect(page.locator('.music2')).toHaveAttribute('data-theme',id);}
  await page.getByRole('button',{name:'Save',exact:true}).click();await settings(page,'Display');await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-display-settings.png'});
 });
 test('language changes immediately, persists and uses the requested Dutch Spaces label',async({page})=>{
  await settings(page,'Language');await page.getByRole('button',{name:'Nederlands',exact:true}).click();await expect(page.getByRole('button',{name:'Ruimtes',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Instellingen',exact:true})).toBeVisible();await page.getByRole('button',{name:'Opslaan',exact:true}).click();
- expect(await page.evaluate(()=>document.documentElement.lang)).toBe('nl');await page.reload();await page.getByRole('button',{name:'Instellingen',exact:true}).click();await page.getByRole('navigation',{name:'Instellingscategorieën'}).getByRole('button',{name:'Taal',exact:true}).click();await page.getByRole('button',{name:'English',exact:true}).click();await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.getByRole('button',{name:'Spaces',exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.lang)).toBe('nl');await page.reload();await page.getByRole('button',{name:'Instellingen',exact:true}).click();await chooseSettingsSection(page,'Language');await page.getByRole('button',{name:'English',exact:true}).click();await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.getByRole('button',{name:'Rooms',exact:true})).toBeVisible();
 });
 test('clock fills the rest view; a single touch shows wake feedback and never toggles playback',async({page})=>{
  await settings(page,'Display');await page.getByLabel('Screen rest view').selectOption('widgets');
@@ -56,6 +57,11 @@ test('a real uploaded video replaces the mock and follows music pause and seek',
  await settings(page,'Video');await page.getByLabel('Choose video',{exact:true}).setInputFiles({name:'example.webm',mimeType:'video/webm',buffer:readFileSync('public/media/startup.webm')});await expect(page.getByRole('status').filter({hasText:'Video linked.'})).toBeVisible();
  await page.getByLabel('Video sync correction',{exact:true}).fill('487');await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();await page.getByRole('button',{name:'Video Artwork',exact:true}).click();const video=page.getByLabel('Linked music video',{exact:true});await expect(video).toBeVisible();await expect.poll(()=>video.evaluate(v=>v.currentTime)).toBeGreaterThan(.5);expect(await video.evaluate(v=>v.paused)).toBe(true);expect(await video.evaluate(v=>v.muted)).toBe(true);
  await page.request.post('/api/event',{data:{type:'play'}});await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(false);
+ await page.getByRole('button',{name:'Full screen video',exact:true}).click();
+ const full=page.getByRole('dialog',{name:'Full screen video',exact:true});await expect(full).toBeVisible();expect(await full.boundingBox()).toMatchObject({x:0,y:0,width:1280,height:800});
+ await expect.poll(()=>full.getByLabel('Linked music video',{exact:true}).evaluate(v=>v.paused)).toBe(false);expect(await full.getByLabel('Linked music video',{exact:true}).evaluate(v=>v.muted)).toBe(true);
+ await expect.poll(()=>page.locator('.m2-playing .video-artwork > video').first().evaluate(v=>v.paused)).toBe(true);
+ await full.getByRole('button',{name:'Back to music',exact:true}).click();await expect(full).not.toBeVisible();
  await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-linked-video.png'});
 });
 test('notifications preserve modal focus and critical faults remain visible over black rest',async({page})=>{

@@ -66,6 +66,7 @@ const snapshot = () => {
     activity:{roomMeasurement},
     displaySettings: displayConfiguration,
     preferences:preferences.get(),
+    setupStatus:{roomProfile:existsSync(join(stateDirectory,'room-profile.json')),audioConfigured:audioAnalysis.configured},
     presenceTelemetry:presence.value,
     onboardingRequired:existsSync(join(stateDirectory,'first-start'))&&!preferences.get().setupCompleted,
   };
@@ -116,6 +117,8 @@ music?.on("change", broadcast);
 music?.start();
 app.use('/api/preferences',express.json({limit:'64kb'}));
 app.use(express.json({ limit: "8kb" }));
+app.disable('x-powered-by');
+app.use((_q,r,next)=>{r.set('Permissions-Policy','camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), display-capture=(), fullscreen=()');r.set('Referrer-Policy','same-origin');next();});
 let phoneServer=null;
 const provisionCommands=['network','wifi-scan','wifi','hotspot-stop'];
 app.use('/api',(q,r,next)=>{
@@ -126,7 +129,7 @@ app.use('/api',(q,r,next)=>{
    if(!allowed)return r.status(403).json({error:'This setup connection only controls Wi-Fi'});
    if(mutating&&path!=='/setup/pair'&&security.session(q)?.role!=='provision')return r.status(423).json({error:'Scan the setup link shown on the TuneBox'});
   }
-  const admin=mutating&&(['/device','/preferences','/reset','/display','/audio/settings','/video','/video/upload','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','activity','display-timeout'].includes(q.body?.type));
+  const admin=mutating&&(['/device','/preferences','/reset','/display','/audio/settings','/video','/video/upload','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
   if(admin&&!(q.provisioning&&path==='/device'&&provisionCommands.includes(q.body?.command)))security.requireAdmin(q);
   next();
  }catch(e){r.status(e.status||423).json({error:e.message});}
@@ -308,6 +311,8 @@ app.post("/api/library/play", async (q, r) => {
     await library.enqueue(q.body.id, q.body.option);
     r.json(snapshot());
   } catch (e) {
+    runtime.record(Date.now(),'library-play-rejected',runtime.device.mode,e.message);
+    debug.record('music','library-play-rejected',{code:Number.isFinite(e.code)?e.code:0});
     r.status(409).json({
       error: e.message.startsWith("Music Assistant")
         ? "Music Assistant weigerde de actie; deze is niet opnieuw verstuurd"

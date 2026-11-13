@@ -323,3 +323,18 @@ test("bounded streamed catalogue replies retain only the requested item budget",
     FixtureSocket.partial = false;
   }
 });
+
+test('live queue selection and deletion use registered queue-item IDs and never the simulation adapter',async()=>{
+ FixtureSocket.calls=[];const client=transport(),service=new LiveMusicService(configuration,{transport:client});
+ try{await service.start();service.playback.queue.push({id:'q2',title:'Next song',duration:180});
+  await service.control({type:'queue-select',id:'q2'});
+  assert.deepEqual(FixtureSocket.calls.find(c=>c.command==='player_queues/play_index').args,{queue_id:'pi',index:'q2'});
+  service.playback.queue.push({id:'q2',title:'Next song',duration:180});
+  await service.control({type:'queue-remove',id:'q2'});
+  assert.deepEqual(FixtureSocket.calls.find(c=>c.command==='player_queues/delete_item').args,{queue_id:'pi',item_id_or_index:'q2'});
+  const sent=FixtureSocket.calls.filter(c=>['player_queues/play_index','player_queues/delete_item'].includes(c.command)).length;
+  await assert.rejects(service.control({type:'queue-select',id:'unregistered'}),/expired/);
+  await assert.rejects(service.control({type:'queue-remove',id:'q1'}),/current track/);
+  assert.equal(FixtureSocket.calls.filter(c=>['player_queues/play_index','player_queues/delete_item'].includes(c.command)).length,sent);
+ }finally{service.stop();}
+});

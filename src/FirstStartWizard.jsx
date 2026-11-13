@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
 import {LocalMusicServer} from './LocalMusicServer.jsx';
 import {NetworkWizard} from './NetworkWizard.jsx';
@@ -8,9 +8,10 @@ import {setLanguage,getLanguage,tr} from '../shared/i18n.js';
 const steps=['Language','Network','Music Assistant','Player','Display','Ready'];
 export function FirstStartWizard({snapshot,offline=false,onComplete,onClose}){
  const device=useDeviceUpdates(),[step,setStep]=useState(0),[language,setLang]=useState(getLanguage()),[url,setUrl]=useState(''),[token,setToken]=useState(''),[probe,setProbe]=useState(null),[player,setPlayer]=useState(''),[control,setControl]=useState(false),[notice,setNotice]=useState(''),[pending,setPending]=useState(false);
+ useEffect(()=>{if(!device.info?.controlToken)return;const frame=requestAnimationFrame(()=>{fetch('/api/display/ready',{method:'POST',headers:{'X-TuneBox-Control':device.info.controlToken}}).catch(()=>{});fetch('/api/activity',{method:'POST'}).catch(()=>{});});return()=>cancelAnimationFrame(frame);},[device.info?.controlToken]);
  const usable=!offline&&device.info?.manager?.managed&&!device.info?.offline&&!device.pending&&!pending;
  async function act(command,args){setNotice('');try{return await device.action(command,args);}catch(e){setNotice(e.message);return null;}}
- async function complete(){setPending(true);try{await device.action('complete-setup');const prefs=await(await fetch('/api/preferences')).json();const r=await fetch('/api/preferences',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':device.info.controlToken},body:JSON.stringify({revision:prefs.revision,patch:{setupCompleted:true,language}})});if(!r.ok)throw Error((await r.json()).error);setToken('');onComplete?.();}catch(e){setNotice(e.message);}finally{setPending(false);}}
+ async function complete(){setPending(true);try{await device.action('complete-setup');const prefs=await(await fetch('/api/preferences')).json();const r=await fetch('/api/preferences',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':device.info.controlToken},body:JSON.stringify({revision:prefs.revision,patch:{setupCompleted:true,language}})});if(!r.ok)throw Error((await r.json()).error);setToken('');fetch('/api/activity',{method:'POST'}).catch(()=>{});onComplete?.();}catch(e){setNotice(e.message);}finally{setPending(false);}}
  return <section className="first-start" role="dialog" aria-label={tr('First start setup')}><header><div><small>DAW TuneBox</small><h2>{tr('Welcome')}</h2></div>{onClose&&<button onClick={onClose}>{tr('Close setup')}</button>}</header><nav aria-label={tr('Setup steps')}>{steps.map((s,i)=><button key={s} aria-current={step===i?'step':undefined} onClick={()=>setStep(i)}><b>{i+1}</b>{tr(s)}</button>)}</nav><div className="first-start-body">
  {step===0&&<><h3>{tr('Choose your language')}</h3><div className="language-settings">{[['en','English'],['nl','Nederlands']].map(([id,name])=><button key={id} aria-pressed={language===id} onClick={()=>{setLang(id);setLanguage(id);}}>{name}</button>)}</div><p>{tr('Use the touchscreen to connect your network, music server and player. You can complete missing steps later.')}</p></>}
  {step===1&&<NetworkWizard offline={offline}/>}

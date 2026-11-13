@@ -12,7 +12,7 @@ export function canUpdate(state){
  if(!state||!['simulation','music-assistant'].includes(state.mode)||!['ready','standby'].includes(state.device?.mode)||state.device.amplifierEnabled!==false||!Array.isArray(state.device.faults)||state.device.faults.length||state.playback?.playing!==false)return false;
  return state.mode==='simulation'||(state.musicAssistant?.connected===true&&state.playback.connected===true);
 }
-/** Transaction journal is written before activation; candidate code never runs as root. */
+/** App activation is journalled before switching. Opted-in appliance maintenance is a separate, signed host step. */
 export async function activate(host,m,progress=()=>{}){
  const previous=await host.current();await host.journal({previous,candidate:m.commit});
  try{

@@ -1,0 +1,561 @@
+{
+  "AllowFileSelectionDialogs": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "android:156-",
+      "chrome.*:12-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/AllowFileSelectionDialogs.yaml",
+    "sourceBlob": "25b1a522e7615f49de8a9e6cc7f34ab998add676"
+  },
+  "AudioCaptureAllowed": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:25-",
+      "chrome_os:23-",
+      "android:157-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/AudioCaptureAllowed.yaml",
+    "sourceBlob": "185da53be73ffcfa2be73eaf3fef60bda74e4966"
+  },
+  "AutofillAddressEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:69-",
+      "chrome_os:69-",
+      "android:69-",
+      "ios:88-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/AutofillAddressEnabled.yaml",
+    "sourceBlob": "0ba179bbad29d9282b671be965a221f28eba53f6"
+  },
+  "AutofillCreditCardEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:63-",
+      "chrome_os:63-",
+      "android:63-",
+      "ios:88-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/AutofillCreditCardEnabled.yaml",
+    "sourceBlob": "2e0dd5b4a59eb6a84ef716752ab637c6021d323f"
+  },
+  "BrowserAddPersonEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:39-",
+      "chrome_os:100-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/BrowserAddPersonEnabled.yaml",
+    "sourceBlob": "718ade4aab7f353aaa35efa80e11c94ad347310d"
+  },
+  "BrowserGuestModeEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:38-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/BrowserGuestModeEnabled.yaml",
+    "sourceBlob": "3b24f457ce57200cc43f3e1957640f7d8c98f9e5"
+  },
+  "BrowserSignin": {
+    "schema": {
+      "enum": [
+        0,
+        1,
+        2
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome.*:70-",
+      "android:70-",
+      "ios:90-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/BrowserSignin.yaml",
+    "sourceBlob": "41ab3ee7f52497cf97a53c4eb9a5b2f46965826b"
+  },
+  "DefaultBrowserSettingEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.win7:11-",
+      "chrome.mac:11-",
+      "chrome.linux:11-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/DefaultBrowserSettingEnabled.yaml",
+    "sourceBlob": "c9d687ab509c665ab6fdc2f0e415e11634d67bf5"
+  },
+  "DeveloperToolsAvailability": {
+    "schema": {
+      "enum": [
+        0,
+        1,
+        2
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome.*:68-",
+      "chrome_os:68-",
+      "android:154-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/DeveloperToolsAvailability.yaml",
+    "sourceBlob": "fcda42c2f70e451649e15d2eb562ce5db639f2d7"
+  },
+  "DownloadRestrictions": {
+    "schema": {
+      "enum": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome.*:61-",
+      "chrome_os:61-",
+      "android:131-",
+      "ios:135-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/DownloadRestrictions.yaml",
+    "sourceBlob": "7cbf11d0dc27bd69c0a05771614c499af581e107"
+  },
+  "IncognitoModeAvailability": {
+    "schema": {
+      "enum": [
+        0,
+        1,
+        2
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome.*:14-",
+      "chrome_os:14-",
+      "android:30-",
+      "ios:90-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/IncognitoModeAvailability.yaml",
+    "sourceBlob": "ec05fa69bb3dd33d5d0b1a52b01f6e54c7c2f96f"
+  },
+  "PromotionalTabsEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:69-",
+      "chrome_os:93-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/PromotionalTabsEnabled.yaml",
+    "sourceBlob": "32f900a809930d3e500a092915664fa38d26d275"
+  },
+  "SearchSuggestEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:8-",
+      "chrome_os:11-",
+      "android:30-",
+      "ios:88-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/SearchSuggestEnabled.yaml",
+    "sourceBlob": "8f2a8ff0733c15db37c4008358f1f4dbf24de2f7"
+  },
+  "SpellcheckEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:65-",
+      "chrome_os:65-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/SpellcheckEnabled.yaml",
+    "sourceBlob": "9aec32071d06197bbd9d2cabda1dfce8061a4bec"
+  },
+  "SyncDisabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:8-",
+      "chrome_os:11-",
+      "ios:96-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/SyncDisabled.yaml",
+    "sourceBlob": "19c8e1b088fa96f3b820838618d99edcbe3fdb08"
+  },
+  "TranslateEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:12-",
+      "chrome_os:12-",
+      "android:30-",
+      "ios:88-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/TranslateEnabled.yaml",
+    "sourceBlob": "c551f792f1264ea6808064691bed04ffde9df02f"
+  },
+  "VideoCaptureAllowed": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:25-",
+      "chrome_os:25-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/VideoCaptureAllowed.yaml",
+    "sourceBlob": "a93cc23f17c3f0861fcf6271d37ce4ce9bfdb78a"
+  },
+  "DefaultClipboardSetting": {
+    "schema": {
+      "enum": [
+        2,
+        3
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome.*:103-",
+      "chrome_os:103-",
+      "android:142-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/ContentSettings/DefaultClipboardSetting.yaml",
+    "sourceBlob": "4d4fc21c1cd4761f7c13855179458e4742030e10"
+  },
+  "DefaultFileSystemReadGuardSetting": {
+    "schema": {
+      "enum": [
+        2,
+        3
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome_os:86-",
+      "chrome.*:86-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/ContentSettings/DefaultFileSystemReadGuardSetting.yaml",
+    "sourceBlob": "31d2e277ac8e093f853b0bc8acba2188f5c99049"
+  },
+  "DefaultFileSystemWriteGuardSetting": {
+    "schema": {
+      "enum": [
+        2,
+        3
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome_os:86-",
+      "chrome.*:86-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/ContentSettings/DefaultFileSystemWriteGuardSetting.yaml",
+    "sourceBlob": "bb4f61c29f15b6c2ebd5b6145909329128004aaa"
+  },
+  "DefaultGeolocationSetting": {
+    "schema": {
+      "enum": [
+        1,
+        2,
+        3
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome.*:10-",
+      "chrome_os:11-",
+      "android:30-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/ContentSettings/DefaultGeolocationSetting.yaml",
+    "sourceBlob": "14f4288bd320b86f167c0676cbd9f075264e9d5d"
+  },
+  "DefaultNotificationsSetting": {
+    "schema": {
+      "enum": [
+        1,
+        2,
+        3
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome.*:10-",
+      "chrome_os:11-",
+      "android:142-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/ContentSettings/DefaultNotificationsSetting.yaml",
+    "sourceBlob": "2f19ec9d76263fa5e15c86f44d0210f19d3fa958"
+  },
+  "DefaultPopupsSetting": {
+    "schema": {
+      "enum": [
+        1,
+        2
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome.*:10-",
+      "chrome_os:11-",
+      "android:33-",
+      "ios:88-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/ContentSettings/DefaultPopupsSetting.yaml",
+    "sourceBlob": "525c7001672bfcaeab5abcdc6ee03af9ed0f8d98"
+  },
+  "DefaultSensorsSetting": {
+    "schema": {
+      "enum": [
+        1,
+        2,
+        3
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome.*:88-",
+      "chrome_os:88-",
+      "android:88-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/ContentSettings/DefaultSensorsSetting.yaml",
+    "sourceBlob": "20eea051e15ef8b781fe31ac124dd4f20e4ae30c"
+  },
+  "DefaultSerialGuardSetting": {
+    "schema": {
+      "enum": [
+        2,
+        3
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome_os:86-",
+      "chrome.*:86-",
+      "android:140-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/ContentSettings/DefaultSerialGuardSetting.yaml",
+    "sourceBlob": "a4e96118c258a280a4312b2b257cf98fbca4d85f"
+  },
+  "DefaultWebBluetoothGuardSetting": {
+    "schema": {
+      "enum": [
+        2,
+        3
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome_os:50-",
+      "android:50-",
+      "chrome.*:50-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/ContentSettings/DefaultWebBluetoothGuardSetting.yaml",
+    "sourceBlob": "946b212f721388be7e65e5ff48616486cebb932f"
+  },
+  "DefaultWebHidGuardSetting": {
+    "schema": {
+      "enum": [
+        2,
+        3
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome_os:100-",
+      "chrome.*:100-",
+      "android:155-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/ContentSettings/DefaultWebHidGuardSetting.yaml",
+    "sourceBlob": "cbb97b870e3cb5c1e89f107216e569a9d515eb12"
+  },
+  "DefaultWebUsbGuardSetting": {
+    "schema": {
+      "enum": [
+        2,
+        3
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome_os:67-",
+      "android:67-",
+      "chrome.*:67-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/ContentSettings/DefaultWebUsbGuardSetting.yaml",
+    "sourceBlob": "3f57f00c3d79530d18a134efa97fa742fd0bf84d"
+  },
+  "PasswordManagerEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:8-",
+      "chrome_os:11-",
+      "android:30-",
+      "ios:88-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/PasswordManager/PasswordManagerEnabled.yaml",
+    "sourceBlob": "ec0441f5be593c14dc9fb7bc3afe1fda017410ca"
+  },
+  "RelaunchNotification": {
+    "schema": {
+      "enum": [
+        1,
+        2
+      ],
+      "type": "integer"
+    },
+    "supported_on": [
+      "chrome.*:66-",
+      "chrome_os:70-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Relaunch/RelaunchNotification.yaml",
+    "sourceBlob": "817045a495a4afac78a185b8e25cdde4c9a38707"
+  },
+  "PrintingEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:8-",
+      "chrome_os:11-",
+      "android:39-",
+      "ios:88-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Printing/PrintingEnabled.yaml",
+    "sourceBlob": "5aa57c91189fa82663808be1ea4a8db6a50489f6"
+  },
+  "BlockExternalExtensions": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:80-",
+      "android:146-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Extensions/BlockExternalExtensions.yaml",
+    "sourceBlob": "703da0885158ccbbdd0d695d10ba6f630d78f49e"
+  },
+  "ExtensionInstallBlocklist": {
+    "schema": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "supported_on": [
+      "chrome.*:86-",
+      "chrome_os:86-",
+      "android:146-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Extensions/ExtensionInstallBlocklist.yaml",
+    "sourceBlob": "25c22baf23a64f213cd5fa37f253aab8950d0dda"
+  },
+  "AutofillSettings": {
+    "schema": {
+      "items": {
+        "properties": {
+          "url_pattern": {
+            "type": "string"
+          },
+          "blocked_types": {
+            "items": {
+              "enum": [
+                "contact_info",
+                "payments",
+                "identity_docs",
+                "travel",
+                "shopping",
+                "all"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "url_pattern",
+          "blocked_types"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "supported_on": [
+      "chrome.*:154-",
+      "chrome_os:154-",
+      "android:154-",
+      "ios:154-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/AutofillSettings.yaml",
+    "sourceBlob": "796712d694ca5e2b2fd570e748b48ca56737897c"
+  },
+  "PromotionsEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:128-",
+      "chrome_os:128-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/Miscellaneous/PromotionsEnabled.yaml",
+    "sourceBlob": "1697c93ce8344cce454a5f4f5dbfee636ac354d0"
+  },
+  "PasswordManagerBlocklist": {
+    "schema": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "supported_on": [
+      "chrome.*:138-",
+      "chrome_os:138-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/PasswordManager/PasswordManagerBlocklist.yaml",
+    "sourceBlob": "886cc25d5a8dd3dfd2f9ca529c8a416366aa6949"
+  },
+  "PasswordManagerPasskeysEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "chrome.*:132-",
+      "chrome_os:132-",
+      "ios:134-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/PasswordManager/PasswordManagerPasskeysEnabled.yaml",
+    "sourceBlob": "3653c00814c312d274b8aa6f6b1924ccd98b1859"
+  },
+  "PasswordSharingEnabled": {
+    "schema": {
+      "type": "boolean"
+    },
+    "supported_on": [
+      "android:120-",
+      "chrome.*:120-",
+      "chrome_os:120-",
+      "ios:120-"
+    ],
+    "source": "https://github.com/chromium/chromium/blob/main/components/policy/resources/templates/policy_definitions/PasswordManager/PasswordSharingEnabled.yaml",
+    "sourceBlob": "11b8f08d6e5691c526fe364d8b21b7b0fd5da9e0"
+  }
+}

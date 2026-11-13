@@ -73,7 +73,7 @@ test("reference product fits 1280x400 with working playback and persistent setti
   await page.reload();
   await settings(page);
   await expect(page.getByLabel("Manual video correction")).toHaveValue("12");
-  await page.getByRole("button", { name: "Now playing", exact: true }).click();
+  await page.getByRole("button", { name: "Now Playing", exact: true }).click();
   await page.screenshot({ path: "test-results/reference-product.png" });
 });
 test("offline settings remain available and show backend loss", async ({
@@ -201,7 +201,7 @@ test("six reference layouts, theme customization and state automation persist", 
     await settings(page, 1);
     await page.getByLabel("Skin", { exact: true }).selectOption(id);
     await page
-      .getByRole("button", { name: "Now playing", exact: true })
+      .getByRole("button", { name: "Now Playing", exact: true })
       .click();
     await expect(page.locator("main")).toHaveAttribute("data-layout", id);
     expect(
@@ -510,10 +510,10 @@ test("render failures show a recovery action instead of an empty page", async ({
   await page.route("**/api/state", (route) => route.fulfill({ json: null }));
   await page.goto("/?lab=1");
   await expect(page.getByRole("alert")).toContainText(
-    "could not display the interface",
+    "could not start the display",
   );
   await expect(
-    page.getByRole("button", { name: "Reload" }),
+    page.getByRole("button", { name: "Restart display" }),
   ).toBeVisible();
 });
 

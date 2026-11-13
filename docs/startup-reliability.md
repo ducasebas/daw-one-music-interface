@@ -28,7 +28,7 @@ The first GUI check on the Pi remained on `dbeef5c8...` and reported up-to-date,
 
 The trusted updater now verifies matching channel manifests and ranks their signed sequence numbers. API list order, dates and arbitrary asset links do not choose the version. Invalid metadata/signatures cannot win; an incomplete check cannot certify the installed version as current. Explicit reinstall after rollback retains its previous semantics.
 
-Regression tests reproduce the real old-first/new-second order, reversed orders, misleading dates, wrong signatures/tags, unavailable manifests and conflicting sequences. Before declaring the channel ready, run the same discovery helper against the actual public GitHub inventory and the pinned project public key, and confirm its selected commit. Application-only OTA cannot replace the root updater, so an older device needs the discovery-helper repair once.
+Regression tests reproduce the real old-first/new-second order, reversed orders, misleading dates, wrong signatures/tags, unavailable manifests and conflicting sequences. The publisher now automatically runs `deploy/ota/check-channel.mjs` after uploading: it uses the installed updater's selection helper against the public GitHub inventory and the exported project public key, checks the intended commit/build, and retries brief release-list caching delays. A publication workflow cannot finish successfully if discovery selects the wrong version. Application-only OTA cannot replace the root updater, so an older device needs the discovery-helper repair once.
 
 ## Pi acceptance
 

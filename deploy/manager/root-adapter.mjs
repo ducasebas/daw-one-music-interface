@@ -47,7 +47,7 @@ async function trigger(action){
 export function rootAdapter(){const power=powerController({run}),network=networkController({run}),clock=clockController({run}),dsp=dspController({run}),localMa=localMaController({run}),measurement=measurementController({run});return {
  async status(){
   const config=readJson(configPath,{}),installed=readJson(base+'/installed.json',{}),setup=readJson('/var/lib/daw-one-manager/setup.json',{});
-  return {managed:true,simulated:false,configured:existsSync('/etc/daw-one-updater/public.pem')&&['preview','stable'].includes(config.channel),channel:config.channel||null,policy:updateSettings(config.policy||{}),current:installed.commit||null,previousAvailable:typeof installed.previous==='string'&&existsSync(installed.previous),setupComplete:setup.complete===true,networkSupported:existsSync('/usr/bin/nmcli'),audioTestSupported:existsSync('/usr/bin/aplay'),progressDisplay:true,powerOffSupported:power.supported(),powerOffQueued:power.queued};
+  return {managed:true,simulated:false,configured:existsSync('/etc/daw-one-updater/public.pem')&&['preview','stable'].includes(config.channel),channel:config.channel||null,policy:updateSettings(config.policy||{}),current:installed.commit||null,previousAvailable:typeof installed.previous==='string'&&existsSync(installed.previous),setupComplete:setup.complete===true,networkSupported:existsSync('/usr/bin/nmcli'),audioTestSupported:existsSync('/usr/bin/aplay'),progressDisplay:true,appliance:readJson('/var/lib/daw-one-manager/appliance.json',null),powerOffSupported:power.supported(),powerOffQueued:power.queued};
  },
  async perform(command,args){
   if(power.queued)throw Error('Power off already queued');

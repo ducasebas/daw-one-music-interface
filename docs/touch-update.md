@@ -45,7 +45,7 @@ Expect `GUI 3.1 · TOUCH`. The normal installer refuses to overwrite an OTA-slot
 
 On the verified Pi4 backlight `10-0045`, installation adds `daw-one-display.service`. It starts with brightness zero, then reveals the display after the browser has drawn the decoded first splash frame or fallback. A 90-second fail-open prevents a broken app from leaving the display dark indefinitely. Stopping the controller restores 80% brightness.
 
-`--quiet-boot` backs up `config.txt` and `cmdline.txt`, removes only local `console=ttyN` console targets, preserves serial/root/network arguments, and adds quiet/status/cursor flags plus `disable_splash=1`. This hides firmware/kernel text before the later backlight service can run. It does not rewrite the selected DSI overlay, root partition or networking. A **reboot is required** to assess the early-boot change; a kiosk restart cannot test it. Physical panel/firmware behaviour is still a hardware acceptance item.
+`--quiet-boot` backs up `config.txt` and `cmdline.txt`, retains the local `console=ttyN` console target (restoring `console=tty1` if absent), preserves serial/root/network arguments, and adds quiet/status/cursor flags plus `disable_splash=1`. This hides firmware/kernel text before the later backlight service can run. It does not rewrite the selected DSI overlay, root partition or networking. A **reboot is required** to assess the early-boot change; a kiosk restart cannot test it. Physical panel/firmware behaviour is still a hardware acceptance item.
 
 Recovery over SSH:
 

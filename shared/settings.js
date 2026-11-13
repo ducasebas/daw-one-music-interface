@@ -1,5 +1,6 @@
 import { screenSettings } from "./wall.js";
 export const defaults = {
+  seekEnabled: true,
   visualizer: "off",
   visualizerBands: 32,
   volume: 32,
@@ -13,6 +14,7 @@ export const defaults = {
 export function settings(input = {}) {
   input = input && typeof input === "object" ? input : {};
   return {
+    seekEnabled: typeof input.seekEnabled==='boolean'?input.seekEnabled:true,
     volumeLimitConfigured: input.volumeLimitConfigured===true,
     startupAnimation: ['off','auto','video','still'].includes(input.startupAnimation)?input.startupAnimation:'auto',
     screen: screenSettings(input.screen),

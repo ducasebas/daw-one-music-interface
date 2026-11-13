@@ -2,6 +2,7 @@ import {tr} from "../shared/i18n.js";
 import React,{useEffect,useRef,useState} from 'react';
 import {Icon} from './Icon.jsx';
 import {sleepModes,screenSettings,sunsetAt,wallNotifications} from '../shared/wall.js';
+import {settingsAttention} from '../shared/interface.js';
 import {useTemperatureDisplay} from './useTemperatureDisplay.js';
 import {getLanguage} from '../shared/i18n.js';
 import {AudioVisualizer} from './AudioVisualizer.jsx';
@@ -33,7 +34,7 @@ export function SleepSurface({prefs,snapshot,offline,wake,waking=false}) {
  return <button ref={root} className="sleep-surface" data-mode={screen.mode} data-waking={waking} aria-label={tr("Scherm wekken")} aria-busy={waking} onClick={wake}>
  {snapshot.device.faults?.length>0&&!offline&&<span role="alert" className="sleep-fault"><Icon name="alert" size={28}/>{tr("Hardware alert · ")}{tr(snapshot.device.faults.join(', '))}</span>}
  {screen.mode!=='black'&&<>
- {meters&&<span className="sleep-meters" style={{'--meter-left':screen.leftColor||'var(--accent)','--meter-right':screen.rightColor||'var(--accent)'}}><AudioVisualizer mode={screen.mode} offline={offline} awake reference={screen.meterReference||-18}/></span>}
+ {meters&&<span className="sleep-meters" style={{'--meter-left':screen.leftColor||'var(--accent)','--meter-right':screen.rightColor||'var(--accent)'}}><AudioVisualizer mode={screen.mode} offline={offline} awake paused={!snapshot.playback?.playing} reference={screen.meterReference||-18}/></span>}
  {screen.mode!=='playing'&&!meters&&<><strong className="sleep-clock">{tr(time)}</strong>{screen.showDate!==false&&<span className="sleep-date">{tr(now.toLocaleDateString(locale,{...clockOptions,weekday:'long',day:'numeric',month:'long'}))}</span>}</>}
  {screen.mode==='widgets'&&<div className="sleep-widgets"><span><Icon name="temperature" size={30}/>{tr("Temperatuur")}<strong>{tr(reading({...snapshot.hardwareTelemetry?.temperature,value:temperature},1,'°C'))}</strong></span><span><Icon name="sun" size={30}/>{tr("Omgevingslicht")}<strong>{tr(reading(snapshot.hardwareTelemetry?.light,0,'lux'))}</strong></span><span><Icon name="sunset" size={30}/>{tr("Zonsondergang")}<strong>{tr(sunsetText)}</strong></span></div>}
  {screen.mode==='sunset'&&<span className="sleep-sunset"><Icon name="sunset" size={32}/>{tr(sunsetText)}{tr(" · berekend")}</span>}
@@ -42,16 +43,17 @@ export function SleepSurface({prefs,snapshot,offline,wake,waking=false}) {
  {waking&&<span className="wake-feedback" role="status"><span className="wake-spinner"/>{tr("Waking…")}</span>}
  </button>;
 }
-export function WallControls({snapshot,offline,updates,onSleep,onNavigate}) {
+export function WallControls({snapshot,offline,updates,security,onSleep,onNavigate}) {
  const dialog=useRef(null),trigger=useRef(null);const [page,setPage]=useState(0);
- const notifications=wallNotifications(snapshot,updates?.info,offline),item=notifications[page];
- const open=()=>{setPage(0);dialog.current.showModal();};
+ const extra=settingsAttention(snapshot,updates?.info||{},security||{}).filter(n=>!['update','update-error','hardware'].includes(n.id)).map(n=>({...n,attention:true,action:n.section}));
+ const notifications=[...wallNotifications(snapshot,updates?.info,offline),...extra],item=notifications[Math.min(page,notifications.length-1)];
+ const open=()=>{setPage(Math.max(0,notifications.findIndex(n=>n.attention)));dialog.current.showModal();};
  const navigate=id=>{dialog.current.close();onNavigate(id);};
  return <><button aria-label={tr("Schermrust")} onClick={onSleep}><Icon name="moon" size={24}/></button><PowerOffButton offline={offline}/>
  <button ref={trigger} aria-label={tr("Meldingen")} className="wall-bell" onClick={open}><Icon name="bell" size={24}/>{notifications.some(n=>n.attention)&&<i aria-label={tr("Aandacht vereist")}/>}</button>
  <dialog ref={dialog} className="wall-notifications" aria-label={tr("Meldingenpaneel")} onClose={()=>trigger.current?.focus()} onClick={e=>{if(e.target===e.currentTarget)dialog.current.close();}}>
  <div className="wall-tray"><header><h2>{tr("Meldingen")}</h2><button aria-label={tr("Meldingen sluiten")} onClick={()=>dialog.current.close()}><Icon name="close"/></button></header>
- <nav aria-label={tr("Meldingcategorieën")}>{notifications.map((n,i)=><button key={n.id} aria-label={tr(n.title)} aria-pressed={page===i} onClick={()=>setPage(i)}><Icon name={n.icon} size={25}/></button>)}</nav>
+ <nav aria-label={tr("Meldingcategorieën")}>{notifications.map((n,i)=><button key={n.id} aria-label={tr(n.title)} aria-pressed={page===i} onClick={()=>setPage(i)}><Icon name={n.icon} size={25}/>{n.attention&&<i className="attention-dot"/>}</button>)}</nav>
  <article data-attention={item.attention||false}><Icon name={item.icon} size={36}/><h3>{tr(item.title)}</h3>{item.simulated&&<small>{tr("GESIMULEERDE HARDWARESTATUS")}</small>}<p>{tr(item.detail)}</p>
  {item.action&&<button onClick={()=>navigate(item.action)}>{tr("Open ")}{tr(item.title)}</button>}
  {item.id==='status'&&<><p>{tr("Versterker: ")}{tr(snapshot.device?.verified?'simulatie geverifieerd':'niet geverifieerd')}{tr(" · fouten: ")}{tr(snapshot.device?.faults?.length||0)}</p><button onClick={()=>navigate('screen')}>{tr("Schermrust instellen")}</button></>}

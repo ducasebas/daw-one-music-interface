@@ -43,7 +43,7 @@
   "Controleer het netwerk van dit apparaat.": "Check this device’s network connection.",
   "Controleer netwerk": "Check network",
   "Controleer op een ondertekende release om de wijzigingen te bekijken.": "Check for a signed release to see what changed.",
-  "Controleer updates": "Check updates",
+  "Controleer updates": "Check for updates",
   "Controleren": "Checking",
   "Controleren…": "Checking…",
   "DAW ONE kon het scherm niet tekenen": "TuneBox could not display the interface",
@@ -124,7 +124,7 @@
   "Je favoriete stations verschijnen hier zodra de radiobron is gekoppeld.": "Your favourite stations appear here when a radio provider is connected.",
   "Jouw muziek, dichtbij.": "Your music, close by.",
   "Jouw volgende ontdekking.": "Your next discovery.",
-  "Kamers": "Spaces",
+  "Kamers": "Rooms",
   "Kies een speler": "Choose a player",
   "Kies netwerk": "Choose network",
   "Klaar om verder te testen": "Ready to continue",
@@ -227,7 +227,7 @@
   "Rechts RMS": "Right RMS",
   "Rechts piekniveau": "Right peak level",
   "Rivo-bediening is uitsluitend een lokale visualisatie. Er wordt geen netwerk- of audiocommando verstuurd.": "Rivo grouping is a visual example. It does not send network or audio commands.",
-  "Ruimtes": "Spaces",
+  "Ruimtes": "Rooms",
   "Rustige ontdekkingen, grote klanken.": "Quiet discoveries. Big sound.",
   "SIMULATIE": "SIMULATION",
   "SIMULATIE · GEEN AUDIO": "SIMULATION · NO AUDIO",
@@ -376,5 +376,8 @@
   "Nooit": "Never",
   "seconden": "seconds",
   "minuut": "minute",
-  "minuten": "minutes"
+  "minuten": "minutes",
+  "Nu Spelen": "Now Playing",
+  "Now playing": "Now Playing",
+  "nu spelen": "Now Playing"
 }

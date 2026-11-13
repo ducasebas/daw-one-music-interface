@@ -47,7 +47,7 @@ test("bounded library pages hide provider URI and expose safe thumbnail IDs", as
   await lib.browse({ kind: "albums" });
   assert.equal(calls.length, 1);
 });
-test("media drilldown and queue operations target the selected queue once", async () => {
+test("media drilldown starts media on the selected player queue rather than its active source", async () => {
   const { lib, calls } = fixture();
   const page = await lib.browse({});
   const id = page.items[0].id;
@@ -56,7 +56,7 @@ test("media drilldown and queue operations target the selected queue once", asyn
   await lib.enqueue(id, "next");
   assert.deepEqual(calls[2], [
     "player_queues/play_media",
-    { queue_id: "queue", media: album.uri, option: "next" },
+    { queue_id: "pi", media: album.uri, option: "next" },
   ]);
 });
 test("read-only, unavailable, over-volume, grouped-child and unregistered items cannot play", async () => {

@@ -4,10 +4,11 @@ set -euo pipefail
 repo=$(cd "$(dirname "$0")/.." && pwd)
 [[ -d /opt/daw-one ]] || { echo 'Install TuneBox first'; exit 1; }
 base=/usr/local/lib/daw-one-control
-install -d -m 755 "$base"/{deploy/manager,deploy/measurement,deploy/ota,shared,server} /var/lib/daw-one-update-status
+install -d -m 755 "$base"/{deploy/manager,deploy/measurement,deploy/ota,shared,server,public} /var/lib/daw-one-update-status
 install -d -m 700 /var/lib/daw-one-manager /var/lib/daw-one-updater /etc/daw-one-updater /etc/NetworkManager/system-connections
 install -d -m 750 -o root -g dawone /etc/daw-one
 install -m 644 "$repo"/deploy/manager/{service.mjs,root-adapter.mjs,io.mjs,progress-server.mjs,progress.html,power.mjs,network.mjs,clock.mjs,dsp.mjs,local-ma.mjs,local-ma-job.mjs,measurement.mjs} "$base/deploy/manager/"
+install -m 644 "$repo"/dist/{appliance.js,appliance.css} "$base/public/"
 install -m 755 "$repo/deploy/manager/power-off.sh" "$base/deploy/manager/power-off.sh"
 install -m 644 "$repo"/deploy/ota/policy.mjs "$base/deploy/ota/"
 install -m 644 "$repo"/shared/{device-manager.js,update-settings.js,host-capacity.js,room-measurement.js,room-targets.js} "$base/shared/"
@@ -35,7 +36,7 @@ ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
 MemoryMax=128M
-ReadWritePaths=/etc/daw-one /etc/daw-one.env /etc/daw-one-updater /var/lib/daw-one-manager /var/lib/daw-one-updater /var/lib/daw-one-update-status /etc/NetworkManager/system-connections /var/lib/daw-one -/var/lib/daw-one-measurement
+ReadWritePaths=-/run/daw-one-display /etc/daw-one /etc/daw-one.env /etc/daw-one-updater /var/lib/daw-one-manager /var/lib/daw-one-updater /var/lib/daw-one-update-status /etc/NetworkManager/system-connections /var/lib/daw-one -/var/lib/daw-one-measurement
 StandardOutput=journal
 StandardError=journal
 [Install]

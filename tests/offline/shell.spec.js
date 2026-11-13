@@ -75,7 +75,7 @@ for (const mode of ["hdmi-development", "dsi-production"]) {
       await page.getByLabel("Settings page", { exact: true }).selectOption("1");
       await page.getByLabel("Skin", { exact: true }).selectOption(skin);
       await page
-        .getByRole("button", { name: "Now playing", exact: true })
+        .getByRole("button", { name: "Now Playing", exact: true })
         .click();
       await expect(page.locator("main")).toHaveAttribute("data-layout", skin);
       expect(

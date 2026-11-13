@@ -57,5 +57,15 @@ test('manual rollback restores current slot if previous version fails health',as
 });
 test('independent progress server serves progress with the backend completely unavailable and has no HTTP control API',async()=>{
  const server=createProgressServer({getStatus:()=>({status:'restarting',percent:null}),isAppReady:async()=>false});
- try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;const response=await fetch(origin+'/');assert.equal(response.status,200);assert.match(await response.text(),/Update progress/);assert.deepEqual(await(await fetch(origin+'/status')).json(),{status:'restarting',percent:null,appReady:false});assert.equal((await fetch(origin+'/status',{method:'POST'})).status,404);}finally{await new Promise(r=>server.close(r));}
+ try{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;const response=await fetch(origin+'/');assert.equal(response.status,200);assert.match(response.headers.get('content-security-policy'),/style-src 'self' 'unsafe-inline'/);assert.match(await response.text(),/Update progress/);assert.deepEqual(await(await fetch(origin+'/status')).json(),{status:'restarting',percent:null,appReady:false});assert.equal((await fetch(origin+'/status',{method:'POST'})).status,404);}finally{await new Promise(r=>server.close(r));}
+});
+
+test('progress frame reveal needs its own local capability and grants no general device command',async()=>{
+ let revealed=0;const server=createProgressServer({getStatus:async()=>({status:'checking'}),isAppReady:async()=>false,frameReady:()=>{revealed++;}});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
+ try{const html=await(await fetch(origin)).text(),token=html.match(/'X-TuneBox-Frame':'([a-f0-9]{48})'/)?.[1];assert.ok(token);
+  assert.equal((await fetch(origin+'/frame-ready',{method:'POST'})).status,403);assert.equal(revealed,0);
+  assert.equal((await fetch(origin+'/frame-ready',{method:'POST',headers:{'X-TuneBox-Frame':token}})).status,204);assert.equal(revealed,1);
+  assert.equal((await fetch(origin+'/device',{method:'POST',headers:{'X-TuneBox-Frame':token},body:'{"command":"power-off"}'})).status,404);
+ }finally{await new Promise(r=>server.close(r));}
 });

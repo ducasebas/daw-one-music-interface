@@ -29,6 +29,8 @@ export function publicMedia(item, key) {
     id: key,
     sources: mediaSources(item),
     type,
+    year: Number.isInteger(item.year)&&item.year>=1000&&item.year<=9999?item.year:null,
+    releaseDate: /^\d{4}-\d{2}-\d{2}$/.test(item.metadata?.release_date||'')&&Number.isFinite(Date.parse(item.metadata.release_date))?item.metadata.release_date:null,
     name: String(item.name || item.title || "Naam onbekend").slice(0, 300),
     artist: (item.artists || [])
       .map((a) => a.name)

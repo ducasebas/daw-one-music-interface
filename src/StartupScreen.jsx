@@ -102,6 +102,7 @@ export function StartupScreen({
     media.addEventListener("change", change);
     return () => media.removeEventListener("change", change);
   }, [staticOnly,animationMode]);
+  useEffect(()=>{if(new URLSearchParams(location.search).get('display')==='dsi-production'&&(!visible||animationMode==='off'))fetch('/api/activity',{method:'POST'}).catch(()=>{});},[visible,animationMode]);
   useEffect(() => {
     if (!visible || mode === "booting") return;
     const skip = () => setVisible(false);

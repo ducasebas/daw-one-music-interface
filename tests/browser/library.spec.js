@@ -95,20 +95,20 @@ test("live library browses albums/tracks, plays selected media, restores context
     .getByRole("button", { name: "Open Real Album", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Speel Real track", exact: true }),
+    page.getByRole("button", { name: "Play track Real track", exact: true }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "Speel Real track", exact: true })
+    .getByRole("button", { name: "Play track Real track", exact: true })
     .click();
   await expect(
     page.getByRole("heading", { name: "Now Playing", exact: true }),
   ).toBeVisible();
   expect(actions).toEqual([{ id: "track1", option: "replace" }]);
   await page
-    .getByRole("button", { name: "Back to music", exact: true })
+    .getByRole("button", { name: "Discover", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Speel Real track", exact: true }),
+    page.getByRole("button", { name: "Play Real track", exact: true }),
   ).toBeVisible();
   expect(requests.some((q) => q.parent === "album1")).toBe(true);
 });
@@ -141,7 +141,7 @@ test("live search ignores late responses and offers touch entry with read-only c
     page.getByRole("button", { name: "Open old", exact: true }),
   ).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "Speel new", exact: true }),
+    page.getByRole("button", { name: "Play new", exact: true }),
   ).toBeDisabled();
   await page.getByRole("button", { name: "Zoektoets a", exact: true }).click();
   await expect(

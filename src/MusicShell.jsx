@@ -1,4 +1,4 @@
-import {tr} from "../shared/i18n.js";
+import {tr,translateFormat} from "../shared/i18n.js";
 import { panelProfile } from "../shared/display.js";
 import { WallControls, SleepSurface } from "./WallExperience.jsx";
 import {AudioVisualizer} from "./AudioVisualizer.jsx";
@@ -21,14 +21,17 @@ import { endSync } from "../shared/video.js";
 import { SettingsPages } from "./SettingsPages.jsx";
 import { Icon } from "./Icon.jsx";
 import { StartupScreen } from "./StartupScreen.jsx";
+import { SeekControl } from "./SeekControl.jsx";
 import { VideoArtwork } from './VideoArtwork.jsx';
-import {useTemperatureDisplay} from './useTemperatureDisplay.js';
+import {KeyboardField} from './TouchKeyboard.jsx';
+import {settingsSections} from '../shared/interface.js';
 
 const duration = (n) =>
   Number.isFinite(n)
     ? `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, "0")}`
     : "Live";
 const sections = [
+  ["playing", "Now Playing"],
   ["discover", "Ontdek"],
   ["library", "Mijn muziek"],
   ["search", "Zoeken"],
@@ -71,10 +74,13 @@ export function MusicShell({
   onReplayStartup,
 }) {
   const deviceUpdates=useDeviceUpdates();
+  const [security,setSecurity]=useState(null);
+  useEffect(()=>{let live=true;const read=()=>fetch('/api/security/status').then(r=>r.ok?r.json():null).then(v=>{if(live)setSecurity(v);}).catch(()=>{});read();const timer=setInterval(read,15000);return()=>{live=false;clearInterval(timer);};},[]);
   const wall = panelProfile(location.search) === "wall-16-10";
-  const headerTemperature=useTemperatureDisplay(snapshot.hardwareTelemetry?.temperature,offline);
-  const [sleepPreview,setSleepPreview] = useState(false);
-  const sleeping = wall && (sleepPreview || (!offline && snapshot.device.displayAwake === false));
+
+  const [sleepPreview,setSleepPreview] = useState(false),[canSleep,setCanSleep]=useState(false);
+  useEffect(()=>{if(snapshot.device.displayAwake!==false)setCanSleep(true);},[snapshot.device.displayAwake]);
+  const sleeping = wall && (sleepPreview || (canSleep && !offline && snapshot.device.displayAwake === false));
   const [waking,setWaking]=useState(false);
   const wake = async () => {
     if(waking)return;
@@ -88,7 +94,7 @@ export function MusicShell({
 
   const [liveViews, setLiveViews] = useState({});
   const [settingsPage, setSettingsPage] = useState(0);
-  const [page, setPage] = useState("discover"),
+  const [page, setPage] = useState(wall?"playing":"discover"),
     [category, setCategory] = useState("Albums"),
     [detail, setDetail] = useState(null),
     [query, setQuery] = useState(""),
@@ -96,6 +102,8 @@ export function MusicShell({
     [offset, setOffset] = useState(0),
     [message, setMessage] = useState(""),
     [pending, setPending] = useState(false),
+    [pendingAction,setPendingAction]=useState(null),
+    [searchCycle,setSearchCycle]=useState(0),
     [video, setVideo] = useState(prefs.artwork==='video'),
     [rooms, setRooms] = useState({ rivo: false, volume: 35 });
   const prompted=useRef(false);
@@ -175,13 +183,13 @@ export function MusicShell({
   async function command(event) {
     if (lock.current) return;
     lock.current = true;
-    setPending(true);
+    setPending(true);setPendingAction(event.type);
     setMessage("");
     try {
       await send(event);
     } finally {
       lock.current = false;
-      setPending(false);
+      setPending(false);setPendingAction(null);
     }
   }
   async function toggleVisualizer(){
@@ -276,7 +284,7 @@ export function MusicShell({
         boot={snapshot.boot}
       />
       <header className="m2-header">
-        <button className="m2-brand" onClick={() => go("discover")}>{tr("DAW ")}<b>{tr("TuneBox")}</b>
+        <button className="m2-brand" onClick={() => go("playing")} aria-label={tr("Now Playing")}>{tr("DAW ")}<b>{tr("TuneBox")}</b>
         </button>
         <nav aria-label={tr("Muzieknavigatie")}>
           {sections.map(([id, label]) => (
@@ -292,24 +300,23 @@ export function MusicShell({
           ))}
         </nav>
         <NetworkStatus snapshot={snapshot} offline={offline} />
-        {wall&&Number.isFinite(headerTemperature)&&<button className="header-temperature" aria-label={tr("Open sensors")} onClick={()=>{setSettingsPage(17);go('settings');}}>{tr(headerTemperature.toFixed(1))}{tr(" °C")}</button>}
-        {wall && <WallControls snapshot={snapshot} offline={offline} prefs={prefs} updates={deviceUpdates}
+        {wall && <WallControls snapshot={snapshot} offline={offline} prefs={prefs} updates={deviceUpdates} security={security}
           onSleep={()=>{setSleepPreview(true);if(!offline)send({type:"display-timeout"});}}
-          onNavigate={id=>{if(id==="status"){setSettingsPage(11);go("settings");}else if(id==="updates"){setSettingsPage(12);go("settings");}else if(id==="screen"){setSettingsPage(15);go("settings");}else go(id);}} />}
+          onNavigate={id=>{const target=id==='status'?'system':id==='screen'?'display':id;const section=settingsSections.find(s=>s[0]===target);if(section){setSettingsPage(section[3]);go('settings');}else go(id);}} />}
 
         <button
-          aria-label={tr("Instellingen")}
+          aria-label={tr("Instellingen")} aria-current={page==='settings'?'page':undefined}
           onClick={() => {
             setSettingsPage(0);
             go("settings");
           }}
         >
-          <Icon name="settings" />
+          <Icon name="settings" />{(deviceUpdates?.info?.available||security?.enabled&&!security.unlocked)&&<i className="attention-dot"/>}
         </button>
       </header>
       <div className="m2-heading">
         <div>
-          {(detail || page === "playing") && (
+          {detail && (
             <button
               className="m2-back"
               aria-label={
@@ -327,7 +334,7 @@ export function MusicShell({
             <span>{tr("Jouw volgende ontdekking.")}</span>
           )}
         </div>
-        <div className="m2-version-status">
+        <div className="m2-version-status" hidden={wall}>
           <div className="m2-build-boot">
             <button
               className="boot-shortcut"
@@ -364,6 +371,7 @@ export function MusicShell({
             offline={offline}
             onSnapshot={setSnapshot}
             onPlaying={() => go("playing")}
+            onConfigure={()=>{setSettingsPage(13);go('settings');}}
             state={liveViews[page] || {}}
             onState={(state) => setLiveViews((v) => ({ ...v, [page]: state }))}
           />
@@ -485,7 +493,7 @@ export function MusicShell({
         ) : page === "search" ? (
           <div className="m2-search">
             <div className="m2-search-results">
-              <label className="m2-searchbox">
+              {wall?<div className="live-search-field"><KeyboardField key={searchCycle} label="Search music" value={query} onChange={setQuery} autoOpen maxLength={120}/><button onClick={()=>{setQuery('');setSearchCycle(v=>v+1);}}>{tr('New search')}</button></div>:<label className="m2-searchbox">
                 <Icon name="search" />
                 <input
                   aria-label={tr("Zoek muziek")}
@@ -502,12 +510,12 @@ export function MusicShell({
                     <Icon name="close" size={16} />
                   </button>
                 )}
-              </label>
+              </label>}
               <small>{tr("ZOEKEN IN VOORBEELDMUZIEK")}</small>
               <div className="m2-list">
                 {sample.length ? (
                   sample.map((t) => (
-                    <button key={t.id} onClick={() => choose(t)}>
+                    <button key={t.id} disabled={pending} onClick={() => {command({type:'queue-select',id:t.id});go('playing');}}>
                       <strong>{t.title}</strong>
                       <span>{t.artist}</span>
                       <small>›</small>
@@ -518,7 +526,7 @@ export function MusicShell({
                 )}
               </div>
             </div>
-            <div className="m2-keyboard" aria-label={tr("Schermtoetsenbord")}>
+            {!wall&&<div className="m2-keyboard" aria-label={tr("Schermtoetsenbord")}>
               {keyboard ? (
                 <>
                   <div className="m2-keyboard-title">{tr("Zoeken zonder telefoon")}<button onClick={() => setKeyboard(false)}>{tr("Verberg")}</button>
@@ -553,7 +561,7 @@ export function MusicShell({
               ) : (
                 <button onClick={() => setKeyboard(true)}>{tr("Toon toetsenbord")}</button>
               )}
-            </div>
+            </div>}
           </div>
         ) : page === "queue" ? (
           <div className="m2-queue">
@@ -562,31 +570,30 @@ export function MusicShell({
               <span>
                 {tr(simulated
                   ? "Gedeelde simulatorwachtrij"
-                  : "Live wachtrij · bewerken nog niet gekoppeld")}
+                  : "Music Assistant queue")}
               </span>
             </div>
             <div className="m2-list">
-              {playback.queue.slice(offset, offset + 3).map((t, i) => (
-                <div className="m2-queue-row" key={t.id}>
+              {(wall?playback.queue:playback.queue.slice(offset, offset + 3)).map((t, i) => (
+                <div className="m2-queue-row" key={t.id} data-current={(wall?i:offset+i)===playback.index}>
                   <span>
                     {tr(offset + i === playback.index
                       ? "▶"
                       : String(offset + i + 1).padStart(2, "0"))}
                   </span>
                   <button
-                    disabled={!control || !simulated || pending}
-                    onClick={() => command({ type: "queue-select", id: t.id })}
+                    disabled={!control || pending || t.id==='none'} aria-busy={pendingAction==='queue-select'}
+                    onClick={async() => {await command({ type: "queue-select", id: t.id });}}
                   >
                     <strong>{t.title}</strong>
                     <small>{t.artist}</small>
                   </button>
                   <span>{tr(duration(t.duration))}</span>
                   <button
-                    aria-label={`Verwijder ${t.title}`}
+                    aria-label={translateFormat('Remove {name}',{name:t.title})}
                     disabled={
                       !control ||
-                      !simulated ||
-                      offset + i === playback.index ||
+                      (wall?i:offset+i) === playback.index ||
                       pending
                     }
                     onClick={() => command({ type: "queue-remove", id: t.id })}
@@ -596,7 +603,7 @@ export function MusicShell({
                 </div>
               ))}
             </div>
-            <div className="m2-pagination">
+            {!wall&&<div className="m2-pagination">
               <button
                 disabled={offset === 0}
                 onClick={() => setOffset(Math.max(0, offset - 3))}
@@ -609,7 +616,7 @@ export function MusicShell({
                 disabled={offset + 3 >= playback.queue.length}
                 onClick={() => setOffset(offset + 3)}
               >{tr("Volgende ›")}</button>
-            </div>
+            </div>}
           </div>
         ) : page === "rooms" ? (
           <div className="m2-rooms">
@@ -643,7 +650,7 @@ export function MusicShell({
               </div>
               <b>{tr(volume ?? "—")}%</b>
             </article>
-            <article>
+            {simulated&&<article>
               <span className="m2-room-icon">
                 <Icon name="rooms" size={30} />
               </span>
@@ -674,8 +681,8 @@ export function MusicShell({
                   ? "Verwijder uit voorbeeldgroep"
                   : "Probeer voorbeeldgroep")}
               </button>
-            </article>
-            <small className="m2-note">{tr("Rivo-bediening is uitsluitend een lokale visualisatie. Er wordt geen netwerk- of audiocommando verstuurd.")}</small>
+            </article>}
+            {simulated&&<small className="m2-note">{tr("Rivo-bediening is uitsluitend een lokale visualisatie. Er wordt geen netwerk- of audiocommando verstuurd.")}</small>}
           </div>
         ) : page === "settings" ? (
           <div className="m2-settings">
@@ -710,27 +717,7 @@ export function MusicShell({
               <p>
                 {current.artist} <span>— {current.album}</span>
               </p>
-              <label>
-                <input
-                  aria-label={tr("Afspeelpositie")}
-                  type="range"
-                  min="0"
-                  max={current.duration ?? 1}
-                  value={current.duration ? position : 0}
-                  disabled={
-                    !control ||
-                    !current.duration ||
-                    (!simulated && !playback.capabilities?.includes("seek"))
-                  }
-                  onChange={(e) =>
-                    command({ type: "seek", position: +e.target.value })
-                  }
-                />
-              </label>
-              <div className="m2-times">
-                <span>{tr(duration(position))}</span>
-                <span>{tr(duration(current.duration))}</span>
-              </div>
+              <SeekControl position={position} duration={current.duration} disabled={!control||!current.duration||prefs.seekEnabled===false||(!simulated&&!playback.capabilities?.includes('seek'))} onSeek={value=>command({type:'seek',position:value})}/>
             </div>
             <aside>
               <div className="m2-artwork-controls"><button
@@ -741,14 +728,14 @@ export function MusicShell({
                 <Icon name="film" size={16} />{tr(" ")}
                 {tr(prefs.lowPower ? "Video uit · Pi 3 modus" : "Video Artwork")}
               </button>
-              <button aria-label={tr("Visualizer wisselen")} onClick={toggleVisualizer}>{tr("Visualizer ")}{tr(prefs.visualizer==="off"?"uit":prefs.visualizer==="meters"?"meters":"spectrum")}</button></div>
+              <button aria-label={tr("Switch visualizer")} onClick={toggleVisualizer}>{tr("Visualizer ")}{tr(prefs.visualizer==="off"?"uit":prefs.visualizer==="meters"?"meters":"spectrum")}</button></div>
               {video ? (
                 <div className="m2-video">
                   <VideoArtwork snapshot={snapshot} position={position} prefs={prefs} offline={offline} onConfigure={()=>{setSettingsPage(16);go('settings');}}/>
                 </div>
               ) : prefs.visualizer!=="off" ? (
-                <AudioVisualizer mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline} awake={device.displayAwake!==false&&!sleeping}/>
-              ) : (
+                <AudioVisualizer mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline} awake={device.displayAwake!==false&&!sleeping} paused={!playback.playing}/>
+              ) : wall ? null : (
                 <SkinPanel
                   skin={
                     presets.some((p) => p.id === theme.id)
@@ -786,7 +773,7 @@ export function MusicShell({
         </button>
         <div className="m2-transport">
           <button
-            aria-label={tr("Vorig nummer")}
+            aria-label={tr("Vorig nummer")} aria-busy={pendingAction==='previous'}
             disabled={!control || pending}
             onClick={() => command({ type: "previous" })}
           >
@@ -794,7 +781,7 @@ export function MusicShell({
           </button>
           <button
             className="m2-play"
-            aria-label={tr(playback.playing ? "Pauze" : "Afspelen")}
+            aria-label={tr(playback.playing ? "Pauze" : "Afspelen")} aria-busy={['play','pause'].includes(pendingAction)}
             disabled={!control || pending}
             onClick={() =>
               command({ type: playback.playing ? "pause" : "play" })
@@ -803,7 +790,7 @@ export function MusicShell({
             <Icon name={playback.playing ? "pause" : "play"} />
           </button>
           <button
-            aria-label={tr("Volgend nummer")}
+            aria-label={tr("Volgend nummer")} aria-busy={pendingAction==='next'}
             disabled={!control || pending}
             onClick={() => command({ type: "next" })}
           >
@@ -821,9 +808,7 @@ export function MusicShell({
                 : "idle"
           }
         >
-          {tr(pending
-            ? "Opdracht versturen…"
-            : message ||
+          {tr(message ||
               notice ||
               (offline
                 ? "Geen verbinding"

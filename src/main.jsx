@@ -1,10 +1,11 @@
+import {ApplianceHandoff} from './ApplianceHandoff.jsx';
 import {setLanguage} from '../shared/i18n.js';
 import {PhoneSetup} from './NetworkWizard.jsx';
 import {FirstStartWizard} from './FirstStartWizard.jsx';
 import {tr} from "../shared/i18n.js";
 import "./audio-analysis.css";
 import "./device-settings.css";
-import {DeviceUpdatesProvider} from "./DeviceUpdates.jsx";
+import {DeviceUpdatesProvider,useDeviceUpdates} from "./DeviceUpdates.jsx";
 import {
   deviceProfile,
   profileSettings,
@@ -37,6 +38,7 @@ import { MusicShell } from "./MusicShell.jsx";
 import "./music-shell.css";
 import "./wall.css";
 import "./settings-hub.css";
+import "./appliance-layout.css";
 function load() {
   try {
     return normalize(JSON.parse(localStorage.getItem("daw-settings") || "{}"));
@@ -60,6 +62,9 @@ function loadThemes() {
 const profile = deviceProfile(location.search);
 function App() {
   useLanguage();
+  const deviceUpdates=useDeviceUpdates();
+  const [firstSnapshot,setFirstSnapshot]=useState(false);
+  useEffect(()=>{if(firstSnapshot&&new URLSearchParams(location.search).get('display')==='dsi-production')fetch('/api/activity',{method:'POST'}).catch(()=>{});},[firstSnapshot]);
   const [snapshot, setSnapshot] = useState({
       device: transition(initialDevice(), { type: "boot-complete" }),
       playback: initialPlayback(),
@@ -108,7 +113,7 @@ function App() {
         })
         .then((s) => {
           if (live && navigator.onLine) {
-            setSnapshot(s);
+            setSnapshot(s);setFirstSnapshot(true);
             setOffline(false);
           }
         })
@@ -123,7 +128,7 @@ function App() {
     stream.onmessage = (e) => {
       if (!live || !navigator.onLine) return;
       try {
-        setSnapshot(JSON.parse(e.data));
+        setSnapshot(JSON.parse(e.data));setFirstSnapshot(true);
         setOffline(false);
       } catch {}
     };
@@ -553,7 +558,8 @@ function App() {
       </footer>
     </main>
   );
-  if(snapshot.onboardingRequired&&new URLSearchParams(location.search).get('screen')==='1')return <FirstStartWizard snapshot={snapshot} offline={offline} onComplete={()=>fetch('/api/state').then(r=>r.json()).then(setSnapshot)}/>;
+  if(!firstSnapshot&&!offline&&new URLSearchParams(location.search).get('display')==='dsi-production')return <main className="appliance-boot" aria-label={tr('Starting TuneBox')}><strong>TuneBox</strong><span className="ui-spinner"/></main>;
+  if((snapshot.onboardingRequired||deviceUpdates?.info?.manager?.managed&&!deviceUpdates.info.manager.simulated&&deviceUpdates.info.manager.setupComplete===false&&!snapshot.preferences?.setupCompleted)&&new URLSearchParams(location.search).get('screen')==='1')return <FirstStartWizard snapshot={snapshot} offline={offline} onComplete={()=>fetch('/api/state').then(r=>r.json()).then(setSnapshot)}/>;
   return lab && !embedded ? (
     <TestWorkbench
       gui2={gui2}
@@ -582,10 +588,10 @@ class AppBoundary extends React.Component {
   }
   render() {
     return this.state.error ? (
-      <section role="alert" style={{ padding: 24 }}>
-        <h1>{tr("DAW ONE kon het scherm niet tekenen")}</h1>
-        <p>{tr("Versie display-r3. Herlaad de pagina; je instellingen blijven bewaard.")}</p>
-        <button onClick={() => location.reload()}>{tr("Opnieuw laden")}</button>
+      <section role="alert" className="appliance-recovery">
+        <h1>{tr("TuneBox could not start the display.")}</h1>
+        <p>{tr("Restart the display to try again. Your saved settings are retained.")}</p>
+        <button onClick={() => location.reload()}>{tr("Restart display")}</button>
       </section>
     ) : (
       this.props.children
@@ -594,7 +600,7 @@ class AppBoundary extends React.Component {
 }
 createRoot(document.getElementById("root")).render(
   <AppBoundary>
-    <DeviceUpdatesProvider>{new URLSearchParams(location.search).get('setup')==='phone'?<PhoneSetup/>:<App />}</DeviceUpdatesProvider>
+    <DeviceUpdatesProvider>{new URLSearchParams(location.search).get('setup')==='phone'?<PhoneSetup/>:<><App /><ApplianceHandoff/></>}</DeviceUpdatesProvider>
   </AppBoundary>,
 );
 if (import.meta.env.PROD && "serviceWorker" in navigator)

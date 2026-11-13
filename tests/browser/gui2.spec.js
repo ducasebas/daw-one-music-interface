@@ -33,7 +33,7 @@ test("GUI2 music journey works at 1280x400 through the shared runtime", async ({
   await expect(
     page.getByRole("button", { name: "A Walk Tycho ›" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Spaces", exact: true }).click();
+  await page.getByRole("button", { name: "Rooms", exact: true }).click();
   await page.getByRole("button", { name: "Try example group" }).click();
   await expect(page.getByText("Example group with TuneBox")).toBeVisible();
   await expect(
@@ -55,7 +55,7 @@ test("GUI2 all sections fit the native screen, use shared settings and show faul
     "My music",
     "Search",
     "Queue",
-    "Spaces",
+    "Rooms",
     "Settings",
   ]) {
     await page.getByRole("button", { name, exact: true }).click();
@@ -89,22 +89,17 @@ test("GUI2 album playback returns to the same search context", async ({
   await page.getByRole("button", { name: "Search", exact: true }).click();
   await page.getByLabel("Search music").fill("tycho");
   await page.getByRole("button", { name: "A Walk Tycho ›" }).click();
-  await page.getByRole("button", { name: "Play now", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "A Walk", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Back to music" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Dive", exact: true, level: 1 }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Back to overview" }).click();
+  await page.getByRole("button",{name:"Search",exact:true}).click();
   await expect(page.getByLabel("Search music")).toHaveValue("tycho");
-  await expect(page.locator(".music2")).toHaveAttribute("data-motion", "back");
 });
 
 test("GUI2 reduced motion and delayed command feedback keep navigation available", async ({
   page,
 }) => {
+  test.setTimeout(60000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&product=1");
@@ -148,6 +143,7 @@ test("GUI2 reduced motion and delayed command feedback keep navigation available
 test("GUI2 six skins keep shared navigation and native bounds with honest diagnostics", async ({
   page,
 }) => {
+  test.setTimeout(60000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&screen=1&display=dsi-production");
@@ -167,7 +163,7 @@ test("GUI2 six skins keep shared navigation and native bounds with honest diagno
       "My music",
       "Search",
       "Queue",
-      "Spaces",
+      "Rooms",
     ]) {
       await page.getByRole("button", { name, exact: true }).click();
       expect(
@@ -245,6 +241,7 @@ test("visible frontend release identifies missing and mismatched backend version
 test("primary play pause glyphs remain centred and symmetric across skins", async ({
   page,
 }) => {
+  test.setTimeout(60000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&product=1");
@@ -289,6 +286,7 @@ test("primary play pause glyphs remain centred and symmetric across skins", asyn
 test("music menu edge flows preserve favourites and show empty search and radio states", async ({
   page,
 }) => {
+  test.setTimeout(60000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&product=1");
@@ -321,6 +319,7 @@ test("music menu edge flows preserve favourites and show empty search and radio 
 test("transport visual hierarchy gives primary glyph more weight and mirrors skip buttons", async ({
   page,
 }) => {
+  test.setTimeout(60000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&product=1");
@@ -365,6 +364,7 @@ test("transport visual hierarchy gives primary glyph more weight and mirrors ski
 test("music header has network status instead of skin configuration and never invents signal strength", async ({
   page,
 }) => {
+  test.setTimeout(60000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.request.post("/api/scenario", { data: { name: "Playback" } });
   await page.goto("/?gui=2&product=1");

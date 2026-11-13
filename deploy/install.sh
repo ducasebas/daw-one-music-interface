@@ -79,6 +79,9 @@ if [[ $ma_mode == install ]]; then
 fi
 apt-get update
 apt-get install -y --no-install-recommends cage chromium curl alsa-utils libinput-tools wlr-randr seatd dbus-user-session libpam-systemd network-manager dnsmasq-base iw
+if [[ $target == pi4 || $target == pi3-experimental ]]; then
+  python3 "$repo/deploy/chromium/configure.py"
+fi
 getent group dawone >/dev/null || groupadd --system dawone
 id dawone >/dev/null 2>&1 || useradd --system --gid dawone --create-home --home-dir /var/lib/dawone --shell /usr/sbin/nologin dawone
 usermod -aG video,render,input dawone

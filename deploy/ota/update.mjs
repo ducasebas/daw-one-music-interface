@@ -7,6 +7,7 @@ import {verifyTree} from './verify-tree.mjs';
 import {prepareRuntime} from './prepare-runtime.mjs';
 import {localHttp} from './local-http.mjs';
 import {selectRelease,releaseIsCurrent} from './releases.mjs';
+import {maintainAppliance} from './appliance.mjs';
 const base='/var/lib/daw-one-updater',slots='/opt/daw-one-releases',app='/opt/daw-one';
 const run=(cmd,args)=>execFileSync(cmd,args,{stdio:'pipe',timeout:180000});
 const json=(path,fallback={})=>{try{return JSON.parse(readFileSync(path,'utf8'));}catch{return fallback;}};
@@ -100,7 +101,10 @@ try{
  if(finalDecision!=='install'){report(finalDecision);process.exit(0);}
  await prepareDisplay();
  if(realpathSync(app)===app){const old=slots+'/legacy-'+Date.now();atomic(base+'/pending.json',{previous:old,candidate:manifest.commit,kiosk:false});renameSync(app,old);symlinkSync(old,app);}
- await activate(host,manifest,report);report('installed');
+ const applianceChanged=maintainAppliance(dest,run,config.applianceUpdates===true);
+ await activate(host,manifest,report);
+ if(applianceChanged&&kiosk)run('systemctl',['restart','daw-one-kiosk.service']);
+ report('installed');
  const previous=current.previous?.split('/').pop();const entries=readdirSync(slots).filter(name=>lstatSync(slots+'/'+name).isDirectory()&&!lstatSync(slots+'/'+name).isSymbolicLink()).map(name=>({name,modified:lstatSync(slots+'/'+name).mtimeMs}));
  for(const name of prunableSlots(entries,manifest.commit,previous))rmSync(slots+'/'+name,{recursive:true});
 }catch(error){const code=error.cause?.code||error.code;const detail=String(error.message)+(typeof code==='string'&&!String(error.message).includes(code)?` (${code})`:'');report('error',{error:detail.slice(0,180),failedPhase:lastPhase});process.exitCode=1;}

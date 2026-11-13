@@ -40,7 +40,7 @@ test('video upload binds to track metadata across queue IDs; rejects unknown-dur
   }finally{rmSync(dir,{recursive:true,force:true});}
 });
 test('English is the default; Dutch and English share keys, language selection is explicit and music metadata is untouched',()=>{
-  assert.equal(getLanguage(),'en');assert.equal(tr('Nu spelen'),'Now Playing');assert.equal(tr('Ruimtes'),'Spaces');
+  assert.equal(getLanguage(),'en');assert.equal(tr('Nu spelen'),'Now Playing');assert.equal(tr('Ruimtes'),'Rooms');
   const en=JSON.parse(readFileSync(new URL('../shared/locales/en.json',import.meta.url))),nl=JSON.parse(readFileSync(new URL('../shared/locales/nl.json',import.meta.url)));
   assert.deepEqual(Object.keys(en).sort(),Object.keys(nl).sort());
   assert.equal(tr('Ólafur Arnalds'),'Ólafur Arnalds');assert.throws(()=>setLanguage('../../bad'));

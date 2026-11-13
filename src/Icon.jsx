@@ -26,7 +26,8 @@ const paths = {
   library: "M4 4v16M9 4v16M14 4v16M18 5l3 14",
   search: "M21 21l-5-5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0",
   queue: "M4 6h16M4 12h12M4 18h8",
-  rooms: "M12 3l9 6v12h-7v-7h-4v7H3V9Z",
+  rooms: "M3 3h18v18H3ZM13 21V10h8M3 12h10M7 7h2M17 15v2",
+  playing: "M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4",
   settings:
     "M9.5 3h5l.6 2.4 2 .9 2.1-1.2 2.5 4.3-1.8 1.7v2l1.8 1.7-2.5 4.3-2.1-1.2-2 .9-.6 2.2h-5l-.6-2.2-2-.9-2.1 1.2-2.5-4.3 1.8-1.7v-2L2.3 9.4l2.5-4.3 2.1 1.2 2-.9ZM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0",
   heart:
@@ -47,10 +48,10 @@ const paths = {
   speaker:
     "M6 2h12v20H6ZM15 15a3 3 0 1 1-6 0 3 3 0 0 1 6 0M13 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0",
 };
-export function Icon({ name, size = 20 }) {
+export function Icon({ name, size = 20, className='' }) {
   return (
     <svg
-      className="tb-icon"
+      className={"tb-icon "+className}
       data-icon={name}
       width={size}
       height={size}

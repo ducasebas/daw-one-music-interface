@@ -24,7 +24,7 @@ import {writeFileSync,readFileSync} from 'node:fs';
 const path='/etc/daw-one-updater/config.json';let previous={};try{previous=JSON.parse(readFileSync(path,'utf8'));}catch{}
 writeFileSync(path,JSON.stringify({...previous,channel:process.argv[2],policy:{mode:process.argv[3],windowEnabled:false,start:'02:00',end:'05:00',timeZone:'Europe/Amsterdam',...previous.policy,mode:process.argv[3]}})+'\n',{mode:0o600});
 JS
-install -m 644 "$repo"/deploy/ota/{update.mjs,policy.mjs,prepare-runtime.mjs,local-http.mjs,releases.mjs,verify-tree.mjs,safe-extract.py} /usr/local/lib/daw-one-updater/
+install -m 644 "$repo"/deploy/ota/{update.mjs,policy.mjs,appliance.mjs,prepare-runtime.mjs,local-http.mjs,releases.mjs,verify-tree.mjs,safe-extract.py} /usr/local/lib/daw-one-updater/
 install -m 644 "$repo/shared/update-settings.js" /usr/local/lib/daw-one-updater/settings.mjs
 if [[ -f /etc/systemd/system/daw-one-kiosk.service ]]; then python3 "$repo/deploy/ota/migrate-kiosk.py"; fi
 cat > /etc/systemd/system/daw-one-update.service <<'UNIT'

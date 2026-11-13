@@ -151,7 +151,9 @@ export class MusicLibrary {
       throw Error("Geselecteerde speler niet beschikbaar");
     if (player.synced_to && player.synced_to !== s.playerId)
       throw Error("Bedien de groepsleider voor deze wachtrij");
-    const queue = s.queueId || s.playerId;
+    // Starting media targets the selected player's own queue. active_source can
+    // name an external input; MA itself resolves the appropriate group queue.
+    const queue = s.playerId;
     await s.transport.command("player_queues/play_media", {
       queue_id: queue,
       media: item.uri,

@@ -7,7 +7,7 @@ test('Updates settings shows channel information and fits without overflow',asyn
 });
 test('simulation checks, installs with progress and rolls back using the shared manager',async({page})=>{
  await page.request.post('/api/scenario',{data:{name:'Cold boot'}});await openUpdates(page);
- await page.getByRole('button',{name:"Check updates",exact:true}).click();await expect(page.getByText("Available:",{exact:false})).toContainText('-preview');
+ await page.getByRole('button',{name:"Check for updates",exact:true}).click();await expect(page.getByText("Available:",{exact:false})).toContainText('-preview');
  await page.getByLabel('Updates page',{exact:true}).selectOption('1');await page.getByLabel("Update policy",{exact:true}).selectOption('notify');await page.getByRole('button',{name:"Save update policy"}).click();await expect(page.getByRole('status').filter({hasText:"Saved"})).toBeVisible();
  await page.getByLabel('Updates page',{exact:true}).selectOption('0');await page.getByRole('button',{name:"Install update",exact:true}).click();
  await expect(page.getByRole('progressbar',{name:"Update progress"}).first()).toBeVisible();await expect(page.getByRole('heading',{name:"Update complete",exact:true})).toBeVisible({timeout:15000});
@@ -23,10 +23,10 @@ test('first-run wizard fits each page and tests simulated server/player without 
  await page.getByLabel('Setup page',{exact:true}).selectOption('5');await page.getByRole('button',{name:"Finish setup",exact:true}).click();
 });
 test('offline update controls do not reuse cached authority',async({page})=>{
- await page.route('**/api/updates',route=>route.abort());await openUpdates(page);await expect(page.getByRole('button',{name:"Check updates",exact:true})).toBeDisabled();await expect(page.getByText("Offline · device changes are unavailable",{exact:true})).toBeVisible();
+ await page.route('**/api/updates',route=>route.abort());await openUpdates(page);await expect(page.getByRole('button',{name:"Check for updates",exact:true})).toBeDisabled();await expect(page.getByText("Offline · device changes are unavailable",{exact:true})).toBeVisible();
 });
 test('independent update page stays visible while backend is unavailable',async({page})=>{
  let status={status:'downloading',percent:35,commit:'a'.repeat(40)};
  const server=createProgressServer({getStatus:()=>status,isAppReady:async()=>false});await new Promise(r=>server.listen(0,'127.0.0.1',r));
- try{await page.goto('http://127.0.0.1:'+server.address().port+'/');await expect(page.getByRole('progressbar',{name:"Update progress"})).toHaveJSProperty('value',0.35);status={...status,status:'checking-health',percent:null};await expect(page.getByRole('heading',{name:'Checking the new version',exact:true})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBe(400);await page.screenshot({path:'test-results/update-independent.png'});}finally{await new Promise(r=>server.close(r));}
+ try{await page.goto('http://127.0.0.1:'+server.address().port+'/?display=dsi-production');await expect(page.getByRole('progressbar',{name:"Update progress"})).toHaveJSProperty('value',0.35);expect(await page.locator('h1').evaluate(e=>getComputedStyle(e).userSelect)).toBe('none');status={...status,status:'checking-health',percent:null};await expect(page.getByRole('heading',{name:'Checking the new version',exact:true})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBe(400);await page.screenshot({path:'test-results/update-independent.png'});}finally{await new Promise(r=>server.close(r));}
 });

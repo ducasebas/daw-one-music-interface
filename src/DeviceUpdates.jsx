@@ -15,7 +15,7 @@ export function DeviceUpdatesProvider({children}){
  const refresh=useCallback(()=>{fastUntil.current=Date.now()+60000;refreshRef.current();},[]);
  const action=useCallback(async(command,args={})=>{
   setPending(true);setNotice('');
-  try{const response=await fetch('/api/device',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':latest.current?.controlToken||''},body:JSON.stringify({command,args}),signal:AbortSignal.timeout(30000)});const data=await response.json();if(!response.ok)throw Error(data.error||'Actie niet gelukt');setNotice(data.message|| (data.queued?'Actie aangevraagd':data.saved?'Opgeslagen':''));refresh();return data;}
+  try{const response=await fetch('/api/device',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':latest.current?.controlToken||''},body:JSON.stringify({command,args}),signal:AbortSignal.timeout(30000)});const data=await response.json();if(!response.ok)throw Error(data.error||'Actie niet gelukt');setNotice(data.message|| (data.queued?'':data.saved?'Opgeslagen':''));refresh();return data;}
   catch(error){setNotice(error.name==='TimeoutError'?'Verbinding onderbroken; controleer de apparaatstatus voordat je opnieuw probeert':error.message);throw error;}
   finally{setPending(false);}
  },[refresh]);

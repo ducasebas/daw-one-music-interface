@@ -1,5 +1,17 @@
 # DAW TuneBox v1 — Raspberry Pi streaming amplifier prototype
 
+**Current update: GUI 3.3 · MUSIC (`2026.11.12-appliance.1`).** Designed for the 1280 × 800 touchscreen: direct track/queue playback, centred music navigation, larger controls, smoother silent meters, full screen keyboard, automatic Wi-Fi scanning, grouped settings and linked notifications. English is standard; Dutch uses **Speelt nu** and **Ruimtes**.
+
+Browser translation, password/save/fill, permissions, native pickers, selection, browser shortcuts and external windows are handled as one appliance layer. **Existing app-only OTA installations need one complete device refresh after this release installs** to apply Chromium policy and the kiosk/display helpers. Pause music, then run:
+
+```bash
+sudo bash /opt/daw-one/deploy/update-appliance.sh --check
+sudo bash /opt/daw-one/deploy/update-appliance.sh --apply
+```
+
+The full refresh verifies the installed release, retains the virtual console while hiding boot text, bounds boot logs and enables signed maintenance of this host layer in later OTA releases. It preserves network, Music Assistant configuration, PCM export and audio routing. The private signing key stays off the Pi. See [what changed, installation and YouTube sync plan](docs/appliance-update.md).
+
+
 DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifier controller with a premium **touchscreen interface with a 16:10 wall profile and retained 1280 × 400 legacy profile**, Music Assistant playback integration and clearly modelled standby, display and safety states.
 
 **Current release: a runnable software prototype with simulated hardware.** The interface, simulator and automated software tests are implemented. The owner has reported live Music Assistant/Squeezelite playback through a Pi 3 headphone jack. Playback reliability, kiosk performance, the Sonocotta Louder HAT and electrical protection remain under validation. No physical amplifier is enabled by this application.
@@ -10,7 +22,7 @@ DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifie
 
 ## GUI 3.2.4 · STARTUP — animated WebP and reliable update display
 
-**Current build: `GUI 3.2.4 · STARTUP` / `2026.11.12-startup.1`.** The four-second splash now uses a 1280 × 800 animated WebP by default. Its compact export is 439 KB; MP4/WebM remain reserves, with Still/Off and automatic Pi 3/reduced-motion policies retained. Replay starts afresh and the animation is available offline.
+**Earlier build: `GUI 3.2.4 · STARTUP` / `2026.11.12-startup.1`.** The four-second splash now uses a 1280 × 800 animated WebP by default. Its compact export is 439 KB; MP4/WebM remain reserves, with Still/Off and automatic Pi 3/reduced-motion policies retained. Replay starts afresh and the animation is available offline.
 
 Production testing reproduced the Pi's `media error 4`: the service worker tried to cache HTTP 206 video byte ranges and turned a successful network response into an error. Video/range requests now bypass that cache. An independent kiosk unit also stays running when OTA restarts the backend; the trusted installer migrates older units with a backup.
 
