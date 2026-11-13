@@ -1,6 +1,6 @@
 # DAW TuneBox v1 — Raspberry Pi streaming amplifier prototype
 
-**Current update: GUI 3.4 · SYNC (`2026.11.13-sync.1`).** Audio & DSP now has shared screen delay and separate visualizer fine adjustment. Local MP4/WebM videos have a three-step setup and timing saved per track. The same muted video player follows Music Assistant through pause, seeking and full screen. See [timing setup and physical acceptance](docs/timing-and-video.md).
+**Current update: GUI 3.4.1 · SYNC (`2026.11.13-sync.2`).** Audio & DSP now has shared screen delay and separate visualizer fine adjustment. Local MP4/WebM videos have a three-step setup and timing saved per track. The same muted video player follows Music Assistant through pause, seeking and full screen. See [timing setup and physical acceptance](docs/timing-and-video.md).
 
 **GUI 3.3 · MUSIC:** Designed for the 1280 × 800 touchscreen: direct track/queue playback, centred music navigation, larger controls, smoother silent meters, full screen keyboard, automatic Wi-Fi scanning, grouped settings and linked notifications. English is standard; Dutch uses **Speelt nu** and **Ruimtes**.
 

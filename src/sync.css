@@ -1,5 +1,7 @@
 /* Screen presentation follows the audio; these controls never route audio. */
 .timing-controls,.video-timing{border:2px solid var(--divider);border-radius:18px;padding:24px;min-width:0;display:grid;gap:22px;margin:26px 0}
+.timing-controls{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:26px;scroll-margin-top:90px}
+.timing-controls>p{grid-column:1/-1}
 .timing-controls legend,.video-timing legend{padding:0 12px;font-size:25px;font-weight:500}
 .timing-controls p,.video-timing p{font-size:19px;line-height:1.6;margin:0}
 .timing-controls label{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;font-size:22px}
@@ -29,4 +31,4 @@
 .video-expanded>video{width:100%;height:100%;min-height:0;max-height:none;border-radius:0}
 .video-expanded>footer{padding:8px 24px;background:#141719}
 @media(max-height:500px){.m2-video .video-surface>video{max-height:135px}.video-expanded>header{padding:6px 14px}.video-expanded>header strong{font-size:18px}.video-expanded>header button{min-height:44px;padding:6px 14px}.video-expanded>header span{display:none}}
-@media(max-width:700px){.timing-controls,.video-timing{padding:16px}.video-steps button{font-size:16px}.timing-controls label{font-size:19px}}
+@media(max-width:700px){.timing-controls{grid-template-columns:1fr}.timing-controls,.video-timing{padding:16px}.video-steps button{font-size:16px}.timing-controls label{font-size:19px}}

@@ -15,6 +15,7 @@ test.beforeEach(async({page})=>{
 test('shared timing saves, cancels and persists; per-video timing cannot change another track',async({page})=>{
  await settings(page,'Audio');await page.getByRole('slider',{name:'Screen delay',exact:true}).fill('250');await page.getByRole('slider',{name:'Visualizer fine adjustment',exact:true}).fill('-50');
  await expect(page.locator('.timing-result')).toContainText('Video: 250 ms · meters: 200 ms');await page.getByRole('button',{name:'Save',exact:true}).click();
+ const screenSlider=await page.getByRole('slider',{name:'Screen delay',exact:true}).boundingBox(),meterSlider=await page.getByRole('slider',{name:'Visualizer fine adjustment',exact:true}).boundingBox();expect(Math.abs(screenSlider.y-meterSlider.y)).toBeLessThan(2);expect(meterSlider.x).toBeGreaterThan(screenSlider.x+screenSlider.width);
  await page.locator('.timing-controls').scrollIntoViewIfNeeded();await page.screenshot({path:'test-results/touch-timing-settings.png'});
  const saved=(await(await page.request.get('/api/preferences')).json()).prefs.timing;expect(saved).toEqual({screenDelayMs:250,visualizerTrimMs:-50});
  await page.getByRole('slider',{name:'Screen delay',exact:true}).fill('700');await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(page.getByRole('slider',{name:'Screen delay',exact:true})).toHaveValue('250');

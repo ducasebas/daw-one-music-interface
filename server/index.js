@@ -232,8 +232,8 @@ app.get('/api/video',(_q,r)=>r.set('Cache-Control','no-store').json(videos.get(c
 app.post('/api/video/timing',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before saving video timing'});try{r.json(videos.timing(currentVideoTrack(),q.body));}catch(e){r.status(409).json({error:e.message});}});
 app.get('/api/video/file/:id',(q,r)=>{const path=videos.path(q.params.id);if(!path)return r.sendStatus(404);r.set('Cache-Control','private, max-age=600').sendFile(q.params.id,{root:videos.directory,dotfiles:'deny'});});
 app.post('/api/video/upload',async(q,r)=>{
-  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before linking a video'});
-  try{const track={...currentVideoTrack()};if(q.get('X-TuneBox-Track')&&q.get('X-TuneBox-Track')!==videos.get(track).trackKey)return r.status(409).json({error:'Track changed. Open video settings again.'});r.json(await videos.upload(q,track,q.get('Content-Type')?.split(';')[0],q.get('Content-Length')));}catch(error){if(!r.headersSent&&!r.destroyed)r.status(400).json({error:error.message});}
+  if(!validDeviceRequest(q)){q.resume();return r.status(403).json({error:'Reload TuneBox before linking a video'});}
+  try{const track={...currentVideoTrack()};if(q.get('X-TuneBox-Track')&&q.get('X-TuneBox-Track')!==videos.get(track).trackKey){q.resume();return r.status(409).json({error:'Track changed. Open video settings again.'});}r.json(await videos.upload(q,track,q.get('Content-Type')?.split(';')[0],q.get('Content-Length')));}catch(error){if(!r.headersSent&&!r.destroyed)r.status(400).json({error:error.message});}
 });
 app.delete('/api/video', (q,r)=>{
   if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before removing a video'});
