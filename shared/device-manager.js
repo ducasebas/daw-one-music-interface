@@ -6,7 +6,7 @@ export function validateRequest(value) {
   if (!value || typeof value!=='object' || Array.isArray(value) || Object.keys(value).some(k=>!['command','args'].includes(k)) || !commands.includes(value.command)) throw Error('Unsupported device action');
   const args=value.args??{};
   if (!args || typeof args!=='object' || Array.isArray(args)) throw Error('Invalid device arguments');
-  const allowed={'measurement-apply':['target','confirmed'],'measurement-undo':['confirmed'],'measurement-start':['microphone','profile','confirmed'],'local-ma-install':['confirmed'],policy:['mode','windowEnabled','start','end','timeZone'],wifi:['interface','ssid','password','security'],'wifi-scan':['interface'],'hotspot-start':['interface','confirmed'],'clock-set':['timeZone','automatic','iso'],'local-standby':['enabled'],'dsp-set':['controls'],'erase-setup':['confirmed'],'probe-music':['url','token'],'save-music':['url','token','playerId','allowControl'],'audio-test':['device'],'power-off':['confirmed']}[value.command]||[];
+  const allowed={'measurement-apply':['target','confirmed'],'measurement-undo':['confirmed'],'measurement-start':['microphone','profile','confirmed'],'local-ma-install':['confirmed'],policy:['mode','windowEnabled','start','end','timeZone'],wifi:['interface','ssid','password','security','confirmed'],'wifi-scan':['interface'],'hotspot-start':['interface','confirmed'],'clock-set':['timeZone','automatic','iso'],'local-standby':['enabled'],'dsp-set':['controls'],'erase-setup':['confirmed'],'probe-music':['url','token'],'save-music':['url','token','playerId','allowControl','confirmed'],'audio-test':['device'],'power-off':['confirmed']}[value.command]||[];
   if(Object.keys(args).some(k=>!allowed.includes(k))) throw Error('Unexpected device argument');
   if(value.command==='measurement-apply'){if(args.confirmed!==true)throw Error('Confirm applying the listening target');args.target=targetSettings(args.target);}
   if(value.command==='measurement-undo'&&args.confirmed!==true)throw Error('Confirm restoring the previous DSP values');
@@ -27,6 +27,7 @@ export function validateRequest(value) {
     if(args.token!==undefined && (typeof args.token!=='string'||args.token.length>4096||/[\r\n\0]/.test(args.token)))throw Error('Invalid token');
     if(value.command==='save-music'&&(typeof args.playerId!=='string'||!args.playerId||args.playerId.length>200||/[\s"'\\\0]/.test(args.playerId)||typeof args.allowControl!=='boolean'))throw Error('Choose an available player');
   }
+  if(['wifi','save-music'].includes(value.command)&&args.confirmed!==undefined&&typeof args.confirmed!=='boolean')throw Error('Confirm the connection change');
   if(value.command==='wifi'){
     const common=typeof args.interface==='string'&&/^wl[a-zA-Z0-9_-]{0,20}$/.test(args.interface)&&typeof args.ssid==='string'&&Buffer.byteLength(args.ssid)<=32&&!!args.ssid&&!/^[\s-]|[\r\n\0]/.test(args.ssid);
     const password=args.security==='open'?args.password==='':args.security===undefined&&typeof args.password==='string'&&args.password.length>=8&&args.password.length<=63&&!/[^\x20-\x7e]/.test(args.password);
@@ -40,6 +41,7 @@ export class DeviceManager {
   async request(value){
     const {command,args}=validateRequest(value);
     if(command==='status')return this.adapter.status();
+    if(command==='network')return this.adapter.perform(command,args);
     if(this.busy)throw Error('Device action already running');
     this.busy=true;
     try{return await this.adapter.perform(command,args);}finally{this.busy=false;}

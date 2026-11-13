@@ -27,8 +27,18 @@ Use the official YouTube embedded player, with a deliberate per-track video sele
 
 Manual video IDs need no Data API key. Optional automatic suggestions should use a server-held restricted YouTube Data API key and cached results; never forward Music Assistant tokens to YouTube. Setup should make this optional and distinguish candidate search from a verified sync match. Actual embedded playback and synchronization need hardware acceptance before claiming YouTube support.
 
-## Validation for this update
+## Validation for GUI 3.3
 
 The local checks passed: 175 Node tests and the production build, 28 Python tests, and all 98 Chromium browser tests. All 9 production/offline tests and all 10 WebKit wall-display tests passed. Production/offline tests cover cached startup animation, real video decoding and byte ranges, editable offline preferences, the six legacy skins and installed help. Browser coverage includes all five settings groups and fifteen topics across six skins, checkbox Save/Cancel and clipping, live volume drag, a final seek request, direct track selection, notification routing, Wi-Fi/password/keyboard flow, silent meters and muted full screen video.
 
 Music Assistant command tests use protocol fixtures. Managed Chromium policy is checked against the documented version-specific policy contract; it still needs verification in the installed Pi browser. The complete device refresh and cold-boot brightness transition require a physical device acceptance test. YouTube playback/synchronization is a follow-up, not an enabled feature in this release.
+
+## GUI 3.3.1 — first-start recovery
+
+The network summary now recognises Ethernet as well as Wi-Fi; it reports a local connection rather than claiming internet access. Existing connections can be kept while music plays. A network status read no longer holds the device mutation lock. Network and Music Assistant connection changes use a setup-specific guard, without requiring the Music Assistant connection being repaired. Changing Wi-Fi/server configuration carries an explicit interruption warning; no group is silently paused. An audible room measurement still blocks connection changes.
+
+Every setup step has Skip this step, and Finish later is always accessible outside a pending save. Skipping Music Assistant bypasses the dependent player step. Deferral persists separately from completion, survives a normal preferences reset, and clears on factory reset. The wizard remains available in System. Pending connection-test responses cannot move the wizard back after a skip. Existing Music Assistant/player configuration can be retained without entering credentials again.
+
+The helper changes require the complete device refresh described above. Devices already opted into appliance maintenance receive them through signed OTA automatically; other installations apply the one-time --check/--apply step after this update.
+
+Wizard recovery checks cover existing Ethernet during playback, failed scans, deferred/repeated setup, late server replies, explicit network-change consent, and a locked PIN session. Dismissal from a locked session changes only the onboarding presentation flag; protected settings still require the PIN. Node/build checks and the focused wizard flows pass locally; the full GitHub verification gates publication.

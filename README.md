@@ -1,6 +1,8 @@
 # DAW TuneBox v1 — Raspberry Pi streaming amplifier prototype
 
-**Current update: GUI 3.3 · MUSIC (`2026.11.12-appliance.1`).** Designed for the 1280 × 800 touchscreen: direct track/queue playback, centred music navigation, larger controls, smoother silent meters, full screen keyboard, automatic Wi-Fi scanning, grouped settings and linked notifications. English is standard; Dutch uses **Speelt nu** and **Ruimtes**.
+**Current update: GUI 3.3.1 · SETUP (`2026.11.13-setup.1`).** First-start setup recognises existing Ethernet/Wi-Fi, offers Skip this step and Finish later, and does not require Music Assistant connectivity to repair a network. Deferred setup remains available in Settings. Switching connections explicitly warns about possible music interruption.
+
+**GUI 3.3 · MUSIC:** Designed for the 1280 × 800 touchscreen: direct track/queue playback, centred music navigation, larger controls, smoother silent meters, full screen keyboard, automatic Wi-Fi scanning, grouped settings and linked notifications. English is standard; Dutch uses **Speelt nu** and **Ruimtes**.
 
 Browser translation, password/save/fill, permissions, native pickers, selection, browser shortcuts and external windows are handled as one appliance layer. **Existing app-only OTA installations need one complete device refresh after this release installs** to apply Chromium policy and the kiosk/display helpers. Pause music, then run:
 

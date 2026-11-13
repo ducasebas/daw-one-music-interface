@@ -559,7 +559,7 @@ function App() {
     </main>
   );
   if(!firstSnapshot&&!offline&&new URLSearchParams(location.search).get('display')==='dsi-production')return <main className="appliance-boot" aria-label={tr('Starting TuneBox')}><strong>TuneBox</strong><span className="ui-spinner"/></main>;
-  if((snapshot.onboardingRequired||deviceUpdates?.info?.manager?.managed&&!deviceUpdates.info.manager.simulated&&deviceUpdates.info.manager.setupComplete===false&&!snapshot.preferences?.setupCompleted)&&new URLSearchParams(location.search).get('screen')==='1')return <FirstStartWizard snapshot={snapshot} offline={offline} onComplete={()=>fetch('/api/state').then(r=>r.json()).then(setSnapshot)}/>;
+  if((snapshot.onboardingRequired||deviceUpdates?.info?.manager?.managed&&!deviceUpdates.info.manager.simulated&&deviceUpdates.info.manager.setupComplete===false&&!snapshot.preferences?.setupCompleted)&&!snapshot.preferences?.setupDeferred&&new URLSearchParams(location.search).get('screen')==='1')return <FirstStartWizard snapshot={snapshot} offline={offline} onComplete={()=>fetch('/api/state').then(r=>r.json()).then(setSnapshot)}/>;
   return lab && !embedded ? (
     <TestWorkbench
       gui2={gui2}

@@ -1,7 +1,7 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.12-appliance.1",
-  label: "GUI 3.3 · MUSIC",
+  id: "2026.11.13-setup.1",
+  label: "GUI 3.3.1 · SETUP",
 });
 export function buildAlignment(frontend, backend, offline = false) {
   if (offline) return "offline";

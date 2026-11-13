@@ -147,6 +147,14 @@ app.post('/api/security/:action',(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before changing security settings'});
  try{const action=q.params.action;let value;if(action==='unlock')value=security.unlock(q.body.pin,q,r);else if(action==='set-pin')value=security.setPin(q.body.pin,q.body.confirmation,q,r);else if(action==='lock'){security.lock(q,r);value=security.status(q);}else if(action==='disable'){security.requireAdmin(q);security.clear(q,r);value=security.status(q);}else throw Error('Unknown security action');r.set('Cache-Control','no-store').json(value);}catch(e){r.status(e.status||400).json({error:e.message});}
 });
+// Dismissing onboarding changes presentation only; it must not trap a locked user.
+// A provision-only phone session cannot reach this route (see the API whitelist).
+app.post('/api/setup/defer',(q,r)=>{
+ if(!validDeviceRequest(q))return r.status(403).json({error:'Reload setup before continuing'});
+ if(!q.body||Array.isArray(q.body)||Object.keys(q.body).length)return r.status(400).json({error:'Unexpected setup argument'});
+ const current=preferences.get();if(!current.setupDeferred)preferences.save(current.revision,{setupDeferred:true});
+ broadcast();r.json({deferred:true});
+});
 app.post('/api/setup/pair',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload setup'});try{r.json(security.pair(q.body.token,r));}catch(e){r.status(403).json({error:e.message});}});
 function applyPreferences(value){if(value.audioEnabled!==audioAnalysis.enabled)audioAnalysis.setEnabled(value.audioEnabled);if(music)music.setVolumeLimit(savedVolumeLimit(value,music.defaultVolumeLimit));displayConfiguration=value.display;runtime.displayTimeoutMs=value.display.timeoutSeconds===0?Infinity:value.display.timeoutSeconds*1000;broadcast();}
 app.get('/api/preferences',(_q,r)=>r.set('Cache-Control','no-store').json(preferences.get()));

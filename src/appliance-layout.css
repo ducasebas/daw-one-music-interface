@@ -86,3 +86,10 @@
 .music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-spectrum text{font-size:25px}
 .music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]>aside{min-height:260px;align-items:center}
 .music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-meter-pair,.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-meter-pair svg{height:auto;min-height:180px;max-height:none}
+
+.network-current{padding:18px 22px;border:2px solid var(--divider);border-radius:14px;margin-bottom:22px}.network-current>strong{display:block;font-size:24px}.network-current p{margin:12px 0}.network-current button{margin-right:14px}.wizard-existing{padding:18px;border:2px solid var(--accent);border-radius:14px;margin-bottom:24px}
+.first-start>footer{flex-wrap:wrap;gap:12px}.first-start>footer>span{min-width:0;overflow-wrap:anywhere}.first-start>header>button{flex:none}.first-start button[aria-busy=true]{opacity:.7}
+
+.first-start{grid-template-rows:90px 80px minmax(0,1fr) auto}.first-start>footer{min-height:64px}@media(max-width:700px){.first-start{grid-template-rows:70px 100px minmax(0,1fr) auto}}
+
+.network-wizard [role=alert]{border-left:3px solid var(--warning,#d49d59);padding-left:14px}

@@ -6,7 +6,7 @@ import {canUpdate} from '../ota/policy.mjs';
 import {MusicAssistantTransport} from '../../server/ma-transport.js';
 import {atomicJson,readJson,boundedJson} from './io.mjs';
 import {powerController} from './power.mjs';
-import {networkController} from './network.mjs';
+import {networkController,networkStatus as readNetworkStatus,assertConnectionChange} from './network.mjs';
 import {clockController} from './clock.mjs';
 import {measurementController} from './measurement.mjs';
 import {localMaController} from './local-ma.mjs';
@@ -18,21 +18,8 @@ async function idle(){return canUpdate(await boundedJson(await fetch('http://127
 export function setEnvironment(text,values){
  let output=text;for(const [key,value] of Object.entries(values)){if(!/^[A-Z_]+$/.test(key)||/[\r\n\0"'\\]/.test(value))throw Error('Invalid configuration value');const line=key+'='+value;const pattern=new RegExp('^'+key+'=.*$','m');output=pattern.test(output)?output.replace(pattern,()=>line):output.trimEnd()+'\n'+line+'\n';}return output;
 }
-export async function networkStatus(){
- try{
-  const raw=await run('/usr/bin/nmcli',['--terse','--escape','no','--fields','DEVICE,TYPE,STATE','device','status']);
-  const interfaces=raw.trim().split('\n').map(line=>{const [name,type,state]=line.split(':');return {name,type,state};}).filter(x=>x.type==='wifi'&&/^wl[a-zA-Z0-9_-]{0,20}$/.test(x.name));
-  let signal=null,link={};
-  try {
-    const rows=await run('/usr/bin/nmcli',['--terse','--escape','no','--fields','IN-USE,SIGNAL','device','wifi','list','--rescan','no']);
-    const active=rows.split('\n').find(line=>line.startsWith('*:'));
-    const value=active&&/^\*:[0-9]{1,3}$/.test(active)?Number(active.split(':')[1]):NaN;
-    if(Number.isFinite(value)&&value>=0&&value<=100)signal=value;
-  } catch {}
-  const activeInterface=interfaces.find(x=>x.state==='connected');if(activeInterface)try{const raw=await run('/usr/sbin/iw',['dev',activeInterface.name,'link']);const speed=raw.match(/tx bitrate:\s*([0-9.]+)\s*MBit\/s/i),dbm=raw.match(/signal:\s*(-?[0-9.]+)\s*dBm/),ssid=raw.match(/SSID: ([^\n]{1,64})/);link={interface:activeInterface.name,linkMbps:speed?Number(speed[1]):null,signalDbm:dbm?Number(dbm[1]):null,ssid:ssid?ssid[1]:null};}catch{}
-  return {...link,supported:true,interfaces,connected:interfaces.some(x=>x.state==='connected'),signal,observedAt:Date.now(),simulated:false};
- }catch{return {supported:false,interfaces:[],connected:null};}
-}
+export async function networkStatus(){return readNetworkStatus({run});}
+async function connectionChange(args,kind='network'){const state=await boundedJson(await fetch('http://127.0.0.1:3001/api/state',{signal:AbortSignal.timeout(3000)}));assertConnectionChange(state,{confirmed:args.confirmed===true,kind});}
 async function musicProbe(args){
  const token=args.token||existingToken();const client=new MusicAssistantTransport({url:args.url,token});
  try{const info=await client.connect();const players=await client.command('players/all',{}, {maxItems:100});return {serverVersion:info.server_version,players:players.map(p=>({id:p.player_id,name:String(p.name||p.player_id).slice(0,120),available:p.available===true})).slice(0,100)};}catch{throw Error('Music Assistant connection/authentication failed; check the local address and token');}finally{client.close();}
@@ -67,7 +54,7 @@ export function rootAdapter(){const power=powerController({run}),network=network
   if(command==='local-ma-install'){if(!await idle())throw Error('Stop playback before installing a local server');return localMa.install();}
   if(command==='network')return networkStatus();
   if(command==='wifi-scan')return network.scan(args.interface);
-  if(command==='hotspot-start'){if(!await idle())throw Error('Stop playback before starting the setup hotspot');return network.hotspot(args);}
+  if(command==='hotspot-start'){await connectionChange(args);return network.hotspot(args);}
   if(command==='hotspot-stop')return network.stop();
   if(command==='clock')return clock.get();
   if(command==='clock-set')return clock.set(args);
@@ -83,11 +70,11 @@ export function rootAdapter(){const power=powerController({run}),network=network
    atomicJson('/var/lib/daw-one-manager/setup.json',{complete:false});setTimeout(()=>run('/usr/bin/systemctl',['restart','--no-block','daw-one.service']).catch(()=>{}),1200);return {erased:true,restarting:true};
   }
   if(command==='wifi'){
-   if(!await idle())throw Error('Stop playback before changing Wi-Fi');return network.connect(args);
+   await connectionChange(args);return network.connect(args);
   }
   if(command==='probe-music')return musicProbe(args);
   if(command==='save-music'){
-   if(!await idle())throw Error('Stop playback before changing the Music Assistant connection');
+   await connectionChange(args,'music');
    const result=await musicProbe(args);if(!result.players.some(p=>p.id===args.playerId&&p.available))throw Error('Select an available Music Assistant player');
    // Credentials are stored only in the root-managed file, never returned to the browser.
    if(args.token){writeFileSync('/etc/daw-one/music-assistant.token.tmp',args.token+'\n',{mode:0o640});await run('/usr/bin/chown',['root:dawone','/etc/daw-one/music-assistant.token.tmp']);renameSync('/etc/daw-one/music-assistant.token.tmp','/etc/daw-one/music-assistant.token');}
