@@ -56,8 +56,13 @@ test('all settings tiles and each topic fit all six skins, including the fixed s
   for(const name of ['Playback','Display','Appearance','Audio','Video','Connections','Sensors','Presence','Date & time','Security','Updates','System','Language','Developer','Room measurement']){
    await chooseSettingsSection(page,name);
    await expect(page.locator('.hub-body')).toBeVisible();await unclipped(page.locator('.hub-body'));
-   await page.locator('.hub-body').evaluate(e=>e.scrollTo(0,e.scrollHeight));
-   expect(await page.locator('.hub-body').evaluate(e=>e.scrollTop+e.clientHeight>=e.scrollHeight-2)).toBe(true);
+   // Section navigation and async panels can still update layout on the next frame.
+   // Check the reachable bottom after a frame instead of racing the focus scroll.
+   await expect.poll(()=>page.locator('.hub-body').evaluate(async e=>{
+    e.scrollTo({top:e.scrollHeight,behavior:'instant'});
+    await new Promise(resolve=>requestAnimationFrame(resolve));
+    return e.scrollTop+e.clientHeight>=e.scrollHeight-2;
+   }),{message:`${skin.id}: ${name} must scroll to its final content`}).toBe(true);
    await expect(page.locator('.hub-savebar')).toBeInViewport();await expect(page.getByRole('button',{name:'Save',exact:true})).toBeInViewport();
    await expect(page.locator('.m2-player')).toBeInViewport();await expect(page.getByRole('button',{name:'Open Now Playing',exact:true})).toBeEnabled();
    expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBe(800);
