@@ -1,6 +1,6 @@
 # DAW TuneBox v1 — Raspberry Pi streaming amplifier prototype
 
-**Current update: GUI 3.3.1 · SETUP (`2026.11.13-setup.1`).** First-start setup recognises existing Ethernet/Wi-Fi, offers Skip this step and Finish later, and does not require Music Assistant connectivity to repair a network. Deferred setup remains available in Settings. Switching connections explicitly warns about possible music interruption.
+**Current update: GUI 3.4 · SYNC (`2026.11.13-sync.1`).** Audio & DSP now has shared screen delay and separate visualizer fine adjustment. Local MP4/WebM videos have a three-step setup and timing saved per track. The same muted video player follows Music Assistant through pause, seeking and full screen. See [timing setup and physical acceptance](docs/timing-and-video.md).
 
 **GUI 3.3 · MUSIC:** Designed for the 1280 × 800 touchscreen: direct track/queue playback, centred music navigation, larger controls, smoother silent meters, full screen keyboard, automatic Wi-Fi scanning, grouped settings and linked notifications. English is standard; Dutch uses **Speelt nu** and **Ruimtes**.
 
@@ -205,7 +205,7 @@ Music Assistant needs a separately configured server and a working player. The b
 | Virtual device | Shared state machines, scenarios, sensors, physical-button/LED preview, modules and timestamped events | Actual button, LED driver and sensors |
 | Safety | Simulated fault latching, watchdog and denied enable for unverified/faulted hardware | Independent physical disable, controller firmware and electrical tests |
 | Music | Mock playback, MA adapter/fixtures; owner-reported MA 2.10.9 and Pi-jack playback | Stable track changes, reconnect and measured multiroom sync; live browsing/artwork/queue edits |
-| Video Artwork | Mock video clock, End-Sync arithmetic and fallback states | Real video matching, embed availability and end-to-end synchronisation |
+| Video Artwork | Local video upload, per-track start/end alignment, shared screen delay, drift correction and one full-screen decoder | Physical Pi decoding and audiovisual timing; automatic matching and YouTube as a separate source |
 | Startup | Animated WebP, MP4/WebM reserves and offline still | Final Pi startup/decoding checks; Pi3 profile intentionally static |
 | Deployment | Pi/ARM64 VM installer, experimental Pi3 profile; owner-reported HDMI kiosk | Undervoltage, cursor stutter, cold boot, recovery and final DSI/touch |
 | Local Mac | Owner reports GUI 2.0 runs directly on macOS; previous UTM rehearsal is historical | Physical Safari interaction review and real Pi validation |

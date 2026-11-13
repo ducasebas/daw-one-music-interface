@@ -734,7 +734,7 @@ export function MusicShell({
                   <VideoArtwork snapshot={snapshot} position={position} prefs={prefs} offline={offline} onConfigure={()=>{setSettingsPage(16);go('settings');}}/>
                 </div>
               ) : prefs.visualizer!=="off" ? (
-                <AudioVisualizer mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline} awake={device.displayAwake!==false&&!sleeping} paused={!playback.playing}/>
+                <AudioVisualizer timing={prefs.timing} timeline={playback} mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline} awake={device.displayAwake!==false&&!sleeping} paused={!playback.playing}/>
               ) : wall ? null : (
                 <SkinPanel
                   skin={

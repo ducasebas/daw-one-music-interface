@@ -39,6 +39,7 @@ import "./music-shell.css";
 import "./wall.css";
 import "./settings-hub.css";
 import "./appliance-layout.css";
+import "./sync.css";
 function load() {
   try {
     return normalize(JSON.parse(localStorage.getItem("daw-settings") || "{}"));

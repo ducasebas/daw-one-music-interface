@@ -1,3 +1,4 @@
+import {videoTiming} from '../shared/video.js';
 import {createHash,randomUUID} from 'node:crypto';
 import {mkdirSync,readFileSync,writeFileSync,renameSync,readdirSync,statSync,statfsSync,unlinkSync,createWriteStream,existsSync} from 'node:fs';
 import {join,resolve} from 'node:path';
@@ -10,7 +11,8 @@ export class VideoLibrary {
   constructor(directory){this.directory=resolve(directory,'video-artwork');this.busy=false;}
   entries(){try{const raw=readFileSync(join(this.directory,'links.json'),'utf8');if(raw.length>65536)throw Error();const entries=JSON.parse(raw);return entries&&typeof entries==='object'&&!Array.isArray(entries)?entries:{};}catch{return {};}}
   save(entries){mkdirSync(this.directory,{recursive:true,mode:0o700});const p=join(this.directory,'links.json');writeFileSync(p+'.tmp',JSON.stringify(entries)+'\n',{mode:0o600});renameSync(p+'.tmp',p);}
-  get(track){const key=videoTrackKey(track),entry=this.entries()[key];return {trackKey:key,available:validId(entry?.id)&&existsSync(join(this.directory,entry.id)),url:validId(entry?.id)?'/api/video/file/'+entry.id:null,linkedAt:entry?.linkedAt||null,maxBytes:LIMIT};}
+  get(track){const key=videoTrackKey(track),entry=this.entries()[key];let sync=null;try{if(entry?.sync)sync=videoTiming(entry.sync);}catch{}return {trackKey:key,available:validId(entry?.id)&&existsSync(join(this.directory,entry.id)),id:validId(entry?.id)?entry.id:null,revision:entry?.revision||0,url:validId(entry?.id)?'/api/video/file/'+entry.id:null,linkedAt:entry?.linkedAt||null,sync,legacy:!!entry&&!sync,maxBytes:LIMIT};}
+  timing(track,value){if(this.busy)throw Error('A video upload is in progress');if(!value||Object.keys(value).some(k=>!['trackKey','id','revision','sync'].includes(k)))throw Error('Invalid video timing request');const entries=this.entries(),key=videoTrackKey(track),entry=entries[key];if(value.trackKey!==key||!entry||value.id!==entry.id||value.revision!==(entry.revision||0))throw Error('Track or video changed. Reload before saving video timing.');entry.sync=videoTiming(value.sync);entry.revision=(entry.revision||0)+1;this.save(entries);return this.get(track);}
   path(id){if(!validId(id)||!Object.values(this.entries()).some(e=>e.id===id))return null;return join(this.directory,id);}
   remove(track){if(this.busy)throw Error('A video upload is in progress');const entries=this.entries(),key=videoTrackKey(track),id=entries[key]?.id;delete entries[key];this.save(entries);if(validId(id))try{unlinkSync(join(this.directory,id));}catch{};return {removed:true};}
   async upload(stream,track,type,length){
@@ -36,7 +38,7 @@ export class VideoLibrary {
       const entries=this.entries(),key=videoTrackKey(track),old=entries[key]?.id;
       if(!Object.hasOwn(entries,key)&&Object.keys(entries).length>=64)throw Error('Remove an old video link before adding another');
       renameSync(path,join(this.directory,id));path=join(this.directory,id);
-      entries[key]={id,linkedAt:new Date().toISOString(),bytes};this.save(entries);path=null;
+      entries[key]={id,linkedAt:new Date().toISOString(),bytes,revision:(entries[key]?.revision||0)+1,sync:{mode:'starts',offsetSeconds:0}};this.save(entries);path=null;
       if(validId(old))try{unlinkSync(join(this.directory,old));}catch{}
       return this.get(track);
     }finally{this.busy=false;if(path)try{unlinkSync(path);}catch{}}

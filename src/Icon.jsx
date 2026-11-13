@@ -42,6 +42,7 @@ const paths = {
   mute: "M3 9h4l5-5v16l-5-5H3ZM17 9l5 6M22 9l-5 6",
   back: "M15 4l-8 8 8 8",
   close: "M6 6l12 12M18 6L6 18",
+  expand: "M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6",
   backspace: "M9 5h12v14H9L2 12ZM12 9l6 6M18 9l-6 6",
   radio:
     "M3 8h18v13H3ZM4 8l15-6M6 12h5M6 16h5M18 15a2 2 0 1 1-4 0 2 2 0 0 1 4 0",

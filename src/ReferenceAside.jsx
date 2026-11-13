@@ -38,7 +38,7 @@ export function ReferenceAside({ layout, snapshot, prefs, update }) {
   const p = snapshot.playback,
     s = snapshot.sensors || {},
     live = snapshot.mode === "music-assistant";
-  if(prefs.visualizer&&prefs.visualizer!=="off")return <AudioVisualizer mode={prefs.visualizer} bands={prefs.visualizerBands}/>;
+  if(prefs.visualizer&&prefs.visualizer!=="off")return <AudioVisualizer timing={prefs.timing} timeline={snapshot.playback} paused={!p.playing} mode={prefs.visualizer} bands={prefs.visualizerBands}/>;
   if (layout === "nerd-mode")
     return (
       <section className="reference-diagnostics" aria-label={tr("Nerd diagnostics")}>

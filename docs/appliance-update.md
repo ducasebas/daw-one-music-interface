@@ -21,11 +21,11 @@ The refresh verifies the release inventory and root ownership, retains the selec
 
 A physical cold-start/reveal test and actual Music Assistant playback remain device acceptance checks. Local tests cannot certify Pi electrical hardware or replace testing on the owner's server.
 
-## YouTube follow-up
+## Video follow-up
 
-Use the official YouTube embedded player, with a deliberate per-track video selection first. Keep Music Assistant audio authoritative and mute embedded audio; send pause/seek to the audio player, then align video to observed position with a stored offset. Full screen belongs to the TuneBox surface. Do not treat title search or equal durations as proof that two versions match. Ads, blocked embeds, buffering and unavailable videos must leave the audio playing and expose a calm fallback.
+GUI 3.4 implements synchronized **local video** first. Music Assistant remains the audio source; the video is the owner's local MP4/WebM. See [timing and video setup](timing-and-video.md) for the common screen delay, separate meter trim and per-track start correction.
 
-Manual video IDs need no Data API key. Optional automatic suggestions should use a server-held restricted YouTube Data API key and cached results; never forward Music Assistant tokens to YouTube. Setup should make this optional and distinguish candidate search from a verified sync match. Actual embedded playback and synchronization need hardware acceptance before claiming YouTube support.
+The earlier proposal to replace YouTube's audio with Music Assistant audio has been withdrawn. YouTube's [Developer Policies, III.I.7](https://developers.google.com/youtube/terms/developer-policies) prohibit separating audiovisual components and alternate audio tracks. A future YouTube mode must play the official player's own video and audio, preserve its controls, branding and ads, and act as a separate source. It is not part of this release. An optional restricted Data API key would support public search suggestions; private account access needs a separate OAuth design. Never send Music Assistant credentials to YouTube.
 
 ## Validation for GUI 3.3
 

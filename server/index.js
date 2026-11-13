@@ -129,7 +129,7 @@ app.use('/api',(q,r,next)=>{
    if(!allowed)return r.status(403).json({error:'This setup connection only controls Wi-Fi'});
    if(mutating&&path!=='/setup/pair'&&security.session(q)?.role!=='provision')return r.status(423).json({error:'Scan the setup link shown on the TuneBox'});
   }
-  const admin=mutating&&(['/device','/preferences','/reset','/display','/audio/settings','/video','/video/upload','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
+  const admin=mutating&&(['/device','/preferences','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
   if(admin&&!(q.provisioning&&path==='/device'&&provisionCommands.includes(q.body?.command)))security.requireAdmin(q);
   next();
  }catch(e){r.status(e.status||423).json({error:e.message});}
@@ -229,14 +229,15 @@ app.get('/api/display', (_q,r) => {
 });
 const currentVideoTrack=()=>{const p=music?.playback||runtime.playback;return p.queue[p.index];};
 app.get('/api/video',(_q,r)=>r.set('Cache-Control','no-store').json(videos.get(currentVideoTrack())));
+app.post('/api/video/timing',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before saving video timing'});try{r.json(videos.timing(currentVideoTrack(),q.body));}catch(e){r.status(409).json({error:e.message});}});
 app.get('/api/video/file/:id',(q,r)=>{const path=videos.path(q.params.id);if(!path)return r.sendStatus(404);r.set('Cache-Control','private, max-age=600').sendFile(q.params.id,{root:videos.directory,dotfiles:'deny'});});
 app.post('/api/video/upload',async(q,r)=>{
   if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before linking a video'});
-  try{r.json(await videos.upload(q,currentVideoTrack(),q.get('Content-Type')?.split(';')[0],q.get('Content-Length')));}catch(error){if(!r.headersSent&&!r.destroyed)r.status(400).json({error:error.message});}
+  try{const track={...currentVideoTrack()};if(q.get('X-TuneBox-Track')&&q.get('X-TuneBox-Track')!==videos.get(track).trackKey)return r.status(409).json({error:'Track changed. Open video settings again.'});r.json(await videos.upload(q,track,q.get('Content-Type')?.split(';')[0],q.get('Content-Length')));}catch(error){if(!r.headersSent&&!r.destroyed)r.status(400).json({error:error.message});}
 });
 app.delete('/api/video', (q,r)=>{
   if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before removing a video'});
-  try{r.json(videos.remove(currentVideoTrack()));}catch(error){r.status(409).json({error:error.message});}
+  try{const track=currentVideoTrack(),link=videos.get(track);if(q.get('X-TuneBox-Track')&&q.get('X-TuneBox-Track')!==link.trackKey||q.get('X-TuneBox-Video')&&q.get('X-TuneBox-Video')!==link.id)return r.status(409).json({error:'Track or video changed. Reload before removing it.'});r.json(videos.remove(track));}catch(error){r.status(409).json({error:error.message});}
 });
 app.post('/api/display', (q,r) => {
   if (!validDeviceRequest(q)) return r.status(403).json({error:'Reload TuneBox before changing display settings'});

@@ -1,5 +1,7 @@
+import {presentationTiming} from './presentation-timing.js';
 import { screenSettings } from "./wall.js";
 export const defaults = {
+  timing: presentationTiming(),
   seekEnabled: true,
   visualizer: "off",
   visualizerBands: 32,
@@ -14,6 +16,7 @@ export const defaults = {
 export function settings(input = {}) {
   input = input && typeof input === "object" ? input : {};
   return {
+    timing: presentationTiming(input.timing),
     seekEnabled: typeof input.seekEnabled==='boolean'?input.seekEnabled:true,
     volumeLimitConfigured: input.volumeLimitConfigured===true,
     startupAnimation: ['off','auto','video','still'].includes(input.startupAnimation)?input.startupAnimation:'auto',
