@@ -29,7 +29,7 @@ test('shared timing saves, cancels and persists; per-video timing cannot change 
  const r=await page.request.post('/api/video/timing',{headers:{'X-TuneBox-Control':token},data:{trackKey:link.trackKey,id:link.id,revision:link.revision,sync:{mode:'starts',offsetSeconds:3}}});expect(r.status()).toBe(409);
  const pinned={'X-TuneBox-Control':token,'X-TuneBox-Track':link.trackKey,'X-TuneBox-Video':link.id};
  expect((await page.request.delete('/api/video',{headers:pinned})).status()).toBe(409);
- expect((await page.request.post('/api/video/upload',{headers:{...pinned,'Content-Type':'video/webm'},data:readFileSync('public/media/startup.webm')})).status()).toBe(409);
+ const rejectedUpload=await page.request.post('/api/video/upload',{headers:{...pinned,'Content-Type':'video/webm'},data:readFileSync('public/media/startup.webm')});expect(rejectedUpload.status(),await rejectedUpload.text()).toBe(409);
  await page.request.post('/api/event',{data:{type:'previous'}});expect((await(await page.request.get('/api/video')).json()).sync.offsetSeconds).toBe(1.2);
 });
 test('visualizer presents buffered PCM at the chosen delay and clears immediately on pause or stale input',async({page})=>{

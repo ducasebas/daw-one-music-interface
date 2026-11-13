@@ -10,6 +10,7 @@ import {DebugLog} from './debug-log.js';
 import {roomProfile,roomDefaults} from '../shared/room-measurement.js';
 import {DeviceSecurity} from './security.js';
 import {createServer} from 'node:http';
+import {finished} from 'node:stream/promises';
 import {timingSafeEqual} from 'node:crypto';
 import {deviceRequest,controlToken,validDeviceRequest} from "./device-client.js";
 import {simulatedDevice} from "./simulated-device.js";
@@ -232,8 +233,15 @@ app.get('/api/video',(_q,r)=>r.set('Cache-Control','no-store').json(videos.get(c
 app.post('/api/video/timing',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before saving video timing'});try{r.json(videos.timing(currentVideoTrack(),q.body));}catch(e){r.status(409).json({error:e.message});}});
 app.get('/api/video/file/:id',(q,r)=>{const path=videos.path(q.params.id);if(!path)return r.sendStatus(404);r.set('Cache-Control','private, max-age=600').sendFile(q.params.id,{root:videos.directory,dotfiles:'deny'});});
 app.post('/api/video/upload',async(q,r)=>{
-  if(!validDeviceRequest(q)){q.resume();return r.status(403).json({error:'Reload TuneBox before linking a video'});}
-  try{const track={...currentVideoTrack()};if(q.get('X-TuneBox-Track')&&q.get('X-TuneBox-Track')!==videos.get(track).trackKey){q.resume();return r.status(409).json({error:'Track changed. Open video settings again.'});}r.json(await videos.upload(q,track,q.get('Content-Type')?.split(';')[0],q.get('Content-Length')));}catch(error){if(!r.headersSent&&!r.destroyed)r.status(400).json({error:error.message});}
+  // A closing upstream connection can reset a proxy's upload if we reply while
+  // it is still sending. Drain without buffering and wait for end before rejection.
+  const rejectUpload=async(status,message)=>{q.resume();await finished(q,{cleanup:true,signal:AbortSignal.timeout(30000)});return r.status(status).json({error:message});};
+  try{
+    if(!validDeviceRequest(q))return await rejectUpload(403,'Reload TuneBox before linking a video');
+    const track={...currentVideoTrack()};
+    if(q.get('X-TuneBox-Track')&&q.get('X-TuneBox-Track')!==videos.get(track).trackKey)return await rejectUpload(409,'Track changed. Open video settings again.');
+    r.json(await videos.upload(q,track,q.get('Content-Type')?.split(';')[0],q.get('Content-Length')));
+  }catch(error){if(!r.headersSent&&!r.destroyed)r.status(400).json({error:error.message});}
 });
 app.delete('/api/video', (q,r)=>{
   if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before removing a video'});

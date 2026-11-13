@@ -28,6 +28,8 @@ The manager now returns enum item labels and recognises the actual `Fault ...` a
 
 The root device manager needs the matching updated helper. Devices already opted into signed appliance maintenance receive it with OTA; older installations require the complete device refresh documented in [appliance-update.md](appliance-update.md). If labels are unavailable, the GUI disables the switch and presets rather than interpreting a bare number.
 
+Release validation also reproduced an intermittent upload rejection error after changing tracks. The server now finishes draining the incoming video body before replying with the track-conflict or invalid-control-token response, so a closing proxy connection cannot cut that body off. A streamed HTTP regression covers both rejection paths; this does not change which track receives an accepted upload.
+
 For an immediate named-state command on the owner's configured card:
 
 ```bash
