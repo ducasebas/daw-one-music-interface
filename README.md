@@ -1,6 +1,6 @@
 # DAW TuneBox v1 — Raspberry Pi streaming amplifier prototype
 
-**Current update: GUI 3.4.1 · SYNC (`2026.11.13-sync.2`).** Audio & DSP now has shared screen delay and separate visualizer fine adjustment. Local MP4/WebM videos have a three-step setup and timing saved per track. The same muted video player follows Music Assistant through pause, seeking and full screen. See [timing setup and physical acceptance](docs/timing-and-video.md).
+**Current update: GUI 3.4.2 · DSP (`2026.11.13-dsp.1`).** Equalizer On/Off follows the actual ALSA driver labels. The Louder TAS5825M reports `0 = On`, `1 = Off`; the previous presets assumed the opposite. Flat, Soft and Restore defaults now use the named state. Thermal, clock and channel fault controls use their actual driver names. See [DSP setup and verification](docs/dsp-controls.md).
 
 **GUI 3.3 · MUSIC:** Designed for the 1280 × 800 touchscreen: direct track/queue playback, centred music navigation, larger controls, smoother silent meters, full screen keyboard, automatic Wi-Fi scanning, grouped settings and linked notifications. English is standard; Dutch uses **Speelt nu** and **Ruimtes**.
 
@@ -16,7 +16,7 @@ The full refresh verifies the installed release, retains the virtual console whi
 
 DAW TuneBox v1 aims to turn a Raspberry Pi 4 into a dedicated streaming-amplifier controller with a premium **touchscreen interface with a 16:10 wall profile and retained 1280 × 400 legacy profile**, Music Assistant playback integration and clearly modelled standby, display and safety states.
 
-**Current release: a runnable software prototype with simulated hardware.** The interface, simulator and automated software tests are implemented. The owner has reported live Music Assistant/Squeezelite playback through a Pi 3 headphone jack. Playback reliability, kiosk performance, the Sonocotta Louder HAT and electrical protection remain under validation. No physical amplifier is enabled by this application.
+**Current release: a runnable software prototype with simulation and optional live hardware controls.** The owner has confirmed Music Assistant/Squeezelite playback through a Louder HAT Plus (TAS5825M) on a Pi 4 and the named Equalizer On state. Automated tests cover the interface and software control paths; sustained playback, enclosure cooling, power delivery and electrical protection still need hardware validation.
 
 ![TuneBox Now Playing — simulated playback, not a hardware measurement](docs/images/now-playing-simulation.png)
 
