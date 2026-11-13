@@ -1,5 +1,14 @@
 import {readFileSync,writeFileSync,renameSync,existsSync,rmSync} from 'node:fs';
 const allowed=name=>name==='Equalizer'||/^Channel (Left|Right) Gain$/.test(name)||/^(?:EQ )?\d{5}(?: Hz)?$/.test(name);
+export function equalizerOnValue(control){
+ if(control?.type==='BOOLEAN')return 1;
+ if(control?.type==='ENUMERATED'&&Array.isArray(control.options)){
+  const find=label=>control.options.filter(o=>String(o.label).trim().toLowerCase()===label&&Number.isInteger(o.value)&&o.value>=control.min&&o.value<=control.max);
+  const on=find('on'),off=find('off');
+  if(on.length===1&&off.length===1&&on[0].value!==off[0].value)return on[0].value;
+ }
+ throw Error('Equalizer labels are unavailable; check the Louder device update before applying room correction');
+}
 export function parseDsp(text){
  const controls=[],faults=[];
  for(const block of String(text).split(/(?=^numid=)/m)){

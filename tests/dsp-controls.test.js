@@ -4,6 +4,7 @@ import {mkdtempSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {parseDsp,dspController} from '../deploy/manager/dsp.mjs';
+import {roomDspChanges} from '../deploy/manager/measurement.mjs';
 import {dspSwitchValues,dspPreset,resetDspControls,dspControlLabel} from '../shared/dsp-settings.js';
 const integer=(id,name,min,max,value)=>`numid=${id},iface=MIXER,name='${name}'\n ; type=INTEGER,access=rw---,values=1,min=${min},max=${max}\n : values=${value}\n`;
 const toggle=value=>`numid=22,iface=MIXER,name='Equalizer'\n ; type=ENUMERATED,access=rw------,values=1,items=2\n ; Item #0 'On'\n ; Item #1 'Off'\n : values=${value}\n`;
@@ -30,6 +31,14 @@ test('all exact driver fault names are exposed, including thermal, clock and cha
 });
 test('incomplete or repeated enum labels do not make an actionable switch',()=>{
  for(const text of [toggle(1).replace(" ; Item #1 'Off'\n",''),toggle(1).replace("#1 'Off'","#0 'Off'")])assert.equal(dspSwitchValues(parseDsp(text).controls[0]),null);
+});
+test('room correction enables the named On state and refuses legacy unknown enum labels',()=>{
+ const controls=parseDsp(raw({1:0,2:0,3:0,22:1})).controls,points=[{hz:20,db:-5.6},{hz:1000,db:0}];
+ assert.deepEqual(roomDspChanges(controls,points),[{id:1,value:-6},{id:22,value:0}]);
+ const reversed=controls.map(c=>c.name==='Equalizer'?{...c,options:[{value:0,label:'Off'},{value:1,label:'On'}]}:c);
+ assert.equal(roomDspChanges(reversed,points).at(-1).value,1);
+ assert.throws(()=>roomDspChanges(controls.map(c=>({...c,options:undefined})),points),/labels are unavailable/);
+ assert.equal(roomDspChanges(controls.map(c=>({...c,name:c.id===1?'EQ 00020 Hz':c.name})),points)[0].value,-6);
 });
 test('actual ALSA writes enable enum On=0, reserve headroom and verify readback',async()=>{
  const dir=mkdtempSync(join(tmpdir(),'tb-dsp-')),values={1:0,2:0,3:0,22:1},calls=[];

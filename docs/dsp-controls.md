@@ -18,6 +18,7 @@ Open **Settings → Audio & DSP**, then scroll to **Louder HAT DSP**:
 - **Equalizer** shows On/Off by name and stages a change until Save.
 - **Flat** enables EQ and sets bands and channel gains to 0 dB.
 - **Soft** enables EQ, cuts the exposed bands by 3 dB and preserves channel gains.
+- Applying a completed room measurement also uses the named On value; missing enum labels stop the application before writing a profile.
 - **Cancel** restores the saved preview; Save applies and verifies ALSA values.
 - **Restore defaults** returns bands/channel gains to neutral and enables the named equalizer state. With legacy missing labels, it preserves the unknown switch value.
 
