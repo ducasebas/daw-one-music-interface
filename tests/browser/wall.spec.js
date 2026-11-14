@@ -60,9 +60,10 @@ test('a real uploaded video replaces the mock and follows music pause and seek',
  await video.evaluate(v=>v.dataset.playerIdentity='same-player');
  await page.getByRole('button',{name:'Full screen video',exact:true}).click();
  const full=page.getByRole('dialog',{name:'Full screen video',exact:true});await expect(full).toBeVisible();expect(await full.boundingBox()).toMatchObject({x:0,y:0,width:1280,height:800});
- await expect.poll(()=>full.getByLabel('Linked music video',{exact:true}).evaluate(v=>v.paused)).toBe(false);expect(await full.getByLabel('Linked music video',{exact:true}).evaluate(v=>v.muted)).toBe(true);
+ await expect.poll(()=>full.getByLabel('Linked music video',{exact:true}).evaluate(v=>v.paused)).toBe(false);expect(await full.getByLabel('Linked music video',{exact:true}).evaluate(v=>v.muted)).toBe(true);expect(await video.evaluate(v=>v.volume)).toBe(0);
  await expect(page.getByLabel('Linked music video',{exact:true})).toHaveCount(1);await expect(full.getByLabel('Linked music video',{exact:true})).toHaveAttribute('data-player-identity','same-player');
  await full.getByRole('button',{name:'Back to music',exact:true}).click();await expect(page.getByRole('dialog',{name:'Full screen video',exact:true})).toHaveCount(0);await expect(video).toHaveAttribute('data-player-identity','same-player');
+ await video.evaluate(v=>{v.muted=false;v.volume=.3;});await expect.poll(()=>video.evaluate(v=>v.muted&&v.volume===0)).toBe(true);
  await page.request.post('/api/event',{data:{type:'pause'}});await page.request.post('/api/event',{data:{type:'seek',position:0}});await expect.poll(()=>video.evaluate(v=>v.currentTime)).toBeCloseTo(2,1);
  await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-linked-video.png'});
 });

@@ -28,6 +28,7 @@ import { fileURLToPath } from "node:url";
 import { DeviceRuntime, runScenario, scenarios } from "../shared/runtime.js";
 import { musicConfig } from "./ma-config.js";
 import { LiveMusicService } from "./ma-service.js";
+import {MultiroomService} from './multiroom.js';
 import {savedVolumeLimit} from '../shared/volume.js';
 const startupStore = new BootStore(
   process.env.DAW_STATE_DIR || ".tunebox-state",
@@ -54,6 +55,7 @@ const music =
   config.mode === "music-assistant" ? new LiveMusicService(config) : null;
 if(music)music.setVolumeLimit(savedVolumeLimit(preferences.get(),music.defaultVolumeLimit));
 const audioAnalysis=new AudioAnalysis({onStatus:status=>{runtime.record(Date.now(),"audio-analysis",runtime.device.mode,"Local PCM measurement: "+status);broadcast();}});
+const multiroom = new MultiroomService(music,{localId:audioAnalysis.playerId||config.playerId});
 const library = music ? new MusicLibrary(music) : null;
 const artwork = music ? new ArtworkCache(config) : null;
 runtime.dispatch({ type: "boot-complete" });
@@ -64,7 +66,7 @@ const snapshot = () => {
     build: release,
     hardwareTelemetry: readSensorTelemetry(process.env.DAW_SENSOR_FILE),
     hostTelemetry:host.value,
-    activity:{roomMeasurement},
+    activity:{roomMeasurement,roomControl:multiroom.busy||music?.controlBusy===true,localPlayback:multiroom.localPlayback()},
     displaySettings: displayConfiguration,
     preferences:preferences.get(),
     setupStatus:{roomProfile:existsSync(join(stateDirectory,'room-profile.json')),audioConfigured:audioAnalysis.configured},
@@ -130,7 +132,7 @@ app.use('/api',(q,r,next)=>{
    if(!allowed)return r.status(403).json({error:'This setup connection only controls Wi-Fi'});
    if(mutating&&path!=='/setup/pair'&&security.session(q)?.role!=='provision')return r.status(423).json({error:'Scan the setup link shown on the TuneBox'});
   }
-  const admin=mutating&&(['/device','/preferences','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
+   const admin=mutating&&(['/device','/preferences','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/rooms'&&['group','leave','transfer','join'].includes(q.body?.action)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
   if(admin&&!(q.provisioning&&path==='/device'&&provisionCommands.includes(q.body?.command)))security.requireAdmin(q);
   next();
  }catch(e){r.status(e.status||423).json({error:e.message});}
@@ -321,11 +323,16 @@ app.get("/api/library", async (q, r) => {
     });
   }
 });
+async function musicControl(run){
+  if(multiroom.busy||music?.controlBusy)throw Error('Wait for the room change to finish.');
+  music.controlBusy=true;
+  try{return await run();}finally{music.controlBusy=false;}
+}
 app.post("/api/library/play", async (q, r) => {
   if (!library)
     return r.status(409).json({ error: "Live bibliotheek niet actief" });
   try {
-    await library.enqueue(q.body.id, q.body.option);
+    await musicControl(()=>library.enqueue(q.body.id, q.body.option));
     r.json(snapshot());
   } catch (e) {
     runtime.record(Date.now(),'library-play-rejected',runtime.device.mode,e.message);
@@ -369,6 +376,16 @@ app.get("/api/events", (q, r) => {
 app.get("/api/scenarios", (_q, r) =>
   r.json(music ? [] : Object.keys(scenarios)),
 );
+const roomsFor = q => {const auth=security.status(q);return {...multiroom.status(),locked:auth.enabled&&!auth.unlocked};};
+app.get('/api/rooms',async(q,r)=>{
+  try{await multiroom.read();r.set('Cache-Control','no-store').json(roomsFor(q));}
+  catch{r.status(503).json({error:'Rooms could not be refreshed. Check the Music Assistant connection.'});}
+});
+app.post('/api/rooms',async(q,r)=>{
+  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before changing rooms.'});
+  try{await multiroom.act(q.body);broadcast();r.set('Cache-Control','no-store').json({rooms:roomsFor(q),snapshot:snapshot()});}
+  catch(e){r.status(e.status||400).json({error:e.message,rooms:roomsFor(q)});}
+});
 app.post("/api/player", async (q, r) => {
   try {
     if (!music)
@@ -399,7 +416,11 @@ app.post("/api/event", async (q, r) => {
     if (['activity','display-timeout'].includes(q.body.type)) {
       runtime.dispatch(q.body);
     } else if (music) {
-      await music.control(q.body);
+      const selected=multiroom.status().rooms.find(p=>p.id===music.playerId);
+      if(selected?.type==='group'&&['volume','mute'].includes(q.body.type)){
+        const value=q.body.type==='volume'&&Number.isFinite(q.body.value)?Math.max(0,Math.min(music.config.volumeLimit,Math.round(q.body.value))):q.body.value;
+        await multiroom.act({action:q.body.type==='volume'?'group-volume':'group-mute',playerId:selected.id,value,revision:multiroom.status().revision});
+      }else await musicControl(()=>music.control(q.body));
       runtime.record(
         Date.now(),
         "music-command",

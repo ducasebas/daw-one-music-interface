@@ -34,11 +34,9 @@ test("GUI2 music journey works at 1280x400 through the shared runtime", async ({
     page.getByRole("button", { name: "A Walk Tycho ›" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Rooms", exact: true }).click();
-  await page.getByRole("button", { name: "Try example group" }).click();
-  await expect(page.getByText("Example group with TuneBox")).toBeVisible();
-  await expect(
-    page.getByText("Rivo grouping is a visual example.", { exact: false }),
-  ).toBeVisible();
+  await expect(page.getByText("Connect Music Assistant to see your players and synchronized groups.")).toBeVisible();
+  await expect(page.getByRole("button",{name:"Connect Music Assistant",exact:true})).toBeVisible();
+  await expect(page.getByRole("button",{name:"Try example group"})).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(
     400,
   );
@@ -78,7 +76,7 @@ test("GUI2 all sections fit the native screen, use shared settings and show faul
   await page
     .getByRole("button", { name: "Video Artwork", exact: true })
     .click();
-  await expect(page.getByText(/Video synced to Music Assistant|No video linked to this track/)).toBeVisible();
+  await expect(page.getByRole('region',{name:'Video artwork',exact:true})).toBeVisible();
 });
 
 test("GUI2 album playback returns to the same search context", async ({

@@ -1,6 +1,7 @@
 import {tr,translateFormat} from "../shared/i18n.js";
 import { panelProfile } from "../shared/display.js";
 import { WallControls, SleepSurface } from "./WallExperience.jsx";
+import {StartupJoin} from './StartupJoin.jsx';
 import {AudioVisualizer} from "./AudioVisualizer.jsx";
 import {GlobalUpdateProgress,useDeviceUpdates} from "./DeviceUpdates.jsx";
 import { LiveLibrary } from "./LiveLibrary.jsx";
@@ -25,6 +26,7 @@ import { SeekControl } from "./SeekControl.jsx";
 import { VideoArtwork } from './VideoArtwork.jsx';
 import {KeyboardField} from './TouchKeyboard.jsx';
 import {settingsSections} from '../shared/interface.js';
+import {Rooms} from './Rooms.jsx';
 
 const duration = (n) =>
   Number.isFinite(n)
@@ -74,12 +76,18 @@ export function MusicShell({
   onReplayStartup,
 }) {
   const deviceUpdates=useDeviceUpdates();
+  const [startupReady,setStartupReady]=useState(false);
   const [security,setSecurity]=useState(null);
   useEffect(()=>{let live=true;const read=()=>fetch('/api/security/status').then(r=>r.ok?r.json():null).then(v=>{if(live)setSecurity(v);}).catch(()=>{});read();const timer=setInterval(read,15000);return()=>{live=false;clearInterval(timer);};},[]);
   const wall = panelProfile(location.search) === "wall-16-10";
 
   const [sleepPreview,setSleepPreview] = useState(false),[canSleep,setCanSleep]=useState(false);
-  useEffect(()=>{if(snapshot.device.displayAwake!==false)setCanSleep(true);},[snapshot.device.displayAwake]);
+  useEffect(()=>{
+    if(snapshot.device.displayAwake!==false){
+      setCanSleep(true);
+      if(!offline)setSleepPreview(false);
+    }
+  },[snapshot.device.displayAwake,offline]);
   const sleeping = wall && (sleepPreview || (canSleep && !offline && snapshot.device.displayAwake === false));
   const [waking,setWaking]=useState(false);
   const wake = async () => {
@@ -90,6 +98,10 @@ export function MusicShell({
     await new Promise(resolve=>setTimeout(resolve,Math.max(0,180-(performance.now()-begin))));
     if(ok!==false)setSleepPreview(false);
     setWaking(false);
+  };
+  const sleep = async () => {
+    setSleepPreview(true);
+    if(!offline&&await send({type:'display-timeout'})===false)setSleepPreview(false);
   };
 
   const [liveViews, setLiveViews] = useState({});
@@ -104,8 +116,7 @@ export function MusicShell({
     [pending, setPending] = useState(false),
     [pendingAction,setPendingAction]=useState(null),
     [searchCycle,setSearchCycle]=useState(0),
-    [video, setVideo] = useState(prefs.artwork==='video'),
-    [rooms, setRooms] = useState({ rivo: false, volume: 35 });
+    [video, setVideo] = useState(prefs.artwork==='video');
   const prompted=useRef(false);
   useEffect(()=>{const manager=deviceUpdates?.info?.manager;if(!prompted.current&&manager?.managed&&!manager.simulated&&manager.setupComplete===false){prompted.current=true;setSettingsPage(13);setPage("settings");}},[deviceUpdates?.info?.manager?.managed,deviceUpdates?.info?.manager?.setupComplete]);
   const [favorites, setFavorites] = useState(() => {
@@ -282,7 +293,9 @@ export function MusicShell({
         staticOnly={prefs.lowPower}
         animationMode={prefs.startupAnimation}
         boot={snapshot.boot}
+        onComplete={setStartupReady}
       />
+      <StartupJoin active={wall&&startupReady&&!offline&&!sleeping&&(!snapshot.onboardingRequired||snapshot.preferences?.setupDeferred)&&snapshot.mode==='music-assistant'&&!['settings','rooms'].includes(page)&&!['installing','restarting','checking-health','rolling-back'].includes(deviceUpdates.info?.status)} controlToken={deviceUpdates.info?.controlToken} onSnapshot={setSnapshot} onRooms={()=>go('rooms')} onUnlock={()=>{setSettingsPage(21);go('settings');}}/>
       <header className="m2-header">
         <button className="m2-brand" onClick={() => go("playing")} aria-label={tr("Now Playing")}>{tr("DAW ")}<b>{tr("TuneBox")}</b>
         </button>
@@ -301,7 +314,7 @@ export function MusicShell({
         </nav>
         <NetworkStatus snapshot={snapshot} offline={offline} />
         {wall && <WallControls snapshot={snapshot} offline={offline} prefs={prefs} updates={deviceUpdates} security={security}
-          onSleep={()=>{setSleepPreview(true);if(!offline)send({type:"display-timeout"});}}
+          onSleep={sleep}
           onNavigate={id=>{const target=id==='status'?'system':id==='screen'?'display':id;const section=settingsSections.find(s=>s[0]===target);if(section){setSettingsPage(section[3]);go('settings');}else go(id);}} />}
 
         <button
@@ -619,71 +632,7 @@ export function MusicShell({
             </div>}
           </div>
         ) : page === "rooms" ? (
-          <div className="m2-rooms">
-            <article>
-              <span className="m2-room-icon">
-                <Icon name="speaker" size={30} />
-              </span>
-              <div>
-                <small>{tr("DEZE RUIMTE")}</small>
-                <h2>{tr("TuneBox")}</h2>
-                <p>
-                  {tr(simulated
-                    ? "Gesimuleerde lokale speler"
-                    : playback.playerName || "Geen speler gekozen")}
-                </p>
-                <label>{tr("Volume")}{tr(" ")}
-                  <TouchVolume
-                    label={tr("TuneBox kamervolume")}
-                    value={volume}
-                    muted={muted}
-                    target={volumeRequests.target}
-                    onValue={volumeRequests.request}
-                    disabled={!canVolume}
-                    limit={
-                      simulated
-                        ? 100
-                        : (snapshot.musicAssistant?.volumeLimit ?? 40)
-                    }
-                  />
-                </label>
-              </div>
-              <b>{tr(volume ?? "—")}%</b>
-            </article>
-            {simulated&&<article>
-              <span className="m2-room-icon">
-                <Icon name="rooms" size={30} />
-              </span>
-              <div>
-                <small>{tr("RIVO · ALLEEN VISUEEL VOORBEELD")}</small>
-                <h2>{tr("Volumio Rivo")}</h2>
-                <p>
-                  {tr(rooms.rivo
-                    ? "Voorbeeldgroep met TuneBox"
-                    : "Protocol en synchronisatie nog te verifiëren")}
-                </p>
-                <label>{tr("Voorbeeldvolume")}{tr(" ")}
-                  <input
-                    aria-label={tr("Rivo voorbeeldvolume")}
-                    type="range"
-                    value={rooms.volume}
-                    onChange={(e) =>
-                      setRooms((r) => ({ ...r, volume: +e.target.value }))
-                    }
-                  />
-                </label>
-              </div>
-              <button
-                aria-pressed={rooms.rivo}
-                onClick={() => setRooms((r) => ({ ...r, rivo: !r.rivo }))}
-              >
-                {tr(rooms.rivo
-                  ? "Verwijder uit voorbeeldgroep"
-                  : "Probeer voorbeeldgroep")}
-              </button>
-            </article>}
-            {simulated&&<small className="m2-note">{tr("Rivo-bediening is uitsluitend een lokale visualisatie. Er wordt geen netwerk- of audiocommando verstuurd.")}</small>}
-          </div>
+          <Rooms offline={offline} controlToken={deviceUpdates?.info?.controlToken} onSnapshot={setSnapshot} onSetup={()=>{setSettingsPage(13);go('settings');}}/>
         ) : page === "settings" ? (
           <div className="m2-settings">
             <SettingsPages

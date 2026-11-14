@@ -8,7 +8,7 @@ export function verifyManifest(raw,signature,key,channel,lastSequence=0){
 }
 export function verifyArchive(bytes,m){if(bytes.length!==m.bytes||createHash('sha256').update(bytes).digest('hex')!==m.sha256)throw Error('OTA archive integrity failed');}
 export function canUpdate(state){
- if(state?.activity?.roomMeasurement===true)return false;
+ if(state?.activity?.roomMeasurement===true||state?.activity?.roomControl===true||state?.activity?.localPlayback===true||state?.activity?.localPlayback===null)return false;
  if(!state||!['simulation','music-assistant'].includes(state.mode)||!['ready','standby'].includes(state.device?.mode)||state.device.amplifierEnabled!==false||!Array.isArray(state.device.faults)||state.device.faults.length||state.playback?.playing!==false)return false;
  return state.mode==='simulation'||(state.musicAssistant?.connected===true&&state.playback.connected===true);
 }

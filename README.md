@@ -1,6 +1,14 @@
 # DAW TuneBox v1 — Raspberry Pi streaming amplifier prototype
 
-**Current update: GUI 3.4.2 · DSP (`2026.11.13-dsp.1`).** Equalizer On/Off follows the actual ALSA driver labels. The Louder TAS5825M reports `0 = On`, `1 = Off`; the previous presets assumed the opposite. Flat, Soft and Restore defaults now use the named state. Thermal, clock and channel fault controls use their actual driver names. See [DSP setup and verification](docs/dsp-controls.md).
+**GUI 3.5.0 · MULTIROOM (`2026.11.13-multiroom.1`), approved for preview publication on 14 November 2026.** Rooms now uses the actual Music Assistant players, compatible groups, per-room/group volume and confirmed queue transfers. DSP controls reload when the connection or PIN session becomes ready, a remote wake clears manually entered screen rest, and video artwork retains mute in full screen. See [multiroom behavior and validation](docs/multiroom.md). The preview becomes available after Verify and signed publication pass; installation and physical acceptance on the owner's Pi remain separate steps.
+
+Local checks and remaining device work are recorded in the [validation report](docs/multiroom-validation.md).
+
+The [OTA review and Pi acceptance guide](docs/multiroom-ota.md) covers publication checks and the first device test. Wait for confirmation of signed publication before choosing **Check for updates** on the Pi.
+
+At startup, an idle TuneBox can ask to join music already playing on Rivo. Rivo keeps its queue and group leadership; declining sends no player command. The native Music Assistant Squeezelite provider can briefly interrupt playback when rebuilding a group stream, so a seamless cold-start join is not promised. Keeping the endpoint grouped during local standby avoids a new membership change on wake.
+
+**Previous release: GUI 3.4.2 · DSP (`2026.11.13-dsp.1`).** Equalizer On/Off follows the actual ALSA driver labels. The Louder TAS5825M reports `0 = On`, `1 = Off`; the previous presets assumed the opposite. Flat, Soft and Restore defaults now use the named state. Thermal, clock and channel fault controls use their actual driver names. See [DSP setup and verification](docs/dsp-controls.md).
 
 **GUI 3.3 · MUSIC:** Designed for the 1280 × 800 touchscreen: direct track/queue playback, centred music navigation, larger controls, smoother silent meters, full screen keyboard, automatic Wi-Fi scanning, grouped settings and linked notifications. English is standard; Dutch uses **Speelt nu** and **Ruimtes**.
 

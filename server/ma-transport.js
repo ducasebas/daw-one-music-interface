@@ -200,7 +200,7 @@ export class MusicAssistantTransport {
         limit: 25,
         offset: Math.max(0, queue.current_index || 0),
       });
-    return { player, queue, items: Array.isArray(items) ? items : [] };
+    return { player, queue, items: Array.isArray(items) ? items : [], queueIds:Array.isArray(queues)?queues.map(q=>q.queue_id).filter(id=>typeof id==='string').slice(0,256):[] };
   }
   async control(playerId, action, value) {
     const commands = {

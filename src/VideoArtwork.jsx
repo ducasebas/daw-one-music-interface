@@ -1,6 +1,6 @@
 import {tr,translateFormat} from '../shared/i18n.js';
 import {Icon} from './Icon.jsx';
-import React,{useEffect,useRef,useState} from 'react';
+import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
 import {localVideoSync,videoAdjustment} from '../shared/video.js';
 import {positionAt} from '../shared/playback.js';
@@ -8,6 +8,12 @@ import {presentationTiming,playbackDiscontinuity} from '../shared/presentation-t
 
 const identity=track=>JSON.stringify([track?.mediaKey||track?.id,track?.title,track?.artist,track?.album]);
 const profile=(link,prefs)=>link?.sync||{mode:'ends',offsetSeconds:prefs.correction||0};
+function keepVideoSilent(video){
+ if(!video)return;
+ video.defaultMuted=true;
+ if(!video.muted)video.muted=true;
+ if(video.volume!==0)video.volume=0;
+}
 function useVideoLink(track){
  const key=identity(track),[state,setState]=useState(null),[revision,setRevision]=useState(0);
  useEffect(()=>{let live=true;const controller=new AbortController();setState(null);const timeout=setTimeout(()=>controller.abort(),10000);fetch('/api/video',{signal:controller.signal,cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(link=>{if(live)setState({key,link});}).catch(()=>{if(live)setState({key,link:{available:false,loadError:true}});}).finally(()=>clearTimeout(timeout));return()=>{live=false;clearTimeout(timeout);controller.abort();};},[key,revision]);
@@ -17,6 +23,7 @@ function useVideoLink(track){
 /** One video element for inline and full-screen presentation. Audio stays with MA. */
 function VideoSurface({snapshot,prefs,link,offline=false,onConfigure,preview=false}){
  const track=snapshot.playback?.queue?.[snapshot.playback.index],ref=useRef(null),dialog=useRef(null),fullButton=useRef(null),latest=useRef(null);
+ const attachVideo=useCallback(video=>{ref.current=video;keepVideoSilent(video);},[]);
  const [duration,setDuration]=useState(null),[failed,setFailed]=useState(false),[expanded,setExpanded]=useState(false),[state,setState]=useState('loading');
  latest.current={snapshot,prefs,link,offline};
  useEffect(()=>{setFailed(false);setDuration(null);setState('loading');},[link?.url]);
@@ -43,13 +50,13 @@ function VideoSurface({snapshot,prefs,link,offline=false,onConfigure,preview=fal
   const seeked=()=>tick();video.addEventListener('seeked',seeked);document.addEventListener('visibilitychange',tick);tick();const timer=setInterval(tick,125);
   return()=>{alive=false;clearInterval(timer);video.removeEventListener('seeked',seeked);document.removeEventListener('visibilitychange',tick);video.pause();video.playbackRate=1;};
  },[duration,link?.url,failed]);
- function enterFull(){const node=dialog.current;if(!node)return;node.close();node.showModal();setExpanded(true);}
- function exitFull(){const node=dialog.current;if(node){node.close();node.show();}setExpanded(false);requestAnimationFrame(()=>fullButton.current?.focus());}
+ function enterFull(){const node=dialog.current;if(!node)return;node.close();node.showModal();keepVideoSilent(ref.current);setExpanded(true);}
+ function exitFull(){const node=dialog.current;if(node){node.close();node.show();}keepVideoSilent(ref.current);setExpanded(false);requestAnimationFrame(()=>fullButton.current?.focus());}
  useEffect(()=>()=>{dialog.current?.close();},[]);
  const message={loading:'Loading video…',buffering:'Loading video…',waiting:'Waiting for the video start…',ended:'Video ended · music continues',paused:'Paused',offline:'Video paused · reconnecting',unavailable:'Video timing is unavailable',playing:'Video follows your music'}[state];
  return <dialog ref={dialog} open role={expanded?'dialog':'region'} aria-modal={expanded||undefined} aria-label={tr(expanded?'Full screen video':preview?'Video timing preview':'Video artwork')} className={'video-surface '+(expanded?'video-expanded':'')} onCancel={e=>{e.preventDefault();exitFull();}}>
   {expanded&&<header><div><strong>{track?.title}</strong><span>{track?.artist}</span></div><button onClick={exitFull}><Icon name="close"/>{tr('Back to music')}</button></header>}
-  {!link?<section className="video-unavailable" role="status">{tr('Loading video…')}</section>:!link.available||failed?<section className="video-unavailable"><strong>{tr(failed?'Video could not play':link.loadError?'Video is unavailable':'No video linked to this track')}</strong><p>{tr(failed?'Try an MP4 with H.264 video at 720p and 30 fps. Your music keeps playing.':link.loadError?'Reconnect and reopen Video Artwork. Your music is unchanged.':'Link your own MP4 or WebM in Video settings.')}</p>{onConfigure&&<button onClick={onConfigure}>{tr('Video settings')}</button>}</section>:<video ref={ref} key={link.url} src={link.url} muted playsInline preload="auto" disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen" onLoadedMetadata={e=>setDuration(e.currentTarget.duration)} onError={()=>setFailed(true)} aria-label={tr('Linked music video')}/>}
+  {!link?<section className="video-unavailable" role="status">{tr('Loading video…')}</section>:!link.available||failed?<section className="video-unavailable"><strong>{tr(failed?'Video could not play':link.loadError?'Video is unavailable':'No video linked to this track')}</strong><p>{tr(failed?'Try an MP4 with H.264 video at 720p and 30 fps. Your music keeps playing.':link.loadError?'Reconnect and reopen Video Artwork. Your music is unchanged.':'Link your own MP4 or WebM in Video settings.')}</p>{onConfigure&&<button onClick={onConfigure}>{tr('Video settings')}</button>}</section>:<video ref={attachVideo} key={link.url} src={link.url} muted playsInline preload="auto" disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen" onVolumeChange={e=>keepVideoSilent(e.currentTarget)} onLoadedMetadata={e=>setDuration(e.currentTarget.duration)} onError={()=>setFailed(true)} aria-label={tr('Linked music video')}/>}
   <footer><small role="status" aria-live="off">{tr(message)}</small>{!expanded&&link?.available&&!failed&&<button ref={fullButton} onClick={enterFull}><Icon name="expand"/>{tr('Full screen video')}</button>}</footer>
  </dialog>;
 }

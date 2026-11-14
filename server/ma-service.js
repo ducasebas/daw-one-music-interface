@@ -2,6 +2,7 @@ import { mediaImage } from "../shared/media.js";
 import { EventEmitter } from "node:events";
 import {createHash} from 'node:crypto';
 import { MusicAssistantTransport } from "./ma-transport.js";
+import {normalizeRooms,roomLeader,roomOutputs,groupVolume} from '../shared/multiroom.js';
 const emptyTrack = {
   id: "none",
   title: "Nothing playing",
@@ -79,9 +80,13 @@ export class LiveMusicService extends EventEmitter {
     this.retryCount = 0;
     this.stopped = true;
     this.refreshing = false;
+    this.refreshPromise = null;
     this.dirty = false;
     this.timer = null;
     this.retryTimer = null;
+    this.pollTimer = null;
+    this.queueIds = [];
+    this.queueActive = false;
     this.players = [];
     this.playerId = config.playerId;
     this.status = "disconnected";
@@ -102,10 +107,7 @@ export class LiveMusicService extends EventEmitter {
     this.unsubscribe = transport.subscribe((e) => {
       if (e.event === "disconnected") this.failed("Connection lost");
       else if (
-        (e.event?.startsWith("player") || e.event?.startsWith("queue")) &&
-        (!e.object_id ||
-          e.object_id === this.playerId ||
-          e.object_id === this.queueId)
+        e.event?.startsWith("player") || e.event?.startsWith("queue")
       )
         this.scheduleRefresh();
     });
@@ -123,10 +125,10 @@ export class LiveMusicService extends EventEmitter {
       controlEnabled: this.config.controlEnabled,
       volumeLimit: this.config.volumeLimit,
       defaultVolumeLimit: this.defaultVolumeLimit,
-      players: this.players.map((p) => ({
-        id: p.player_id,
-        name: p.name || p.player_id,
-        available: p.available !== false,
+      players: normalizeRooms(this.players,this.config.playerId).map((p) => ({
+        id: p.id,
+        name: p.name,
+        available: p.available,
       })),
     };
   }
@@ -139,6 +141,7 @@ export class LiveMusicService extends EventEmitter {
   }
   async start() {
     this.stopped = false;
+    clearInterval(this.pollTimer);
     clearTimeout(this.retryTimer);
     this.retryTimer = null;
     this.status = "connecting";
@@ -152,6 +155,8 @@ export class LiveMusicService extends EventEmitter {
       this.status = "connected";
       this.error = null;
       this.errorCode = null;
+      this.pollTimer = setInterval(() => this.scheduleRefresh(),5000);
+      this.pollTimer.unref?.();
       this.notify();
     } catch (error) {
       const auth = {
@@ -172,6 +177,7 @@ export class LiveMusicService extends EventEmitter {
   failed(reason, code = "connection") {
     if (this.stopped) return;
     this.status = "disconnected";
+    clearInterval(this.pollTimer);
     this.error = reason;
     this.errorCode = code;
     this.playback = {
@@ -202,13 +208,14 @@ export class LiveMusicService extends EventEmitter {
   async refresh() {
     if (this.refreshing) {
       this.dirty = true;
-      return;
+      return this.refreshPromise;
     }
     this.refreshing = true;
-    try {
+    this.refreshPromise = (async () => {
+     try {
       do {
         this.dirty = false;
-        const players = await this.transport.command("players/all");
+        const players = await this.transport.command("players/all", {}, {maxItems:256});
         if (!Array.isArray(players)) throw Error("Invalid player list");
         this.players = players;
         if (this.playerId) {
@@ -218,17 +225,33 @@ export class LiveMusicService extends EventEmitter {
           const data = await this.transport.snapshot(selected);
           if (selected === this.playerId) {
             this.queueId = data.queue?.queue_id;
+            this.queueActive = !!data.queue && data.queue.active !== false;
+            this.queueIds = Array.isArray(data.queueIds) ? data.queueIds : data.queue ? [data.queue.queue_id] : [];
             this.playback = normalizeMusic(data);
+            const rooms=normalizeRooms(players,this.config.playerId),selectedRoom=rooms.find(p=>p.id===selected);
+            if(selectedRoom?.type==='group'){
+              const outputs=roomOutputs(rooms,selected),volume=groupVolume(rooms,selected);
+              this.playback.volume=volume;
+              this.playback.muted=outputs.length>0&&outputs.every(p=>p.muted===true);
+              const capabilities=new Set(this.playback.capabilities);
+              if(volume!==null)capabilities.add('volume_set');else capabilities.delete('volume_set');
+              if(outputs.length&&outputs.every(p=>p.available&&p.canMute))capabilities.add('volume_mute');else capabilities.delete('volume_mute');
+              this.playback.capabilities=[...capabilities];
+            }
           }
         }
         this.notify();
       } while (this.dirty && !this.stopped);
-    } finally {
+     } finally {
       this.refreshing = false;
-    }
+      this.refreshPromise = null;
+     }
+    })();
+    return this.refreshPromise;
   }
-  async selectPlayer(id) {
-    if (!this.players.some((p) => p.player_id === id && p.available !== false))
+  async selectPlayer(id,{fromRooms=false}={}) {
+    if((this.roomCommandBusy||this.controlBusy)&&!fromRooms)throw Error('Wait for the room change to finish.');
+    if (!normalizeRooms(this.players,this.config.playerId).some((p) => p.id === id && p.available))
       throw Error("Choose an available player");
     this.playerId = id;
     this.playback = { ...this.playback, connected: false, playing: false };
@@ -236,6 +259,7 @@ export class LiveMusicService extends EventEmitter {
     this.notify();
   }
   async control(event) {
+    if(this.roomCommandBusy)throw Error('Wait for the room change to finish.');
     if (
       this.status !== "connected" ||
       !this.playback.connected ||
@@ -246,11 +270,19 @@ export class LiveMusicService extends EventEmitter {
       throw Error(
         "Music Assistant is read-only; set MA_ALLOW_CONTROL=true on server",
       );
+    if(event.type==='play'||event.type==='queue-select'||event.type==='mute'&&event.value===false){
+      const rooms=normalizeRooms(this.players,this.config.playerId),owner=roomLeader(rooms,this.playerId);
+      if(owner&&(owner.members.length||owner.type==='group')){
+        const outputs=roomOutputs(rooms,owner.id);
+        if(!outputs.length||outputs.some(p=>!p.available||!Number.isFinite(p.volume)||p.volume>this.config.volumeLimit))throw Error('Lower every affected room to the saved volume limit before starting or grouping music.');
+      }
+    }
     if(['queue-select','queue-remove'].includes(event.type)) {
       if(typeof event.id!=='string'||event.id==='none'||!this.playback.queue.some(t=>t.id===event.id))throw Error('Queue selection expired. Refresh the queue.');
       if(!this.queueId)throw Error('The selected player has no Music Assistant queue.');
       const player=this.players.find(p=>p.player_id===this.playerId);
-      if(player?.synced_to&&player.synced_to!==this.playerId)throw Error('Select the group leader to edit this queue.');
+      const parent=player?.active_group||player?.synced_to;
+      if(parent&&parent!==this.playerId&&this.queueId!==parent)throw Error('Select the group leader to edit this queue.');
       if(event.type==='queue-select'&&(!Number.isFinite(this.playback.volume)||this.playback.volume>this.config.volumeLimit))throw Error('Lower the player volume to the saved limit first.');
       if(event.type==='queue-remove'&&event.id===this.playback.queue[this.playback.index]?.id)throw Error('Skip the current track before removing it.');
       await this.transport.command(event.type==='queue-select'?'player_queues/play_index':'player_queues/delete_item',{
@@ -319,6 +351,7 @@ export class LiveMusicService extends EventEmitter {
     this.stopped = true;
     clearTimeout(this.timer);
     clearTimeout(this.retryTimer);
+    clearInterval(this.pollTimer);
     this.unsubscribe();
     this.transport.close();
   }

@@ -12,6 +12,7 @@ export function StartupScreen({
   staticOnly = false,
   animationMode = 'auto',
   boot,
+  onComplete,
 }) {
   const updates=useDeviceUpdates();
   const preparation = useStartupPreparation();
@@ -103,6 +104,7 @@ export function StartupScreen({
     return () => media.removeEventListener("change", change);
   }, [staticOnly,animationMode]);
   useEffect(()=>{if(new URLSearchParams(location.search).get('display')==='dsi-production'&&(!visible||animationMode==='off'))fetch('/api/activity',{method:'POST'}).catch(()=>{});},[visible,animationMode]);
+  useEffect(()=>{if(!visible||animationMode==='off')onComplete?.(true);},[visible,animationMode,onComplete]);
   useEffect(() => {
     if (!visible || mode === "booting") return;
     const skip = () => setVisible(false);

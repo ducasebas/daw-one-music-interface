@@ -136,3 +136,10 @@ test("album drilldown uses version-2.10 arguments and bounds the response", asyn
     1,
   );
 });
+
+test('a known grouped member can start music on the verified group queue without ignoring another room volume',async()=>{
+ const {s,lib,calls}=fixture();const page=await lib.browse({});
+ s.players[0]={...s.players[0],synced_to:'leader',volume_level:20};s.players.push({player_id:'leader',available:true,group_members:['leader','pi'],volume_level:18});s.queueId='leader';
+ await lib.enqueue(page.items[0].id,'replace');assert.deepEqual(calls.at(-1),['player_queues/play_media',{queue_id:'leader',media:album.uri,option:'replace'}]);
+ s.players[1].volume_level=75;const before=calls.length;await assert.rejects(()=>lib.enqueue(page.items[0].id,'replace'),/every affected room/);assert.equal(calls.length,before);
+});

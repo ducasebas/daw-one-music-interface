@@ -1,3 +1,4 @@
+import {normalizeRooms,roomLeader,roomOutputs} from '../shared/multiroom.js';
 import { createHash } from "node:crypto";
 import { mediaKinds, publicMedia,mediaSources } from "../shared/media.js";
 export class MusicLibrary {
@@ -149,11 +150,17 @@ export class MusicLibrary {
     const player = s.players.find((p) => p.player_id === s.playerId);
     if (!player || player.available === false)
       throw Error("Geselecteerde speler niet beschikbaar");
-    if (player.synced_to && player.synced_to !== s.playerId)
+    const parent=player.active_group||player.synced_to;
+    if (parent && parent !== s.playerId && (!s.queueId||s.queueId!==parent||!s.players.some(p=>p.player_id===parent&&p.available!==false)))
       throw Error("Bedien de groepsleider voor deze wachtrij");
-    // Starting media targets the selected player's own queue. active_source can
-    // name an external input; MA itself resolves the appropriate group queue.
-    const queue = s.playerId;
+    const rooms=normalizeRooms(s.players),owner=roomLeader(rooms,s.playerId);
+    if(owner&&(owner.members.length||owner.type==='group')){
+      const outputs=roomOutputs(rooms,owner.id);
+      if(!outputs.length||outputs.some(p=>!p.available||!Number.isFinite(p.volume)||p.volume>s.config.volumeLimit))throw Error('Lower every affected room to the saved volume limit before starting or grouping music.');
+    }
+    // External inputs use the selected player's own queue. A known active group
+    // parent uses the shared queue, so a member remains a useful control target.
+    const queue = parent&&parent!==s.playerId?s.queueId:s.playerId;
     await s.transport.command("player_queues/play_media", {
       queue_id: queue,
       media: item.uri,
