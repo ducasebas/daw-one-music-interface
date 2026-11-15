@@ -7,7 +7,7 @@ import {useTemperatureDisplay} from './useTemperatureDisplay.js';
 import {getLanguage} from '../shared/i18n.js';
 import {AudioVisualizer} from './AudioVisualizer.jsx';
 import {PowerOffButton} from './PowerControls.jsx';
-const labels={clock:'Klok & datum',widgets:'Widgets',sunset:'Zonsondergang',glow:'Glow',playing:'Now playing',black:'Zwart'};
+const labels={clock:'Klok & datum',widgets:'Widgets',sunset:'Zonsondergang',glow:'Glow',playing:'Now playing',black:'Black · backlight off'};
 export function ScreenSettings({prefs,update}) {
  const screen=screenSettings(prefs.screen);
  const change=(key,value)=>update('screen',{...screen,[key]:value});

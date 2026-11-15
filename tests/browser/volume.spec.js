@@ -17,6 +17,21 @@ async function start(page) {
 }
 const volume = async (page) =>
   (await (await page.request.get("/api/state")).json()).audio.volume;
+test('a tap at any rail or dial position never jumps to a different volume',async({page})=>{
+ await start(page);
+ for(const mode of ['linear','circular']){
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await page.getByLabel('Settings page',{exact:true}).selectOption('0');
+  await page.getByLabel('Volume control',{exact:true}).selectOption(mode);
+  await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();
+  const slider=page.getByRole('slider',{name:'Volume',exact:true});
+  const b=await slider.boundingBox();
+  for(const [x,y] of [[4,b.height/2],[b.width-4,b.height/2],[b.width/2,4],[b.width/2,b.height-4]]){
+   await slider.click({position:{x,y}});await expect(slider).toHaveAttribute('aria-valuenow','32');
+   expect(await volume(page)).toBe(32);
+  }
+ }
+});
 async function pointer(page) {
   if (page.context().browser().browserType().name() === "chromium")
     return page.context().newCDPSession(page);
@@ -88,7 +103,7 @@ test("touch drag changes volume while moving and cancellation stops without a se
   await gesture(
     page,
     [
-      [b.x + 12, y],
+      [b.x + b.width - 12, y],
       [b.x + b.width / 2, y],
     ],
     "touchCancel",
@@ -150,7 +165,7 @@ test("circular mode persists, supports touch rotation and keeps all skins within
     [b.x + b.width / 2, b.y + 4],
     [b.x + b.width - 4, b.y + b.height / 2],
   ]);
-  await expect.poll(() => volume(page)).toBe(83);
+  await expect.poll(() => volume(page)).toBe(65);
   for (const id of [
     "reference-dark",
     "minimal-dark",
@@ -292,9 +307,10 @@ test("scaled workbench volume uses the same touch geometry as the product", asyn
     inset = (12 * b.width) / logical;
   await gesture(page, [
     [b.x + inset, b.y + b.height / 2],
-    [b.x + inset + (b.width - 2 * inset) * 0.75, b.y + b.height / 2],
+    [b.x + inset + (b.width - 2 * inset) * 0.43, b.y + b.height / 2],
   ]);
-  await expect.poll(() => volume(page)).toBe(75);
+  // Subpixel touch coordinates quantize by up to one percentage step across engines.
+  await expect.poll(async () => Math.abs((await volume(page))-75)).toBeLessThanOrEqual(1);
 });
 
 test("mute greys both volume presentations without changing the stored volume or position", async ({

@@ -1,5 +1,22 @@
-import React,{useRef,useState} from 'react';
+import React,{useRef,useState,useEffect} from 'react';
 import {tr} from '../shared/i18n.js';
+import {positionAt} from '../shared/playback.js';
+/** Only this small control ticks; menus, artwork and the shell do not. */
+export function PlaybackSeekControl({playback,...props}){
+ const [now,setNow]=useState(Date.now);
+ useEffect(()=>{
+  let timer;
+  const visible=()=>{
+   clearInterval(timer);
+   setNow(Date.now());
+   if(playback.playing&&!document.hidden)timer=setInterval(()=>setNow(Date.now()),250);
+  };
+  visible();document.addEventListener('visibilitychange',visible);
+  return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',visible);};
+ },[playback.playing]);
+ const position=positionAt(playback,Math.max(now,playback.observedAt||0));
+ return <SeekControl {...props} position={position}/>;
+}
 const time=n=>`${Math.floor(n/60)}:${String(Math.floor(n%60)).padStart(2,'0')}`;
 /** Preview during drag, commit the final seek once. Metadata updates cannot fight it. */
 export function SeekControl({position,duration,disabled,onSeek}) {

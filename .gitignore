@@ -17,3 +17,4 @@ __pycache__/
 .ota-keys/
 ota-manifest.json
 ota-manifest.sig
+/performance-results/

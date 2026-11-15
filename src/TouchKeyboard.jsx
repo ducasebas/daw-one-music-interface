@@ -4,7 +4,7 @@ import {Icon} from './Icon.jsx';
 import {tr} from '../shared/i18n.js';
 
 /** Entry, focus and editing belong to the appliance, including secret fields. */
-export function TouchKeyboard({label,value,onChange,onClose,type='text',numeric=false,maxLength=2048}) {
+export function TouchKeyboard({label,value,onChange,onClose,type='text',numeric=false,maxLength=2048,suggestions,suggestionsLoading=false,onSuggestion}) {
  const [shift,setShift]=useState(false),[symbols,setSymbols]=useState(false),input=useRef(null);
  useEffect(()=>{input.current?.focus({preventScroll:true});},[]);
  const secret=type==='password';
@@ -20,14 +20,15 @@ export function TouchKeyboard({label,value,onChange,onClose,type='text',numeric=
  return <Modal label="Touch keyboard" onCancel={onClose} className="touch-keyboard fullscreen-keyboard">
   <header><h2>{tr(label)}</h2><button type="button" aria-label={tr('Done typing')} onClick={onClose}><Icon name="check"/>{tr('Done typing')}</button></header>
   <div className="keyboard-entry"><input ref={input} aria-label={tr('Keyboard entry')} value={value??''} type="text" data-private={secret||undefined} style={secret?{WebkitTextSecurity:'disc'}:undefined} inputMode="none" autoComplete="off" autoCorrect="off" spellCheck={false} maxLength={maxLength} onChange={e=>onChange(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();onClose();}}}/><button type="button" onClick={()=>onChange('')}>{tr('Clear')}</button></div>
+  {suggestions&&<section className="keyboard-suggestions" aria-label={tr('Music suggestions')} aria-busy={suggestionsLoading}>{suggestionsLoading?<p role="status">{tr('Searching…')}</p>:suggestions.length?suggestions.slice(0,3).map(item=><button type="button" key={item.id} disabled={item.available===false} onClick={()=>{onClose();onSuggestion?.(item);}}><strong>{item.name}</strong><span>{item.artist||tr(item.type)}</span></button>):<p>{tr(value?'No matches yet':'Start typing to find music')}</p>}</section>}
   <div className={'keyboard-keys '+(numeric?'numeric-keys':'')}>{rows.map((row,i)=><div className="keyboard-row" key={i}>{[...row].map(key=><button type="button" key={key} aria-label={tr(`Key ${key}`)} onPointerDown={e=>e.preventDefault()} onClick={()=>{insert(shift?key.toUpperCase():key);if(shift)setShift(false);}}>{shift?key.toUpperCase():key}</button>)}</div>)}
   <div className="keyboard-row">{!numeric&&<><button type="button" aria-label={tr('Shift')} aria-pressed={shift} onClick={()=>setShift(v=>!v)}>⇧</button><button type="button" aria-pressed={symbols} onClick={()=>setSymbols(v=>!v)}>{symbols?'ABC':'#+='}</button><button type="button" className="keyboard-space" onPointerDown={e=>e.preventDefault()} onClick={()=>insert(' ')}>{tr('Space')}</button></>}<button type="button" aria-label={tr('Backspace')} onPointerDown={e=>e.preventDefault()} onClick={()=>insert('Backspace')}>⌫</button></div></div>
  </Modal>;
 }
-export function KeyboardField({label,value,onChange,type='text',numeric=false,keyboard=true,autoOpen=false,...rest}) {
+export function KeyboardField({label,value,onChange,type='text',numeric=false,keyboard=true,autoOpen=false,suggestions,suggestionsLoading,onSuggestion,...rest}) {
  const [open,setOpen]=useState(false),field=useRef(null);
  const phone=new URLSearchParams(location.search).get('setup')==='phone';
  useEffect(()=>{if(autoOpen&&keyboard&&!phone)setOpen(true);},[autoOpen,keyboard,phone]);
  const secret=type==='password';
- return <><label className="touch-field">{tr(label)}<input {...rest} ref={field} type={secret?'text':type} data-private={secret||undefined} style={secret?{WebkitTextSecurity:'disc'}:undefined} autoComplete="off" autoCorrect="off" spellCheck={false} value={value??''} aria-label={tr(label)} inputMode={keyboard&&!phone?'none':numeric?'numeric':undefined} onFocus={()=>{if(keyboard&&!phone)setOpen(true);}} onClick={()=>{if(keyboard&&!phone)setOpen(true);}} onChange={e=>onChange(e.target.value)}/></label>{open&&<TouchKeyboard label={label} type={type} numeric={numeric} value={value} onChange={onChange} maxLength={rest.maxLength} onClose={()=>{setOpen(false);field.current?.blur();}}/>}</>;
+ return <><label className="touch-field">{tr(label)}<input {...rest} ref={field} type={secret?'text':type} data-private={secret||undefined} style={secret?{WebkitTextSecurity:'disc'}:undefined} autoComplete="off" autoCorrect="off" spellCheck={false} value={value??''} aria-label={tr(label)} inputMode={keyboard&&!phone?'none':numeric?'numeric':undefined} onFocus={()=>{if(keyboard&&!phone)setOpen(true);}} onClick={()=>{if(keyboard&&!phone)setOpen(true);}} onChange={e=>onChange(e.target.value)}/></label>{open&&<TouchKeyboard label={label} type={type} numeric={numeric} value={value} onChange={onChange} suggestions={suggestions} suggestionsLoading={suggestionsLoading} onSuggestion={onSuggestion} maxLength={rest.maxLength} onClose={()=>{setOpen(false);field.current?.blur();}}/>}</>;
 }

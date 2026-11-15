@@ -1,10 +1,14 @@
 import {tr,translateFormat} from '../shared/i18n.js';
 import {Icon} from './Icon.jsx';
-import React,{useCallback,useEffect,useRef,useState} from 'react';
+import React,{useCallback,useEffect,useRef,useState,lazy,Suspense} from 'react';
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
 import {localVideoSync,videoAdjustment} from '../shared/video.js';
 import {positionAt} from '../shared/playback.js';
 import {presentationTiming,playbackDiscontinuity} from '../shared/presentation-timing.js';
+import {YoutubeBoundary} from './YoutubeBoundary.jsx';
+import {Modal} from './Modal.jsx';
+const YoutubePlayer=lazy(()=>import('./YoutubePlayer.jsx').then(module=>({default:module.YoutubePlayer})));
+const YoutubeWizard=lazy(()=>import('./YoutubeWizard.jsx'));
 
 const identity=track=>JSON.stringify([track?.mediaKey||track?.id,track?.title,track?.artist,track?.album]);
 const profile=(link,prefs)=>link?.sync||{mode:'ends',offsetSeconds:prefs.correction||0};
@@ -14,9 +18,9 @@ function keepVideoSilent(video){
  if(!video.muted)video.muted=true;
  if(video.volume!==0)video.volume=0;
 }
-function useVideoLink(track){
- const key=identity(track),[state,setState]=useState(null),[revision,setRevision]=useState(0);
- useEffect(()=>{let live=true;const controller=new AbortController();setState(null);const timeout=setTimeout(()=>controller.abort(),10000);fetch('/api/video',{signal:controller.signal,cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(link=>{if(live)setState({key,link});}).catch(()=>{if(live)setState({key,link:{available:false,loadError:true}});}).finally(()=>clearTimeout(timeout));return()=>{live=false;clearTimeout(timeout);controller.abort();};},[key,revision]);
+function useVideoLink(track,externalRevision=0){
+ const key=identity(track)+'|'+externalRevision,[state,setState]=useState(null),[revision,setRevision]=useState(0);
+ useEffect(()=>{let live=true;const controller=new AbortController();setState(null);const timeout=setTimeout(()=>controller.abort(),10000);fetch('/api/video',{signal:controller.signal,cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(link=>{if(live)setState({key,link});}).catch(()=>{if(live)setState({key,link:{available:false,loadError:true}});}).finally(()=>clearTimeout(timeout));return()=>{live=false;clearTimeout(timeout);controller.abort();};},[key,revision,externalRevision]);
  return [state?.key===key?state.link:null,()=>setRevision(v=>v+1)];
 }
 
@@ -26,7 +30,7 @@ function VideoSurface({snapshot,prefs,link,offline=false,onConfigure,preview=fal
  const attachVideo=useCallback(video=>{ref.current=video;keepVideoSilent(video);},[]);
  const [duration,setDuration]=useState(null),[failed,setFailed]=useState(false),[expanded,setExpanded]=useState(false),[state,setState]=useState('loading');
  latest.current={snapshot,prefs,link,offline};
- useEffect(()=>{setFailed(false);setDuration(null);setState('loading');},[link?.url]);
+ useEffect(()=>{setFailed(false);setDuration(null);setState('loading');},[link?.url,link?.videoId]);
  useEffect(()=>{
   const video=ref.current;if(!video||!Number.isFinite(duration)||failed)return;
   let lastSeek=-Infinity,previous=null,forced=true,playingRequest=false,alive=true;
@@ -56,18 +60,24 @@ function VideoSurface({snapshot,prefs,link,offline=false,onConfigure,preview=fal
  const message={loading:'Loading video…',buffering:'Loading video…',waiting:'Waiting for the video start…',ended:'Video ended · music continues',paused:'Paused',offline:'Video paused · reconnecting',unavailable:'Video timing is unavailable',playing:'Video follows your music'}[state];
  return <dialog ref={dialog} open role={expanded?'dialog':'region'} aria-modal={expanded||undefined} aria-label={tr(expanded?'Full screen video':preview?'Video timing preview':'Video artwork')} className={'video-surface '+(expanded?'video-expanded':'')} onCancel={e=>{e.preventDefault();exitFull();}}>
   {expanded&&<header><div><strong>{track?.title}</strong><span>{track?.artist}</span></div><button onClick={exitFull}><Icon name="close"/>{tr('Back to music')}</button></header>}
-  {!link?<section className="video-unavailable" role="status">{tr('Loading video…')}</section>:!link.available||failed?<section className="video-unavailable"><strong>{tr(failed?'Video could not play':link.loadError?'Video is unavailable':'No video linked to this track')}</strong><p>{tr(failed?'Try an MP4 with H.264 video at 720p and 30 fps. Your music keeps playing.':link.loadError?'Reconnect and reopen Video Artwork. Your music is unchanged.':'Link your own MP4 or WebM in Video settings.')}</p>{onConfigure&&<button onClick={onConfigure}>{tr('Video settings')}</button>}</section>:<video ref={attachVideo} key={link.url} src={link.url} muted playsInline preload="auto" disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen" onVolumeChange={e=>keepVideoSilent(e.currentTarget)} onLoadedMetadata={e=>setDuration(e.currentTarget.duration)} onError={()=>setFailed(true)} aria-label={tr('Linked music video')}/>}
-  <footer><small role="status" aria-live="off">{tr(message)}</small>{!expanded&&link?.available&&!failed&&<button ref={fullButton} onClick={enterFull}><Icon name="expand"/>{tr('Full screen video')}</button>}</footer>
+  {!link?<section className="video-unavailable" role="status">{tr('Loading video…')}</section>:!link.available||failed?<section className="video-unavailable"><strong>{tr(failed?'Video could not play':link.loadError?'Video is unavailable':'No video linked to this track')}</strong><p>{tr(failed?'Try an MP4 with H.264 video at 720p and 30 fps. Your music keeps playing.':link.loadError?'Reconnect and reopen Video Artwork. Your music is unchanged.':'Link a local video or set up YouTube Music in Video settings.')}</p>{onConfigure&&<button onClick={onConfigure}>{tr('Video settings')}</button>}</section>:link.source==='youtube'?link.consent?<YoutubeBoundary key={link.videoId}><Suspense fallback={<p role="status">{tr('Loading YouTube video…')}</p>}><YoutubePlayer key={link.videoId} snapshot={snapshot} prefs={prefs} link={link} offline={offline} onStatus={setState}/></Suspense></YoutubeBoundary>:<section className="video-unavailable"><strong>{tr('YouTube video is disabled')}</strong><p>{tr('Allow YouTube video in setup before loading this player.')}</p>{onConfigure&&<button onClick={onConfigure}>{tr('Video settings')}</button>}</section>:<video ref={attachVideo} key={link.url} src={link.url} muted playsInline preload="auto" disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen" onVolumeChange={e=>keepVideoSilent(e.currentTarget)} onLoadedMetadata={e=>setDuration(e.currentTarget.duration)} onError={()=>setFailed(true)} aria-label={tr('Linked music video')}/>}
+  <footer><small role="status" aria-live="off">{link?.source==='youtube'?'YouTube · ':''}{tr(link?.source==='youtube'&&!link.consent?'YouTube video is disabled':message)}</small>{!expanded&&link?.available&&!failed&&(link.source!=='youtube'||link.consent)&&<button ref={fullButton} onClick={enterFull}><Icon name="expand"/>{tr('Full screen video')}</button>}</footer>
  </dialog>;
 }
 export function VideoArtwork({snapshot,prefs,offline=false,onConfigure}){
- const track=snapshot.playback?.queue?.[snapshot.playback.index],[link]=useVideoLink(track);
+ const track=snapshot.playback?.queue?.[snapshot.playback.index],[link]=useVideoLink(track,snapshot.youtube?.revision+':'+snapshot.videoRevision);
  return <VideoSurface snapshot={snapshot} prefs={prefs} link={link} offline={offline} onConfigure={onConfigure}/>;
+}
+export function VideoPreview(props){return <VideoSurface {...props} preview/>;}
+export function YoutubeSetupButton({snapshot,prefs,update,offline=false,onChanged,onOpenChange}){
+ const [open,setOpen]=useState(false);
+ const close=()=>{setOpen(false);onOpenChange?.(false);onChanged?.();};
+ return <><button disabled={open} onClick={()=>{setOpen(true);onOpenChange?.(true);}}>{tr('Set up YouTube Music')}</button>{open&&<YoutubeBoundary onClose={close}><Suspense fallback={<Modal label="Loading YouTube setup" onCancel={close}><p role="status">{tr('Loading YouTube setup…')}</p><button onClick={close}>{tr('Close')}</button></Modal>}><YoutubeWizard snapshot={snapshot} prefs={prefs} update={update} offline={offline} onClose={close} onChanged={onChanged}/></Suspense></YoutubeBoundary>}</>;
 }
 
 export function VideoSettings({snapshot,prefs,update,offline=false,onDirty,actionsRef,onTiming}){
- const track=snapshot.playback?.queue?.[snapshot.playback.index],[link,refresh]=useVideoLink(track),device=useDeviceUpdates();
- const [notice,setNotice]=useState(''),[pending,setPending]=useState(false),[draft,setDraft]=useState(null),[step,setStep]=useState('file');
+ const track=snapshot.playback?.queue?.[snapshot.playback.index],[link,refresh]=useVideoLink(track,snapshot.youtube?.revision+':'+snapshot.videoRevision),device=useDeviceUpdates();
+ const [notice,setNotice]=useState(''),[pending,setPending]=useState(false),[draft,setDraft]=useState(null),[step,setStep]=useState('file'),[youtubeOpen,setYoutubeOpen]=useState(false);
  const latest=useRef(null),source=useRef(null);latest.current={link,draft,track,token:device?.info?.controlToken};
  const dirty=!!draft&&!!link&&JSON.stringify(draft)!==JSON.stringify(profile(link,prefs));
  useEffect(()=>{onDirty?.(dirty);},[dirty,onDirty]);
@@ -83,12 +93,13 @@ export function VideoSettings({snapshot,prefs,update,offline=false,onDirty,actio
  const disabled=offline||pending||!device?.info?.controlToken;
  const changeOffset=value=>setDraft(v=>({...v,offsetSeconds:Math.max(-600,Math.min(600,Math.round(value*1000)/1000))}));
  return <section className="video-settings">
+  <YoutubeSetupButton snapshot={snapshot} prefs={prefs} update={update} offline={offline} onChanged={refresh} onOpenChange={setYoutubeOpen}/>
   <p>{tr('Link your own video to a Music Assistant track. Music Assistant keeps playing the audio; TuneBox follows it with silent video.')}</p>
   <article className="video-track"><strong>{track?.title||tr('Select a track first')}</strong><span>{track?.artist}</span></article>
   {onTiming&&<button onClick={onTiming}>{tr('Shared screen and visualizer timing')}</button>}
   <nav className="video-steps" aria-label={tr('Video setup steps')}>{[['file','1 · Choose video'],['timing','2 · Match timing'],['ready','3 · Watch']].map(([id,label])=><button key={id} disabled={id!=='file'&&!link?.available} aria-current={step===id?'step':undefined} onClick={()=>setStep(id)}>{tr(label)}</button>)}</nav>
   {step==='file'&&<><label className="video-upload">{tr(link?.available?'Replace video':'Choose video')}<input aria-label={tr('Choose video')} type="file" accept="video/mp4,video/webm" disabled={disabled||!link||!Number.isFinite(track?.duration)} onChange={e=>{upload(e.target.files?.[0]);e.target.value='';}}/></label><p>{tr('For the Pi 4, start with H.264 MP4 at 720p, 30 fps. Maximum 96 MB per video and 256 MB total.')}</p>{link?.available&&<><p>{tr('A video is linked to this track.')}</p><button onClick={()=>setStep('timing')}>{tr('Adjust video timing')}</button><button onClick={remove} disabled={disabled}>{tr('Remove linked video')}</button></>}</>}
-  {step==='timing'&&link?.available&&draft&&<>
+  {step==='timing'&&!youtubeOpen&&link?.available&&draft&&<>
    <VideoSurface key={link.url} preview snapshot={snapshot} prefs={prefs} link={{...link,sync:draft}} offline={offline}/>
    <fieldset disabled={disabled} className="video-timing"><legend>{tr('This video only')}</legend><div className="hub-tabs">{[['starts','Match starts'],['ends','Match ends']].map(([mode,label])=><button key={mode} aria-pressed={draft.mode===mode} onClick={()=>setDraft(v=>({...v,mode}))}>{tr(label)}</button>)}</div>
    {link.legacy&&<p>{tr('This video used the previous end alignment. Saving here stores its timing for this track only.')}</p>}

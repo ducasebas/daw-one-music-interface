@@ -1,4 +1,5 @@
 import {videoTiming} from '../shared/video.js';
+import {youtubeVideoId} from '../shared/youtube.js';
 import {createHash,randomUUID} from 'node:crypto';
 import {mkdirSync,readFileSync,writeFileSync,renameSync,readdirSync,statSync,statfsSync,unlinkSync,createWriteStream,existsSync} from 'node:fs';
 import {join,resolve} from 'node:path';
@@ -11,10 +12,24 @@ export class VideoLibrary {
   constructor(directory){this.directory=resolve(directory,'video-artwork');this.busy=false;}
   entries(){try{const raw=readFileSync(join(this.directory,'links.json'),'utf8');if(raw.length>65536)throw Error();const entries=JSON.parse(raw);return entries&&typeof entries==='object'&&!Array.isArray(entries)?entries:{};}catch{return {};}}
   save(entries){mkdirSync(this.directory,{recursive:true,mode:0o700});const p=join(this.directory,'links.json');writeFileSync(p+'.tmp',JSON.stringify(entries)+'\n',{mode:0o600});renameSync(p+'.tmp',p);}
-  get(track){const key=videoTrackKey(track),entry=this.entries()[key];let sync=null;try{if(entry?.sync)sync=videoTiming(entry.sync);}catch{}return {trackKey:key,available:validId(entry?.id)&&existsSync(join(this.directory,entry.id)),id:validId(entry?.id)?entry.id:null,revision:entry?.revision||0,url:validId(entry?.id)?'/api/video/file/'+entry.id:null,linkedAt:entry?.linkedAt||null,sync,legacy:!!entry&&!sync,maxBytes:LIMIT};}
+  get(track){const key=videoTrackKey(track),entry=this.entries()[key];let sync=null;try{if(entry?.sync)sync=videoTiming(entry.sync);}catch{}const youtube=entry?.source==='youtube'&&/^[\w-]{11}$/.test(entry.id||'');return {trackKey:key,available:youtube||validId(entry?.id)&&existsSync(join(this.directory,entry.id)),source:youtube?'youtube':'local',videoId:youtube?entry.id:null,disabled:entry?.disabled===true,id:youtube||validId(entry?.id)?entry.id:null,revision:entry?.revision||0,url:validId(entry?.id)?'/api/video/file/'+entry.id:null,linkedAt:entry?.linkedAt||null,sync,legacy:!!entry&&!sync,maxBytes:LIMIT};}
+  linkYoutube(track,value){
+    if(this.busy)throw Error('A video upload is in progress');
+    if(!value||Object.keys(value).some(k=>!['trackKey','video','sync'].includes(k)))throw Error('Invalid YouTube video link');
+    const key=videoTrackKey(track),id=youtubeVideoId(value.video);
+    if(!id)throw Error('Enter a YouTube video link or video ID');
+    if(value.trackKey!==key)throw Error('Track changed. Open video settings again.');
+    if(!track||track.id==='none'||!Number.isFinite(track.duration)||track.duration<=0)throw Error('Select a track with a known duration before linking a video');
+    const entries=this.entries(),old=entries[key];
+    if(!old&&Object.keys(entries).length>=64)throw Error('Remove an old video link before adding another');
+    entries[key]={source:'youtube',id,linkedAt:new Date().toISOString(),revision:(old?.revision||0)+1,sync:videoTiming(value.sync||{mode:'starts',offsetSeconds:0})};
+    this.save(entries);
+    if(validId(old?.id))try{unlinkSync(join(this.directory,old.id));}catch{}
+    return this.get(track);
+  }
   timing(track,value){if(this.busy)throw Error('A video upload is in progress');if(!value||Object.keys(value).some(k=>!['trackKey','id','revision','sync'].includes(k)))throw Error('Invalid video timing request');const entries=this.entries(),key=videoTrackKey(track),entry=entries[key];if(value.trackKey!==key||!entry||value.id!==entry.id||value.revision!==(entry.revision||0))throw Error('Track or video changed. Reload before saving video timing.');entry.sync=videoTiming(value.sync);entry.revision=(entry.revision||0)+1;this.save(entries);return this.get(track);}
   path(id){if(!validId(id)||!Object.values(this.entries()).some(e=>e.id===id))return null;return join(this.directory,id);}
-  remove(track){if(this.busy)throw Error('A video upload is in progress');const entries=this.entries(),key=videoTrackKey(track),id=entries[key]?.id;delete entries[key];this.save(entries);if(validId(id))try{unlinkSync(join(this.directory,id));}catch{};return {removed:true};}
+  remove(track,{disableAutomatic=false}={}){if(this.busy)throw Error('A video upload is in progress');const entries=this.entries(),key=videoTrackKey(track),id=entries[key]?.id;if(disableAutomatic)entries[key]={disabled:true,revision:(entries[key]?.revision||0)+1};else delete entries[key];this.save(entries);if(validId(id))try{unlinkSync(join(this.directory,id));}catch{};return {removed:true};}
   async upload(stream,track,type,length){
     if(this.busy)throw Error('A video upload is already in progress');
     if(!['video/mp4','video/webm'].includes(type))throw Error('Choose an MP4 or WebM video');

@@ -46,7 +46,7 @@ test('visualizer presents buffered PCM at the chosen delay and clears immediatel
  const plot=page.locator('.hub-audio .real-audio');await expect(plot).toHaveAttribute('data-delay-ms','600');
  await page.evaluate(()=>window.pcmPresentations=[]);await expect.poll(()=>page.evaluate(()=>window.pcmPresentations.filter(v=>v>=550).length)).toBeGreaterThanOrEqual(5);
  const delays=await page.evaluate(()=>window.pcmPresentations.slice(-5));expect(Math.min(...delays)).toBeGreaterThanOrEqual(550);expect(Math.max(...delays)).toBeLessThan(900);
- await page.request.post('/api/event',{data:{type:'pause'}});await expect(plot).toHaveAttribute('data-captured-at','');await expect(plot.getByLabel('Left RMS',{exact:true})).toContainText('−∞');
+ await page.request.post('/api/event',{data:{type:'pause'}});await expect(plot).toHaveAttribute('data-captured-at','');await expect(plot).toHaveAttribute('data-resting','true');await expect(plot.locator('.audio-readouts')).toHaveCount(0);
  await page.request.post('/api/event',{data:{type:'play'}});await expect.poll(()=>plot.getAttribute('data-captured-at')).not.toBe('');status='stale';await expect(plot).toHaveAttribute('data-captured-at','');await expect(plot).toContainText('PCM export is stale');
 });
 test('a video that fails decoding leaves music playing and shows an owned fallback',async({page})=>{

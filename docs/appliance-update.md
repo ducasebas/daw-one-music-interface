@@ -25,7 +25,7 @@ A physical cold-start/reveal test and actual Music Assistant playback remain dev
 
 GUI 3.4 implements synchronized **local video** first. Music Assistant remains the audio source; the video is the owner's local MP4/WebM. See [timing and video setup](timing-and-video.md) for the common screen delay, separate meter trim and per-track start correction.
 
-The earlier proposal to replace YouTube's audio with Music Assistant audio has been withdrawn. YouTube's [Developer Policies, III.I.7](https://developers.google.com/youtube/terms/developer-policies) prohibit separating audiovisual components and alternate audio tracks. A future YouTube mode must play the official player's own video and audio, preserve its controls, branding and ads, and act as a separate source. It is not part of this release. An optional restricted Data API key would support public search suggestions; private account access needs a separate OAuth design. Never send Music Assistant credentials to YouTube.
+YouTube was not included in GUI 3.3. The later GUI 3.6.0 review candidate uses the official embedded player, including its mute controls, and hands the Music Assistant account setup to another device. See [the current YouTube design and limitations](youtube-music.md); this is not a stream-extraction or shared-cookie implementation.
 
 ## Validation for GUI 3.3
 

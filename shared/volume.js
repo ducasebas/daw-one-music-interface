@@ -27,7 +27,7 @@ export function knobVolume(angle, limit = 100) {
     ? null
     : clampVolume(((angle + 135) / 270) * limit, limit);
 }
-export function rotateVolume(value, previous, angle, limit = 100) {
+export function rotateVolume(value, previous, angle, limit = 100, sensitivity = 1) {
   const delta = ((angle - previous + 540) % 360) - 180;
-  return Math.max(0, Math.min(limit, value + (delta / 270) * limit));
+  return Math.max(0, Math.min(limit, value + (delta / 270) * limit * sensitivity));
 }

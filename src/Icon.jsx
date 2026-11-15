@@ -1,6 +1,7 @@
 import React from "react";
 // TuneBox outline icons: one 24-unit grid, rounded caps and shared stroke tokens.
 const paths = {
+  bluetooth:"M7 7l10 10-5 5V2l5 5L7 17",
   check: "M5 12l4 4L19 6",
   clock: "M12 6v6l4 2M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0",
   lock: "M6 10h12v12H6ZM8 10V6a4 4 0 0 1 8 0v4M12 15v3",

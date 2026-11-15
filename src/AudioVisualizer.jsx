@@ -3,21 +3,24 @@ import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
 import {MeasurementDelay,visualizerDelay,playbackDiscontinuity} from '../shared/presentation-timing.js';
 const labels={'not-configured':'PCM-reader nog niet geïnstalleerd',disabled:'Echte audiometing uitgeschakeld',inactive:'Meting niet actief',sleeping:'Meting gepauzeerd · scherm slaapt',starting:'PCM-reader starten…','source-missing':'Geen Squeezelite PCM-export · controleer -v',idle:'PCM-export inactief · geen meetwaarden',stale:'PCM-export verouderd · meetwaarden onbekend',busy:'PCM-buffer verandert · nieuwe meting afwachten',incompatible:'PCM-export heeft een niet-ondersteunde ABI','reader-error':'PCM-reader niet beschikbaar',offline:'Backend offline · meetwaarden onbekend',hidden:'Meting gepauzeerd'};
-export function useAudioMeasurement(active=true){
+export function useAudioMeasurement(active=true,{paused=false}={}){
  const [audio,setAudio]=useState(null),refresh=useRef(()=>{});
- useEffect(()=>{let mounted=true,timer,controller,generation=0;
+ useEffect(()=>{let mounted=true,timer,controller,generation=0,watch=true;
   const poll=async()=>{
    const own=++generation;
    if(!active||document.hidden){setAudio(old=>({...old,status:'hidden',measurement:null}));return;}
    controller=new AbortController();const abort=setTimeout(()=>controller.abort(),2000);
-   try{const response=await fetch('/api/audio?watch=1',{cache:'no-store',signal:controller.signal});if(!response.ok)throw Error();const value=await response.json();if(mounted&&own===generation)setAudio(value);
-    if(mounted&&own===generation)timer=setTimeout(poll,value.enabled&&value.configured?100:2000);
+   try{const response=await fetch(watch?'/api/audio?watch=1':'/api/audio',{cache:'no-store',signal:controller.signal});if(!response.ok)throw Error();const value=await response.json();if(mounted&&own===generation)setAudio(value);
+    // A paused local player needs a resting meter, not an active analysis lease.
+    // Keep reading local PCM when a different, paused remote room is selected.
+    watch=!paused||value.matchesSelected===false;
+    if(mounted&&own===generation)timer=setTimeout(poll,value.enabled&&value.configured&&watch?100:2000);
    }catch{if(mounted&&own===generation){setAudio(old=>({...old,status:'offline',measurement:null}));timer=setTimeout(poll,2000);}}
    finally{clearTimeout(abort);}
   };
   const wake=()=>{generation++;clearTimeout(timer);controller?.abort();if(mounted)poll();};refresh.current=wake;document.addEventListener('visibilitychange',wake);poll();
   return()=>{mounted=false;generation++;clearTimeout(timer);controller?.abort();document.removeEventListener('visibilitychange',wake);};
- },[active]);
+ },[active,paused]);
  return {audio,refresh:useCallback(()=>refresh.current(),[])};
 }
 export function combineBands(bands,count){
@@ -78,16 +81,15 @@ export function AudioPlot({audio,mode='spectrum',bands=32,offline=false,referenc
  const visible=!!measurement||resting;
  return <section className="real-audio" data-style={mode} data-delay-ms={visualizerDelay(timing)} data-captured-at={measurement?.capturedAt??''} data-resting={resting&&!measurement} aria-label={tr('Real audio measurement')}>
  {visible?<>
-  {mode==='spectrum'?<svg className="audio-spectrum" viewBox="0 0 640 280" role="img" aria-label={tr('Audio spectrum')+' · '+bands+' '+tr('bands')} preserveAspectRatio="none">{values.map((db,i)=><rect ref={node=>motion.current[i]=node} key={i} className={db===null?'audio-band unresolved':'audio-band'} x={i*640/values.length+2} y="0" width={640/values.length-5} height="244" style={{transformOrigin:`${i*640/values.length}px 244px`,transform:'scaleY(max(.006, var(--level, 0)))'}}/>)}<text x="0" y="276">20 Hz</text><text x="290" y="276">1 kHz</text><text x="560" y="276">20 kHz</text></svg>
+  {mode==='spectrum'?<><svg className="audio-spectrum" viewBox="0 0 640 244" role="img" aria-label={tr('Audio spectrum')+' · '+bands+' '+tr('bands')} preserveAspectRatio="none">{values.map((db,i)=><rect ref={node=>motion.current[i]=node} key={i} className={db===null?'audio-band unresolved':'audio-band'} x={i*640/values.length+2} y="0" width={640/values.length-5} height="244" style={{transformOrigin:`${i*640/values.length}px 244px`,transform:'scaleY(max(.006, var(--level, 0)))'}}/>)}</svg><div className="audio-frequencies" aria-hidden="true"><span>20 Hz</span><span>1 kHz</span><span>20 kHz</span></div></>
   :<div className="audio-meter-pair">{channels.map((c,i)=><div key={i} style={{'--meter-color':i?'var(--meter-right,var(--accent))':'var(--meter-left,var(--accent))'}}>{mode==='bars'?<div className="audio-level-bar" role="meter" aria-label={tr(i?'Right PCM level':'Left PCM level')} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.max(-60,c.peakDb)}><span ref={node=>motion.current[i]=node}/><b>{i?'R':'L'}</b></div>:<svg viewBox="0 0 240 160" role="img" aria-label={tr((i?'Rechts':'Links')+' piekniveau '+number(c.peakDb)+' dBFS')}><path d="M24 124 Q120 4 216 124"/>{[0,1,2,3,4,5,6].map(t=><line key={t} className="meter-tick" x1="120" y1="26" x2="120" y2={t===6?'42':'35'} transform={`rotate(${-60+t*20} 120 132)`}/>)}<text x="16" y="110">{mode==='vu'?'−20':'−60'}</text><text x="200" y="110">{mode==='vu'?'+3':'0'}</text><line ref={node=>motion.current[i]=node} className="meter-needle" x1="120" y1="132" x2="120" y2="28" style={{transform:'rotate(calc(-60deg + var(--level, 0) * 120deg))'}}/><circle cx="120" cy="132" r="5" fill="currentColor"/><text x="120" y="158" textAnchor="middle">{i?'R':'L'}</text></svg>}</div>)}</div>}
-  <div className="audio-readouts">{channels.map((channel,i)=><span key={i} aria-label={tr(i?'Right RMS':'Left RMS')}>{i?'R':'L'} {number(channel.rmsDb)} <small>dBFS</small>{channel.clippedSamples>0&&<b> FS</b>}</span>)}</div>
   {diagnostics&&<small>{measurement?`${(measurement.sampleRate/1000).toFixed(1)} kHz · ${tr('16-bit analysis copy')}`:tr(!paused&&['pcm','silence'].includes(audio?.status)?'Aligning meters…':'Paused')}</small>}
  </>:<div className="audio-unavailable"><strong>{tr(offline?'Audio unavailable':audio?.status==='disabled'?'Audio analysis is off':'Audio analysis is unavailable')}</strong>{diagnostics&&audio?.status!=='disabled'&&<span>{tr(labels[audio?.status]||'Waiting for audio…')}</span>}</div>}
  {mode==='vu'&&diagnostics&&<small>0 VU = {reference} dBFS</small>}
  </section>;
 }
 export function AudioVisualizer({mode='spectrum',bands=32,offline=false,awake=true,reference=-18,paused=false,timing,timeline}){
- const {audio}=useAudioMeasurement(!offline&&awake);
+ const {audio}=useAudioMeasurement(!offline&&awake,{paused});
  return <AudioPlot audio={audio} mode={mode} bands={bands} offline={offline||!awake} reference={reference} paused={paused} timing={timing} timeline={timeline}/>;
 }
 export function AudioSettings({prefs,update,offline=false}){

@@ -12,4 +12,12 @@ class ArchiveTests(unittest.TestCase):
     def test_bounds(self):
         for members in [[self.member('release-manifest.json')]*2,[self.member('release-manifest.json',size=134217729)],[self.member('server/x')]]:
             with self.assertRaises(ValueError):module.validate(members)
+    def test_large_header_is_rejected_before_advancing_the_stream(self):
+        advanced=[]
+        def members():
+            yield self.member('release-manifest.json')
+            yield self.member('dist/oversized',size=134217729)
+            advanced.append('payload-read')
+        with self.assertRaises(ValueError):list(module.checked(members()))
+        self.assertEqual(advanced,[])
 if __name__=='__main__':unittest.main()

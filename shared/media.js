@@ -6,6 +6,7 @@ export const mediaKinds = [
   "playlists",
   "radios",
 ];
+export const musicSources=['all','local','spotify','tidal','ytmusic','qobuz','deezer','apple_music'];
 export function mediaImage(item) {
   const images = [
     ...(item?.image && typeof item.image === "object" ? [item.image] : []),
@@ -48,4 +49,4 @@ export function publicMedia(item, key) {
   };
 }
 
-export function mediaSources(item){const values=[item?.provider,...(item?.provider_mappings||[]).map(p=>p.provider_domain||p.provider_instance)].filter(v=>typeof v==='string').map(v=>v.toLowerCase());return [...new Set(values.map(v=>/^filesystem(?:_|$)|^local(?:_|$)|^smb(?:_|$)|^sftp(?:_|$)/.test(v)?'local':v.startsWith('spotify')?'spotify':v.startsWith('tidal')?'tidal':null).filter(Boolean))];}
+export function mediaSources(item){const values=[item?.provider,...(item?.provider_mappings||[]).map(p=>p.provider_domain||p.provider_instance)].filter(v=>typeof v==='string').map(v=>v.toLowerCase());return [...new Set(values.map(v=>/^filesystem(?:_|$)|^local(?:_|$)|^smb(?:_|$)|^sftp(?:_|$)/.test(v)?'local':v.startsWith('spotify')?'spotify':v.startsWith('tidal')?'tidal':v.startsWith('ytmusic')?'ytmusic':v.startsWith('qobuz')?'qobuz':v.startsWith('deezer')?'deezer':v.startsWith('apple_music')?'apple_music':null).filter(Boolean))];}

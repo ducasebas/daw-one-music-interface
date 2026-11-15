@@ -104,6 +104,8 @@ test("backend loss marks startup telemetry unknown and prevents saving server se
   await page
     .getByRole("button", { name: "Open system status", exact: true })
     .click();
+  // The dev server does not precache a lazy module; exercise telemetry loss after it loads.
+  await expect(page.locator(".boot-panel")).toBeVisible();
   await page.context().setOffline(true);
   await expect(
     page

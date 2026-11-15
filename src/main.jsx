@@ -1,7 +1,6 @@
 import {ApplianceHandoff} from './ApplianceHandoff.jsx';
 import {setLanguage} from '../shared/i18n.js';
 import {PhoneSetup} from './NetworkWizard.jsx';
-import {FirstStartWizard} from './FirstStartWizard.jsx';
 import {tr} from "../shared/i18n.js";
 import "./audio-analysis.css";
 import "./device-settings.css";
@@ -24,14 +23,14 @@ import {
   resolveTheme,
   themeVariables,
 } from "../shared/themes.js";
-import { SettingsPages } from "./SettingsPages.jsx";
-import { TestWorkbench } from "./TestWorkbench.jsx";
+import {SettingsPages,TestWorkbench,FirstStartWizard} from './DeferredPanels.jsx';
 import { ReferenceAside } from "./ReferenceAside.jsx";
 import { StartupScreen } from "./StartupScreen.jsx";
 import { DisplayViewport } from "./DisplayViewport.jsx";
 import { displayMode, panelProfile } from "../shared/display.js";
 import { VolumeControl } from "./VolumeControl.jsx";
 import {controlVolumeLimit} from '../shared/volume.js';
+import {connectState} from './state-connection.js';
 import "../design/brand-tokens.css";
 import "./style.css";
 import { MusicShell } from "./MusicShell.jsx";
@@ -104,48 +103,7 @@ function App() {
     }
   }, [themePreferences]);
   useEffect(() => {
-    let live = true;
-    const poll = () => {
-      if (!navigator.onLine) { if(live)setOffline(true); return; }
-      return fetch("/api/state")
-        .then((r) => {
-          if (!r.ok) throw Error();
-          return r.json();
-        })
-        .then((s) => {
-          if (live && navigator.onLine) {
-            setSnapshot(s);setFirstSnapshot(true);
-            setOffline(false);
-          }
-        })
-        .catch(() => {
-          if (live) setOffline(true);
-        });
-    };
-    const markOffline=()=>setOffline(true);
-    window.addEventListener("offline",markOffline);
-    window.addEventListener("online",poll);
-    const stream = new EventSource("/api/events");
-    stream.onmessage = (e) => {
-      if (!live || !navigator.onLine) return;
-      try {
-        setSnapshot(JSON.parse(e.data));setFirstSnapshot(true);
-        setOffline(false);
-      } catch {}
-    };
-    stream.onerror = () => {
-      // SSE may fail while HTTP remains healthy; verify through the fallback.
-      if (live) poll();
-    };
-    poll();
-    const id = setInterval(poll, 1500);
-    return () => {
-      live = false;
-      clearInterval(id);
-      stream.close();
-      window.removeEventListener("offline",markOffline);
-      window.removeEventListener("online",poll);
-    };
+    return connectState({onSnapshot:value=>{setSnapshot(value);setFirstSnapshot(true);},onOffline:setOffline});
   }, []);
   useEffect(() => {
     let lastSent = -Infinity;
@@ -178,9 +136,12 @@ function App() {
     };
   }, []);
   useEffect(() => {
-    const id = setInterval(() => setClock(Date.now()), snapshot.device.displayAwake === false ? 30000 : profile.clockMs);
+    // GUI 2 keeps its progress clock inside the seek control. Only theme schedules
+    // need an app-wide clock; legacy/test-bench presentation retains its cadence.
+    const gui2=new URLSearchParams(location.search).get('gui')==='2'&&!lab;
+    const id = setInterval(() => setClock(Date.now()), gui2?30000:snapshot.device.displayAwake === false ? 30000 : profile.clockMs);
     return () => clearInterval(id);
-  }, [snapshot.device.displayAwake]);
+  }, [snapshot.device.displayAwake,lab]);
   async function send(e) {
     if (offline) {
       setNotice("Offline preview · command not sent");
@@ -290,7 +251,6 @@ function App() {
       themePreferences={themePreferences}
       setThemePreferences={setThemePreferences}
       setSnapshot={setSnapshot}
-      position={position}
       notice={notice}
       startupPreview={startupPreview}
       onReplayStartup={()=>setStartupPreview(v=>v+1)}

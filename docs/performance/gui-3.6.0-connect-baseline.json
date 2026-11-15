@@ -1,0 +1,81 @@
+{
+  "name": "baseline",
+  "build": {
+    "id": "2026.11.13-multiroom.1",
+    "label": "GUI 3.5.0 · MULTIROOM"
+  },
+  "recordedAt": "2026-11-15T22:56:58.624Z",
+  "environment": "Chromium production build, controlled simulation, 1280x800, 4x CPU throttling; not a Pi hardware measurement",
+  "durationSeconds": 31.424,
+  "cold": {
+    "fcp": 812,
+    "resources": [
+      {
+        "path": "/appliance.js",
+        "bytes": 8524,
+        "duration": 170.30000000447035
+      },
+      {
+        "path": "/boot-status.js",
+        "bytes": 651,
+        "duration": 166.89999999850988
+      },
+      {
+        "path": "/assets/index-BU1iinnb.js",
+        "bytes": 702930,
+        "duration": 325
+      }
+    ],
+    "shellRenders": 33
+  },
+  "idle": {
+    "label": "paused",
+    "seconds": 10,
+    "commits": 59,
+    "shellRenders": 59,
+    "longTasks": 0,
+    "frameP95Ms": 16.799999999999272,
+    "frameMaxMs": 100,
+    "scriptMs": 458.85900000000015,
+    "taskMs": 885.3170000000001,
+    "layoutMs": 0,
+    "heapMiB": 5.381233215332031,
+    "apiRequests": {
+      "/api/state": 6,
+      "/api/updates": 10,
+      "/api/security/status": 1
+    }
+  },
+  "playing": {
+    "label": "playing",
+    "seconds": 10,
+    "commits": 73,
+    "shellRenders": 73,
+    "longTasks": 1,
+    "frameP95Ms": 16.700000000000728,
+    "frameMaxMs": 116.69999999999709,
+    "scriptMs": 750.0260000000001,
+    "taskMs": 1631.208,
+    "layoutMs": 108.65599999999998,
+    "heapMiB": 5.3043060302734375,
+    "apiRequests": {
+      "/api/state": 6,
+      "/api/updates": 9
+    }
+  },
+  "navigation": {
+    "samples": 8,
+    "medianMs": 114,
+    "p95Ms": 270.6000000014901,
+    "values": [
+      270.6000000014901,
+      107.59999999403954,
+      114,
+      121.69999999552965,
+      100.10000000149012,
+      116.90000000596046,
+      113.60000000149012,
+      97.60000000149012
+    ]
+  }
+}

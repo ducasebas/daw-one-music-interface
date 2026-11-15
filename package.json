@@ -13,6 +13,7 @@
     "test:offline": "playwright test -c playwright.production.config.js",
     "test:webkit": "playwright test -c playwright.webkit.config.js",
     "doctor": "node server/doctor.js",
+    "measure:gui": "node scripts/measure-gui.mjs",
     "package:pi": "npm run check && node deploy/release-bundle.js pack"
   },
   "dependencies": {

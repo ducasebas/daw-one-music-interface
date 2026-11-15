@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test";
 // Keep shared simulator audio state independent between browser journeys.
 test.beforeEach(async ({ page }) => {
+  const token=(await(await page.request.get('/api/updates')).json()).controlToken;
+  await page.request.post('/api/reset',{headers:{'X-TuneBox-Control':token},data:{kind:'preferences',confirmed:true}});
   await page.request.post("/api/event", { data: { type: "volume", value: 32 } });
   await page.request.post("/api/event", { data: { type: "mute", value: false } });
 });
@@ -80,9 +82,11 @@ test("offline settings remain available and show backend loss", async ({
   page,
 }) => {
   await reset(page);
+  await page.route("**/api/events", route=>route.abort());
   await page.goto("/?product=1");
   await page.request.post("/api/event", { data: { type: "thermal-alarm" } });
-  await page.route("**/api/**", (r) => r.abort());
+  // Backend-only loss: the dev asset server stays available; production offline is tested separately.
+  await page.route("**/api/**", route=>route.abort());
   await expect(page.locator(".status")).toContainText("OFFLINE PREVIEW");
   await settings(page);
   await page.getByLabel("Manual video correction").fill("-8");
@@ -181,7 +185,8 @@ test("display sleep keeps safe audio; screen touch wakes; offline indicators bec
     page.getByRole("button", { name: "Wake device display" }),
   ).toHaveCount(0);
   await page.request.post("/api/event", { data: { type: "amplifier-fault" } });
-  await page.route("**/api/**", (r) => r.abort());
+  // Disconnect the existing SSE connection as well as new HTTP requests.
+  await page.context().setOffline(true);
   await expect(page.getByLabel("Status LED unknown")).toBeVisible();
   await expect(page.getByLabel("Left speaker silent")).toBeVisible();
 });

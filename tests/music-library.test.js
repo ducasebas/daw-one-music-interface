@@ -47,6 +47,11 @@ test("bounded library pages hide provider URI and expose safe thumbnail IDs", as
   await lib.browse({ kind: "albums" });
   assert.equal(calls.length, 1);
 });
+test('favorites use registered server items and clear catalogue cache after acknowledgement',async()=>{
+ const {lib,calls,s}=fixture();const page=await lib.browse({});await lib.favorite(page.items[0].id,true);assert.deepEqual(calls.at(-1),['music/favorites/add_item',{item:album.uri}]);assert.equal(lib.pages.size,0);
+ await lib.favorite(page.items[0].id,false);assert.deepEqual(calls.at(-1),['music/favorites/remove_item',{media_type:'album',library_item_id:'1'}]);
+ await assert.rejects(lib.favorite('arbitrary-url',true));s.config.controlEnabled=false;await assert.rejects(lib.favorite(page.items[0].id,true));
+});
 test("media drilldown starts media on the selected player queue rather than its active source", async () => {
   const { lib, calls } = fixture();
   const page = await lib.browse({});

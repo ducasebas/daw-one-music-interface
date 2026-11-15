@@ -3,9 +3,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Icon } from "./Icon.jsx";
 import {
   clampVolume,
-  linearVolume,
   knobAngle,
-  knobVolume,
   rotateVolume,
 } from "../shared/volume.js";
 /** One shared serialized lane: at most one request plus the latest desired value. */
@@ -46,6 +44,7 @@ export function TouchVolume({
   limit = 100,
   mode = "linear",
   label = "Volume",
+  sensitivity = 'normal',
 }) {
   const [draft, setDraft] = useState(null),
     gesture = useRef(null),
@@ -123,28 +122,21 @@ export function TouchVolume({
               e.clientY - (rect.top + rect.height / 2),
             ) <
               rect.width * .22;
-          const start = centerDrag
-            ? null
-            : mode === "circular"
-              ? knobVolume(angle, max)
-              : linearVolume(
-                  e.clientX,
-                  rect.left + inset,
-                  rect.width - 2 * inset,
-                  max,
-                );
-          const v = start ?? clampVolume(shown ?? 0, max);
+          // A tap never chooses an absolute loudness: move from the current value.
+          const v = clampVolume(shown ?? 0, max);
           gesture.current = {
             id: e.pointerId,
             centerDrag,
             scale,
             inset,
             startY: e.clientY,
-            startValue: shown ?? 0,
+            startX: e.clientX,
+            startValue: v,
             rect,
             angle,
             value: v,
-            changed: start !== null && v !== (shown ?? 0),
+            changed: false,
+            gain: sensitivity==='gentle'?.5:1,
             sentAt: 0,
           };
           e.currentTarget.setPointerCapture(e.pointerId);
@@ -153,23 +145,19 @@ export function TouchVolume({
         onPointerMove={(e) => {
           const g = gesture.current;
           if (!g || g.id !== e.pointerId) return;
+          if(!g.changed&&Math.hypot(e.clientX-g.startX,e.clientY-g.startY)<4*g.scale)return;
           const a = knobAngle(e.clientX, e.clientY, g.rect);
           g.value = g.centerDrag
             ? Math.max(
                 0,
                 Math.min(
                   max,
-                  g.startValue + (g.startY - e.clientY) / (1.5 * g.scale),
+                  g.startValue + (g.startY - e.clientY) / (1.5 * g.scale) * g.gain,
                 ),
               )
             : mode === "circular"
-              ? rotateVolume(g.value, g.angle, a, max)
-              : linearVolume(
-                  e.clientX,
-                  g.rect.left + g.inset,
-                  g.rect.width - 2 * g.inset,
-                  max,
-                );
+              ? rotateVolume(g.value, g.angle, a, max, g.gain)
+              : Math.max(0,Math.min(max,g.startValue+(e.clientX-g.startX)/Math.max(1,g.rect.width-2*g.inset)*max*g.gain));
           g.angle = a;
           g.changed = true;
           setDraft(clampVolume(g.value, max));
