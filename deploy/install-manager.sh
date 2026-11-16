@@ -3,15 +3,27 @@ set -euo pipefail
 [[ $EUID == 0 ]] || { echo 'Run with sudo'; exit 1; }
 repo=$(cd "$(dirname "$0")/.." && pwd)
 [[ -d /opt/daw-one ]] || { echo 'Install TuneBox first'; exit 1; }
+getent group dawcontrol >/dev/null || groupadd --system dawcontrol
+usermod -aG dawcontrol dawone
+for tunebox_private_config in /etc/daw-one/music-assistant.token /etc/daw-one.env; do
+  if [[ -f "$tunebox_private_config" && ! -L "$tunebox_private_config" ]]; then
+    chown root:dawcontrol "$tunebox_private_config"
+    chmod 640 "$tunebox_private_config"
+  fi
+done
+install -d -m 755 /etc/tmpfiles.d
+printf 'f /run/daw-one-update.lock 0600 root root -\n' > /etc/tmpfiles.d/daw-one-manager.conf
+touch /run/daw-one-update.lock
+chmod 600 /run/daw-one-update.lock
 base=/usr/local/lib/daw-one-control
 install -d -m 755 "$base"/{deploy/manager,deploy/measurement,deploy/ota,shared,server,public} /var/lib/daw-one-update-status
 install -d -m 700 /var/lib/daw-one-manager /var/lib/daw-one-updater /etc/daw-one-updater /etc/NetworkManager/system-connections
 install -d -m 750 -o root -g dawone /etc/daw-one
-install -m 644 "$repo"/deploy/manager/{service.mjs,root-adapter.mjs,io.mjs,progress-server.mjs,progress.html,power.mjs,network.mjs,clock.mjs,dsp.mjs,local-ma.mjs,local-ma-job.mjs,measurement.mjs} "$base/deploy/manager/"
+install -m 644 "$repo"/deploy/manager/{service.mjs,root-adapter.mjs,update-lock.mjs,music-credentials.mjs,bluetooth.mjs,io.mjs,progress-server.mjs,progress.html,power.mjs,network.mjs,clock.mjs,dsp.mjs,local-ma.mjs,local-ma-job.mjs,measurement.mjs} "$base/deploy/manager/"
 install -m 644 "$repo"/dist/{appliance.js,appliance.css} "$base/public/"
 install -m 755 "$repo/deploy/manager/power-off.sh" "$base/deploy/manager/power-off.sh"
 install -m 644 "$repo"/deploy/ota/policy.mjs "$base/deploy/ota/"
-install -m 644 "$repo"/shared/{device-manager.js,update-settings.js,host-capacity.js,room-measurement.js,room-targets.js} "$base/shared/"
+install -m 644 "$repo"/shared/{device-manager.js,bluetooth.js,update-settings.js,host-capacity.js,room-measurement.js,room-targets.js} "$base/shared/"
 install -m 644 "$repo"/server/{update-status.js,ma-transport.js} "$base/server/"
 install -m 644 "$repo"/deploy/measurement/devices.mjs "$base/deploy/measurement/"
 install -m 644 "$repo"/deploy/{host-capacity.js,music-assistant-local.sh,music-assistant.compose.yml} "$base/deploy/"
@@ -25,7 +37,7 @@ After=network.target
 [Service]
 Type=simple
 User=root
-Group=dawone
+Group=dawcontrol
 ExecStart=/usr/bin/env node /usr/local/lib/daw-one-control/deploy/manager/service.mjs
 Restart=on-failure
 RuntimeDirectory=daw-one-manager
@@ -36,7 +48,7 @@ ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
 MemoryMax=128M
-ReadWritePaths=-/run/daw-one-display /etc/daw-one /etc/daw-one.env /etc/daw-one-updater /var/lib/daw-one-manager /var/lib/daw-one-updater /var/lib/daw-one-update-status /etc/NetworkManager/system-connections /var/lib/daw-one -/var/lib/daw-one-measurement
+ReadWritePaths=/run/daw-one-update.lock -/run/daw-one-display -/run/daw-one-bluetooth /etc/daw-one /etc/daw-one.env /etc/daw-one-updater /var/lib/daw-one-manager /var/lib/daw-one-updater /var/lib/daw-one-update-status /etc/NetworkManager/system-connections /var/lib/daw-one -/var/lib/daw-one-measurement
 StandardOutput=journal
 StandardError=journal
 [Install]
@@ -49,6 +61,7 @@ Wants=daw-one-manager.service
 After=daw-one-manager.service
 [Service]
 EnvironmentFile=-/etc/daw-one/connection.env
+SupplementaryGroups=dawcontrol
 UNIT
 install -d -m 700 /var/lib/daw-one
 cat > /etc/systemd/system/daw-one-local-ma-install.service <<'UNIT'

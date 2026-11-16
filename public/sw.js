@@ -1,5 +1,5 @@
 // Static shell only. Device APIs are never cached or represented as online.
-const CACHE = "daw-one-shell-v38";
+const CACHE = "daw-one-shell-v41";
 self.addEventListener("install", (event) =>
   event.waitUntil(
     (async () => {
@@ -9,9 +9,15 @@ self.addEventListener("install", (event) =>
       const paths = [
         ...html.matchAll(/(?:src|href)="([^"\s]+\.(?:js|css))"/g),
       ].map((m) => m[1]);
+      // Lazy settings must also work offline before their first visit. Fetching
+      // their immutable files here does not parse/execute them in the main UI.
+      const inventory=await fetch('/offline-assets.json',{cache:'no-store'});
+      if(!inventory.ok)throw Error('Offline asset inventory unavailable');
+      const chunks=await inventory.json();
+      if(!Array.isArray(chunks)||chunks.some(path=>typeof path!=='string'||!/^\/assets\/[a-zA-Z0-9_.-]+\.(?:js|css)$/.test(path)))throw Error('Invalid offline asset inventory');
       await cache.addAll([
         "./",
-        ...paths,
+        ...new Set([...paths,...chunks]),
         "/media/startup-still.png",
         "/media/startup.webp",
         "/fonts/Manrope-Variable.ttf",
@@ -23,8 +29,9 @@ self.addEventListener("install", (event) =>
 self.addEventListener("activate", (event) =>
   event.waitUntil(
     (async () => {
-      for (const key of await caches.keys())
-        if (key !== CACHE) await caches.delete(key);
+      const previous=(await caches.keys()).filter(key=>key!==CACHE&&/^daw-one-shell-v\d+$/.test(key)).sort((a,b)=>Number(b.split('-v')[1])-Number(a.split('-v')[1]));
+      // An already-open client may still need its previous lazy chunk URLs.
+      for(const key of previous.slice(1))await caches.delete(key);
       await self.clients.claim();
     })(),
   ),
@@ -42,6 +49,10 @@ self.addEventListener("fetch", (event) => {
     return;
   event.respondWith(
     (async () => {
+      if(/^\/assets\/[a-zA-Z0-9_.-]+\.(?:js|css)$/.test(url.pathname)){
+        const immutable=await caches.match(event.request);
+        if(immutable)return immutable;
+      }
       try {
         const response = await fetch(event.request);
         if (response.status === 200) {

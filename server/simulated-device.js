@@ -13,6 +13,7 @@ export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,o
  const manager=new DeviceManager({
   status:async()=>({managed:true,simulated:true,configured:true,channel:'preview',policy,current:current.commit,previousAvailable:!!previous,setupComplete:saved.setupComplete!==false,networkSupported:true,audioTestSupported:true,progressDisplay:false,powerOffSupported:true}),
   async perform(command,args){
+   if(command.startsWith('bluetooth-'))throw Error('Bluetooth requires the optional receiver installation on the real Pi');
    if(command==='power-off'){if(running)throw Error('Wait for the software update to finish before powering off');return {queued:true,simulated:true,powerOff:true};}
    if(command==='policy'){policy=args;save();return {saved:true,policy};}
    if(command==='measurement-status')return {supported:false,simulated:true,running:false,microphones:[],phase:'unavailable'};

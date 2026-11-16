@@ -8,6 +8,13 @@ try {
   }).trim();
 } catch {}
 export default defineConfig({
+  plugins:[{
+    name:'offline-asset-inventory',
+    generateBundle(_options,bundle){
+      const assets=Object.keys(bundle).filter(path=>path.startsWith('assets/')&&/\.(js|css)$/.test(path)).map(path=>'/'+path).sort();
+      this.emitFile({type:'asset',fileName:'offline-assets.json',source:JSON.stringify(assets)+'\n'});
+    },
+  }],
   define: {
     __DAW_BUILD_INFO__: JSON.stringify({
       revision,

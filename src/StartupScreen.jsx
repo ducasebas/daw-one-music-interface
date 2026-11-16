@@ -92,6 +92,16 @@ export function StartupScreen({
         : setTimeout(() => setElapsed(true), 2800);
     return () => clearTimeout(timer);
   }, [renderer, sourceIndex, cycle, preview, visible, foreground]);
+  useEffect(()=>{
+    if(!visible||!foreground||mode==='booting')return;
+    // Decoder retries must not hold a ready interface behind branding for half
+    // a minute. This affects presentation only, never device/audio readiness.
+    const timer=setTimeout(()=>{
+      failure.current='startup-presentation-deadline';
+      setRenderer('fallback');setElapsed(true);setVisible(false);
+    },8000);
+    return()=>clearTimeout(timer);
+  },[visible,foreground,mode,cycle,preview]);
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const change = () => {

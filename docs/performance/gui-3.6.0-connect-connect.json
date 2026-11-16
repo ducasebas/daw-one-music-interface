@@ -1,0 +1,78 @@
+{
+  "name": "connect",
+  "build": {
+    "id": "2026.11.15-connect.1",
+    "label": "GUI 3.6.0 · CONNECT"
+  },
+  "recordedAt": "2026-11-15T22:57:30.162Z",
+  "environment": "Chromium production build, controlled simulation, 1280x800, 4x CPU throttling; not a Pi hardware measurement",
+  "durationSeconds": 30.128,
+  "cold": {
+    "fcp": 612,
+    "resources": [
+      {
+        "path": "/appliance.js",
+        "bytes": 8524,
+        "duration": 85.89999999850988
+      },
+      {
+        "path": "/boot-status.js",
+        "bytes": 651,
+        "duration": 103.89999999850988
+      },
+      {
+        "path": "/assets/index-CJKYA98R.js",
+        "bytes": 641122,
+        "duration": 121.60000000149012
+      }
+    ],
+    "shellRenders": 5
+  },
+  "idle": {
+    "label": "paused",
+    "seconds": 10,
+    "commits": 2,
+    "shellRenders": 2,
+    "longTasks": 1,
+    "frameP95Ms": 16.700000000000728,
+    "frameMaxMs": 466.59999999999854,
+    "scriptMs": 140.06700000000006,
+    "taskMs": 568.6170000000002,
+    "layoutMs": 0,
+    "heapMiB": 4.4222869873046875,
+    "apiRequests": {
+      "/api/updates": 4
+    }
+  },
+  "playing": {
+    "label": "playing",
+    "seconds": 10,
+    "commits": 63,
+    "shellRenders": 22,
+    "longTasks": 0,
+    "frameP95Ms": 16.700000000000728,
+    "frameMaxMs": 33.400000000001455,
+    "scriptMs": 321.387,
+    "taskMs": 954.9989999999999,
+    "layoutMs": 89.92800000000001,
+    "heapMiB": 5.3480224609375,
+    "apiRequests": {
+      "/api/updates": 3
+    }
+  },
+  "navigation": {
+    "samples": 8,
+    "medianMs": 55,
+    "p95Ms": 70.39999999850988,
+    "values": [
+      70.39999999850988,
+      23,
+      59.599999994039536,
+      56.100000001490116,
+      55,
+      40.79999999701977,
+      36.79999999701977,
+      37.30000000447035
+    ]
+  }
+}

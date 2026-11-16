@@ -18,15 +18,15 @@ import { SkinPanel } from "./SkinPanel.jsx";
 import { presets } from "../shared/themes.js";
 import { themeVariables } from "../shared/themes.js";
 import { tracks } from "../shared/playback.js";
-import { endSync } from "../shared/video.js";
-import { SettingsPages } from "./SettingsPages.jsx";
+import {SettingsPages} from './DeferredPanels.jsx';
 import { Icon } from "./Icon.jsx";
 import { StartupScreen } from "./StartupScreen.jsx";
-import { SeekControl } from "./SeekControl.jsx";
+import { PlaybackSeekControl } from "./SeekControl.jsx";
 import { VideoArtwork } from './VideoArtwork.jsx';
 import {KeyboardField} from './TouchKeyboard.jsx';
 import {settingsSections} from '../shared/interface.js';
 import {Rooms} from './Rooms.jsx';
+import {BluetoothPairing} from './BluetoothReceiver.jsx';
 
 const duration = (n) =>
   Number.isFinite(n)
@@ -70,7 +70,6 @@ export function MusicShell({
   themePreferences,
   setThemePreferences,
   setSnapshot,
-  position,
   notice,
   startupPreview,
   onReplayStartup,
@@ -115,8 +114,8 @@ export function MusicShell({
     [message, setMessage] = useState(""),
     [pending, setPending] = useState(false),
     [pendingAction,setPendingAction]=useState(null),
-    [searchCycle,setSearchCycle]=useState(0),
-    [video, setVideo] = useState(prefs.artwork==='video');
+    [searchCycle,setSearchCycle]=useState(0);
+  const video=prefs.artwork==='video';
   const prompted=useRef(false);
   useEffect(()=>{const manager=deviceUpdates?.info?.manager;if(!prompted.current&&manager?.managed&&!manager.simulated&&manager.setupComplete===false){prompted.current=true;setSettingsPage(13);setPage("settings");}},[deviceUpdates?.info?.manager?.managed,deviceUpdates?.info?.manager?.setupComplete]);
   const [favorites, setFavorites] = useState(() => {
@@ -139,16 +138,18 @@ export function MusicShell({
       setMessage("Favorieten kunnen niet worden opgeslagen.");
     }
   }, [favorites]);
+  const bluetooth=snapshot.bluetooth,bluetoothActive=bluetooth?.active===true,phone=bluetooth?.devices?.find(d=>d.connected);
   const lock = useRef(false),
-    { playback, device } = snapshot,
+    device = snapshot.device,
+    playback = bluetoothActive?{connected:bluetooth.available,playing:false,position:0,observedAt:0,index:0,queue:[{id:'bluetooth',title:phone?.title||'Bluetooth audio',artist:phone?.artist||phone?.name||'Connect your phone',album:'',duration:null}],volume:bluetooth.volume,muted:bluetooth.volume===0,playerName:'Bluetooth',capabilities:['volume_set']}:snapshot.playback,
     current = playback.queue[playback.index],
-    simulated = snapshot.mode === "simulation",
+    simulated = !bluetoothActive&&snapshot.mode === "simulation",
     available = !offline && playback.connected,
     control =
-      available && (simulated || snapshot.musicAssistant?.controlEnabled),
+      available && (bluetoothActive || simulated || snapshot.musicAssistant?.controlEnabled),
     volume = simulated ? (snapshot.audio?.volume ?? 32) : playback.volume,
     muted = simulated ? snapshot.audio?.muted : playback.muted;
-  const volumeRequests = useVolumeRequests(send);
+  const volumeRequests = useVolumeRequests(event=>send(bluetoothActive?{...event,sourceId:bluetooth.sessionId}:event));
   const canVolume =
     control &&
     Number.isFinite(volume) &&
@@ -163,7 +164,7 @@ export function MusicShell({
       change();
     };
     if (
-      !prefs.lowPower &&
+      !wall && !prefs.lowPower &&
       document.startViewTransition &&
       !matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
@@ -183,6 +184,14 @@ export function MusicShell({
       setMessage("");
     });
   };
+  const lastButtonWake=useRef(null);
+  useEffect(()=>{
+    const id=snapshot.navigation?.buttonWakeId;
+    if(!id||id===lastButtonWake.current)return;
+    lastButtonWake.current=id;
+    setSleepPreview(false);
+    go('playing');
+  },[snapshot.navigation?.buttonWakeId]);
   const back = () => {
     navigate(() => {
       if (page === "playing") {
@@ -205,7 +214,7 @@ export function MusicShell({
   }
   async function toggleVisualizer(){
     const next=prefs.visualizer==='off'?'spectrum':prefs.visualizer==='spectrum'?'meters':'off';
-    setVideo(false);update('artwork','cover');
+    update('artwork','cover');
     if(next!=='off'&&!offline){
       try{
         const r=await fetch('/api/audio?watch=1');if(!r.ok)throw Error();const audio=await r.json();
@@ -234,16 +243,6 @@ export function MusicShell({
     }
     command({ type: "queue-add", id, next });
   };
-  const sync = endSync({
-    audioPosition: position,
-    audioDuration: current.duration,
-    videoDuration: 360,
-    correction: prefs.correction,
-    intro: 10,
-    matched: true,
-    available: true,
-    playing: playback.playing,
-  });
   const title = detail
     ? detail.album
     : page === "playing"
@@ -651,7 +650,7 @@ export function MusicShell({
             />
           </div>
         ) : (
-          <div className="m2-playing" data-visualizer={!video&&prefs.visualizer!=="off"}>
+          bluetoothActive?<div className="bluetooth-playing"><Icon name="bluetooth" size={90}/><div><h2>{playback.queue[0].title}</h2><p>{playback.queue[0].artist}</p><p>{tr('Choose music on your phone. TuneBox controls the local amplifier volume.')}</p><button onClick={()=>{setSettingsPage(13);go('settings');}}>{tr('Bluetooth settings')}</button></div></div>:<div className="m2-playing" data-visualizer={!video&&prefs.visualizer!=="off"}>
             {simulated ? (
               <Cover index={playback.index} />
             ) : (
@@ -666,13 +665,13 @@ export function MusicShell({
               <p>
                 {current.artist} <span>— {current.album}</span>
               </p>
-              <SeekControl position={position} duration={current.duration} disabled={!control||!current.duration||prefs.seekEnabled===false||(!simulated&&!playback.capabilities?.includes('seek'))} onSeek={value=>command({type:'seek',position:value})}/>
+              <PlaybackSeekControl playback={playback} duration={current.duration} disabled={!control||!current.duration||prefs.seekEnabled===false||(!simulated&&!playback.capabilities?.includes('seek'))} onSeek={value=>command({type:'seek',position:value})}/>
             </div>
             <aside>
               <div className="m2-artwork-controls"><button
                 disabled={prefs.lowPower}
                 aria-pressed={video}
-                onClick={() => {setVideo((v) => !v);update('artwork',video?'cover':'video');}}
+                onClick={() => update('artwork',video?'cover':'video')}
               >
                 <Icon name="film" size={16} />{tr(" ")}
                 {tr(prefs.lowPower ? "Video uit · Pi 3 modus" : "Video Artwork")}
@@ -680,7 +679,7 @@ export function MusicShell({
               <button aria-label={tr("Switch visualizer")} onClick={toggleVisualizer}>{tr("Visualizer ")}{tr(prefs.visualizer==="off"?"uit":prefs.visualizer==="meters"?"meters":"spectrum")}</button></div>
               {video ? (
                 <div className="m2-video">
-                  <VideoArtwork snapshot={snapshot} position={position} prefs={prefs} offline={offline} onConfigure={()=>{setSettingsPage(16);go('settings');}}/>
+                  <VideoArtwork snapshot={snapshot} prefs={prefs} offline={offline} onConfigure={()=>{setSettingsPage(16);go('settings');}}/>
                 </div>
               ) : prefs.visualizer!=="off" ? (
                 <AudioVisualizer timing={prefs.timing} timeline={playback} mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline} awake={device.displayAwake!==false&&!sleeping} paused={!playback.playing}/>
@@ -700,6 +699,7 @@ export function MusicShell({
           </div>
         )}
       </section>
+      <BluetoothPairing state={snapshot.bluetooth}/>
       <footer className="m2-player">
         <button
           className="m2-current"
@@ -723,7 +723,7 @@ export function MusicShell({
         <div className="m2-transport">
           <button
             aria-label={tr("Vorig nummer")} aria-busy={pendingAction==='previous'}
-            disabled={!control || pending}
+            disabled={bluetoothActive || !control || pending}
             onClick={() => command({ type: "previous" })}
           >
             <Icon name="previous" />
@@ -731,7 +731,7 @@ export function MusicShell({
           <button
             className="m2-play"
             aria-label={tr(playback.playing ? "Pauze" : "Afspelen")} aria-busy={['play','pause'].includes(pendingAction)}
-            disabled={!control || pending}
+            disabled={bluetoothActive || !control || pending}
             onClick={() =>
               command({ type: playback.playing ? "pause" : "play" })
             }
@@ -740,7 +740,7 @@ export function MusicShell({
           </button>
           <button
             aria-label={tr("Volgend nummer")} aria-busy={pendingAction==='next'}
-            disabled={!control || pending}
+            disabled={bluetoothActive || !control || pending}
             onClick={() => command({ type: "next" })}
           >
             <Icon name="next" />
@@ -785,8 +785,9 @@ export function MusicShell({
           target={volumeRequests.target}
           onValue={volumeRequests.request}
           disabled={!canVolume}
-          limit={controlVolumeLimit(snapshot)}
+          limit={bluetoothActive?Math.min(bluetooth.limit,controlVolumeLimit(snapshot)):controlVolumeLimit(snapshot)}
           mode={prefs.volumeControl}
+          sensitivity={snapshot.preferences?.speakers?.sensitivity}
         />
       </footer>
     </main>

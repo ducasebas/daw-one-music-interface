@@ -1,6 +1,6 @@
 import {normalizeRooms,roomLeader,roomOutputs} from '../shared/multiroom.js';
 import { createHash } from "node:crypto";
-import { mediaKinds, publicMedia,mediaSources } from "../shared/media.js";
+import { mediaKinds, publicMedia,mediaSources,musicSources } from "../shared/media.js";
 export class MusicLibrary {
   constructor(service) {
     this.service = service;
@@ -53,7 +53,7 @@ export class MusicLibrary {
     if (this.service.status !== "connected")
       throw Error("Music Assistant is niet verbonden");
     if (
-      !mediaKinds.includes(kind) || !["all","local","spotify","tidal"].includes(source) ||
+      !mediaKinds.includes(kind) || !musicSources.includes(source) ||
       !Number.isInteger(offset) ||
       offset < 0 ||
       offset > 100000 ||
@@ -89,7 +89,7 @@ export class MusicLibrary {
         media_types: ["album", "artist", "track", "playlist", "radio"],
         limit: 10,
       });
-      raw = mediaKinds
+      raw = ["tracks","albums","artists","playlists","radios"]
         .flatMap((type) => (Array.isArray(found?.[type]) ? found[type] : []))
         .slice(offset, offset + 4);
     } else if(source!=='all'){
@@ -168,5 +168,17 @@ export class MusicLibrary {
     });
     await s.refresh();
     return { ok: true }; // Mutations are never retried.
+  }
+  async favorite(id,enabled){
+    if(typeof enabled!=='boolean')throw Error('Choose a favorite state');
+    const item=this.get(id),s=this.service;
+    if(s.status!=='connected'||!s.config.controlEnabled)throw Error('Music Assistant is unavailable or read-only');
+    if(enabled)await s.transport.command('music/favorites/add_item',{item:item.uri});
+    else{
+      const local=item.provider==='library'?item:await s.transport.command('music/get_library_item',{media_type:item.media_type,item_id:item.item_id,provider_instance_id_or_domain:item.provider});
+      if(!local||local.provider!=='library'||!['string','number'].includes(typeof local.item_id))throw Error('Reload the library before removing this favorite');
+      await s.transport.command('music/favorites/remove_item',{media_type:item.media_type,library_item_id:local.item_id});
+    }
+    this.pages.clear();return {saved:true};
   }
 }

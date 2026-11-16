@@ -1,6 +1,7 @@
 import { mediaImage } from "../shared/media.js";
 import { EventEmitter } from "node:events";
 import {createHash} from 'node:crypto';
+import {youtubeTrackVideoId} from '../shared/youtube.js';
 import { MusicAssistantTransport } from "./ma-transport.js";
 import {normalizeRooms,roomLeader,roomOutputs,groupVolume} from '../shared/multiroom.js';
 const emptyTrack = {
@@ -36,6 +37,7 @@ export function normalizeMusic(
       Number.isFinite(item?.duration) && item.duration > 0
         ? item.duration
         : null,
+    youtubeVideoId: youtubeTrackVideoId(item),
   });
   const track = media ? convert(media) : emptyTrack;
   const format=media?.streamdetails?.audio_format;

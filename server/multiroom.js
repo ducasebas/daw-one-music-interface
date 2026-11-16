@@ -16,6 +16,12 @@ export class MultiroomService {
     return leader?.available?false:null;
   }
 
+  localIndependent(){
+    if(this.music?.status!=='connected')return false;
+    const local=normalizeRooms(this.music.players,this.localId).find(p=>p.isLocal);
+    return !!local?.available&&!local.parentId&&!local.members.length&&local.type!=='group';
+  }
+
   status() {
     const music = this.music;
     const rooms = normalizeRooms(music?.players, this.localId);

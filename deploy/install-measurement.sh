@@ -11,7 +11,7 @@ id dawaudiotest >/dev/null
 usermod -aG audio dawaudiotest
 base=/usr/local/lib/daw-one-control
 install -d -m 755 "$base/deploy/measurement" "$base/shared"
-install -m 644 "$repo"/deploy/measurement/{signal.mjs,capture.mjs,devices.mjs,player-state.mjs} "$base/deploy/measurement/"
+install -m 644 "$repo"/deploy/measurement/{signal.mjs,capture.mjs,devices.mjs,player-state.mjs,session.mjs} "$base/deploy/measurement/"
 install -m 644 "$repo"/shared/{room-measurement.js,room-targets.js} "$base/shared/"
 install -d -m 750 -o dawaudiotest -g dawone /var/lib/daw-one-measurement
 printf '{"output":"%s","verified":true}\n' "$output" > /etc/daw-one/measurement.json

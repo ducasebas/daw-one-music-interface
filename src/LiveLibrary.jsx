@@ -4,6 +4,7 @@ import { Artwork } from "./Artwork.jsx";
 import { Icon } from "./Icon.jsx";
 import {KeyboardField} from "./TouchKeyboard.jsx";
 import {panelProfile} from "../shared/display.js";
+import {useDeviceUpdates} from './DeviceUpdates.jsx';
 const kinds = [
   ["albums", "Albums"],
   ["artists", "Artiesten"],
@@ -21,6 +22,7 @@ export function LiveLibrary({
   state,
   onState,
 }) {
+  const device=useDeviceUpdates();
   const touch=panelProfile(location.search)==="wall-16-10";
   const {
     kind = "albums",
@@ -87,7 +89,7 @@ export function LiveLibrary({
           if (id === generation.current) setLoading(false);
         }
       },
-      view === "search" ? 300 : 0,
+      view === "search" ? 220 : 0,
     );
     return () => {
       clearTimeout(timer);
@@ -131,10 +133,17 @@ export function LiveLibrary({
       setMessage("");
     }
   }
+  async function favoriteItem(item){
+    if(lock.current)return;lock.current=true;setPending(true);setPendingId(item.id);setMessage('');
+    try{
+      const r=await fetch('/api/library/favorite',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':device?.info?.controlToken||''},body:JSON.stringify({id:item.id,enabled:!item.favorite}),signal:AbortSignal.timeout(15000)}),v=await r.json();
+      if(!r.ok)throw Error(v.error);if(mounted.current){setMessage(item.favorite?'Removed from favorites':'Added to favorites');change({refresh:Date.now()});}
+    }catch(e){if(mounted.current)setMessage(e.message||'Could not update favorite');}finally{lock.current=false;setPending(false);setPendingId(null);}
+  }
   const body = (
     <>
       {!controls&&available&&<div className="music-connection-hint" role="status"><span>{tr(snapshot.musicAssistant?.controlEnabled?'Choose your TuneBox player to start listening.':'Playback control is off. Enable it in Connections.')}</span>{onConfigure&&<button onClick={onConfigure}>{tr('Connections')}</button>}</div>}
-      <div className="live-library-bar"><label className="library-source">{tr('Source')}<select aria-label={tr('Music source')} value={source} onChange={e=>change({source:e.target.value,offset:0,parent:null,trail:[]})}><option value="all">{tr('All sources')}</option><option value="local">{tr('Local files')}</option><option value="spotify">Spotify</option><option value="tidal">Tidal</option></select></label>
+      <div className="live-library-bar"><label className="library-source">{tr('Source')}<select aria-label={tr('Music source')} value={source} onChange={e=>change({source:e.target.value,offset:0,parent:null,trail:[]})}><option value="all">{tr('All sources')}</option><option value="local">{tr('Local files')}</option><option value="spotify">Spotify</option><option value="tidal">Tidal</option><option value="ytmusic">YouTube Music</option><option value="qobuz">Qobuz</option><option value="deezer">Deezer</option><option value="apple_music">Apple Music</option></select></label>
         {parent ? (
           <button
             aria-label={tr("Terug naar bibliotheek")}
@@ -146,7 +155,7 @@ export function LiveLibrary({
             ← {parent.name}
           </button>
         ) : view === "search" ? (
-          touch ? <div className="live-search-field"><KeyboardField key={keyboardCycle} label="Search music" value={q} onChange={value=>change({q:value,offset:0})} maxLength={120} autoOpen/><button onClick={()=>{change({q:'',offset:0});setKeyboardCycle(v=>v+1);}}>{tr('New search')}</button></div> : <label className="live-search-input">
+          touch ? <div className="live-search-field"><KeyboardField key={keyboardCycle} label="Search music" value={q} onChange={value=>change({q:value,offset:0})} maxLength={120} autoOpen suggestions={q.trim()?result.items:[]} suggestionsLoading={loading&&!!q.trim()} onSuggestion={item=>["artist","album","playlist"].includes(item.type)?open(item):play(item,"replace")}/><button onClick={()=>{change({q:'',offset:0});setKeyboardCycle(v=>v+1);}}>{tr('New search')}</button></div> : <label className="live-search-input">
             <Icon name="search" />
             <input
               aria-label={tr("Zoek echte muziek")}
@@ -210,6 +219,7 @@ export function LiveLibrary({
                   </span>
                 </button>
                 <div className="live-media-actions">
+                  <button aria-label={translateFormat(item.favorite?'Remove {name} from favorites':'Add {name} to favorites',{name:item.name})} aria-pressed={item.favorite} disabled={!available||!snapshot.musicAssistant?.controlEnabled||pending} onClick={()=>favoriteItem(item)}><span aria-hidden="true">{item.favorite?'♥':'♡'}</span></button>
                   {item.type !== "artist" && (
                     <>
                       <button

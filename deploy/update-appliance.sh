@@ -103,15 +103,30 @@ JS
 else
   bash "$repo/deploy/install-manager.sh"
 fi
+# Refresh a capability that was explicitly installed before; do not install new audio services.
+if [[ -f /etc/systemd/system/daw-one-measurement.service && -f /etc/daw-one/measurement.json ]]; then
+  tunebox_measurement_output=$(node --input-type=module <<'JS'
+import {readFileSync} from 'node:fs';
+const c=JSON.parse(readFileSync('/etc/daw-one/measurement.json'));
+if(c.verified===true&&['plughw:CARD=Headphones,DEV=0','plughw:CARD=LouderRaspberry,DEV=0'].includes(c.output))console.log(c.output);
+JS
+)
+  if [[ -n "$tunebox_measurement_output" ]]; then
+    bash "$repo/deploy/install-measurement.sh" --output "$tunebox_measurement_output" --verified-output
+  fi
+fi
 node --input-type=module - "$repo" <<'JS'
 import {readFileSync,writeFileSync,renameSync} from 'node:fs';
 const m=JSON.parse(readFileSync(process.argv[2]+'/release-manifest.json'));
 const p='/var/lib/daw-one-manager/appliance.json';
-writeFileSync(p+'.tmp',JSON.stringify({schema:1,revision:1,release:m.release,installedAt:new Date().toISOString()})+'\n',{mode:0o600});renameSync(p+'.tmp',p);
+writeFileSync(p+'.tmp',JSON.stringify({schema:1,revision:2,release:m.release,installedAt:new Date().toISOString()})+'\n',{mode:0o600});renameSync(p+'.tmp',p);
 JS
 systemctl daemon-reload
 # The OTA caller keeps its progress screen alive until the candidate is healthy.
 if [[ ${TUNEBOX_APPLIANCE_OTA:-0} != 1 ]]; then
+  # Apply the new supplementary control group before the kiosk reconnects.
+  systemctl restart daw-one.service
+  curl --fail --silent --retry 8 --retry-connrefused --retry-delay 1 --max-time 2 http://127.0.0.1:3001/api/health >/dev/null
   systemctl restart daw-one-kiosk.service
 fi
 echo 'Complete device update applied. Quiet boot takes effect after the next restart. Network, Music Assistant, PCM and audio routing were preserved.'

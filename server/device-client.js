@@ -1,12 +1,11 @@
 import {createConnection} from 'node:net';
 import {randomBytes,timingSafeEqual} from 'node:crypto';
+import {sameOrigin} from './request-policy.js';
 export const controlToken=randomBytes(24).toString('hex');
 export function validDeviceRequest(request){
  const supplied=request.get('X-TuneBox-Control')||'';
  if(Buffer.byteLength(supplied)!==Buffer.byteLength(controlToken)||!timingSafeEqual(Buffer.from(supplied),Buffer.from(controlToken)))return false;
- if(request.get('Sec-Fetch-Site')==='cross-site')return false;
- const origin=request.get('Origin');
- try{return !origin||new URL(origin).host===request.get('host')||new URL(origin).host===request.get('x-forwarded-host');}catch{return false;}
+ return sameOrigin(request);
 }
 export function deviceRequest(request,socketPath=process.env.DAW_MANAGER_SOCKET||'/run/daw-one-manager/control.sock'){
  return new Promise((resolve,reject)=>{

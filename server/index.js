@@ -1,6 +1,9 @@
 import {AudioAnalysis} from "./audio-analysis.js";
 import { DisplayStore } from './display-store.js';
 import { VideoLibrary } from './video-library.js';
+import {YoutubeService} from './youtube-service.js';
+import {requestPolicy,applianceCsp} from './request-policy.js';
+import {bluetoothState} from './bluetooth-state.js';
 import { readFileSync, writeFileSync, renameSync,existsSync,rmSync } from 'node:fs';
 import {join} from 'node:path';
 import {PresencePolicy} from './presence.js';
@@ -11,7 +14,7 @@ import {roomProfile,roomDefaults} from '../shared/room-measurement.js';
 import {DeviceSecurity} from './security.js';
 import {createServer} from 'node:http';
 import {finished} from 'node:stream/promises';
-import {timingSafeEqual} from 'node:crypto';
+import {timingSafeEqual,randomUUID} from 'node:crypto';
 import {deviceRequest,controlToken,validDeviceRequest} from "./device-client.js";
 import {simulatedDevice} from "./simulated-device.js";
 import {updateStatus, deploymentCommit} from "./update-status.js";
@@ -57,16 +60,23 @@ if(music)music.setVolumeLimit(savedVolumeLimit(preferences.get(),music.defaultVo
 const audioAnalysis=new AudioAnalysis({onStatus:status=>{runtime.record(Date.now(),"audio-analysis",runtime.device.mode,"Local PCM measurement: "+status);broadcast();}});
 const multiroom = new MultiroomService(music,{localId:audioAnalysis.playerId||config.playerId});
 const library = music ? new MusicLibrary(music) : null;
+const youtube = new YoutubeService(music,stateDirectory);
 const artwork = music ? new ArtworkCache(config) : null;
 runtime.dispatch({ type: "boot-complete" });
+let buttonWakeId=null,videoRevision=0;
 const snapshot = () => {
+  const bluetooth=bluetoothState();
   let roomMeasurement=false;try{const value=JSON.parse(readFileSync('/var/lib/daw-one-measurement/status.json','utf8'));roomMeasurement=['queued','measuring-left','measuring-right','analysing'].includes(value.phase)&&Number.isFinite(value.observedAt)&&Math.abs(Date.now()-value.observedAt)<90000;}catch{}
   const state = {
     ...runtime.snapshot(),
     build: release,
+    navigation:{buttonWakeId},
+    youtube:youtube.get(),
+    bluetooth,
+    videoRevision,
     hardwareTelemetry: readSensorTelemetry(process.env.DAW_SENSOR_FILE),
     hostTelemetry:host.value,
-    activity:{roomMeasurement,roomControl:multiroom.busy||music?.controlBusy===true,localPlayback:multiroom.localPlayback()},
+    activity:{roomMeasurement,roomControl:multiroom.busy||music?.controlBusy===true,localPlayback:multiroom.localPlayback(),localIndependent:multiroom.localIndependent(),localSelected:music?.playerId===multiroom.localId,bluetoothActive:bluetooth.active},
     displaySettings: displayConfiguration,
     preferences:preferences.get(),
     setupStatus:{roomProfile:existsSync(join(stateDirectory,'room-profile.json')),audioConfigured:audioAnalysis.configured},
@@ -118,10 +128,11 @@ const broadcast = () => {
 };
 music?.on("change", broadcast);
 music?.start();
+app.use(requestPolicy);
 app.use('/api/preferences',express.json({limit:'64kb'}));
 app.use(express.json({ limit: "8kb" }));
 app.disable('x-powered-by');
-app.use((_q,r,next)=>{r.set('Permissions-Policy','camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), display-capture=(), fullscreen=()');r.set('Referrer-Policy','same-origin');next();});
+app.use((_q,r,next)=>{r.set('Permissions-Policy','camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), display-capture=(), fullscreen=()');r.set('Referrer-Policy','same-origin');r.set('X-Content-Type-Options','nosniff');r.set('X-Frame-Options','SAMEORIGIN');if(process.env.NODE_ENV==='production')r.set('Content-Security-Policy',applianceCsp);next();});
 let phoneServer=null;
 const provisionCommands=['network','wifi-scan','wifi','hotspot-stop'];
 app.use('/api',(q,r,next)=>{
@@ -132,17 +143,20 @@ app.use('/api',(q,r,next)=>{
    if(!allowed)return r.status(403).json({error:'This setup connection only controls Wi-Fi'});
    if(mutating&&path!=='/setup/pair'&&security.session(q)?.role!=='provision')return r.status(423).json({error:'Scan the setup link shown on the TuneBox'});
   }
-   const admin=mutating&&(['/device','/preferences','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/rooms'&&['group','leave','transfer','join'].includes(q.body?.action)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
+   const admin=mutating&&(['/device','/preferences','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/video/youtube','/youtube/settings','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/rooms'&&['group','leave','transfer','join'].includes(q.body?.action)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
   if(admin&&!(q.provisioning&&path==='/device'&&provisionCommands.includes(q.body?.command)))security.requireAdmin(q);
   next();
  }catch(e){r.status(e.status||423).json({error:e.message});}
 });
 let localStandby=false;
 app.post('/api/button',async(q,r)=>{
- try{let token;try{token=readFileSync('/run/daw-one-button/token','utf8').trim();}catch{return r.sendStatus(403);}const given=q.get('X-TuneBox-Button')||'';if(!/^[a-f0-9]{64}$/.test(token)||Buffer.byteLength(token)!==Buffer.byteLength(given)||!timingSafeEqual(Buffer.from(token),Buffer.from(given)))return r.sendStatus(403);
+ try{let token;try{token=readFileSync(process.env.DAW_BUTTON_TOKEN_FILE||'/run/daw-one-button/token','utf8').trim();}catch{return r.sendStatus(403);}const given=q.get('X-TuneBox-Button')||'';if(!/^[a-f0-9]{64}$/.test(token)||Buffer.byteLength(token)!==Buffer.byteLength(given)||!timingSafeEqual(Buffer.from(token),Buffer.from(given)))return r.sendStatus(403);
  if(q.body.type==='long'){await manage({command:'power-off',args:{confirmed:true}});return r.json({queued:true});}
  if(q.body.type!=='short')throw Error('Unsupported button event');
- if(preferences.get().buttonAction==='local-standby'){const state=await manage({command:'local-standby',args:{enabled:!localStandby}});localStandby=state.muted;runtime.device={...runtime.device,displayAwake:!localStandby};}else runtime.dispatch({type:runtime.device.displayAwake?'display-timeout':'activity'});
+ if(runtime.device.displayAwake===false){
+  if(localStandby){const state=await manage({command:'local-standby',args:{enabled:false}});localStandby=state.muted;}
+  runtime.dispatch({type:'activity'});buttonWakeId=randomUUID();
+ }else if(preferences.get().buttonAction==='local-standby'){const state=await manage({command:'local-standby',args:{enabled:true}});localStandby=state.muted;runtime.device={...runtime.device,displayAwake:!localStandby};}else runtime.dispatch({type:'display-timeout'});
  broadcast();r.json({ok:true,standby:localStandby});}catch(e){r.status(409).json({error:e.message});}
 });
 app.get('/api/security/status',(q,r)=>r.set('Cache-Control','no-store').json(security.status(q)));
@@ -203,7 +217,8 @@ app.post("/api/device",async(q,r)=>{
   debug.record('device',q.body.command||'unknown',{accepted:true});
  }catch(error){debug.record('device','rejected');if(q.body.command==='hotspot-start'&&phoneServer){phoneServer.close();phoneServer=null;await manage({command:'hotspot-stop',args:{}}).catch(()=>{});}r.status(409).json({error:String(error.message).slice(0,180)});}
 });
-app.get("/api/audio",(q,r)=>r.set("Cache-Control","no-store").json(audioAnalysis.get({watch:q.query.watch==="1",awake:(runtime.device.displayAwake||['vu','bars','spectrum'].includes(preferences.get().prefs.screen.mode))&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId})));
+app.get('/api/bluetooth',(_q,r)=>r.set('Cache-Control','no-store').json(bluetoothState()));
+app.get("/api/audio",(q,r)=>{if(bluetoothState().active)return r.set('Cache-Control','no-store').json({enabled:false,configured:audioAnalysis.configured,status:'source-unavailable',source:'bluetooth',simulated:false,measurement:null});r.set("Cache-Control","no-store").json(audioAnalysis.get({watch:q.query.watch==="1",awake:(runtime.device.displayAwake||['vu','bars','spectrum'].includes(preferences.get().prefs.screen.mode))&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId}));});
 app.post("/api/audio/settings",(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:"Reload TuneBox before changing measurement settings"});
  try{if(!q.body||Object.keys(q.body).length!==1||!Object.hasOwn(q.body,"enabled"))throw Error("Only enabled can be changed");audioAnalysis.setEnabled(q.body.enabled);preferences.save(preferences.get().revision,{audioEnabled:q.body.enabled});r.json(audioAnalysis.get());}catch(error){r.status(400).json({error:error.message});}
@@ -231,8 +246,15 @@ app.get('/api/display', (_q,r) => {
   r.set('Cache-Control','no-store').json({ settings:displayConfiguration, backlight });
 });
 const currentVideoTrack=()=>{const p=music?.playback||runtime.playback;return p.queue[p.index];};
-app.get('/api/video',(_q,r)=>r.set('Cache-Control','no-store').json(videos.get(currentVideoTrack())));
-app.post('/api/video/timing',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before saving video timing'});try{r.json(videos.timing(currentVideoTrack(),q.body));}catch(e){r.status(409).json({error:e.message});}});
+const currentVideoLink=()=>{
+ const track=currentVideoTrack();return youtube.videoLink(track,videos.get(track));
+};
+app.get('/api/youtube/status',async(_q,r)=>{r.set('Cache-Control','no-store');try{r.json(await youtube.status());}catch(e){r.status(503).json({error:e.message});}});
+app.get('/api/youtube/settings',(_q,r)=>r.set('Cache-Control','no-store').json(youtube.get()));
+app.post('/api/youtube/settings',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before changing YouTube settings'});try{const saved=youtube.save(q.body);broadcast();r.set('Cache-Control','no-store').json(saved);}catch(e){r.status(409).json({error:e.message});}});
+app.get('/api/video',(_q,r)=>r.set('Cache-Control','no-store').json(currentVideoLink()));
+app.post('/api/video/youtube',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before linking a YouTube video'});try{videos.linkYoutube(currentVideoTrack(),q.body);videoRevision++;broadcast();r.json(currentVideoLink());}catch(e){r.status(409).json({error:e.message});}});
+app.post('/api/video/timing',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before saving video timing'});try{const link=currentVideoLink();if(link.automatic){if(q.body.trackKey!==link.trackKey||q.body.id!==link.id||q.body.revision!==link.revision||Object.keys(q.body).some(k=>!['trackKey','id','revision','sync'].includes(k)))throw Error('Track or video changed. Reload before saving video timing.');videos.linkYoutube(currentVideoTrack(),{trackKey:link.trackKey,video:link.videoId,sync:q.body.sync});}else videos.timing(currentVideoTrack(),q.body);videoRevision++;broadcast();r.json(currentVideoLink());}catch(e){r.status(409).json({error:e.message});}});
 app.get('/api/video/file/:id',(q,r)=>{const path=videos.path(q.params.id);if(!path)return r.sendStatus(404);r.set('Cache-Control','private, max-age=600').sendFile(q.params.id,{root:videos.directory,dotfiles:'deny'});});
 app.post('/api/video/upload',async(q,r)=>{
   // A closing upstream connection can reset a proxy's upload if we reply while
@@ -242,12 +264,12 @@ app.post('/api/video/upload',async(q,r)=>{
     if(!validDeviceRequest(q))return await rejectUpload(403,'Reload TuneBox before linking a video');
     const track={...currentVideoTrack()};
     if(q.get('X-TuneBox-Track')&&q.get('X-TuneBox-Track')!==videos.get(track).trackKey)return await rejectUpload(409,'Track changed. Open video settings again.');
-    r.json(await videos.upload(q,track,q.get('Content-Type')?.split(';')[0],q.get('Content-Length')));
+    const saved=await videos.upload(q,track,q.get('Content-Type')?.split(';')[0],q.get('Content-Length'));videoRevision++;broadcast();r.json(saved);
   }catch(error){if(!r.headersSent&&!r.destroyed)r.status(400).json({error:error.message});}
 });
 app.delete('/api/video', (q,r)=>{
   if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before removing a video'});
-  try{const track=currentVideoTrack(),link=videos.get(track);if(q.get('X-TuneBox-Track')&&q.get('X-TuneBox-Track')!==link.trackKey||q.get('X-TuneBox-Video')&&q.get('X-TuneBox-Video')!==link.id)return r.status(409).json({error:'Track or video changed. Reload before removing it.'});r.json(videos.remove(track));}catch(error){r.status(409).json({error:error.message});}
+  try{const track=currentVideoTrack(),link=currentVideoLink();if(q.get('X-TuneBox-Track')&&q.get('X-TuneBox-Track')!==link.trackKey||q.get('X-TuneBox-Video')&&q.get('X-TuneBox-Video')!==link.id)return r.status(409).json({error:'Track or video changed. Reload before removing it.'});const result=videos.remove(track,{disableAutomatic:youtube.get().followCurrent});videoRevision++;broadcast();r.json(result);}catch(error){r.status(409).json({error:error.message});}
 });
 app.post('/api/display', (q,r) => {
   if (!validDeviceRequest(q)) return r.status(403).json({error:'Reload TuneBox before changing display settings'});
@@ -262,7 +284,7 @@ app.post('/api/display', (q,r) => {
 });
 app.post('/api/reset',async(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before resetting settings'});
- try{if(!['preferences','setup'].includes(q.body.kind)||q.body.confirmed!==true)throw Error('Confirm the reset');if(q.body.kind==='setup')await manage({command:'erase-setup',args:{confirmed:'ERASE TUNEBOX'}});const value=preferences.reset({setup:q.body.kind==='setup'});rmSync(join(stateDirectory,'room-profile.json'),{force:true});if(q.body.kind==='setup')debug.clear();audioAnalysis.setEnabled(false);if(q.body.kind==='setup'){security.clear(q,r);writeFileSync(join(stateDirectory,'first-start'),'1\n',{mode:0o600});}applyPreferences(value);r.json({reset:true,restarting:q.body.kind==='setup',settings:value});}catch(e){r.status(409).json({error:e.message});}
+ try{if(!['preferences','setup'].includes(q.body.kind)||q.body.confirmed!==true)throw Error('Confirm the reset');if(q.body.kind==='setup')await manage({command:'erase-setup',args:{confirmed:'ERASE TUNEBOX'}});const value=preferences.reset({setup:q.body.kind==='setup'});rmSync(join(stateDirectory,'room-profile.json'),{force:true});if(q.body.kind==='setup'){debug.clear();youtube.reset();}audioAnalysis.setEnabled(false);if(q.body.kind==='setup'){security.clear(q,r);writeFileSync(join(stateDirectory,'first-start'),'1\n',{mode:0o600});}applyPreferences(value);r.json({reset:true,restarting:q.body.kind==='setup',settings:value});}catch(e){r.status(409).json({error:e.message});}
 });
 app.post('/api/display/ready', (q,r) => {
   if (!validDeviceRequest(q)) return r.status(403).json({error:'Reload TuneBox before revealing the display'});
@@ -324,6 +346,7 @@ app.get("/api/library", async (q, r) => {
   }
 });
 async function musicControl(run){
+  if(bluetoothState().active)throw Error('Switch back to Music Assistant before using its playback controls.');
   if(multiroom.busy||music?.controlBusy)throw Error('Wait for the room change to finish.');
   music.controlBusy=true;
   try{return await run();}finally{music.controlBusy=false;}
@@ -343,6 +366,11 @@ app.post("/api/library/play", async (q, r) => {
         : e.message,
     });
   }
+});
+app.post('/api/library/favorite',async(q,r)=>{
+ if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before changing favorites'});
+ try{security.requireAdmin(q);if(!library)throw Error('Connect Music Assistant first');if(!q.body||Object.keys(q.body).some(k=>!['id','enabled'].includes(k)))throw Error('Invalid favorite request');r.json(await musicControl(()=>library.favorite(q.body.id,q.body.enabled)));}
+ catch(e){r.status(e.status||409).json({error:e.message.startsWith('Music Assistant')?'Music Assistant could not update the favorite. Reload to check its current state.':e.message});}
 });
 app.get("/api/artwork/:id", async (q, r) => {
   if (!artwork) return r.sendStatus(404);
@@ -383,11 +411,12 @@ app.get('/api/rooms',async(q,r)=>{
 });
 app.post('/api/rooms',async(q,r)=>{
   if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before changing rooms.'});
-  try{await multiroom.act(q.body);broadcast();r.set('Cache-Control','no-store').json({rooms:roomsFor(q),snapshot:snapshot()});}
+  try{if(bluetoothState().active)throw Error('Switch back to Music Assistant before changing rooms.');await multiroom.act(q.body);broadcast();r.set('Cache-Control','no-store').json({rooms:roomsFor(q),snapshot:snapshot()});}
   catch(e){r.status(e.status||400).json({error:e.message,rooms:roomsFor(q)});}
 });
 app.post("/api/player", async (q, r) => {
   try {
+    if(bluetoothState().active)throw Error('Switch back to Music Assistant before selecting another player.');
     if (!music)
       throw Error("Select live music mode in server configuration first");
     await music.selectPlayer(q.body.id);
@@ -412,6 +441,12 @@ app.post("/api/scenario", (q, r) => {
 });
 app.post("/api/event", async (q, r) => {
   try {
+    const bt=bluetoothState();
+    if(q.body.sourceId!==undefined&&q.body.sourceId!==bt.sessionId)throw Error('The audio source changed; adjust its current volume again.');
+    if(bt.active&&['play','pause','previous','next','seek','volume','mute','queue-select','queue-remove','queue-add'].includes(q.body.type)){
+      if(q.body.type!=='volume'||!Number.isInteger(q.body.value)||q.body.sourceId!==bt.sessionId||Object.keys(q.body).some(k=>!['type','value','sourceId'].includes(k)))throw Error('Control Bluetooth playback on your phone, or switch back to Music Assistant.');
+      await manage({command:'bluetooth-volume',args:{value:q.body.value,sessionId:bt.sessionId}});broadcast();return r.json(snapshot());
+    }
     if(q.body.type==='volume'&&Number.isFinite(q.body.value)&&q.body.value>preferences.get().maxVolume&&preferences.get().revision>0)throw Error('Volume exceeds the saved limit');
     if (['activity','display-timeout'].includes(q.body.type)) {
       runtime.dispatch(q.body);

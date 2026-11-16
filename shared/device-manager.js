@@ -1,16 +1,18 @@
 import {targetSettings} from './room-targets.js';
 import {roomProfile} from './room-measurement.js';
 import { updateSettings } from './update-settings.js';
+import {bluetoothCommands,bluetoothRequest} from './bluetooth.js';
 const commands=['status','measurement-status','measurement-start','measurement-stop','measurement-apply','measurement-undo','local-ma-status','local-ma-install','policy','check','install','rollback','network','wifi','wifi-scan','hotspot-start','hotspot-stop','clock','clock-set','dsp','dsp-set','erase-setup','local-standby','probe-music','save-music','audio-test','complete-setup','power-off'];
 export function validateRequest(value) {
-  if (!value || typeof value!=='object' || Array.isArray(value) || Object.keys(value).some(k=>!['command','args'].includes(k)) || !commands.includes(value.command)) throw Error('Unsupported device action');
+  if (!value || typeof value!=='object' || Array.isArray(value) || Object.keys(value).some(k=>!['command','args'].includes(k)) || ![...commands,...bluetoothCommands].includes(value.command)) throw Error('Unsupported device action');
   const args=value.args??{};
   if (!args || typeof args!=='object' || Array.isArray(args)) throw Error('Invalid device arguments');
-  const allowed={'measurement-apply':['target','confirmed'],'measurement-undo':['confirmed'],'measurement-start':['microphone','profile','confirmed'],'local-ma-install':['confirmed'],policy:['mode','windowEnabled','start','end','timeZone'],wifi:['interface','ssid','password','security','confirmed'],'wifi-scan':['interface'],'hotspot-start':['interface','confirmed'],'clock-set':['timeZone','automatic','iso'],'local-standby':['enabled'],'dsp-set':['controls'],'erase-setup':['confirmed'],'probe-music':['url','token'],'save-music':['url','token','playerId','allowControl','confirmed'],'audio-test':['device'],'power-off':['confirmed']}[value.command]||[];
+  if(bluetoothCommands.includes(value.command))return {command:value.command,args:bluetoothRequest(value.command,args)};
+  const allowed={'measurement-apply':['target','confirmed'],'measurement-undo':['confirmed'],'measurement-start':['microphone','profile','confirmed','verifyCorrection'],'local-ma-install':['confirmed'],policy:['mode','windowEnabled','start','end','timeZone'],wifi:['interface','ssid','password','security','confirmed'],'wifi-scan':['interface'],'hotspot-start':['interface','confirmed'],'clock-set':['timeZone','automatic','iso'],'local-standby':['enabled'],'dsp-set':['controls'],'erase-setup':['confirmed'],'probe-music':['url','token'],'save-music':['url','token','playerId','allowControl','confirmed'],'audio-test':['device'],'power-off':['confirmed']}[value.command]||[];
   if(Object.keys(args).some(k=>!allowed.includes(k))) throw Error('Unexpected device argument');
   if(value.command==='measurement-apply'){if(args.confirmed!==true)throw Error('Confirm applying the listening target');args.target=targetSettings(args.target);}
   if(value.command==='measurement-undo'&&args.confirmed!==true)throw Error('Confirm restoring the previous DSP values');
-  if(value.command==='measurement-start'){if(args.confirmed!==true||typeof args.microphone!=='string'||!/^hw:[0-9]{1,2},[0-9]{1,2}$/.test(args.microphone))throw Error('Confirm an audible test and select a USB microphone');args.profile=roomProfile(args.profile);}
+  if(value.command==='measurement-start'){if(args.confirmed!==true||typeof args.microphone!=='string'||!/^hw:[0-9]{1,2},[0-9]{1,2}$/.test(args.microphone)||args.verifyCorrection!==undefined&&typeof args.verifyCorrection!=='boolean')throw Error('Confirm an audible test and select a USB microphone');args.profile=roomProfile(args.profile);}
   if(value.command==='local-ma-install'&&args.confirmed!==true)throw Error('Confirm installing an additional local Music Assistant server');
   if(value.command==='power-off'&&args.confirmed!==true)throw Error('Confirm power off on this device');
   if(value.command==='local-standby'&&typeof args.enabled!=='boolean')throw Error('Choose standby on or off');
