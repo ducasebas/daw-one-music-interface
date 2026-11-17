@@ -20,11 +20,11 @@ base=/usr/local/lib/daw-one-control
 install -d -m 755 "$base"/{deploy/manager,deploy/measurement,deploy/ota,shared,server,public} /var/lib/daw-one-update-status
 install -d -m 700 /var/lib/daw-one-manager /var/lib/daw-one-updater /etc/daw-one-updater /etc/NetworkManager/system-connections
 install -d -m 750 -o root -g dawone /etc/daw-one
-install -m 644 "$repo"/deploy/manager/{starting-sound.mjs,automatic-dsp.mjs,audio-idle.mjs,sync.mjs,service.mjs,root-adapter.mjs,update-lock.mjs,music-credentials.mjs,bluetooth.mjs,io.mjs,progress-server.mjs,progress.html,power.mjs,network.mjs,clock.mjs,dsp.mjs,local-ma.mjs,local-ma-job.mjs,measurement.mjs} "$base/deploy/manager/"
+install -m 644 "$repo"/deploy/manager/{starting-sound.mjs,automatic-dsp.mjs,audio-idle.mjs,sync.mjs,service.mjs,root-adapter.mjs,update-lock.mjs,music-credentials.mjs,bluetooth.mjs,io.mjs,progress-server.mjs,progress.html,power.mjs,power-telemetry.mjs,network.mjs,clock.mjs,dsp.mjs,local-ma.mjs,local-ma-job.mjs,measurement.mjs} "$base/deploy/manager/"
 install -m 644 "$repo"/dist/{appliance.js,appliance.css} "$base/public/"
 install -m 755 "$repo/deploy/manager/power-off.sh" "$base/deploy/manager/power-off.sh"
 install -m 644 "$repo"/deploy/ota/policy.mjs "$base/deploy/ota/"
-install -m 644 "$repo"/shared/{automatic-dsp.js,dsp-settings.js,sync-calibration.js,presentation-timing.js,device-manager.js,bluetooth.js,update-settings.js,host-capacity.js,room-measurement.js,room-targets.js} "$base/shared/"
+install -m 644 "$repo"/shared/{power-settings.js,automatic-dsp.js,dsp-settings.js,sync-calibration.js,presentation-timing.js,device-manager.js,bluetooth.js,update-settings.js,host-capacity.js,room-measurement.js,room-targets.js} "$base/shared/"
 install -m 644 "$repo"/server/{update-status.js,ma-transport.js} "$base/server/"
 install -m 644 "$repo"/deploy/measurement/devices.mjs "$base/deploy/measurement/"
 install -m 644 "$repo"/deploy/{host-capacity.js,music-assistant-local.sh,music-assistant.compose.yml} "$base/deploy/"
@@ -49,7 +49,7 @@ ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
 MemoryMax=128M
-ReadWritePaths=/run/daw-one-update.lock /run/daw-one-dsp -/var/lib/daw-one-sync -/run/daw-one-display -/run/daw-one-bluetooth /etc/daw-one /etc/daw-one.env /etc/daw-one-updater /var/lib/daw-one-manager /var/lib/daw-one-updater /var/lib/daw-one-update-status /etc/NetworkManager/system-connections /var/lib/daw-one -/var/lib/daw-one-measurement
+ReadWritePaths=/run/daw-one-update.lock /run/daw-one-dsp -/var/lib/daw-one-sync -/run/daw-one-display -/run/daw-one-bluetooth /etc/daw-one-power /etc/daw-one /etc/daw-one.env /etc/daw-one-updater /var/lib/daw-one-manager /var/lib/daw-one-updater /var/lib/daw-one-update-status /etc/NetworkManager/system-connections /var/lib/daw-one -/var/lib/daw-one-measurement
 StandardOutput=journal
 StandardError=journal
 [Install]
@@ -83,6 +83,7 @@ StandardOutput=journal
 StandardError=journal
 UNIT
 bash "$repo/deploy/install-sync.sh"
+bash "$repo/deploy/install-power.sh"
 systemctl daemon-reload
 systemctl enable daw-one-manager.service
 systemctl restart daw-one-manager.service

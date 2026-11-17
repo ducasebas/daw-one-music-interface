@@ -3,6 +3,7 @@ import {join} from 'node:path';
 import {DeviceManager} from '../shared/device-manager.js';
 import {updateSettings,installationDecision} from '../shared/update-settings.js';
 import {canUpdate,activate,restorePrevious} from '../deploy/ota/policy.mjs';
+import {powerDefaults} from '../shared/power-settings.js';
 import {release} from '../shared/release.js';
 export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,onEvent=()=>{}}={}){
  let saved={};try{saved=JSON.parse(readFileSync(join(directory,'device.json'),'utf8'));}catch{}
@@ -13,6 +14,8 @@ export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,o
  const manager=new DeviceManager({
   status:async()=>({managed:true,simulated:true,configured:true,channel:'preview',policy,current:current.commit,previousAvailable:!!previous,setupComplete:saved.setupComplete!==false,networkSupported:true,audioTestSupported:true,progressDisplay:false,powerOffSupported:true}),
   async perform(command,args){
+   if(command==='power-status')return {supported:false,simulated:true,settings:{...powerDefaults},readOnly:true};
+   if(command==='power-config')throw Error('Power monitoring requires connected power devices on the Pi');
    if(command==='dsp-initialize')return {skipped:true,simulated:true,reason:'No physical Louder output in simulation'};
    if(command==='dsp-auto-status')return {supported:false,settings:{enabled:false,mode:'genre',fallback:'warm',strength:.7},simulated:true};
    if(command==='sync-status')return {supported:false,microphones:[],running:false,phase:'unavailable',simulated:true};

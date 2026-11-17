@@ -33,7 +33,7 @@ test('wifi levels require a valid connected measurement and clear on offline',()
 test('unknown PD never becomes a measured 100W pass; notifications distinguish simulation',()=>{
  const rows=wallNotifications({device:{mode:'ready',faults:[]},mode:'music-assistant'},null);
  assert.equal(rows.length,6);assert.equal(rows[2].attention,true);assert.equal(rows[2].simulated,false);
- assert.match(rows[2].detail,/onbekend/);
+ assert.match(rows[2].detail,/unavailable/);assert.equal(rows[2].action,'sensors');
  const sim=wallNotifications({mode:'simulation',device:{faults:['thermal-alarm']},boot:{checks:[{id:'power',status:'pass',reason:'100 W simulatie'}]}});
  assert.equal(sim[2].attention,true);assert.equal(sim[2].simulated,true);
 });

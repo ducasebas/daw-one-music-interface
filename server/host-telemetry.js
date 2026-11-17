@@ -1,7 +1,8 @@
+import {powerTelemetry,readPowerFile} from './power-telemetry.js';
 import {readFileSync,readdirSync} from 'node:fs';
 import {execFile} from 'node:child_process';
 import {cpus,loadavg,uptime,release as kernel,arch} from 'node:os';
-const read=p=>{try{return readFileSync(p,'utf8').slice(0,65536).trim();}catch{return '';}};
+const read=p=>{if(p==='/run/daw-one-power/readings.json')return readPowerFile();try{return readFileSync(p,'utf8').slice(0,65536).trim();}catch{return '';}};
 const list=p=>{try{return readdirSync(p).slice(0,32);}catch{return [];}};
 export function memoryTelemetry(text,pressure=''){
  const kb=k=>{const m=text.match(new RegExp('^'+k+':\\s+(\\d+)','m'));return m?Number(m[1])*1024:null;};
@@ -20,7 +21,7 @@ export class HostTelemetry{
   const fan=this.files('/sys/class/hwmon').flatMap(d=>this.files('/sys/class/hwmon/'+d).filter(n=>/^fan\d+_input$/.test(n)).map(n=>number('/sys/class/hwmon/'+d+'/'+n))).find(v=>v!==null);
   const interfaces=this.files('/sys/class/net').filter(n=>/^(eth|en|wl)[a-zA-Z0-9_-]{0,20}$/.test(n)).map(name=>({name,up:this.read('/sys/class/net/'+name+'/operstate')==='up',speedMbps:name.startsWith('wl')?null:number('/sys/class/net/'+name+'/speed')})).map(v=>({...v,speedMbps:v.speedMbps>0?v.speedMbps:null}));
   let backlight=null;try{const v=JSON.parse(this.read('/run/daw-one-display/status.json'));if(v.supported&&Number.isFinite(v.observedAt)&&now-v.observedAt<5000&&now>=v.observedAt-1000)backlight=v;}catch{}
-  let power=null;try{const v=JSON.parse(this.read('/run/daw-one-power/readings.json'));if(v.schema===1&&Number.isFinite(v.observedAt)&&now-v.observedAt<5000&&now>=v.observedAt-1000){const bounded=(n,max)=>Number.isFinite(n)&&n>=0&&n<=max?n:null;power={observedAt:v.observedAt,watts:bounded(v.watts,500),volts:bounded(v.volts,85),amps:bounded(v.amps,20),contractWatts:bounded(v.contractWatts,240),source:'External calibrated power telemetry'};}}catch{}
+  let power=null;try{const raw=this.read('/run/daw-one-power/readings.json');if(raw.length<=16384)power=powerTelemetry(JSON.parse(raw),now);}catch{}
   const temp=number('/sys/class/thermal/thermal_zone0/temp',1000);
   this.value={observedAt:now,cpu:{usagePercent:cpuPercent,load1:loadavg()[0],cores:cpus().length,temperatureC:temp},memory:memoryTelemetry(this.read('/proc/meminfo'),this.read('/proc/pressure/memory')),fanRpm:fan??null,interfaces,backlight,power,hardware:{model:this.read('/proc/device-tree/model').replace(/\0/g,'').slice(0,120)||'Unknown host',kernel:kernel(),architecture:arch(),uptimeSeconds:Math.round(uptime())},chromiumVersion:this.version};
   if(now-this.lastVersion>3600000){this.lastVersion=now;this.execute('/usr/bin/chromium',['--version'],{timeout:3000,maxBuffer:1024},(error,out)=>{if(!error&&/^Chromium [\w .+~:-]{1,130}/.test(out))this.version=out.trim().slice(0,140);});}

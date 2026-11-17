@@ -258,6 +258,7 @@ app.post("/api/audio/settings",(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:"Reload TuneBox before changing measurement settings"});
  try{if(!q.body||Object.keys(q.body).length!==1||!Object.hasOwn(q.body,"enabled"))throw Error("Only enabled can be changed");audioAnalysis.setEnabled(q.body.enabled);preferences.save(preferences.get().revision,{audioEnabled:q.body.enabled});r.json(audioAnalysis.get());}catch(error){r.status(400).json({error:error.message});}
 });
+app.get('/api/power',(_q,r)=>r.set('Cache-Control','no-store').json({power:host.value.power||null}));
 app.get("/api/health", (_q, r) =>
   r.json({
     ok: true,
