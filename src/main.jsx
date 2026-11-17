@@ -1,3 +1,4 @@
+import {calibratedPresentation} from '../shared/presentation-timing.js';
 import {ApplianceHandoff} from './ApplianceHandoff.jsx';
 import {setLanguage} from '../shared/i18n.js';
 import {PhoneSetup} from './NetworkWizard.jsx';
@@ -63,6 +64,7 @@ const profile = deviceProfile(location.search);
 function App() {
   useLanguage();
   const deviceUpdates=useDeviceUpdates();
+  const [setupDismissed,setSetupDismissed]=useState(false);
   const [firstSnapshot,setFirstSnapshot]=useState(false);
   useEffect(()=>{if(firstSnapshot&&new URLSearchParams(location.search).get('display')==='dsi-production')fetch('/api/activity',{method:'POST'}).catch(()=>{});},[firstSnapshot]);
   const [snapshot, setSnapshot] = useState({
@@ -86,7 +88,7 @@ function App() {
     [videoAvailable, setVideoAvailable] = useState(true),
     [matched, setMatched] = useState(true),
     [scenario, setScenario] = useState("Cold boot");
-  const prefs = profileSettings(storedPrefs, profile);
+  const prefs = calibratedPresentation(profileSettings(storedPrefs, profile),snapshot.sync?.active);
   useEffect(()=>{if(panelProfile(location.search)!=='wall-16-10')return;const value=snapshot.preferences;if(!value||value.revision===0)return;setPrefs(normalize(value.prefs));setThemePreferences(normalizeThemePreferences(value.themePreferences));setLanguage(value.language);},[snapshot.preferences?.revision]);
   useEffect(() => {
     try {
@@ -520,7 +522,7 @@ function App() {
     </main>
   );
   if(!firstSnapshot&&!offline&&new URLSearchParams(location.search).get('display')==='dsi-production')return <main className="appliance-boot" aria-label={tr('Starting TuneBox')}><strong>TuneBox</strong><span className="ui-spinner"/></main>;
-  if((snapshot.onboardingRequired||deviceUpdates?.info?.manager?.managed&&!deviceUpdates.info.manager.simulated&&deviceUpdates.info.manager.setupComplete===false&&!snapshot.preferences?.setupCompleted)&&!snapshot.preferences?.setupDeferred&&new URLSearchParams(location.search).get('screen')==='1')return <FirstStartWizard snapshot={snapshot} offline={offline} onComplete={()=>fetch('/api/state').then(r=>r.json()).then(setSnapshot)}/>;
+  if(!setupDismissed&&(snapshot.onboardingRequired||deviceUpdates?.info?.manager?.managed&&!deviceUpdates.info.manager.simulated&&deviceUpdates.info.manager.setupComplete===false&&!snapshot.preferences?.setupCompleted)&&!snapshot.preferences?.setupDeferred&&new URLSearchParams(location.search).get('screen')==='1')return <FirstStartWizard snapshot={snapshot} offline={offline} onComplete={()=>{setSetupDismissed(true);fetch('/api/state').then(r=>r.json()).then(setSnapshot).catch(()=>{});}}/>;
   return lab && !embedded ? (
     <TestWorkbench
       gui2={gui2}

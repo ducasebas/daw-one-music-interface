@@ -36,7 +36,7 @@ export class AudioAnalysis{
   child.stdout.on('data',chunk=>{if(this.child!==child)return;const packet=packets.push(chunk);if(!packet)return;this.lastPacket=Date.now();
    if(packet.status!==2){this.latest=null;this.change(statuses[packet.status]);return;}
    const now=Date.now();if(packet.sourceTime*1000>now+2000||now-packet.sourceTime*1000>3000){this.latest=null;this.change('stale');return;}
-   const before=performance.now();const data=this.analyser.analyse(packet.samples,packet.rate);this.latest={...data,capturedAt:now,sourceUpdatedAt:packet.sourceTime*1000,processingMs:Math.round((performance.now()-before)*100)/100};this.change(data.silent?'silence':'pcm');
+   const before=performance.now();const data=this.analyser.analyse(packet.samples,packet.rate);this.lastSampleRate=packet.rate;this.latest={...data,capturedMonotonicMs:Number(process.hrtime.bigint())/1e6,capturedAt:now,sourceUpdatedAt:packet.sourceTime*1000,processingMs:Math.round((performance.now()-before)*100)/100};this.change(data.silent?'silence':'pcm');
   });
   const failed=()=>{if(this.child===child){this.child=null;this.latest=null;this.change('reader-error');}};child.on('error',failed);child.on('exit',failed);
  }
@@ -46,7 +46,7 @@ export class AudioAnalysis{
   if(watch&&awake&&this.enabled&&this.configured){this.demandUntil=Date.now()+3000;this.start();}
   const fresh=this.child&&Date.now()-this.lastPacket<750;
   const status=!this.configured?'not-configured':!this.enabled?'disabled':!awake?'sleeping':this.child&&!fresh&&Date.now()-this.startedAt>750?'stale':this.status;
-  return {enabled:this.enabled,configured:this.configured,status,source:'squeezelite-pcm',simulated:false,playerId:this.playerId||null,matchesSelected:!!selectedId&&selectedId.toLowerCase()===this.playerId,precisionBits:16,unit:'dBFS',measurement:['pcm','silence'].includes(status)&&fresh?this.latest:null};
+  return {enabled:this.enabled,configured:this.configured,status,source:'squeezelite-pcm',simulated:false,playerId:this.playerId||null,matchesSelected:!!selectedId&&selectedId.toLowerCase()===this.playerId,sampleRate:this.lastSampleRate||null,precisionBits:16,unit:'dBFS',measurement:['pcm','silence'].includes(status)&&fresh?this.latest:null};
  }
  close(){clearInterval(this.clock);this.stop();}
 }

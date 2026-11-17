@@ -43,3 +43,9 @@
 .music2.immersive-settings>.m2-heading,.music2.immersive-settings>.m2-player{display:none}
 .music2.immersive-settings>.m2-content{grid-row:2}
 .music2 .updates-page button,.music2 .setup-wizard button{min-height:44px;border:1px solid var(--border-color);padding:8px 12px;font-size:12px}
+.install-update-action{display:flex;flex-wrap:wrap;align-items:center;gap:12px;min-width:0}
+.install-update-action:has(.update-group-confirm),.install-update-action>p{flex-basis:100%}
+.update-group-confirm{flex:1 1 100%;padding:18px;border:1px solid var(--accent);border-radius:16px;min-width:0}
+.update-group-confirm ul{display:flex;gap:10px;flex-wrap:wrap;list-style:none;padding:0}
+.update-group-confirm li{padding:8px 12px;border:1px solid var(--line);border-radius:10px;overflow-wrap:anywhere;max-width:100%}
+.update-group-confirm>div{display:flex;flex-wrap:wrap;gap:12px}

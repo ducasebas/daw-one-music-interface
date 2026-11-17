@@ -1,6 +1,6 @@
 # Development and release workflow
 
-The owner approves each update before signed publication or deployment. Approval for a previous version does not carry over. The owner requested a GitHub update for GUI 3.6.0 CONNECT on 15 November 2026; a review branch and draft pull request are authorized after local validation. Main/OTA publication and deployment still require approval of the reviewed candidate.
+The owner approves each update before signed publication or deployment. Approval for a previous version does not carry over. GUI 3.6.0 CONNECT was explicitly approved on 16 November 2026, merged as `cbb7a7e64a78cfb96dad9d07953e05e969d7edaf` and independently verified after signed preview publication. Later local controls work has no approval for a new GitHub push, merge, OTA publication or deployment.
 
 ## 1. Collect and agree the release scope
 

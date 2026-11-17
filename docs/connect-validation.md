@@ -1,6 +1,6 @@
 # GUI 3.6.0 CONNECT — review candidate
 
-Candidate `2026.11.15-connect.1`, shell cache v41. Published baseline GUI 3.5.0 at `c6265f54125cd5547bf2649c09eaf06eee6b58da`. The owner requested a GitHub review update; main, signed OTA publication and deployment remain unapproved.
+Candidate `2026.11.15-connect.1`, shell cache v41. Published baseline GUI 3.5.0 at `c6265f54125cd5547bf2649c09eaf06eee6b58da`. The owner approved this reviewed candidate on 16 November 2026. It was published to preview at merge commit `cbb7a7e64a78cfb96dad9d07953e05e969d7edaf` after successful Verify/signing workflows; public signature, complete inventory, runtime-source correspondence and channel selection were independently checked. Physical Pi acceptance remains separate. Later local work requires new approval.
 
 ## Changes to review
 

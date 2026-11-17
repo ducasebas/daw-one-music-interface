@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ $EUID == 0 ]] || { echo 'Run with sudo'; exit 1; }
+repo=$(cd "$(dirname "$0")/.." && pwd)
+base=/usr/local/lib/daw-one-control
+install -d -m 755 "$base/deploy/sync" "$base/deploy/measurement" "$base/shared"
+install -m 644 "$repo"/deploy/sync/{capture.mjs,session.mjs} "$base/deploy/sync/"
+install -m 644 "$repo/deploy/measurement/devices.mjs" "$base/deploy/measurement/"
+install -m 644 "$repo"/shared/{sync-calibration.js,presentation-timing.js} "$base/shared/"
+install -d -m 750 -o dawaudiotest -g dawone /var/lib/daw-one-sync
+cat > /etc/systemd/system/daw-one-sync.service <<'UNIT'
+[Unit]
+Description=TuneBox explicitly requested PCM and USB microphone timing calibration
+After=sound.target daw-one.service
+[Service]
+Type=oneshot
+User=dawaudiotest
+Group=dawone
+SupplementaryGroups=audio
+ExecStart=/usr/bin/env node /usr/local/lib/daw-one-control/deploy/sync/capture.mjs
+TimeoutStartSec=25
+TimeoutStopSec=5
+UMask=0027
+MemoryMax=128M
+CPUQuota=100%
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/lib/daw-one-sync
+RestrictAddressFamilies=AF_INET AF_UNIX
+StandardOutput=journal
+StandardError=journal
+UNIT
+systemctl daemon-reload
+echo 'On-demand USB synchronization support installed. No microphone capture was started.'

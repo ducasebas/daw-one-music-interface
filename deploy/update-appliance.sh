@@ -119,7 +119,7 @@ node --input-type=module - "$repo" <<'JS'
 import {readFileSync,writeFileSync,renameSync} from 'node:fs';
 const m=JSON.parse(readFileSync(process.argv[2]+'/release-manifest.json'));
 const p='/var/lib/daw-one-manager/appliance.json';
-writeFileSync(p+'.tmp',JSON.stringify({schema:1,revision:2,release:m.release,installedAt:new Date().toISOString()})+'\n',{mode:0o600});renameSync(p+'.tmp',p);
+writeFileSync(p+'.tmp',JSON.stringify({schema:1,revision:3,release:m.release,installedAt:new Date().toISOString()})+'\n',{mode:0o600});renameSync(p+'.tmp',p);
 JS
 systemctl daemon-reload
 # The OTA caller keeps its progress screen alive until the candidate is healthy.

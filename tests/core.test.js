@@ -169,6 +169,7 @@ test("settings whitelist, clamp and safe defaults", () => {
     }),
     {
       timing: {screenDelayMs:0,visualizerTrimMs:0},
+      syncAutomatic: false,
       seekEnabled: true,
       screen: { mode: "clock", latitude: null, longitude: null },
       startupAnimation: "auto",

@@ -1,0 +1,9 @@
+import React from 'react';
+import {tr} from '../shared/i18n.js';
+export function WizardShell({title,steps=[],step=0,busy=false,allowExitWhileBusy=false,notice='',onClose,onBack,onNext,nextLabel='Continue',nextDisabled=false,onSkip,children}){
+ return <section className="first-start setup-journey" role="dialog" aria-label={tr(title)} aria-busy={busy}>
+  <header><div><small>DAW TuneBox</small><h2>{tr(title)}</h2></div><button disabled={busy&&!allowExitWhileBusy} onClick={onClose}>{tr('Finish later')}</button></header>
+  <ol className="journey-steps" aria-label={tr('Setup steps')}>{steps.map((name,i)=><li key={name} aria-current={i===step?'step':undefined}><b>{i+1}</b><span>{tr(name)}</span></li>)}</ol>
+  <div className="first-start-body">{children}</div><footer><span role="status">{busy&&<span className="ui-spinner"/>}{tr(notice||(busy?'Working…':''))}</span>{onBack&&<button disabled={busy} onClick={onBack}>{tr('Back')}</button>}{onSkip&&<button disabled={busy&&!allowExitWhileBusy} onClick={onSkip}>{tr('Skip for now')}</button>}{onNext&&<button disabled={busy||nextDisabled} onClick={onNext}>{tr(nextLabel)}</button>}</footer>
+ </section>;
+}

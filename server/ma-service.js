@@ -1,3 +1,4 @@
+import {trackGenres} from '../shared/automatic-dsp.js';
 import { mediaImage } from "../shared/media.js";
 import { EventEmitter } from "node:events";
 import {createHash} from 'node:crypto';
@@ -38,6 +39,7 @@ export function normalizeMusic(
         ? item.duration
         : null,
     youtubeVideoId: youtubeTrackVideoId(item),
+    genres: trackGenres(item?.media_item?.metadata?.genres||item?.media_item?.genres||item?.metadata?.genres||item?.genres),
   });
   const track = media ? convert(media) : emptyTrack;
   const format=media?.streamdetails?.audio_format;

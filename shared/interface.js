@@ -22,7 +22,7 @@ export function settingsAttention(snapshot={},updates={},security={}) {
   if(updates.available)items.push({id:'update',section:'updates',title:'Update available',detail:updates.available.release,icon:'update'});
   if(updates.status==='error')items.push({id:'update-error',section:'updates',title:'Update needs attention',detail:updates.error||'Open Updates to retry.',icon:'alert'});
   if(security.enabled&&!security.unlocked)items.push({id:'unlock',section:'security',title:'Unlock settings',detail:'Your settings session has ended. Music remains available.',icon:'lock'});
-  if(snapshot.onboardingRequired||updates.manager?.managed&&!updates.manager?.simulated&&updates.manager.setupComplete===false)items.push({id:'setup',section:'connections',title:'Complete setup',detail:'Connect Music Assistant and choose your player.',icon:'wifi'});
+  if(snapshot.onboardingRequired||updates.manager?.managed&&!updates.manager?.simulated&&updates.manager.setupComplete===false)items.push({id:'setup',section:'connections',title:'Complete setup',detail:'Add your connections, then finish or open an optional setup wizard.',icon:'wifi'});
   if(snapshot.mode==='music-assistant'&&(!snapshot.musicAssistant?.connected||!snapshot.playback?.connected))items.push({id:'music',section:'connections',title:'Check Music Assistant',detail:'The music server or selected player is unavailable.',icon:'speaker'});
   if(snapshot.device?.faults?.length)items.push({id:'hardware',section:'sensors',title:'Hardware alert',detail:snapshot.device.faults.join(', '),icon:'alert'});
   // Optional measurements are suggestions, never faults or mandatory calibration.

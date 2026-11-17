@@ -6,6 +6,11 @@ export function presentationTiming(input={}){
  return {screenDelayMs:bound(v.screenDelayMs,0,2000),visualizerTrimMs:bound(v.visualizerTrimMs,-500,500)};
 }
 export function visualizerDelay(input){const t=presentationTiming(input);return Math.max(0,t.screenDelayMs+t.visualizerTrimMs);}
+export function calibratedPresentation(prefs,profile){
+ if(!prefs.syncAutomatic||!profile?.valid||!profile.timing)return prefs;
+ const measured=presentationTiming(profile.timing),manual=presentationTiming(prefs.timing);
+ return {...prefs,timing:presentationTiming({...measured,visualizerTrimMs:measured.visualizerTrimMs+(Number.isFinite(profile.fineMs)?profile.fineMs:0)}),videoTiming:profile.useVideo?measured:manual};
+}
 /** Small bounded queue of measurements, with monotonic client arrival times. */
 export class MeasurementDelay {
  constructor(){this.clear();}

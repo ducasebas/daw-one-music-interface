@@ -1,8 +1,12 @@
+import {initializeStartingSound} from './starting-sound.mjs';
+import {playbackHardwareIdle} from './audio-idle.mjs';
 import {existsSync,readFileSync,writeFileSync,renameSync,chmodSync,rmSync} from 'node:fs';
 import {execFile,spawn} from 'node:child_process';
 import {promisify} from 'node:util';
 import {updateSettings} from '../../shared/update-settings.js';
 import {canUpdate} from '../ota/policy.mjs';
+import {AutomaticDsp} from './automatic-dsp.mjs';
+import {syncController} from './sync.mjs';
 import {MusicAssistantTransport} from '../../server/ma-transport.js';
 import {atomicJson,readJson,boundedJson} from './io.mjs';
 import {powerController} from './power.mjs';
@@ -35,16 +39,31 @@ async function trigger(action){
  atomicJson(base+'/request.json',{action});
  try{await run('/usr/bin/systemctl',['start','--no-block','daw-one-update.service']);}catch{rmSync(base+'/request.json',{force:true});throw Error('Update service unavailable; rerun the OTA installer');}return {queued:true};
 }
-export function rootAdapter(){const power=powerController({run}),network=networkController({run}),clock=clockController({run}),dsp=dspController({run}),localMa=localMaController({run}),measurement=measurementController({run}),bluetooth=bluetoothController({run});const adapter={
+export function rootAdapter(){const power=powerController({run}),network=networkController({run}),clock=clockController({run}),dsp=dspController({run}),localMa=localMaController({run}),measurement=measurementController({run}),bluetooth=bluetoothController({run});
+ const localState=async()=>boundedJson(await fetch('http://127.0.0.1:3001/api/state',{signal:AbortSignal.timeout(3000)}));
+ const automatic=new AutomaticDsp({dsp,context:async()=>{const s=await localState();return {ready:s.device?.mode==='ready'&&!s.device?.faults?.length&&!s.activity?.roomMeasurement&&!s.activity?.syncCalibration&&!s.activity?.roomControl&&!existsSync('/var/lib/daw-one-manager/standby.json')&&(s.bluetooth?.active||s.mode!=='music-assistant'||s.localAudio?.available===true),playing:s.localAudio?.playing===true,selectedLocal:s.localAudio?.ready===true,bluetooth:s.bluetooth?.active===true,trackKey:s.localAudio?.trackKey||null,genres:s.localAudio?.genres||[]};}});
+ atomicJson('/run/daw-one-dsp/status.json',automatic.publicStatus(),0o644);
+ const sync=syncController({run,context:async()=>boundedJson(await fetch('http://127.0.0.1:3001/api/sync/context',{signal:AbortSignal.timeout(3000)}))});
+ const adapter={
  async status(){
   const config=readJson(configPath,{}),installed=readJson(base+'/installed.json',{}),setup=readJson('/var/lib/daw-one-manager/setup.json',{});
-  return {managed:true,simulated:false,configured:existsSync('/etc/daw-one-updater/public.pem')&&['preview','stable'].includes(config.channel),channel:config.channel||null,policy:updateSettings(config.policy||{}),current:installed.commit||null,previousAvailable:typeof installed.previous==='string'&&existsSync(installed.previous),setupComplete:setup.complete===true,networkSupported:existsSync('/usr/bin/nmcli'),audioTestSupported:existsSync('/usr/bin/aplay'),progressDisplay:true,appliance:readJson('/var/lib/daw-one-manager/appliance.json',null),powerOffSupported:power.supported(),powerOffQueued:power.queued};
+  return {automaticDsp:automatic.publicStatus(),managed:true,simulated:false,configured:existsSync('/etc/daw-one-updater/public.pem')&&['preview','stable'].includes(config.channel),channel:config.channel||null,policy:updateSettings(config.policy||{}),current:installed.commit||null,previousAvailable:typeof installed.previous==='string'&&existsSync(installed.previous),setupComplete:setup.complete===true,networkSupported:existsSync('/usr/bin/nmcli'),audioTestSupported:existsSync('/usr/bin/aplay'),progressDisplay:true,appliance:readJson('/var/lib/daw-one-manager/appliance.json',null),powerOffSupported:power.supported(),powerOffQueued:power.queued};
  },
  async perform(command,args){
   if(power.queued)throw Error('Power off already queued');
+  if(command==='rollback'&&automatic.state.settings.enabled)throw Error('Switch automatic sound to Manual before rolling back');
+  if(command==='sync-status')return sync.status();
+  if(command==='sync-stop')return sync.stop();
+  if(command==='sync-start'){if(bluetooth.active()||(await measurement.status()).running)throw Error('Finish other audio activity before synchronization');return sync.start(args);}
+  if(command==='dsp-initialize')return initializeStartingSound({dsp,preference:(await localState()).preferences?.speakers?.voicing,blocked:automatic.state.settings.enabled||existsSync('/var/lib/daw-one-manager/standby.json')||(await sync.status()).running||(await measurement.status()).running});
+  if(command==='dsp-auto-status')return automatic.status();
+  if(command==='dsp-auto-config'){if((await sync.status()).running||(await measurement.status()).running)throw Error('Finish microphone capture before changing automatic sound');const value=await automatic.configure(args.settings);if(!args.settings.enabled&&!existsSync('/var/lib/daw-one-manager/starting-sound.json'))atomicJson('/var/lib/daw-one-manager/starting-sound.json',{status:'manual-selected',at:new Date().toISOString()});return value;}
+  if(command==='dsp-auto-update'){if((await sync.status()).running||(await measurement.status()).running)return {...automatic.publicStatus(),deferred:true};return automatic.update();}
+  if(['dsp-set','measurement-start','measurement-apply','measurement-undo'].includes(command)&&automatic.state.settings.enabled)throw Error('Switch automatic sound to Manual before changing the baseline or measuring the room');
+  if(['dsp-set','measurement-start','measurement-apply','measurement-undo','bluetooth-start','save-music','erase-setup'].includes(command)&&(await sync.status()).running)throw Error('Finish synchronization before changing the audio path');
   if(bluetooth.active()&&['dsp-set','local-standby','measurement-start','measurement-apply','measurement-undo','save-music','erase-setup'].includes(command))throw Error('Switch back to Music Assistant before changing this audio setup');
   if(['dsp-set','local-standby','measurement-apply','measurement-undo','local-ma-install'].includes(command)&&(await measurement.status()).running)throw Error('Stop the room measurement before changing audio hardware or installing a server');
-  if(command==='power-off'){if(bluetooth.active())await bluetooth.stop({restartPlayers:false});return power.queue();}
+  if(command==='power-off'){if((await sync.status()).running)await sync.stop();if(bluetooth.active())await bluetooth.stop({restartPlayers:false});return power.queue();}
   if(command.startsWith('bluetooth-')){
    if((await measurement.status()).running)throw Error('Finish the microphone measurement before switching sources');
    if(command==='bluetooth-stop')return bluetooth.stop();
@@ -53,10 +72,10 @@ export function rootAdapter(){const power=powerController({run}),network=network
    if(command==='bluetooth-confirm')return bluetooth.confirm(args);
    if(command==='bluetooth-forget')return bluetooth.device('forget',args.address);
    if(command==='bluetooth-disconnect')return bluetooth.device('disconnect',args.address);
-   const state=await boundedJson(await fetch('http://127.0.0.1:3001/api/state',{signal:AbortSignal.timeout(3000)})),limit=state.musicAssistant?.volumeLimit;
+   const state=await localState(),limit=state.musicAssistant?.volumeLimit??(state.preferences?.prefs?.volumeLimitConfigured===true?state.preferences.maxVolume:Math.min(40,state.preferences?.maxVolume??40));
    if(!Number.isInteger(limit)||limit<0||limit>100)throw Error('Read the saved TuneBox volume limit first');
    if(command==='bluetooth-volume')return bluetooth.volume(args.value,limit,args.sessionId);
-   if(command==='bluetooth-start'){if(!canUpdate(state)||state.activity?.localIndependent!==true||state.activity?.localSelected!==true)throw Error('Pause music, select the local TuneBox player and leave its group before switching sources');return bluetooth.start(limit);}
+   if(command==='bluetooth-start'){if(!canUpdate(state)||(state.mode==='music-assistant'?state.activity?.localIndependent!==true||state.activity?.localSelected!==true:!playbackHardwareIdle()))throw Error('Pause the local output and leave its group before switching sources. Without Music Assistant, the ALSA output must be idle.');return bluetooth.start(limit);}
   }
   if(command==='policy'){const config=readJson(configPath,{});atomicJson(configPath,{...config,policy:args});return {saved:true,policy:args};}
   if(['check','install','rollback'].includes(command)){
@@ -80,12 +99,12 @@ export function rootAdapter(){const power=powerController({run}),network=network
   if(command==='local-standby')return dsp.standby(args.enabled);
   if(command==='dsp-set')return dsp.set(args.controls);
   if(command==='erase-setup'){
-   if(!await idle())throw Error('Stop playback before erasing setup');if((await measurement.status()).running)throw Error('Stop the room measurement before erasing setup');for(const path of ['/var/lib/daw-one-measurement/status.json','/var/lib/daw-one-measurement/request.json','/var/lib/daw-one-measurement/baseline.json'])rmSync(path,{force:true});
+   if(!await idle())throw Error('Stop playback before erasing setup');if((await measurement.status()).running)throw Error('Stop the room measurement before erasing setup');if(automatic.state.settings.enabled)await automatic.configure({...automatic.state.settings,enabled:false});for(const path of ['/var/lib/daw-one-measurement/status.json','/var/lib/daw-one-measurement/request.json','/var/lib/daw-one-measurement/baseline.json'])rmSync(path,{force:true});
    const previous=existsSync('/etc/daw-one/connection.env')?readFileSync('/etc/daw-one/connection.env','utf8'):'';
    const clean=setEnvironment(previous,{DAW_PLAYBACK_MODE:'simulation',MA_URL:'',MA_TOKEN:'',MA_TOKEN_FILE:'',MA_PLAYER_ID:'',MA_ALLOW_CONTROL:'false'});
    if(existsSync('/etc/daw-one.env'))writeFileSync('/etc/daw-one.env',setEnvironment(readFileSync('/etc/daw-one.env','utf8'),{DAW_PLAYBACK_MODE:'simulation',MA_URL:'',MA_TOKEN:'',MA_TOKEN_FILE:'',MA_PLAYER_ID:'',MA_ALLOW_CONTROL:'false'}),{mode:0o640});
    writeFileSync('/etc/daw-one/connection.env',clean,{mode:0o640});await run('/usr/bin/chown',['root:dawone','/etc/daw-one/connection.env']);rmSync('/etc/daw-one/music-assistant.token',{force:true});
-   atomicJson('/var/lib/daw-one-manager/setup.json',{complete:false});setTimeout(()=>run('/usr/bin/systemctl',['restart','--no-block','daw-one.service']).catch(()=>{}),1200);return {erased:true,restarting:true};
+   rmSync('/var/lib/daw-one-manager/starting-sound.json',{force:true});atomicJson('/var/lib/daw-one-manager/setup.json',{complete:false});setTimeout(()=>run('/usr/bin/systemctl',['restart','--no-block','daw-one.service']).catch(()=>{}),1200);return {erased:true,restarting:true};
   }
   if(command==='wifi'){
    await connectionChange(args);return network.connect(args);
@@ -112,4 +131,4 @@ export function rootAdapter(){const power=powerController({run}),network=network
   if(command==='complete-setup'){atomicJson('/var/lib/daw-one-manager/setup.json',{complete:true,completedAt:new Date().toISOString()});return {saved:true};}
   throw Error('Unsupported action');
  }
-};return {status:()=>adapter.status(),perform:(command,args)=>['bluetooth-start','measurement-start'].includes(command)?withUpdateLock(()=>adapter.perform(command,args)):adapter.perform(command,args)};}
+};return {status:()=>adapter.status(),perform:(command,args)=>['bluetooth-start','measurement-start','sync-start','dsp-initialize','dsp-auto-config','dsp-auto-update'].includes(command)?withUpdateLock(()=>adapter.perform(command,args)):adapter.perform(command,args)};}

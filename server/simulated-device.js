@@ -13,6 +13,11 @@ export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,o
  const manager=new DeviceManager({
   status:async()=>({managed:true,simulated:true,configured:true,channel:'preview',policy,current:current.commit,previousAvailable:!!previous,setupComplete:saved.setupComplete!==false,networkSupported:true,audioTestSupported:true,progressDisplay:false,powerOffSupported:true}),
   async perform(command,args){
+   if(command==='dsp-initialize')return {skipped:true,simulated:true,reason:'No physical Louder output in simulation'};
+   if(command==='dsp-auto-status')return {supported:false,settings:{enabled:false,mode:'genre',fallback:'warm',strength:.7},simulated:true};
+   if(command==='sync-status')return {supported:false,microphones:[],running:false,phase:'unavailable',simulated:true};
+   if(command==='sync-stop')return {stopped:true,simulated:true};
+   if(['sync-start','dsp-auto-config','dsp-auto-update'].includes(command))throw Error('Automatic sound and synchronization require the real Louder output and microphone/PCM support');
    if(command.startsWith('bluetooth-'))throw Error('Bluetooth requires the optional receiver installation on the real Pi');
    if(command==='power-off'){if(running)throw Error('Wait for the software update to finish before powering off');return {queued:true,simulated:true,powerOff:true};}
    if(command==='policy'){policy=args;save();return {saved:true,policy};}
