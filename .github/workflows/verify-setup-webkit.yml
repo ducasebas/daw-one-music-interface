@@ -1,0 +1,20 @@
+name: Verify SETUP wizard WebKit
+on: [push]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: df308ecb237fbff723cab98e464617e3671ce291
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps webkit
+      - run: npx playwright test -c playwright.webkit.config.js automatic-setup.spec.js first-start-recovery.spec.js settings-setup.spec.js --max-failures=1
