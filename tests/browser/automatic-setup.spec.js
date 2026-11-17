@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import {chooseSettingsSection} from './settings-helpers.js';
 
 const url='/?gui=2&screen=1&display=dsi-production&panel=wall-16-10';
 const id='12345678-1234-1234-1234-123456789abc',contextKey='a'.repeat(64);
@@ -6,13 +7,14 @@ test.use({viewport:{width:1280,height:800},reducedMotion:'reduce'});
 async function auth(page){return {'X-TuneBox-Control':(await(await page.request.get('/api/updates')).json()).controlToken};}
 async function open(page,button){
  await page.goto(url);await page.getByRole('button',{name:'Settings',exact:true}).click();
- await page.getByRole('navigation',{name:'Settings categories'}).getByRole('button',{name:'Audio & DSP',exact:true}).click();
+ await chooseSettingsSection(page,'Audio');
  await page.getByRole('button',{name:button,exact:true}).click();
 }
 async function visibleControls(dialog){
  const bounds=await dialog.boundingBox();
  for(const button of await dialog.locator(':scope > header button,:scope > footer button').all()){
   const b=await button.boundingBox();expect(b.height).toBeGreaterThanOrEqual(44);expect(b.y).toBeGreaterThanOrEqual(bounds.y);expect(b.y+b.height).toBeLessThanOrEqual(bounds.y+bounds.height+1);
+  expect(await button.evaluate(el=>{const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===el||el.contains(hit);})).toBe(true);
  }
 }
 test.beforeEach(async({page})=>{
@@ -50,7 +52,7 @@ test('capture requires consent, shows progress, saves the measured profile once 
  await open(page,'Open synchronization wizard');const wizard=page.getByRole('dialog',{name:'Picture & meter sync',exact:true});await wizard.getByRole('button',{name:'Continue',exact:true}).click();
  await wizard.getByRole('button',{name:'USB measurement microphone',exact:true}).click();const start=wizard.getByRole('button',{name:'Start automatic measurement',exact:true});await expect(start).toBeDisabled();
  await wizard.getByLabel('Allow 12 seconds of microphone energy measurement. Raw microphone audio is not retained.',{exact:true}).check();await start.click();await expect(wizard.getByRole('heading',{name:'Measuring synchronization…',exact:true})).toBeVisible();expect(saves).toHaveLength(0);
- phase='complete';await expect(wizard.getByRole('heading',{name:'Measured synchronization',exact:true})).toBeVisible();await wizard.getByLabel('Fine adjustment for this output',{exact:true}).fill('25');
+ phase='complete';await expect(wizard.getByRole('heading',{name:'Measured synchronization',exact:true})).toBeVisible();const fine=wizard.getByLabel('Fine adjustment for this output',{exact:true});await fine.focus();for(let i=0;i<5;i++)await fine.press('ArrowRight');await expect(fine).toHaveValue('25');
  await wizard.getByRole('button',{name:'Use measured timing',exact:true}).click();await expect(wizard.getByRole('button',{name:'Done',exact:true})).toBeVisible();expect(saves).toEqual([{resultId:id,confirmed:true,useVideo:false,fineMs:25}]);
  for(const command of ['measurement-start','dsp-set','bluetooth-start','save-music','install'])expect(commands).not.toContain(command);
 });
