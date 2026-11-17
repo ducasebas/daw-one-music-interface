@@ -1,0 +1,28 @@
+name: Inspect POWER dependency audit
+on: [push]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: bd3256ff2ac1adedd00b8c19f28448c84ee10ca8
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Report full and production advisory inventories
+        run: |
+          npm audit --json > /tmp/tunebox-audit.json || true
+          npm audit --omit=dev --json > /tmp/tunebox-runtime-audit.json || true
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          for (const [scope,path] of [['full','/tmp/tunebox-audit.json'],['production','/tmp/tunebox-runtime-audit.json']]) {
+            const report=JSON.parse(readFileSync(path,'utf8'));
+            console.log('TUNEBOX_AUDIT_JSON='+JSON.stringify({scope,...report}));
+          }
+          JS

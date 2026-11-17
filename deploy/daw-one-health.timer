@@ -1,7 +1,0 @@
-[Unit]
-Description=DAW ONE periodic health check
-[Timer]
-OnBootSec=30
-OnUnitActiveSec=30
-[Install]
-WantedBy=timers.target
