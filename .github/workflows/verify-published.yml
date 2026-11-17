@@ -1,0 +1,63 @@
+name: Verify published SETUP artifact
+on: [push]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: df308ecb237fbff723cab98e464617e3671ce291
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - name: Independently verify the pinned signature, archive, source and selected public channel
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_COMMIT: df308ecb237fbff723cab98e464617e3671ce291
+          EXPECTED_TREE: 507ad92c32b861d68169682c2403235805c3305f
+          EXPECTED_SEQUENCE: '44104711017'
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync,mkdtempSync,readdirSync,lstatSync} from 'node:fs';
+          import {createPublicKey,createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          import {join} from 'node:path';
+          import {tmpdir} from 'node:os';
+          import {checkChannel} from './deploy/ota/check-channel.mjs';
+          import {verifyManifest,verifyArchive} from './deploy/ota/policy.mjs';
+          import {verifyTree} from './deploy/ota/verify-tree.mjs';
+          const {EXPECTED_COMMIT:commit,EXPECTED_TREE:expectedTree,EXPECTED_SEQUENCE:sequence}=process.env;
+          if(!/^[a-f0-9]{40}$/.test(commit)||!/^[a-f0-9]{40}$/.test(expectedTree)||!/^\d+$/.test(sequence))throw Error('Invalid expected publication');
+          const key="-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA5nT/MfFFbvqcI5gu1bFjBWGOtlcdmtq9a1T+X5HLLqs=\n-----END PUBLIC KEY-----\n";
+          const fingerprintOf=key=>createHash('sha256').update(createPublicKey(key).export({type:'spki',format:'der'})).digest('hex');
+          const fingerprint=fingerprintOf(key);
+          if(fingerprint!=='eef81b919977f70e399cb36ceaa5a1e77e278f4c913306f647c3724d37eb39ab')throw Error('Pinned project key mismatch');
+          if(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()!==commit||execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim()!==expectedTree)throw Error('Unexpected checkout');
+          async function download(url,maxBytes){
+           const headers={'User-Agent':'TuneBox-independent-publication-verification'},api=url==='https://api.github.com/repos/ducasebas/daw-one-music-interface/releases?per_page=30';if(api&&process.env.GH_TOKEN)headers.Authorization='Bearer '+process.env.GH_TOKEN;
+           const r=await fetch(url,{signal:AbortSignal.timeout(45000),headers,redirect:api?'error':'follow'});
+           if(!r.ok)throw Error('Public HTTP '+r.status);let size=0;const chunks=[];
+           for await(const chunk of r.body){size+=chunk.length;if(size>maxBytes)throw Error('Download exceeds bound');chunks.push(chunk);}return Buffer.concat(chunks);
+          }
+          const base='https://github.com/ducasebas/daw-one-music-interface/releases/download/ota-preview-'+commit+'/';
+          const raw=await download(base+'ota-manifest.json',8192),sig=await download(base+'ota-manifest.sig',256);
+          const manifest=verifyManifest(raw,Buffer.from(sig.toString().trim(),'base64'),key,'preview',43782356013);
+          if(manifest.commit!==commit||manifest.sequence!==Number(sequence)||manifest.release!=='2026.11.16-setup.1')throw Error('Unexpected signed manifest');
+          const archive=await download(base+'tunebox-release.tar.gz',33554432);verifyArchive(archive,manifest);
+          const temp=mkdtempSync(join(tmpdir(),'tunebox-published-')),file=join(temp,'release.tar.gz'),tree=join(temp,'tree');writeFileSync(file,archive);
+          execFileSync('python3',['deploy/ota/safe-extract.py',file,tree],{timeout:20000});const inventory=verifyTree(tree,manifest.release);
+          const all=[];function walk(path){const s=lstatSync(join(tree,path));if(s.isDirectory())for(const e of readdirSync(join(tree,path)))walk(path?path+'/'+e:e);else if(s.isFile())all.push(path);else throw Error('Unexpected file type');}walk('');
+          const allowed=new Set(['release-manifest.json',...inventory.files.map(f=>f.path)]);if(all.length!==allowed.size||all.some(p=>!allowed.has(p)))throw Error('Archive contains an unlisted file');
+          const source=new Map(execFileSync('git',['ls-tree','-rz','--full-tree','HEAD'],{encoding:'utf8'}).split('\0').filter(Boolean).map(line=>{const tab=line.indexOf('\t'),meta=line.slice(0,tab).split(' ');return [line.slice(tab+1),meta[2]];}));
+          const blobHash=b=>createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');let count=0;
+          for(const f of inventory.files){if(f.path.startsWith('dist/'))continue;if(f.path==='deploy/ota/public.pem'){if(fingerprintOf(readFileSync(join(tree,f.path)))!==fingerprint)throw Error('Bundled key mismatch');continue;}if(blobHash(readFileSync(join(tree,f.path)))!==source.get(f.path))throw Error('Source mismatch: '+f.path);count++;}
+          const runtime=p=>/^(server|shared|deploy|docs)\//.test(p)||['package.json','package-lock.json','LICENSE','THIRD_PARTY_NOTICES.md'].includes(p);
+          for(const p of source.keys())if(runtime(p)&&!p.split('/').includes('__pycache__')&&!p.endsWith('.pyc')&&!allowed.has(p))throw Error('Missing source: '+p);
+          const startup=[...source.keys()].filter(p=>p.startsWith('public/media/startup.'));if(!startup.length)throw Error('No expected startup media');for(const p of startup){const path=p.replace(/^public\//,'dist/');if(!allowed.has(path)||blobHash(readFileSync(join(tree,path)))!==source.get(p))throw Error('Startup media mismatch');}
+          const selection=await checkChannel({expectedCommit:commit,key,download});if(selection.sequence!==manifest.sequence)throw Error('Unexpected channel sequence');
+          console.log('TUNEBOX_VERIFICATION_JSON='+JSON.stringify({...selection,approvedTree:expectedTree,fingerprint,archiveSha256:manifest.sha256,bytes:archive.length,files:inventory.files.length,approvedSourceFiles:count,signatureVerified:true,archiveVerified:true,inventoryVerified:true,sourceVerified:true,channelVerified:true,startupMediaVerified:true,checkedAt:new Date().toISOString()}));
+          JS
