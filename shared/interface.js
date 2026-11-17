@@ -1,3 +1,4 @@
+import {powerStatus} from './power-status.js';
 /** Shared navigation and attention rules for the physical music appliance. */
 export const settingsSections = [
   ['playback','Playback','play',0],['audio','Audio & DSP','volume',14],
@@ -17,7 +18,7 @@ export const settingsGroups = [
   {id:'system',title:'System',icon:'settings',sections:['system','sensors','security','updates','date','language','developer']},
 ];
 export const settingsGroup = id => settingsGroups.find(g=>g.sections.includes(id));
-export function settingsAttention(snapshot={},updates={},security={}) {
+export function settingsAttention(snapshot={},updates={},security={},now=Date.now()) {
   const items=[];
   if(updates.available)items.push({id:'update',section:'updates',title:'Update available',detail:updates.available.release,icon:'update'});
   if(updates.status==='error')items.push({id:'update-error',section:'updates',title:'Update needs attention',detail:updates.error||'Open Updates to retry.',icon:'alert'});
@@ -25,6 +26,10 @@ export function settingsAttention(snapshot={},updates={},security={}) {
   if(snapshot.onboardingRequired||updates.manager?.managed&&!updates.manager?.simulated&&updates.manager.setupComplete===false)items.push({id:'setup',section:'connections',title:'Complete setup',detail:'Add your connections, then finish or open an optional setup wizard.',icon:'wifi'});
   if(snapshot.mode==='music-assistant'&&(!snapshot.musicAssistant?.connected||!snapshot.playback?.connected))items.push({id:'music',section:'connections',title:'Check Music Assistant',detail:'The music server or selected player is unavailable.',icon:'speaker'});
   if(snapshot.device?.faults?.length)items.push({id:'hardware',section:'sensors',title:'Hardware alert',detail:snapshot.device.faults.join(', '),icon:'alert'});
+  const power=snapshot.hostTelemetry?.power,health=powerStatus(power,snapshot.preferences?.dashboard?.requiredWatts,now);
+  if(health.severity==='warning')items.push({id:'power',section:'sensors',title:health.title,detail:'Open Sensors to review the measured supply and USB-C contract.',icon:'alert'});
+  else if(power?.ina228?.status==='needs-setup')items.push({id:'power-setup',section:'sensors',title:'Finish power monitoring setup',detail:'Confirm the INA228 current path and voltage sense connection.',icon:'hardware'});
+  else if([power?.ina228?.status,power?.pd?.status].includes('error'))items.push({id:'power-readings',section:'sensors',title:'Check power monitoring',detail:'Open Sensors to review the reader status.',icon:'hardware'});
   // Optional measurements are suggestions, never faults or mandatory calibration.
   if(snapshot.mode==='music-assistant'&&snapshot.preferences?.setupCompleted&&snapshot.setupStatus?.roomProfile===false)items.push({id:'room-setup',section:'measurement',title:'Set up room and speakers',detail:'Add room dimensions and speaker positions in Audio & DSP.',icon:'speaker'});
   if(snapshot.preferences?.audioEnabled&&snapshot.setupStatus?.audioConfigured===false)items.push({id:'audio',section:'audio',title:'Set up audio analysis',detail:'The PCM reader needs installation.',icon:'volume'});

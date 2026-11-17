@@ -1,3 +1,4 @@
+import {powerMonitoring} from './power-telemetry.mjs';
 import {initializeStartingSound} from './starting-sound.mjs';
 import {playbackHardwareIdle} from './audio-idle.mjs';
 import {existsSync,readFileSync,writeFileSync,renameSync,chmodSync,rmSync} from 'node:fs';
@@ -39,7 +40,7 @@ async function trigger(action){
  atomicJson(base+'/request.json',{action});
  try{await run('/usr/bin/systemctl',['start','--no-block','daw-one-update.service']);}catch{rmSync(base+'/request.json',{force:true});throw Error('Update service unavailable; rerun the OTA installer');}return {queued:true};
 }
-export function rootAdapter(){const power=powerController({run}),network=networkController({run}),clock=clockController({run}),dsp=dspController({run}),localMa=localMaController({run}),measurement=measurementController({run}),bluetooth=bluetoothController({run});
+export function rootAdapter(){const powerReader=powerMonitoring({run});const power=powerController({run}),network=networkController({run}),clock=clockController({run}),dsp=dspController({run}),localMa=localMaController({run}),measurement=measurementController({run}),bluetooth=bluetoothController({run});
  const localState=async()=>boundedJson(await fetch('http://127.0.0.1:3001/api/state',{signal:AbortSignal.timeout(3000)}));
  const automatic=new AutomaticDsp({dsp,context:async()=>{const s=await localState();return {ready:s.device?.mode==='ready'&&!s.device?.faults?.length&&!s.activity?.roomMeasurement&&!s.activity?.syncCalibration&&!s.activity?.roomControl&&!existsSync('/var/lib/daw-one-manager/standby.json')&&(s.bluetooth?.active||s.mode!=='music-assistant'||s.localAudio?.available===true),playing:s.localAudio?.playing===true,selectedLocal:s.localAudio?.ready===true,bluetooth:s.bluetooth?.active===true,trackKey:s.localAudio?.trackKey||null,genres:s.localAudio?.genres||[]};}});
  atomicJson('/run/daw-one-dsp/status.json',automatic.publicStatus(),0o644);
@@ -47,10 +48,12 @@ export function rootAdapter(){const power=powerController({run}),network=network
  const adapter={
  async status(){
   const config=readJson(configPath,{}),installed=readJson(base+'/installed.json',{}),setup=readJson('/var/lib/daw-one-manager/setup.json',{});
-  return {automaticDsp:automatic.publicStatus(),managed:true,simulated:false,configured:existsSync('/etc/daw-one-updater/public.pem')&&['preview','stable'].includes(config.channel),channel:config.channel||null,policy:updateSettings(config.policy||{}),current:installed.commit||null,previousAvailable:typeof installed.previous==='string'&&existsSync(installed.previous),setupComplete:setup.complete===true,networkSupported:existsSync('/usr/bin/nmcli'),audioTestSupported:existsSync('/usr/bin/aplay'),progressDisplay:true,appliance:readJson('/var/lib/daw-one-manager/appliance.json',null),powerOffSupported:power.supported(),powerOffQueued:power.queued};
+  return {powerMonitoring:powerReader.status(),automaticDsp:automatic.publicStatus(),managed:true,simulated:false,configured:existsSync('/etc/daw-one-updater/public.pem')&&['preview','stable'].includes(config.channel),channel:config.channel||null,policy:updateSettings(config.policy||{}),current:installed.commit||null,previousAvailable:typeof installed.previous==='string'&&existsSync(installed.previous),setupComplete:setup.complete===true,networkSupported:existsSync('/usr/bin/nmcli'),audioTestSupported:existsSync('/usr/bin/aplay'),progressDisplay:true,appliance:readJson('/var/lib/daw-one-manager/appliance.json',null),powerOffSupported:power.supported(),powerOffQueued:power.queued};
  },
  async perform(command,args){
   if(power.queued)throw Error('Power off already queued');
+  if(command==='power-status')return powerReader.status();
+  if(command==='power-config')return powerReader.configure(args.settings);
   if(command==='rollback'&&automatic.state.settings.enabled)throw Error('Switch automatic sound to Manual before rolling back');
   if(command==='sync-status')return sync.status();
   if(command==='sync-stop')return sync.stop();
@@ -131,4 +134,4 @@ export function rootAdapter(){const power=powerController({run}),network=network
   if(command==='complete-setup'){atomicJson('/var/lib/daw-one-manager/setup.json',{complete:true,completedAt:new Date().toISOString()});return {saved:true};}
   throw Error('Unsupported action');
  }
-};return {status:()=>adapter.status(),perform:(command,args)=>['bluetooth-start','measurement-start','sync-start','dsp-initialize','dsp-auto-config','dsp-auto-update'].includes(command)?withUpdateLock(()=>adapter.perform(command,args)):adapter.perform(command,args)};}
+};return {status:()=>adapter.status(),perform:(command,args)=>['power-config','bluetooth-start','measurement-start','sync-start','dsp-initialize','dsp-auto-config','dsp-auto-update'].includes(command)?withUpdateLock(()=>adapter.perform(command,args)):adapter.perform(command,args)};}

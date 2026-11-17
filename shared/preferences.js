@@ -3,7 +3,7 @@ import {displaySettings,displayDefaults} from './display-settings.js';
 import {normalizeThemePreferences} from './themes.js';
 import {speakerDefaults,speakerSettings} from './speaker-settings.js';
 
-export const dashboardMetrics=['cpu','cpu-temperature','case-temperature','fan','lux','brightness','wifi','memory','power','volume'];
+export const dashboardMetrics=['cpu','cpu-temperature','case-temperature','fan','lux','brightness','wifi','memory','power','voltage','current','pd-power','volume'];
 export const preferenceDefaults=()=>({prefs:settings(),display:{...displayDefaults},themePreferences:normalizeThemePreferences(),language:'en',audioEnabled:false,clock:{timeZone:'Europe/Amsterdam',hour12:false,automatic:true},presence:{enabled:false,maximumDistance:3,sensitivity:'medium',absenceSeconds:120,nightEnabled:false,nightStart:'22:00',nightEnd:'07:00'},dashboard:{visible:[],requiredWatts:100},maxVolume:100,speakers:speakerDefaults(),buttonAction:'screen-rest',setupCompleted:false,setupDeferred:false});
 export function validatePreferences(value){
  if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid preferences');

@@ -45,7 +45,7 @@ export function SleepSurface({prefs,snapshot,offline,wake,waking=false}) {
 }
 export function WallControls({snapshot,offline,updates,security,onSleep,onNavigate}) {
  const dialog=useRef(null),trigger=useRef(null);const [page,setPage]=useState(0);
- const extra=settingsAttention(snapshot,updates?.info||{},security||{}).filter(n=>!['update','update-error','hardware'].includes(n.id)).map(n=>({...n,attention:true,action:n.section}));
+ const extra=settingsAttention(snapshot,updates?.info||{},security||{}).filter(n=>!['update','update-error','hardware','power'].includes(n.id)).map(n=>({...n,attention:true,action:n.section}));
  const notifications=[...wallNotifications(snapshot,updates?.info,offline),...extra],item=notifications[Math.min(page,notifications.length-1)];
  const open=()=>{setPage(Math.max(0,notifications.findIndex(n=>n.attention)));dialog.current.showModal();};
  const navigate=id=>{dialog.current.close();onNavigate(id);};

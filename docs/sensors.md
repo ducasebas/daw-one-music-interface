@@ -1,5 +1,7 @@
 # Real PCT2075 / TSL2591 telemetry (opt-in)
 
+For the separate INA228 consumption and HUSB238 PD reader, see [power monitoring](power-monitoring.md). It shares I²C bus 1 at different fixed addresses and the non-control sensors group; it does not replace the temperature/light reader.
+
 Owner bench evidence: PCT2075 at I²C bus 1/address **0x37** returned **19.500 °C**, and TSL2591 at **0x29** returned **485.74848 lux**. Response to finger/light changes was confirmed. These are local sensor observations, not calibration or thermal-protection certification. Do not treat PCT temperature as Pi CPU temperature.
 
 The normal installer still defaults to simulated hardware and does not enable I²C, change wiring/boot overlays, install sensor drivers or grant the backend device access. First verify the exact Adafruit breakouts, 3.3 V chain and both addresses with the Pi safely powered off during wiring changes. Existing manual `board.I2C()` diagnostics needed gpiod; the packaged reader uses an explicit bus-1 ExtendedI2C route and includes the missing dependency in its separate environment.

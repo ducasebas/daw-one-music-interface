@@ -1,5 +1,7 @@
 # Hardware verification and release gate
 
+**17 November power update:** the owner confirmed Adafruit HUSB238 5991 and INA228 5832, with STEMMA QT and series-current wiring. Voltage sense remains unconfirmed. The [power telemetry candidate](power-monitoring.md) adds register readback, not an independent safety controller. The original phase-5 table below retains its historical design/measurement gates.
+
 Status vocabulary: **Confirmed from manufacturer**, **Proposed design choice**, **Requires measurement**, **Requires prototype validation**, **Not yet implemented**. No component-specific manufacturer specifications have been verified in this session. User-provided component names do not establish wiring or electrical compatibility.
 
 | Item                         | Current evidence / design                                 | Status / verification action                                                                                          |
@@ -8,7 +10,7 @@ Status vocabulary: **Confirmed from manufacturer**, **Proposed design choice**, 
 | Waveshare screen revision    | Waveshare 7.9inch DSI LCD, SKU 22293 selected; physical revision unknown        | Requires prototype validation: identify SKU/revision and manufacturer manual                                          |
 | Louder HAT Plus revision     | Unknown; no driver or pin assumptions                     | Requires prototype validation: schematic, vendor instructions, audio test                                             |
 | RP2040 firmware/pins         | JSON-lines protocol proposed; no board firmware delivered | Not yet implemented: identify board, UART levels/pins and firmware toolchain                                          |
-| Actual PD circuit            | Unknown                                                   | Requires measurement: schematic, negotiated voltage/current, protection and failure behavior                          |
+| Actual PD circuit | Owner confirmed Adafruit HUSB238 + INA228; VBUS connection unknown | Requires live contract/readback and independent sequencing/brownout/protection measurement |
 | Amplifier mute/shutdown path | Unknown; no GPIO code exists                              | Requires measurement: polarity, default state, hardware pull resistors, reset/crash behavior                          |
 | Rail sequencing              | Unknown                                                   | Requires measurement: oscilloscope capture across startup/shutdown/failure; vendor limits                             |
 | Temperature sensor           | Unknown                                                   | Proposed design choice: select sensor and mounting; calibrate thresholds on prototype                                 |
@@ -40,4 +42,4 @@ All boxes require real hardware evidence. A green software test cannot complete 
 
 ## November I/O layout proposal
 
-The owner supplied an [I/O/mechanical proposal](hardware/io-layout-proposal.md) naming HUSB238, INA228, TSR 1-2450, ULN2803, TSL2591, PCT2075, a radar and direct Pi button/LED control. These are **proposed selections**, not measured or installed devices. The earlier RP2040/controller concept is not implemented; the new direct-Pi approach also does not establish an independent fail-safe. See [the review](hardware/io-layout-review.md) for power/bootstrap, rail-isolation, pin ownership and measurement blockers. Simulated hardware remains the default regardless of detected Pi model.
+The owner supplied an [I/O/mechanical proposal](hardware/io-layout-proposal.md) naming HUSB238, INA228, TSR 1-2450, ULN2803, TSL2591, PCT2075, a radar and direct Pi button/LED control. The owner has since confirmed HUSB238/INA228 assembly; that is not a measured PD contract or protection result. Other proposed selections still need their own installation evidence. The earlier RP2040/controller concept is not implemented; the new direct-Pi approach also does not establish an independent fail-safe. See [the review](hardware/io-layout-review.md) for power/bootstrap, rail-isolation, pin ownership and measurement blockers. Simulated hardware remains the default regardless of detected Pi model.
