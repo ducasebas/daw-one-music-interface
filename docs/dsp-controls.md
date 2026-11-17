@@ -37,3 +37,17 @@ sudo amixer -c LouderRaspberry cset name='Equalizer' On
 ```
 
 This changes only the equalizer switch, not its bands. The owner's returned `values=0` confirms On for the installed driver. Reopen Audio & DSP after external changes so its preview reads the current hardware controls. Saving in another already-open stale settings page can otherwise apply that page's staged values.
+
+## GUI 3.7.1: negative dB arguments
+
+The owner approved repair candidate `2026.11.17-dsp.1` for signed preview publication on 17 November 2026. DSP writes now terminate amixer's command-line options before `cset`. Without that separator, Linux GNU `getopt_long` interprets a negative integer such as `-3` as an option. A Soft/Warm preset, channel attenuation or headroom reservation can therefore fail before ALSA receives the value. The same bug also affects restoring a negative previous value after failure and local amplifier standby/restore.
+
+All four write paths now use `amixer -c LouderRaspberry -- cset ...`. Existing range validation, headroom ordering, readback verification and failure recovery remain in place. The correction does not change the saved sound profile or apply a preset by itself.
+
+`tests/dsp_argv_test.py` collects the actual arguments emitted by the controller with a simulated ALSA device and passes them through GNU `getopt`, which uses the same argument-parsing semantics as Linux amixer. Before correction, EQ cuts, headroom, rollback and standby fail argument parsing. All five tests pass with the separator, including the explicit reproduction of the legacy failure. Related DSP, automatic-sound, Bluetooth and measurement tests also pass. These checks do not establish that the physical amplifier accepted a DSP write.
+
+During the owner's 17 November diagnosis, ordinary SSH stdout was redirected: even `printf` produced no visible output. Restoring the interactive terminal output with `exec >/dev/tty 2>&1` made the reads visible again. The owner then confirmed Equalizer `On=0`, `Off=1`, current value `1`, and a successful `cget` exit status of `0`. This proves that the switch is readable and currently Off; it does not yet prove that the corrected Save operation works on the HAT.
+
+The pinned driver also advertises TLV dB metadata for the unrelated Digital Volume control without providing its TLV data. An `amixer contents` metadata warning alone does not mean the supported EQ controls failed: targeted `cget` reads and the program's exit status distinguish the cases. The application continues to require successful reads and matching values for every requested DSP change.
+
+After the approved patch installs, pause playback and test a Soft/Warm Save through Settings. Reopen DSP and check that the requested cuts and named Equalizer On state were read back, then confirm ordinary playback at the existing listening level. Signed appliance maintenance must refresh the installed root manager; an app-only installation needs the verified complete device refresh described above. Physical Save/readback and audible acceptance remain pending.
