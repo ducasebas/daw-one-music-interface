@@ -75,7 +75,7 @@ test('hardware notification follows the live contract, required setting, faults 
  snapshot.device.faults=['thermal-alarm'];assert.equal(row().detail,'thermal-alarm');assert.equal(row().attention,true);
 });
 test('power protocol accepts only reader booleans, never voltages, addresses, paths or shell arguments',()=>{
- const valid={ina228:true,husb238:true,currentPathVerified:true,voltageSenseVerified:true};
+ const valid={ina228:true,husb238:true,currentPathVerified:true,voltageSenseVerified:true,startup100W:false};
  assert.deepEqual(validateRequest({command:'power-config',args:{settings:valid}}).args.settings,valid);
  for(const patch of [{requestVolts:20},{address:8},{path:'/etc/shadow'},{ina228:'yes'},{husb238:1}])assert.throws(()=>powerSettings({...valid,...patch}));
  assert.throws(()=>validateRequest({command:'power-config',args:{settings:valid,voltage:20}}));
@@ -106,4 +106,10 @@ test('reader activation failure restores the previous configuration and service 
 test('read-only power status remains available while another manager action is busy',async()=>{
  let release;const manager=new DeviceManager({perform:async command=>command==='power-status'?{supported:true}:new Promise(r=>{release=r;})});
  const active=manager.request({command:'power-config',args:{settings:{}}});assert.deepEqual(await manager.request({command:'power-status'}),{supported:true});release({saved:true});await active;
+});
+
+test('INA setup hints survive normalization without inventing readings',()=>{
+ const f=frame();f.ina228={status:'needs-setup',observedAt:now,missingConfirmations:['voltage-sense','evil','voltage-sense']};
+ const p=powerTelemetry(f,now);assert.deepEqual(p.ina228.missingConfirmations,['voltage-sense']);assert.equal(p.watts,null);assert.equal(p.contractWatts,100);
+ f.ina228.missingConfirmations={includes:'invalid'};assert.deepEqual(powerTelemetry(f,now).ina228.missingConfirmations,[]);
 });

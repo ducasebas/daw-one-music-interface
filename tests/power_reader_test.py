@@ -10,7 +10,7 @@ from unittest.mock import patch
 spec=importlib.util.spec_from_file_location('power_reader',Path(__file__).resolve().parents[1]/'deploy/power/read.py')
 reader=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(reader)
-CONFIG=dict(ina228=True,husb238=True,currentPathVerified=True,voltageSenseVerified=True)
+CONFIG=dict(ina228=True,husb238=True,currentPathVerified=True,voltageSenseVerified=True,startup100W=False)
 
 
 def ina_registers(amps=2,volts=20,low_range=False):
@@ -78,6 +78,14 @@ class PowerReaderTests(unittest.TestCase):
             value=reader.read_ina228(bus().read,{**CONFIG,key:False})
             self.assertEqual(value['status'],'needs-setup')
             self.assertNotIn('watts',value)
+            self.assertEqual(value['missingConfirmations'],['current-path' if key=='currentPathVerified' else 'voltage-sense'])
+
+    def test_unconfirmed_sense_reports_setup_before_any_floating_conversion_values(self):
+        registers=ina_registers();registers[0x0b]=b'\0\0'
+        bus,trace=bus_fixture(registers,pd_registers())
+        value=reader.read_ina228(bus().read,{**CONFIG,'voltageSenseVerified':False})
+        self.assertEqual(value['status'],'needs-setup')
+        self.assertEqual(trace,[(0x40,0x3e,2),(0x40,0x3f,2)])
 
     def test_all_pd_voltage_and_current_codes_match_the_register_table(self):
         for code,volts in enumerate((5,9,12,15,18,20),1):

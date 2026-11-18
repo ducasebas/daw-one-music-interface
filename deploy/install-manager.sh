@@ -34,7 +34,7 @@ usermod -aG audio dawaudiotest
 cat > /etc/systemd/system/daw-one-manager.service <<'UNIT'
 [Unit]
 Description=TuneBox bounded device setup and update control
-After=network.target
+After=network.target daw-one-pd-startup.service
 [Service]
 Type=simple
 User=root
@@ -49,7 +49,7 @@ ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
 MemoryMax=128M
-ReadWritePaths=/run/daw-one-update.lock /run/daw-one-dsp -/var/lib/daw-one-sync -/run/daw-one-display -/run/daw-one-bluetooth /etc/daw-one-power /etc/daw-one /etc/daw-one.env /etc/daw-one-updater /var/lib/daw-one-manager /var/lib/daw-one-updater /var/lib/daw-one-update-status /etc/NetworkManager/system-connections /var/lib/daw-one -/var/lib/daw-one-measurement
+ReadWritePaths=/run/daw-one-update.lock /run/daw-one-dsp /run/daw-one-pd -/var/lib/daw-one-sync -/run/daw-one-display -/run/daw-one-bluetooth /etc/daw-one-power /etc/daw-one /etc/daw-one.env /etc/daw-one-updater /var/lib/daw-one-manager /var/lib/daw-one-updater /var/lib/daw-one-update-status /etc/NetworkManager/system-connections /var/lib/daw-one -/var/lib/daw-one-measurement
 StandardOutput=journal
 StandardError=journal
 [Install]

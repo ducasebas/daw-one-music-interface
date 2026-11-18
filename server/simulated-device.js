@@ -15,7 +15,8 @@ export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,o
   status:async()=>({managed:true,simulated:true,configured:true,channel:'preview',policy,current:current.commit,previousAvailable:!!previous,setupComplete:saved.setupComplete!==false,networkSupported:true,audioTestSupported:true,progressDisplay:false,powerOffSupported:true}),
   async perform(command,args){
    if(command==='power-status')return {supported:false,simulated:true,settings:{...powerDefaults},readOnly:true};
-   if(command==='power-config')throw Error('Power monitoring requires connected power devices on the Pi');
+   if(command==='power-request-100w')throw Error('The 100 W setup requires real HUSB238 hardware');
+    if(command==='power-config')throw Error('Power monitoring requires connected power devices on the Pi');
    if(command==='dsp-initialize')return {skipped:true,simulated:true,reason:'No physical Louder output in simulation'};
    if(command==='dsp-auto-status')return {supported:false,settings:{enabled:false,mode:'genre',fallback:'warm',strength:.7},simulated:true};
    if(command==='sync-status')return {supported:false,microphones:[],running:false,phase:'unavailable',simulated:true};

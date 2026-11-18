@@ -1,7 +1,7 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.17-power.1",
-  label: "GUI 3.8.0 · POWER",
+  id: "2026.11.18-pd.1",
+  label: "GUI 3.8.1 · PD",
 });
 export function buildAlignment(frontend, backend, offline = false) {
   if (offline) return "offline";

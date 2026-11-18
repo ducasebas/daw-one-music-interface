@@ -1,6 +1,8 @@
 # INA228 consumption and HUSB238 PD status
 
-GUI 3.8.0 POWER (`2026.11.17-power.1`) is **owner-approved for signed preview publication after CI passes**. The owner confirmed Adafruit INA228 5832 and HUSB238 5991, connected over STEMMA QT, with current routed through VIN+ → VIN−. The INA228 VBUS sense connection remains unconfirmed. The owner approved the reviewed update on 17 November 2026. OTA availability depends on successful Verify/signing workflows; installation and actual board readings have not been observed here.
+**Owner-approved follow-up:** [GUI 3.8.1 PD](pd-100w-patch.md) adds a separately confirmed, fixed 20 V / 5 A request and clearer missing-VBUS messages. The owner approved it for signed preview publication after full CI passes. The read-only description below applies to the published GUI 3.8.0 telemetry worker; that worker remains read-only in the patch.
+
+GUI 3.8.0 POWER (`2026.11.17-power.1`) was published as signed preview at `007be01baa693a577e33f1fc46d8bbc8c3666207` after its owner-approved checks passed. Its public signature, archive/source inventory and channel selection were independently verified. The owner confirmed Adafruit INA228 5832 and HUSB238 5991 over STEMMA QT, with current routed through VIN+ → VIN−, and now reports a 25 W contract and missing consumption. Current register values and the separate INA228 VBUS sense connection remain unconfirmed. The follow-up patch above is separately approved for publication; its real PD request and INA228 readings remain untested on the boards.
 
 ## Interface
 
