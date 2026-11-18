@@ -68,6 +68,11 @@ test('a physical wake returns from screen rest to Now Playing and is consumed on
  await page.getByRole('button',{name:'Screen rest',exact:true}).click();await expect(page.locator('.sleep-surface')).toBeVisible();
  await page.request.post('/api/activity');await expect(page.locator('.sleep-surface')).toHaveCount(0);
  const state=await(await page.request.get('/api/state')).json();state.navigation={buttonWakeId:'test-physical-wake'};
+ // The real backend retains its wake id in every later snapshot. Keep this
+ // injected event coherent with HTTP fallback and stop contradictory live
+ // simulator frames from erasing it before React commits the wake effect.
+ await page.route('**/api/state',route=>route.fulfill({json:state}));
+ await page.evaluate(()=>window.__testStateStream.close());
  const deliver=()=>page.evaluate(state=>window.__testStateStream.dispatchEvent(new MessageEvent('message',{data:JSON.stringify(state)})),state);
  await deliver();await expect(page.locator('.music2')).toHaveAttribute('data-page','playing');
  await page.locator('.m2-header nav').getByRole('button',{name:'Rooms',exact:true}).click();await deliver();await expect(page.locator('.music2')).toHaveAttribute('data-page','rooms');
