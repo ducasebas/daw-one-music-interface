@@ -15,7 +15,7 @@ import time
 CONFIG = Path('/etc/daw-one-power/settings.json')
 OUTPUT = Path('/run/daw-one-power/readings.json')
 DEFAULTS = dict(ina228=False, husb238=False, currentPathVerified=False,
-                voltageSenseVerified=False, startup100W=False)
+                voltageSenseVerified=False, startup100W=False, startup20V=False)
 SHUNT_OHMS = 0.015  # Unmodified Adafruit 5832 R015 shunt; nominal, not lab calibration.
 VOLTAGES = (5, 9, 12, 15, 18, 20)
 CURRENTS = (0.5, 0.7, 1, 1.25, 1.5, 1.75, 2, 2.25,
@@ -29,8 +29,10 @@ def settings(value):
     result = {**DEFAULTS, **value}
     if any(type(v) is not bool for v in result.values()):
         raise ValueError('Invalid configuration')
-    if result['startup100W'] and not result['husb238']:
+    if (result['startup100W'] or result['startup20V']) and not result['husb238']:
         raise ValueError('HUSB238 monitoring required')
+    if result['startup100W'] and result['startup20V']:
+        raise ValueError('Choose one automatic power setup policy')
     return result
 
 

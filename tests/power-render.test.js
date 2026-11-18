@@ -19,6 +19,9 @@ test('power cards distinguish consumption, negotiated capacity, profiles, unavai
   const live=render();
   for(const text of ['12.4 W','60 W','100 W','20.00 V','0.620 A','Power supply below requirement','Profiles offered by the power supply'])assert.ok(live.includes(text),text);
   assert.doesNotMatch(live,/<(?:button|select)\b/); // Offered voltage profiles are informational.
+  const actual=render({power:{...power,watts:null,volts:null,amps:null,contractWatts:25,ina228:{status:'needs-setup',missingConfirmations:['voltage-sense']},pd:{status:'active',volts:20,amps:1.25,profiles:[{volts:20,amps:3,watts:60}]}}});
+  assert.match(actual,/<strong>25 W<\/strong>/);assert.match(actual,/data-offered-watts="60">60 W/);assert.match(actual,/<strong>Unavailable<\/strong>/);assert.doesNotMatch(actual,/<strong>(?:0\.0|100) W/);
+
   assert.ok(render({power:{...power,watts:0,amps:0}}).includes('0.0 W'));
   for(const props of [{offline:true},{power:{...power,observedAt:Date.now()-7100}},{power:null}]){
    const html=render(props);assert.equal((html.match(/<strong>Unavailable<\/strong>/g)||[]).length,2);assert.doesNotMatch(html,/<strong>(12\.4|60|100) W<\//);assert.doesNotMatch(html,/data-severity="ok"/);

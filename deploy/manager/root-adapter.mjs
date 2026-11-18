@@ -54,7 +54,7 @@ export function rootAdapter(){const powerReader=powerMonitoring({run,context:()=
   if(power.queued)throw Error('Power off already queued');
   if(command==='power-status')return powerResponse(powerReader.status());
   if(command==='power-config')return powerResponse(await powerReader.configure(args.settings));
-  if(command==='power-request-100w'){if(bluetooth.active()||(await measurement.status()).running||(await sync.status()).running)throw Error('Finish other audio activity before the 100 W setup');return powerResponse(await powerReader.request100W(args));}
+  if(command==='power-request-100w'||command==='power-request-20v'){if(bluetooth.active()||(await measurement.status()).running||(await sync.status()).running)throw Error('Finish other audio activity before power setup');return powerResponse(await (command==='power-request-100w'?powerReader.request100W(args):powerReader.request20V(args)));}
   if(command==='rollback'&&automatic.state.settings.enabled)throw Error('Switch automatic sound to Manual before rolling back');
   if(command==='sync-status')return sync.status();
   if(command==='sync-stop')return sync.stop();
@@ -135,4 +135,4 @@ export function rootAdapter(){const powerReader=powerMonitoring({run,context:()=
   if(command==='complete-setup'){atomicJson('/var/lib/daw-one-manager/setup.json',{complete:true,completedAt:new Date().toISOString()});return {saved:true};}
   throw Error('Unsupported action');
  }
-};return {status:()=>adapter.status(),perform:(command,args)=>['power-config','power-request-100w','bluetooth-start','measurement-start','sync-start','dsp-initialize','dsp-auto-config','dsp-auto-update'].includes(command)?withUpdateLock(()=>adapter.perform(command,args)):adapter.perform(command,args)};}
+};return {status:()=>adapter.status(),perform:(command,args)=>['power-config','power-request-100w','power-request-20v','bluetooth-start','measurement-start','sync-start','dsp-initialize','dsp-auto-config','dsp-auto-update'].includes(command)?withUpdateLock(()=>adapter.perform(command,args)):adapter.perform(command,args)};}
