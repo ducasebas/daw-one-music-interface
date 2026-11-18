@@ -2,6 +2,8 @@ import {test,expect} from '@playwright/test';
 import {chooseSettingsSection} from './settings-helpers.js';
 const url='/?gui=2&screen=1&display=dsi-production&panel=wall-16-10';
 test.use({viewport:{width:1280,height:800}});
+// Finish fixture reads before Playwright disposes the page's API context.
+test.afterEach(async({page})=>{await page.unrouteAll({behavior:'wait'});});
 const defaults={ina228:false,husb238:false,currentPathVerified:false,voltageSenseVerified:false,startup100W:false};
 function reading(at=Date.now(),amps=3){return {observedAt:at,watts:12.4,volts:20,amps:.62,contractWatts:20*amps,
  ina228:{status:'ok',source:'INA228',observedAt:at},pd:{status:'active',source:'HUSB238',observedAt:at,attached:true,volts:20,amps,profiles:[{volts:5,amps:3,watts:15},{volts:20,amps:5,watts:100}]}};}
