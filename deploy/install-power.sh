@@ -14,7 +14,7 @@ install -d -m 755 -o dawpower -g dawsensors /run/daw-one-pd
 install -d -m 755 /etc/tmpfiles.d
 printf 'd /run/daw-one-pd 0755 dawpower dawsensors -\n' > /etc/tmpfiles.d/daw-one-power.conf
 if [[ ! -e /etc/daw-one-power/settings.json ]]; then
-  printf '{"ina228":false,"husb238":false,"currentPathVerified":false,"voltageSenseVerified":false,"startup100W":false}\n' > /etc/daw-one-power/settings.json
+  printf '{"ina228":false,"husb238":false,"currentPathVerified":false,"voltageSenseVerified":false,"startup100W":false,"startup20V":false}\n' > /etc/daw-one-power/settings.json
 fi
 chmod 644 /etc/daw-one-power/settings.json
 cat > /etc/systemd/system/daw-one-power.service <<'UNIT'
@@ -52,7 +52,7 @@ for mode in request startup; do
   [[ $mode != startup ]] || argument=startup
   cat > "/etc/systemd/system/daw-one-pd-$mode.service" <<UNIT
 [Unit]
-Description=TuneBox explicitly authorized fixed 20 V / 5 A PD $mode
+Description=TuneBox explicitly authorized offered 20 V PD $mode
 After=systemd-udevd.service systemd-tmpfiles-setup.service
 Before=tunebox-player.service daw-one-manager.service
 [Service]
@@ -106,7 +106,7 @@ if python3 - <<'PY'
 import json
 from pathlib import Path
 value=json.loads(Path('/etc/daw-one-power/settings.json').read_text())
-raise SystemExit(0 if value.get('startup100W') is True else 1)
+raise SystemExit(0 if value.get('startup100W') is True or value.get('startup20V') is True else 1)
 PY
 then
   systemctl enable daw-one-pd-startup.service

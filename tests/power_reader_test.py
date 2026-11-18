@@ -155,7 +155,7 @@ class PowerReaderTests(unittest.TestCase):
                 path.write_text(text)
                 with self.assertRaises(ValueError):reader.load_settings(path)
             path.write_text(json.dumps(CONFIG))
-            self.assertEqual(reader.load_settings(path),CONFIG)
+            self.assertEqual(reader.load_settings(path),{**reader.DEFAULTS,**CONFIG})
 
     def test_disabled_readers_never_open_the_bus_and_voltage_requests_are_invalid(self):
         value=reader.collect(reader.DEFAULTS,lambda: self.fail('unexpected bus access'))

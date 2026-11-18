@@ -1,3 +1,15 @@
+# GUI 3.8.2 publication approval
+
+On 18 November 2026 the owner explicitly approved the reviewed GUI 3.8.2 PD60 candidate with “Ja push maar”, after being told that 3.8.2 was tested locally and 3.8.1 remained the published OTA. This authorizes the scoped review branch, required CI and fixes within PD60 scope, merge and signed preview publication after the configured checks pass. It does not authorize a live PD request, a voltage change on the Pi or physical INA228 wiring confirmation. Later updates still need separate approval.
+
+After the local review, the owner opened ISET and reported loss of boot. The owner then measured about 5 V at the connected HUSB238 output, attempted an ISET bridge with a crocodile clip and subsequently reported that the Pi boots again. No post-recovery 20 V readback or new 60 W contract has been observed. ISET closed is sufficient for the software request; it is the original 1.25 A startup setting. Keep the startup profile and verified I2C request distinct. VBUS remains unconfirmed.
+
+# Current local offered-profile repair
+
+On 18 November 2026 the owner said “Ja Lets go” to building a stable verified 60 W contract after real readbacks showed 25 W active and 60 W offered. This authorizes local implementation/testing of GUI 3.8.2 PD60 (`2026.11.18-pd60.1`, cache 46), not a new external push, publication or live negotiation. The offered fixed-20 V profile may be verified at 3–5 A; over 3 A still requires 5 A cable confirmation. Preserve legacy strict-100 W semantics, existing safety/OTA/audio gates and unconfirmed VBUS. Prepare a concrete tested candidate before requesting separate publication approval. See [the scope](docs/pd60-setup.md) and [validation](docs/pd60-validation.md).
+
+GUI 3.8.1 PD was published at `fa5707c6130ffb2c38a4d5378a4305c9f28af867`; the owner confirmed installation. Real measurements show the INA228 ADC running but VBUS near 0 V, so its voltage-sense wiring remains unverified. Do not mark it confirmed in software.
+
 # User approval for updates
 
 The owner separately approved the reviewed GUI 3.8.1 PD candidate with “Push maar” on 18 November 2026. This authorizes its review branch, required checks and CI fixes within this PD scope, merge and signed preview OTA publication after the full configured CI passes. No new live PD request or physical VBUS confirmation is authorized by publication. This approval is specific to this update; later updates still require permission.

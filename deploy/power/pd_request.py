@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One fixed HUSB238 20V/5A request; the telemetry reader stays read-only.
+"""One offered fixed-20V HUSB238 PDO request; telemetry stays read-only.
 
 Hynetek HUSB238 Rev. 2.0, p9: I2C-selected source PDO overrides VSET/ISET.
 Register Information Rev. 1.1: SRC_PDO=0xA0, GO_COMMAND=0x01.
@@ -20,6 +20,7 @@ from read import Bus, I2CMessage, I2CTransfer, load_settings, read_husb238
 CONFIG = Path('/etc/daw-one-power/settings.json')
 STATE_DIR = Path('/var/lib/daw-one-power')
 RUNTIME = Path('/run/daw-one-pd')
+REQUEST_AMPS = (3, 3.25, 3.5, 4, 4.5, 5)
 
 
 def read_json(path, fallback=None):
@@ -74,25 +75,28 @@ class RequestBus(Bus):
         self._fixed_write(0x09, 0x01)
 
 
-def is_100w(value):
-    return value.get('status') == 'active' and value.get('volts') == 20 and value.get('amps') == 5
+def is_contract(value, amps):
+    return value.get('status') == 'active' and value.get('volts') == 20 and value.get('amps') == amps
 
 
-def check_source(value):
+def check_source(value, amps=5):
+    if type(amps) not in (int, float) or amps not in REQUEST_AMPS:
+        raise ValueError('Unsupported 20 V power profile')
     if value.get('status') != 'active' or value.get('volts') != 20:
         raise ValueError('The supply must already have an active 20 V contract')
-    if not any(p.get('volts') == 20 and p.get('amps') == 5 for p in value.get('profiles', [])):
-        raise ValueError('The connected supply and cable do not offer a 20 V / 5 A profile')
+    if not any(p.get('volts') == 20 and p.get('amps') == amps for p in value.get('profiles', [])):
+        raise ValueError('The connected supply and cable do not offer a 20 V / 5 A profile' if amps == 5 else
+                         'The selected 20 V power profile is no longer offered; reopen power setup')
 
 
-def negotiate(read, send, before_request=lambda: None, clock=time.monotonic, wait=time.sleep):
+def negotiate(read, send, before_request=lambda: None, clock=time.monotonic, wait=time.sleep, target_amps=5):
     value = read_husb238(read)
-    check_source(value)
-    if is_100w(value):
-        return dict(volts=20, amps=5, watts=100, requested=False)
-    before_request()  # Durable intent BEFORE a possible power interruption.
-    check_source(read_husb238(read))
-    send()  # Exactly one PDO selection and one GO request, never a retry loop.
+    check_source(value, target_amps)
+    existing = is_contract(value, target_amps)
+    if not existing:
+        before_request()  # Durable intent BEFORE a possible power interruption.
+        check_source(read_husb238(read), target_amps)
+        send()  # Exactly one PDO selection and one GO request, never a retry loop.
     deadline, stable = clock()+4, 0
     while clock() < deadline:
         value = read_husb238(read)
@@ -101,19 +105,27 @@ def negotiate(read, send, before_request=lambda: None, clock=time.monotonic, wai
         if value.get('status') in ('changing', 'attached', 'detached'):
             stable = 0
         else:
-            check_source(value)
-            stable = stable+1 if is_100w(value) and value.get('responseCode') == 1 else 0
+            check_source(value, target_amps)
+            stable = stable+1 if is_contract(value, target_amps) and (existing or value.get('responseCode') == 1) else 0
             if stable >= 2:
-                return dict(volts=20, amps=5, watts=100, requested=True)
+                return dict(volts=20, amps=target_amps, watts=20*target_amps, requested=not existing)
         wait(.1)
-    raise ValueError('A 20 V / 5 A contract was not confirmed; no further request was sent')
+    raise ValueError('A 20 V / 5 A contract was not confirmed; no further request was sent' if target_amps == 5 else
+                     'The selected 20 V power contract was not confirmed; no further request was sent')
+
+
+def profile_qualified(value):
+    return (isinstance(value, dict) and value.get('status') == 'ready' and value.get('qualified') is True
+            and type(value.get('cable5AVerified')) is bool and value.get('phase') == 'ready'
+            and value.get('source') == 'HUSB238'
+            and value.get('volts') == 20 and type(value.get('amps')) in (int, float)
+            and value.get('amps') in REQUEST_AMPS and value.get('watts') == 20*value['amps']
+            and (value['amps'] == 3 or value['cable5AVerified']))
 
 
 def qualified(value):
-    return (isinstance(value, dict) and value.get('qualified') is True
-            and value.get('cable5AVerified') is True and value.get('phase') == 'ready'
-            and value.get('source') == 'HUSB238'
-            and value.get('volts') == 20 and value.get('amps') == 5)
+    """Legacy 100W clients must never treat a 60W result as 100W proof."""
+    return profile_qualified(value) and value['amps'] == 5
 
 
 def run(mode, configuration, state_dir=STATE_DIR, runtime=RUNTIME, open_bus=RequestBus,
@@ -123,10 +135,11 @@ def run(mode, configuration, state_dir=STATE_DIR, runtime=RUNTIME, open_bus=Requ
         raise ValueError('Unsupported PD mode')
     boot_id = boot_id or Path('/proc/sys/kernel/random/boot_id').read_text().strip()
     request_id, bus, lock = None, None, None
+    target_amps, cable_verified = 5, True
     owns_lock, authorized = False, False
     output = runtime / ('result.json' if mode == 'manual' else 'startup.json')
     state_path = state_dir/'qualification.json'
-    if mode == 'startup' and not configuration['startup100W']:
+    if mode == 'startup' and not (configuration['startup100W'] or configuration.get('startup20V', False)):
         atomic_json(output, dict(status='not-requested', observedAt=now()))
         return True
     try:
@@ -137,31 +150,38 @@ def run(mode, configuration, state_dir=STATE_DIR, runtime=RUNTIME, open_bus=Requ
         if mode == 'manual':
             request = read_json(runtime/'request.json', {})
             request_id = request.get('id')
-            if (set(request) != {'id', 'confirmed', 'cable5AVerified', 'expiresAt'}
+            target_amps = request.get('amps', 5)
+            cable_verified = request.get('cable5AVerified')
+            keys = {'id', 'confirmed', 'cable5AVerified', 'expiresAt'}
+            if (set(request) not in (keys, keys | {'amps'})
                     or not isinstance(request_id, str) or not re.fullmatch('[a-f0-9]{32}', request_id)
-                    or request.get('confirmed') is not True or request.get('cable5AVerified') is not True
+                    or request.get('confirmed') is not True or type(cable_verified) is not bool
+                    or type(target_amps) not in (int, float) or target_amps not in REQUEST_AMPS
+                    or target_amps > 3 and not cable_verified
                     or type(request.get('expiresAt')) is not int or not 0 < request['expiresAt']-now() <= 30000):
-                raise ValueError('Confirm the 100 W supply and 5 A cable on this device first')
+                raise ValueError('Confirm the selected power profile and a suitable USB-C cable on this device first')
             (runtime/'request.json').unlink()  # Consume one bounded confirmation.
             authorized = True
-        elif not qualified(previous):
-            reason = ('The previous PD request was interrupted; run the 100 W setup manually'
+        elif not (qualified(previous) if configuration['startup100W'] else profile_qualified(previous)):
+            reason = ('The previous PD request was interrupted; run power setup manually'
                       if previous.get('phase') == 'requesting' else
-                      'Automatic PD setup is blocked; complete the 100 W setup manually')
+                      'Automatic PD setup is blocked; complete power setup manually')
             raise ValueError(reason)
         else:
             authorized = True
+            target_amps, cable_verified = previous['amps'], previous['cable5AVerified']
 
         def intent():
             atomic_json(state_path, dict(phase='requesting', qualified=False,
-                        cable5AVerified=True, bootId=boot_id, observedAt=now()))
+                        cable5AVerified=cable_verified, volts=20, amps=target_amps,
+                        bootId=boot_id, observedAt=now()))
 
         bus = open_bus()
-        result = negotiate(bus.read, bus.request_20v, before_request=intent)
+        result = negotiate(bus.read, bus.request_20v, before_request=intent, target_amps=target_amps)
         bus.close()
         bus = None
         value = dict(status='ready', phase='ready', source='HUSB238', qualified=True,
-                     cable5AVerified=True, bootId=boot_id, observedAt=now(),
+                     cable5AVerified=cable_verified, bootId=boot_id, observedAt=now(),
                      observedMonotonicMs=uptime_ms(), requestId=request_id, **result)
         atomic_json(state_path, value)
         atomic_json(output, value)

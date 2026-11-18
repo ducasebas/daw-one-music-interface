@@ -1,3 +1,5 @@
+> Local candidate: **GUI 3.8.2 · PD60**, `2026.11.18-pd60.1`. [Offered 20 V setup](docs/pd60-setup.md) accepts a verified 60 W source offer and distinguishes it from an active 25 W startup contract and real INA228 consumption. The owner approved preview publication on 18 November 2026; availability follows successful Verify/signing checks. [Validation](docs/pd60-validation.md).
+
 # DAW TuneBox v1 — Raspberry Pi streaming amplifier prototype
 
 **GUI 3.8.1 · PD (`2026.11.18-pd.1`), approved for signed preview publication.** Adds a separately confirmed 20 V / 5 A request with readback, qualified opt-in startup and clear INA228 VBUS setup guidance. Normal monitoring remains read-only. The owner approved publication on 18 November 2026; availability is gated on the full Verify/signing workflows. Physical power negotiation and VBUS wiring remain unverified. See [the patch guide](docs/pd-100w-patch.md) and [test evidence](docs/pd-validation.md).

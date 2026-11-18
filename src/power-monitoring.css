@@ -12,3 +12,11 @@
 .power-pd-setup{display:flex;flex-wrap:wrap;align-items:center;gap:16px;border-top:2px solid var(--divider);padding-top:22px;margin-top:22px}.power-pd-setup>div:first-child{flex:1 1 340px;min-width:0}.power-pd-setup>p,.power-pd-setup>label{flex-basis:100%;margin:0}.power-pd-setup p{font-size:17px;line-height:1.6}.power-pd-setup h4{font-size:22px}.power-pd-setup button,.power-pd-actions button{min-height:58px;padding:14px 20px;font-size:18px}
 .power-pd-success{display:flex;align-items:center;gap:12px;color:#8ab8a5}.power-pd-dialog{width:min(740px,calc(100vw - 48px));max-height:calc(100dvh - 48px);overflow:auto;padding:28px;box-sizing:border-box}.power-pd-dialog h3{font-size:28px;margin-top:0}.power-pd-dialog p,.power-pd-dialog .hub-check{font-size:19px;line-height:1.55;overflow-wrap:anywhere}.power-pd-dialog .hub-check{margin:22px 0}.power-pd-actions{display:flex;justify-content:flex-end;gap:16px;flex-wrap:wrap;margin-top:24px}.power-pd-dialog [role=status]{display:flex;align-items:center;gap:12px}
 @media(max-width:700px){.power-reading-pair,.power-config-grid{grid-template-columns:1fr}.power-profiles ul{grid-template-columns:repeat(2,minmax(0,1fr))}.power-monitoring{padding:16px}.power-reading-pair article>strong{font-size:34px}.power-reading-pair dl{font-size:16px}}
+
+.power-pd-target{font-size:26px!important;font-weight:500;color:var(--text);line-height:1.4;overflow-wrap:anywhere}
+.power-pd-dialog[open]{display:flex;flex-direction:column;padding:0;overflow:hidden}
+.power-pd-dialog>header{padding:22px 28px 16px;border-bottom:2px solid var(--divider);flex:0 0 auto}
+.power-pd-dialog>header h3{margin:0 0 10px}.power-pd-dialog>header p{margin:0}
+.power-pd-body{padding:0 28px;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;min-height:0;flex:1 1 auto}
+.power-pd-dialog>.power-pd-actions{margin:0;padding:16px 28px;border-top:2px solid var(--divider);flex:0 0 auto}
+@media(max-height:480px){.power-pd-dialog>header{padding:12px 24px}.power-pd-dialog>header h3{font-size:22px;margin-bottom:6px}.power-pd-dialog .power-pd-target{font-size:22px!important}.power-pd-dialog>.power-pd-actions{padding:12px 24px}.power-pd-body{padding:0 24px}}

@@ -24,7 +24,7 @@ install -m 644 "$repo"/deploy/manager/{starting-sound.mjs,automatic-dsp.mjs,audi
 install -m 644 "$repo"/dist/{appliance.js,appliance.css} "$base/public/"
 install -m 755 "$repo/deploy/manager/power-off.sh" "$base/deploy/manager/power-off.sh"
 install -m 644 "$repo"/deploy/ota/policy.mjs "$base/deploy/ota/"
-install -m 644 "$repo"/shared/{power-settings.js,automatic-dsp.js,dsp-settings.js,sync-calibration.js,presentation-timing.js,device-manager.js,bluetooth.js,update-settings.js,host-capacity.js,room-measurement.js,room-targets.js} "$base/shared/"
+install -m 644 "$repo"/shared/{power-settings.js,pd-profile.js,automatic-dsp.js,dsp-settings.js,sync-calibration.js,presentation-timing.js,device-manager.js,bluetooth.js,update-settings.js,host-capacity.js,room-measurement.js,room-targets.js} "$base/shared/"
 install -m 644 "$repo"/server/{update-status.js,ma-transport.js} "$base/server/"
 install -m 644 "$repo"/deploy/measurement/devices.mjs "$base/deploy/measurement/"
 install -m 644 "$repo"/deploy/{host-capacity.js,music-assistant-local.sh,music-assistant.compose.yml} "$base/deploy/"

@@ -74,10 +74,10 @@ with open(os.environ['POWER_INSTALL_CALLS'],'a') as stream: stream.write(json.du
 
     def test_legacy_wiring_and_existing_startup_choice_are_preserved_without_starting_a_request(self):
         legacy = dict(ina228=True, husb238=True, currentPathVerified=True, voltageSenseVerified=False)
-        for settings in [legacy, dict(legacy, startup100W=True)]:
+        for settings in [legacy, dict(legacy, startup100W=True), dict(legacy, startup20V=True)]:
             _, config, calls = self.install(settings)
             self.assertEqual(json.loads(config.read_text()), settings)
-            action = 'enable' if settings.get('startup100W') else 'disable'
+            action = 'enable' if settings.get('startup100W') or settings.get('startup20V') else 'disable'
             self.assertIn([action, 'daw-one-pd-startup.service'], calls)
             self.assertFalse(any('start' in row or 'restart' in row or '--now' in row for row in calls))
 
