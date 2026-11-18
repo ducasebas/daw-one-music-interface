@@ -15,7 +15,7 @@ import time
 CONFIG = Path('/etc/daw-one-power/settings.json')
 OUTPUT = Path('/run/daw-one-power/readings.json')
 DEFAULTS = dict(ina228=False, husb238=False, currentPathVerified=False,
-                voltageSenseVerified=False)
+                voltageSenseVerified=False, startup100W=False)
 SHUNT_OHMS = 0.015  # Unmodified Adafruit 5832 R015 shunt; nominal, not lab calibration.
 VOLTAGES = (5, 9, 12, 15, 18, 20)
 CURRENTS = (0.5, 0.7, 1, 1.25, 1.5, 1.75, 2, 2.25,
@@ -29,6 +29,8 @@ def settings(value):
     result = {**DEFAULTS, **value}
     if any(type(v) is not bool for v in result.values()):
         raise ValueError('Invalid configuration')
+    if result['startup100W'] and not result['husb238']:
+        raise ValueError('HUSB238 monitoring required')
     return result
 
 
@@ -111,15 +113,19 @@ def decode_ina228(config, adc, diagnostic, shunt, bus, temperature):
 def read_ina228(read, configuration):
     if uint(read, 0x40, 0x3e, 2) != 0x5449 or uint(read, 0x40, 0x3f, 2) >> 4 != 0x228:
         raise ValueError('wrong-device-id')
+    missing = [name for key, name in [('currentPathVerified', 'current-path'),
+                                    ('voltageSenseVerified', 'voltage-sense')]
+               if not configuration[key]]
+    if missing:
+        return dict(status='needs-setup', source='INA228', address='0x40',
+                    missingConfirmations=missing, shuntOhms=SHUNT_OHMS,
+                    calibration='nominal-shunt')
     config, adc = uint(read, 0x40, 0, 2), uint(read, 0x40, 1, 2)
     value = decode_ina228(config, adc, uint(read, 0x40, 0x0b, 2),
                           uint(read, 0x40, 4, 3), uint(read, 0x40, 5, 3),
                           uint(read, 0x40, 6, 2))
     if config != uint(read, 0x40, 0, 2) or adc != uint(read, 0x40, 1, 2):
         raise ValueError('configuration-changed')
-    if not configuration['currentPathVerified'] or not configuration['voltageSenseVerified']:
-        return dict(status='needs-setup', source='INA228', address='0x40',
-                    shuntOhms=SHUNT_OHMS, calibration='nominal-shunt')
     return dict(status='ok', source='INA228', address='0x40', **value)
 
 

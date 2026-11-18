@@ -1,5 +1,9 @@
 # User approval for updates
 
+The owner separately approved the reviewed GUI 3.8.1 PD candidate with “Push maar” on 18 November 2026. This authorizes its review branch, required checks and CI fixes within this PD scope, merge and signed preview OTA publication after the full configured CI passes. No new live PD request or physical VBUS confirmation is authorized by publication. This approval is specific to this update; later updates still require permission.
+
+The owner requested a local patch for the observed 25 W contract and missing consumption, then said “Go” to continue on 18 November 2026. This authorizes local implementation/testing of GUI 3.8.1 PD (`2026.11.18-pd.1`, cache 45), not an external push or live negotiation. This new request extends the earlier POWER read-only scope only to a separately confirmed fixed 20 V / 5 A request, verified readback and opt-in qualified startup. See docs/pd-100w-patch.md. Telemetry stays read-only; no arbitrary voltages, resets, live Pi experiments or invented VBUS confirmations. Present the completed patch and tests before seeking approval to publish it. Prior POWER publication approval does not carry over.
+
 The owner requires explicit permission before pushing or publishing updates.
 
 - Prepare changes locally and complete the relevant tests first.

@@ -32,6 +32,7 @@ export function powerTelemetry(value,now=Date.now()){
  }
  if(value.schema!==2)return null;
  const ina228=device(value.ina228,'INA228',now),pd=device(value.pd,'HUSB238',now);
+ if(ina228.status==='needs-setup')ina228.missingConfirmations=['current-path','voltage-sense'].filter(key=>Array.isArray(value.ina228.missingConfirmations)&&value.ina228.missingConfirmations.includes(key));
  const v=value.ina228;
  if(ina228.status==='ok'){
   const volts=finite(v.volts,0,85),amps=finite(v.amps,-20,20),watts=volts!==null&&amps!==null?volts*amps:null;
