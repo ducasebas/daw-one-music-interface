@@ -1,6 +1,7 @@
 import {tr} from "../shared/i18n.js";
 import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
+import {meterFraction,meterMarks,meterScale,polar} from '../shared/meter-scale.js';
 import {MeasurementDelay,visualizerDelay,playbackDiscontinuity} from '../shared/presentation-timing.js';
 const labels={'not-configured':'PCM-reader nog niet geïnstalleerd',disabled:'Echte audiometing uitgeschakeld',inactive:'Meting niet actief',sleeping:'Meting gepauzeerd · scherm slaapt',starting:'PCM-reader starten…','source-missing':'Geen Squeezelite PCM-export · controleer -v',idle:'PCM-export inactief · geen meetwaarden',stale:'PCM-export verouderd · meetwaarden onbekend',busy:'PCM-buffer verandert · nieuwe meting afwachten',incompatible:'PCM-export heeft een niet-ondersteunde ABI','reader-error':'PCM-reader niet beschikbaar',offline:'Backend offline · meetwaarden onbekend',hidden:'Meting gepauzeerd'};
 export function useAudioMeasurement(active=true,{paused=false}={}){
@@ -69,6 +70,17 @@ function useDelayedMeasurement(audio,{timing,offline,paused,timeline}){
  },[audio,key,timeline?.position,timeline?.observedAt,timeline?.playing,delay,offline,paused]);
  return !offline&&!paused&&['pcm','silence'].includes(audio?.status)&&audio?.enabled!==false?shown?.measurement:null;
 }
+/** One analogue dial: a scale arc, dB marks and labels, a red zone and the needle. */
+function MeterDial({mode,label,needle,side}){
+ const scale=meterScale(mode),marks=meterMarks(mode),hot=marks.find(m=>m.value>=scale.hot)?.angle??60;
+ const arc=(r,from,to)=>{const [x1,y1]=polar(120,132,r,from),[x2,y2]=polar(120,132,r,to);return `M${x1.toFixed(1)} ${y1.toFixed(1)} A${r} ${r} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;};
+ return <svg viewBox="0 0 240 160" role="img" aria-label={label} data-scale={scale.unit}>
+  <path className="meter-arc" d={arc(100,-60,hot)}/><path className="meter-arc meter-hot" d={arc(100,hot,60)}/>
+  {marks.map(m=>{const [x1,y1]=polar(120,132,m.label?90:94,m.angle),[x2,y2]=polar(120,132,102,m.angle),[lx,ly]=polar(120,132,114,m.angle);return <g key={m.value} className={m.hot?'meter-mark meter-hot':'meter-mark'} data-db={m.value}><line className="meter-tick" data-major={!!m.label} x1={x1.toFixed(1)} y1={y1.toFixed(1)} x2={x2.toFixed(1)} y2={y2.toFixed(1)}/>{m.label&&<text className="meter-label" x={lx.toFixed(1)} y={(ly+4).toFixed(1)} textAnchor="middle">{m.label}</text>}</g>;})}
+  <text className="meter-unit" x="120" y="92" textAnchor="middle">{scale.unit}</text>
+  <line ref={needle} className="meter-needle" x1="120" y1="132" x2="120" y2="28" style={{transform:'rotate(calc(-60deg + var(--level, 0) * 120deg))'}}/><circle cx="120" cy="132" r="6" fill="currentColor"/><text className="meter-side" x="120" y="158" textAnchor="middle">{side}</text>
+ </svg>;
+}
 export function AudioPlot({audio,mode='spectrum',bands=32,offline=false,reference=-18,paused=false,diagnostics=false,timing,timeline}){
  const delayed=useDelayedMeasurement(audio,{timing,offline,paused:paused&&audio?.matchesSelected!==false,timeline});
  const real=delayed;
@@ -76,13 +88,13 @@ export function AudioPlot({audio,mode='spectrum',bands=32,offline=false,referenc
  const measurement=paused&&audio?.matchesSelected!==false?null:real;
  const channels=measurement?.channels||[{rmsDb:-96,peakDb:-96,clippedSamples:0},{rmsDb:-96,peakDb:-96,clippedSamples:0}];
  const values=measurement?combineBands(measurement.bandsDb,bands):Array(bands).fill(-96);
- const levels=mode==='spectrum'?values.map(db=>db===null?0:Math.max(0,Math.min(1,(db+72)/72))):channels.map(c=>Math.max(0,Math.min(1,mode==='vu'?(c.rmsDb-reference+20)/23:(c.peakDb+60)/60)));
+ const levels=mode==='spectrum'?values.map(db=>db===null?0:Math.max(0,Math.min(1,(db+72)/72))):channels.map(c=>mode==='vu'?meterFraction(c.rmsDb-reference,'vu'):mode==='bars'?Math.max(0,Math.min(1,(c.peakDb+60)/60)):meterFraction(c.peakDb,'meters'));
  const motion=useMeterMotion(levels);
  const visible=!!measurement||resting;
  return <section className="real-audio" data-style={mode} data-delay-ms={visualizerDelay(timing)} data-captured-at={measurement?.capturedAt??''} data-resting={resting&&!measurement} aria-label={tr('Real audio measurement')}>
  {visible?<>
   {mode==='spectrum'?<><svg className="audio-spectrum" viewBox="0 0 640 244" role="img" aria-label={tr('Audio spectrum')+' · '+bands+' '+tr('bands')} preserveAspectRatio="none">{values.map((db,i)=><rect ref={node=>motion.current[i]=node} key={i} className={db===null?'audio-band unresolved':'audio-band'} x={i*640/values.length+2} y="0" width={640/values.length-5} height="244" style={{transformOrigin:`${i*640/values.length}px 244px`,transform:'scaleY(max(.006, var(--level, 0)))'}}/>)}</svg><div className="audio-frequencies" aria-hidden="true"><span>20 Hz</span><span>1 kHz</span><span>20 kHz</span></div></>
-  :<div className="audio-meter-pair">{channels.map((c,i)=><div key={i} style={{'--meter-color':i?'var(--meter-right,var(--accent))':'var(--meter-left,var(--accent))'}}>{mode==='bars'?<div className="audio-level-bar" role="meter" aria-label={tr(i?'Right PCM level':'Left PCM level')} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.max(-60,c.peakDb)}><span ref={node=>motion.current[i]=node}/><b>{i?'R':'L'}</b></div>:<svg viewBox="0 0 240 160" role="img" aria-label={tr((i?'Rechts':'Links')+' piekniveau '+number(c.peakDb)+' dBFS')}><path d="M24 124 Q120 4 216 124"/>{[0,1,2,3,4,5,6].map(t=><line key={t} className="meter-tick" x1="120" y1="26" x2="120" y2={t===6?'42':'35'} transform={`rotate(${-60+t*20} 120 132)`}/>)}<text x="16" y="110">{mode==='vu'?'−20':'−60'}</text><text x="200" y="110">{mode==='vu'?'+3':'0'}</text><line ref={node=>motion.current[i]=node} className="meter-needle" x1="120" y1="132" x2="120" y2="28" style={{transform:'rotate(calc(-60deg + var(--level, 0) * 120deg))'}}/><circle cx="120" cy="132" r="5" fill="currentColor"/><text x="120" y="158" textAnchor="middle">{i?'R':'L'}</text></svg>}</div>)}</div>}
+  :<div className="audio-meter-pair">{channels.map((c,i)=><div key={i} style={{'--meter-color':i?'var(--meter-right,var(--accent))':'var(--meter-left,var(--accent))'}}>{mode==='bars'?<div className="audio-level-bar" role="meter" aria-label={tr(i?'Right PCM level':'Left PCM level')} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.max(-60,c.peakDb)}><span ref={node=>motion.current[i]=node}/><b>{i?'R':'L'}</b></div>:<MeterDial mode={mode} label={tr((i?'Rechts':'Links')+' piekniveau '+number(c.peakDb)+' dBFS')} needle={node=>motion.current[i]=node} side={i?'R':'L'}/>}</div>)}</div>}
   {diagnostics&&<small>{measurement?`${(measurement.sampleRate/1000).toFixed(1)} kHz · ${tr('16-bit analysis copy')}`:tr(!paused&&['pcm','silence'].includes(audio?.status)?'Aligning meters…':'Paused')}</small>}
  </>:<div className="audio-unavailable"><strong>{tr(offline?'Audio unavailable':audio?.status==='disabled'?'Audio analysis is off':'Audio analysis is unavailable')}</strong>{diagnostics&&audio?.status!=='disabled'&&<span>{tr(labels[audio?.status]||'Waiting for audio…')}</span>}</div>}
  {mode==='vu'&&diagnostics&&<small>0 VU = {reference} dBFS</small>}

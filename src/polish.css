@@ -37,3 +37,15 @@
 .seek-control input[type=range]{touch-action:none;cursor:pointer}
 .seek-control[data-dragging] input[type=range]{accent-color:var(--accent)}
 .seek-control[data-dragging] .m2-times>span:first-child{color:var(--accent);font-weight:600}
+
+/* 15 · Analogue meter dial: scale arc, dB marks with labels and a red zone. */
+.audio-meter-pair svg .meter-arc{fill:none;stroke:var(--muted);stroke-width:2}
+.audio-meter-pair svg .meter-arc.meter-hot{stroke:#d9534f;stroke-width:5}
+.audio-meter-pair svg .meter-tick{stroke:var(--muted);stroke-width:2;transform:none}
+.audio-meter-pair svg .meter-tick[data-major=true]{stroke:var(--text);stroke-width:3}
+.audio-meter-pair svg .meter-hot .meter-tick{stroke:#d9534f}
+.audio-meter-pair svg text.meter-label{font-size:13px;fill:var(--text);font-variant-numeric:tabular-nums}
+.audio-meter-pair svg .meter-hot text.meter-label{fill:#e0716d}
+.audio-meter-pair svg text.meter-unit{font-size:12px;fill:var(--muted);letter-spacing:.08em}
+.audio-meter-pair svg text.meter-side{font-size:15px;fill:var(--text)}
+.audio-meter-pair svg{overflow:visible}
