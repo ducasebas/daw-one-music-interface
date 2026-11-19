@@ -153,3 +153,14 @@
 .queue-choice .queue-choice-actions button{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin:0;min-height:88px;padding:14px 16px;text-align:left;border:2px solid var(--divider,var(--border-color));border-radius:14px;background:var(--panel,var(--surface));color:inherit}
 .queue-choice .queue-choice-actions button span{font-size:15px;color:var(--muted)}
 .queue-choice .queue-choice-actions .queue-choice-replace{border-color:color-mix(in srgb,#d9534f 70%,transparent)}
+
+/* 3.12 · PARTY: the phone-remote code right on Now Playing. */
+.hub-confirm.party-sheet{width:min(980px,94vw)}
+.party-sheet header{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.party-sheet header h3{margin:0}
+.party-body{display:grid;grid-template-columns:300px minmax(0,1fr);gap:28px;align-items:start;margin-top:12px}
+.party-code{display:flex;flex-direction:column;gap:12px;align-items:center}
+.party-code svg,.party-code img{width:280px!important;height:280px!important;background:#fff;padding:12px;border-radius:16px}
+.party-info ul{margin:0 0 14px;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:18px;line-height:1.45}
+.party-lead{font-size:20px;margin-top:0}
+.party-countdown{color:var(--accent);font-weight:600}

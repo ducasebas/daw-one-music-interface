@@ -2029,5 +2029,18 @@
   "Saved the queue as “{name}” ({count} tracks)": "Wachtrij opgeslagen als “{name}” ({count} nummers)",
   "The queue has music waiting. Choose play next, add to the end, save it first, or replace it.": "Er staat muziek in de wachtrij. Kies als volgende, achteraan, eerst opslaan of vervangen.",
   "Music Assistant could not save the queue as a playlist. Nothing was replaced.": "Music Assistant kon de wachtrij niet als playlist opslaan. Er is niets vervangen.",
-  "Queue: when music is already waiting in the queue, Play now first asks what you want: play next, add to the end, save the queue as a playlist and then play, or replace it. The phone remote asks too.": "Wachtrij: staat er al muziek in de wachtrij, dan vraagt Nu afspelen eerst wat je wilt: als volgende afspelen, achteraan toevoegen, de wachtrij als playlist opslaan en dan afspelen, of vervangen. De telefoon-remote vraagt het ook."
+  "Queue: when music is already waiting in the queue, Play now first asks what you want: play next, add to the end, save the queue as a playlist and then play, or replace it. The phone remote asks too.": "Wachtrij: staat er al muziek in de wachtrij, dan vraagt Nu afspelen eerst wat je wilt: als volgende afspelen, achteraan toevoegen, de wachtrij als playlist opslaan en dan afspelen, of vervangen. De telefoon-remote vraagt het ook.",
+  "Close": "Sluiten",
+  "This code has expired.": "Deze code is verlopen.",
+  "The party code is not available right now.": "De feestcode is nu niet beschikbaar.",
+  "Guests scan this code to search music, add songs and change the volume from their phone.": "Gasten scannen deze code om met hun telefoon muziek te zoeken, nummers toe te voegen en het volume te regelen.",
+  "Guests also enter the settings PIN on their phone.": "Gasten voeren daarna ook de pincode van de instellingen in op hun telefoon.",
+  "No PIN is set: anyone who scans this code can pair.": "Er is geen pincode ingesteld: iedereen die deze code scant kan koppelen.",
+  "{count} phone paired": "{count} telefoon gekoppeld",
+  "{count} phones paired": "{count} telefoons gekoppeld",
+  "Keep the music playing is off.": "Blijf muziek spelen staat uit.",
+  "Keep the music playing is on: the music continues when the queue ends.": "Blijf muziek spelen staat aan: de muziek gaat door als de wachtrij op is.",
+  "Keep the music playing is on.": "Blijf muziek spelen staat aan.",
+  "Phones control the group that {room} plays in. Other rooms in that group play along.": "Telefoons bedienen de groep waarin {room} speelt. Andere ruimtes in die groep spelen mee.",
+  "Phones control {room} only. Other rooms are not affected.": "Telefoons bedienen alleen {room}. Andere ruimtes merken er niets van."
 }

@@ -2029,5 +2029,18 @@
   "Saved the queue as “{name}” ({count} tracks)": "Saved the queue as “{name}” ({count} tracks)",
   "The queue has music waiting. Choose play next, add to the end, save it first, or replace it.": "The queue has music waiting. Choose play next, add to the end, save it first, or replace it.",
   "Music Assistant could not save the queue as a playlist. Nothing was replaced.": "Music Assistant could not save the queue as a playlist. Nothing was replaced.",
-  "Queue: when music is already waiting in the queue, Play now first asks what you want: play next, add to the end, save the queue as a playlist and then play, or replace it. The phone remote asks too.": "Queue: when music is already waiting in the queue, Play now first asks what you want: play next, add to the end, save the queue as a playlist and then play, or replace it. The phone remote asks too."
+  "Queue: when music is already waiting in the queue, Play now first asks what you want: play next, add to the end, save the queue as a playlist and then play, or replace it. The phone remote asks too.": "Queue: when music is already waiting in the queue, Play now first asks what you want: play next, add to the end, save the queue as a playlist and then play, or replace it. The phone remote asks too.",
+  "Close": "Close",
+  "This code has expired.": "This code has expired.",
+  "The party code is not available right now.": "The party code is not available right now.",
+  "Guests scan this code to search music, add songs and change the volume from their phone.": "Guests scan this code to search music, add songs and change the volume from their phone.",
+  "Guests also enter the settings PIN on their phone.": "Guests also enter the settings PIN on their phone.",
+  "No PIN is set: anyone who scans this code can pair.": "No PIN is set: anyone who scans this code can pair.",
+  "{count} phone paired": "{count} phone paired",
+  "{count} phones paired": "{count} phones paired",
+  "Keep the music playing is off.": "Keep the music playing is off.",
+  "Keep the music playing is on: the music continues when the queue ends.": "Keep the music playing is on: the music continues when the queue ends.",
+  "Keep the music playing is on.": "Keep the music playing is on.",
+  "Phones control the group that {room} plays in. Other rooms in that group play along.": "Phones control the group that {room} plays in. Other rooms in that group play along.",
+  "Phones control {room} only. Other rooms are not affected.": "Phones control {room} only. Other rooms are not affected."
 }

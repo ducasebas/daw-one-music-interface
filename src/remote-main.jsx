@@ -8,7 +8,7 @@ import './remote.css';
  * it only plays, pauses, skips, searches and changes volume through /api/remote/*.
  */
 const words={
- nl:{'Music is waiting in the queue':'Er staat muziek in de wachtrij','1 track is queued after the current one.':'Er staat 1 nummer na het huidige.','{count} tracks are queued after the current one.':'Er staan {count} nummers na het huidige.','Play next':'Als volgende','Add to the end':'Achteraan toevoegen','Replace the queue':'Wachtrij vervangen','Plays after the current track':'Speelt na het huidige nummer','Added to the queue':'Toegevoegd aan de wachtrij','Up next':'Hierna','Track position':'Positie in het nummer','Opening TuneBox remote…':'Afstandsbediening openen…','Pairing with TuneBox…':'Koppelen met TuneBox…','Scan the QR code on TuneBox':'Scan de QR-code op TuneBox','On TuneBox, open Settings → Connections → Phone remote and choose Pair a phone.':'Open op TuneBox Instellingen → Verbindingen → Telefoon-afstandsbediening en kies Telefoon koppelen.','Your phone must be on the same Wi-Fi network as TuneBox.':'Je telefoon moet op hetzelfde wifi-netwerk zitten als TuneBox.','Paired with TuneBox':'Gekoppeld met TuneBox','Reconnecting to TuneBox…':'Opnieuw verbinden met TuneBox…','Nothing is playing':'Er speelt niets','Play':'Afspelen','Pause':'Pauzeren','Previous':'Vorige','Next':'Volgende','Volume down':'Zachter','Volume up':'Harder','Mute':'Dempen','Unmute':'Dempen opheffen','Volume':'Volume','limit':'limiet','Search music':'Muziek zoeken','Song, artist, album or playlist':'Nummer, artiest, album of playlist','Search':'Zoeken','Searching…':'Zoeken…','No results':'Geen resultaten','More results':'Meer resultaten','Play now':'Nu afspelen','Add to queue':'Aan wachtrij','Added to the queue':'Toegevoegd aan de wachtrij','Playing now':'Speelt nu','Search needs a connected Music Assistant.':'Zoeken werkt met een verbonden Music Assistant.','Bluetooth is playing. Choose and skip music on the connected phone; volume works here.':'Bluetooth speelt af. Kies en sla muziek over op de verbonden telefoon; volume werkt hier.','Unpair this phone':'Deze telefoon ontkoppelen','Unpair this phone? You need a new QR code to pair again.':'Deze telefoon ontkoppelen? Je hebt een nieuwe QR-code nodig om opnieuw te koppelen.','Cancel':'Annuleren','Unpair':'Ontkoppelen','Working…':'Bezig…','TuneBox could not be reached. Check the Wi-Fi connection.':'TuneBox is niet bereikbaar. Controleer de wifi-verbinding.','track':'nummer','album':'album','playlist':'playlist','radio':'radio','artist':'artiest'},
+ nl:{'Enter the TuneBox PIN':'Voer de TuneBox-pincode in','This TuneBox uses a settings PIN. Ask the owner for it to control the music.':'Deze TuneBox gebruikt een pincode voor instellingen. Vraag die aan de eigenaar om de muziek te bedienen.','PIN':'Pincode','Pair':'Koppelen','Checking…':'Controleren…','That PIN is not correct.':'Die pincode klopt niet.','Enter the TuneBox settings PIN to pair this phone.':'Voer de pincode van TuneBox in om deze telefoon te koppelen.','Music is waiting in the queue':'Er staat muziek in de wachtrij','1 track is queued after the current one.':'Er staat 1 nummer na het huidige.','{count} tracks are queued after the current one.':'Er staan {count} nummers na het huidige.','Play next':'Als volgende','Add to the end':'Achteraan toevoegen','Replace the queue':'Wachtrij vervangen','Plays after the current track':'Speelt na het huidige nummer','Added to the queue':'Toegevoegd aan de wachtrij','Up next':'Hierna','Track position':'Positie in het nummer','Opening TuneBox remote…':'Afstandsbediening openen…','Pairing with TuneBox…':'Koppelen met TuneBox…','Scan the QR code on TuneBox':'Scan de QR-code op TuneBox','On TuneBox, open Settings → Connections → Phone remote and choose Pair a phone.':'Open op TuneBox Instellingen → Verbindingen → Telefoon-afstandsbediening en kies Telefoon koppelen.','Your phone must be on the same Wi-Fi network as TuneBox.':'Je telefoon moet op hetzelfde wifi-netwerk zitten als TuneBox.','Paired with TuneBox':'Gekoppeld met TuneBox','Reconnecting to TuneBox…':'Opnieuw verbinden met TuneBox…','Nothing is playing':'Er speelt niets','Play':'Afspelen','Pause':'Pauzeren','Previous':'Vorige','Next':'Volgende','Volume down':'Zachter','Volume up':'Harder','Mute':'Dempen','Unmute':'Dempen opheffen','Volume':'Volume','limit':'limiet','Search music':'Muziek zoeken','Song, artist, album or playlist':'Nummer, artiest, album of playlist','Search':'Zoeken','Searching…':'Zoeken…','No results':'Geen resultaten','More results':'Meer resultaten','Play now':'Nu afspelen','Add to queue':'Aan wachtrij','Added to the queue':'Toegevoegd aan de wachtrij','Playing now':'Speelt nu','Search needs a connected Music Assistant.':'Zoeken werkt met een verbonden Music Assistant.','Bluetooth is playing. Choose and skip music on the connected phone; volume works here.':'Bluetooth speelt af. Kies en sla muziek over op de verbonden telefoon; volume werkt hier.','Unpair this phone':'Deze telefoon ontkoppelen','Unpair this phone? You need a new QR code to pair again.':'Deze telefoon ontkoppelen? Je hebt een nieuwe QR-code nodig om opnieuw te koppelen.','Cancel':'Annuleren','Unpair':'Ontkoppelen','Working…':'Bezig…','TuneBox could not be reached. Check the Wi-Fi connection.':'TuneBox is niet bereikbaar. Controleer de wifi-verbinding.','track':'nummer','album':'album','playlist':'playlist','radio':'radio','artist':'artiest'},
 };
 let lang='en';
 const t=key=>words[lang]?.[key]??key;
@@ -22,12 +22,17 @@ async function api(path,body){
 
 function Remote(){
  const [phase,setPhase]=useState('opening'),[view,setView]=useState(null),[pending,setPending]=useState(''),[error,setError]=useState(''),[online,setOnline]=useState(true),[,setLang]=useState(lang);
- const busy=useRef(false);
+ const busy=useRef(false),pendingToken=useRef(null);
+ // The TuneBox settings PIN is asked once, after scanning; the code stays valid on a typo.
+ async function submitPin(pin){
+  setError('');try{await api('/api/remote/pair',{token:pendingToken.current,name:phoneName(),pin});pendingToken.current=null;setPhase('paired');}
+  catch(e){setError(e.message);if(!['pin-wrong','pin-required'].includes(e.code)){pendingToken.current=null;setPhase('unpaired');}}
+ }
  const apply=useCallback(value=>{if(!value?.playback)return;setView(value);if(value.language!==lang){lang=value.language;document.documentElement.lang=lang;setLang(lang);}},[]);
  // Pair from the QR fragment once, then forget the code from the address bar.
  useEffect(()=>{let live=true;(async()=>{
   const token=new URLSearchParams(location.hash.slice(1)).get('pair');
-  if(token){history.replaceState(null,'',location.pathname);setPhase('pairing');try{await api('/api/remote/pair',{token,name:phoneName()});}catch(e){if(live){setError(e.message);}}}
+  if(token){history.replaceState(null,'',location.pathname);setPhase('pairing');try{await api('/api/remote/pair',{token,name:phoneName()});}catch(e){if(live){if(e.code==='pin-required'){pendingToken.current=token;setPhase('pin');return;}setError(e.message);}}}
   try{const s=await api('/api/remote/session');if(!live)return;setPhase(s.paired?'paired':'unpaired');}catch(e){if(live){setPhase('unpaired');setError(e.message);}}
  })();return()=>{live=false;};},[]);
  useEffect(()=>{
@@ -44,6 +49,7 @@ function Remote(){
   finally{busy.current=false;setPending('');}
  }
  if(phase==='opening'||phase==='pairing')return <main className="remote"><p className="remote-wait" role="status"><span className="remote-spinner" aria-hidden="true"/>{t(phase==='pairing'?'Pairing with TuneBox…':'Opening TuneBox remote…')}</p></main>;
+ if(phase==='pin')return <PinEntry error={error} onSubmit={submitPin}/>;
  if(phase==='unpaired')return <main className="remote remote-unpaired"><h1>TuneBox</h1><h2>{t('Scan the QR code on TuneBox')}</h2><p>{t('On TuneBox, open Settings → Connections → Phone remote and choose Pair a phone.')}</p><p>{t('Your phone must be on the same Wi-Fi network as TuneBox.')}</p>{error&&<p role="alert" className="remote-error">{error}</p>}</main>;
  if(!view)return <main className="remote"><p className="remote-wait" role="status"><span className="remote-spinner" aria-hidden="true"/>{t('Opening TuneBox remote…')}</p></main>;
  return <Player view={view} pending={pending} error={error} online={online} act={act} onUnpaired={()=>setPhase('unpaired')}/>;
@@ -67,6 +73,14 @@ function Progress({p}){
  if(!p.duration)return null;
  const at=Math.max(0,Math.min(p.duration,p.position+(p.playing&&p.observedAt?Math.max(0,now-p.observedAt)/1000:0)));
  return <div className="remote-progress" aria-label={t('Track position')}><div><span style={{width:`${at/p.duration*100}%`}}/></div><small><span>{clock(at)}</span><span>{clock(p.duration)}</span></small></div>;
+}
+function PinEntry({error,onSubmit}){
+ const [pin,setPin]=useState(''),[sending,setSending]=useState(false);
+ return <main className="remote remote-unpaired"><h1>TuneBox</h1><h2>{t('Enter the TuneBox PIN')}</h2><p>{t('This TuneBox uses a settings PIN. Ask the owner for it to control the music.')}</p>
+  <form className="remote-pin" onSubmit={async e=>{e.preventDefault();if(pin.length!==6||sending)return;setSending(true);await onSubmit(pin);setSending(false);setPin('');}}>
+   <input inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={6} aria-label={t('PIN')} value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,'').slice(0,6))}/>
+   <button disabled={pin.length!==6||sending}>{t(sending?'Checking…':'Pair')}</button>
+  </form>{error&&<p role="alert" className="remote-error">{t(error)}</p>}</main>;
 }
 function Player({view,pending,error,online,act,onUnpaired}){
  const p=view.playback,bt=view.bluetooth,disabled=!!pending||!online,volumeKnown=Number.isFinite(p.volume);

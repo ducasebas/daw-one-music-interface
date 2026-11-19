@@ -28,6 +28,7 @@ import {settingsSections} from '../shared/interface.js';
 import {Rooms} from './Rooms.jsx';
 import {BluetoothPairing} from './BluetoothReceiver.jsx';
 import {NowPlayingBackdrop,NowPlayingWidgets} from './NowPlayingExtras.jsx';
+import {PartySheet} from './PartySheet.jsx';
 
 const duration = (n) =>
   Number.isFinite(n)
@@ -105,6 +106,7 @@ export function MusicShell({
   };
 
   const [liveViews, setLiveViews] = useState({});
+  const [party,setParty]=useState(false);
   const [settingsPage, setSettingsPage] = useState(0);
   const [page, setPage] = useState(wall?"playing":"discover"),
     [category, setCategory] = useState("Albums"),
@@ -699,10 +701,11 @@ export function MusicShell({
                 />
               )}
             </aside>
-            {wall&&<NowPlayingWidgets snapshot={snapshot} prefs={prefs} offline={offline} onOpen={target=>{if(target==='queue'||target==='rooms')go(target);else{const section=settingsSections.find(s=>s[0]===(target==='remote'?'connections':target));if(section){setSettingsPage(section[3]);go('settings');}}}}/>}
+            {wall&&<NowPlayingWidgets snapshot={snapshot} prefs={prefs} offline={offline} onOpen={target=>{if(target==='remote'){setParty(true);return;}if(target==='queue'||target==='rooms')go(target);else{const section=settingsSections.find(s=>s[0]===(target==='remote'?'connections':target));if(section){setSettingsPage(section[3]);go('settings');}}}}/>}
           </div>
         )}
       </section>
+      {party&&<PartySheet snapshot={snapshot} onClose={()=>setParty(false)} onRooms={()=>go('rooms')}/>}
       <BluetoothPairing state={snapshot.bluetooth}/>
       {snapshot.playerBlocked&&page!=='settings'&&<div className="player-blocked" role="alert"><div><strong>{tr('Local player stopped: automatic power setup is blocked')}</strong><span>{tr('Last attempt')}: {tr(snapshot.playerBlocked.reason)}</span><span>{tr('Repair power setup, or turn off “Keep these settings after restart”, in Sensors.')}</span></div><button onClick={()=>{setSettingsPage(17);go('settings');}}>{tr('Open Sensors')}</button></div>}
       <footer className="m2-player">

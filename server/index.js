@@ -96,7 +96,7 @@ const snapshot = () => {
     navigation:{buttonWakeId},
     youtube:youtube.get(),
     bluetooth,
-    remoteControl:{phones:remote.phones.length,pairing:remote.pairing()},
+    remoteControl:{phones:remote.phones.length,pairing:remote.pairing(),pinRequired:remotePinRequired()},
     playerBlocked:music?readPlayerStartupBlock(music.status==='connected'?(music.players||[]).some(p=>p.player_id===multiroom.localId):music.errorCode==='player-missing'?false:null):null,
     videoRevision,
     hardwareTelemetry: readSensorTelemetry(process.env.DAW_SENSOR_FILE),
@@ -179,7 +179,7 @@ app.use('/api',(q,r,next)=>{
    if(paired&&!remote.phone(q))return r.status(401).json({error:'Scan the remote code shown on TuneBox'});
    return next();
   }
-  if(path.startsWith('/remote/')&&!['/remote/pairing','/remote/forget'].includes(path)&&!(q.method==='GET'&&path==='/remote/phones'))return r.status(404).json({error:'Not found'});
+  if(path.startsWith('/remote/')&&!['/remote/pairing','/remote/party','/remote/forget'].includes(path)&&!(q.method==='GET'&&path==='/remote/phones'))return r.status(404).json({error:'Not found'});
   if(q.provisioning){
    const allowed=q.method==='GET'&&['/updates','/network','/security/status'].includes(path)||q.method==='POST'&&(path==='/setup/pair'||path==='/device'&&provisionCommands.includes(q.body?.command));
    if(!allowed)return r.status(403).json({error:'This setup connection only controls Wi-Fi'});
@@ -569,19 +569,24 @@ function stopRemoteServerWhenUnused(){
  if(remote.phones.length||remote.pairing()||!remoteServer)return;
  clearTimeout(remoteStop);remoteStop=setTimeout(()=>{if(remote.phones.length||remote.pairing()||!remoteServer)return;for(const c of remoteClients)c.end();remoteClients.clear();remoteServer.close();remoteServer=null;},Number(process.env.DAW_REMOTE_IDLE_MS||30000));remoteStop.unref();
 }
-const remoteStatus=()=>({phones:remote.list(),pairing:remote.pairing(),listening:!!remoteServer,address:remoteAddress(),port:remotePort,limit:8});
+const remoteStatus=()=>({phones:remote.list(),pairing:remote.pairing(),listening:!!remoteServer,address:remoteAddress(),port:remotePort,limit:8,pinRequired:remotePinRequired()});
+const remotePinRequired=()=>security.status({headers:{}}).enabled===true;
 app.get('/api/remote/phones',(q,r)=>{try{security.requireAdmin(q);r.set('Cache-Control','no-store').json(remoteStatus());}catch(e){r.status(e.status||423).json({error:e.message});}});
-app.post('/api/remote/pairing',async(q,r)=>{
- if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before pairing a remote'});
+// The Party sheet shows the pairing code without unlocking settings: when a settings PIN
+// exists the phone must enter that PIN, so the code alone never grants control.
+async function remotePairing(q,r,{party=false}={}){
+ const status=()=>party?{...remoteStatus(),phones:remote.list().length}:remoteStatus();
  try{
-  if(q.body?.action==='cancel'){remote.cancelPair();stopRemoteServerWhenUnused();return r.set('Cache-Control','no-store').json(remoteStatus());}
+  if(q.body?.action==='cancel'){remote.cancelPair();stopRemoteServerWhenUnused();return r.set('Cache-Control','no-store').json(status());}
   if(q.body?.action!=='start'||Object.keys(q.body).length!==1)throw Error('Unknown remote action');
   const address=process.env.DAW_REMOTE_ADDRESS||remoteAddress();if(!address)throw Error('Connect TuneBox to your home network first');
   const pair=remote.createPair();await startRemoteServer();
   clearTimeout(remoteExpiry);remoteExpiry=setTimeout(stopRemoteServerWhenUnused,pair.expiresAt-Date.now()+1000);remoteExpiry.unref();
-  r.set('Cache-Control','no-store').json({...remoteStatus(),url:`http://${address}:${remotePort}/remote.html#pair=${pair.token}`,expiresAt:pair.expiresAt});
+  r.set('Cache-Control','no-store').json({...status(),url:`http://${address}:${remotePort}/remote.html#pair=${pair.token}`,expiresAt:pair.expiresAt});
  }catch(e){r.status(e.status||409).json({error:e.code==='EADDRINUSE'?'The remote port is in use':e.message});}
-});
+}
+app.post('/api/remote/pairing',async(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before pairing a remote'});return remotePairing(q,r);});
+app.post('/api/remote/party',async(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before showing the party code'});return remotePairing(q,r,{party:true});});
 app.post('/api/remote/forget',(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before forgetting a phone'});
  try{if(q.body?.all===true)remote.forgetAll();else if(typeof q.body?.id==='string')remote.forget(q.body.id);else throw Error('Choose a phone');for(const c of [...remoteClients])if(!remote.phone(c.req)){c.end();remoteClients.delete(c);}stopRemoteServerWhenUnused();r.set('Cache-Control','no-store').json(remoteStatus());}
@@ -592,7 +597,14 @@ const remoteOnly=(q,r)=>{if(q.remote)return true;r.status(404).json({error:'Not 
 app.get('/api/remote/session',(q,r)=>{if(!remoteOnly(q,r))return;const phone=remote.phone(q);r.set('Cache-Control','no-store').json({paired:!!phone,name:phone?.name||null});});
 app.post('/api/remote/pair',(q,r)=>{
  if(!remoteOnly(q,r))return;
- try{if(!q.body||Object.keys(q.body).some(k=>!['token','name'].includes(k)))throw Error('Unexpected pairing request');const result=remote.complete(q.body.token,q.body.name);r.setHeader('Set-Cookie',remote.cookie(result.credential));clearTimeout(remoteExpiry);broadcast();r.set('Cache-Control','no-store').json({paired:true});}
+ try{if(!q.body||Object.keys(q.body).some(k=>!['token','name','pin'].includes(k)))throw Error('Unexpected pairing request');
+  // With a settings PIN, the phone proves it knows that PIN before the single-use code is spent.
+  if(remotePinRequired()){
+   if(!remote.pairing())throw Error('This remote code expired or was already used. Show a new code on TuneBox.');
+   if(q.body.pin===undefined)return r.status(403).json({error:'Enter the TuneBox settings PIN to pair this phone.',code:'pin-required'});
+   try{security.verify(q.body.pin);}catch(e){return r.status(e.status||403).json({error:e.status===429?e.message:'That PIN is not correct.',code:e.status===429?'pin-locked':'pin-wrong'});}
+  }
+  const result=remote.complete(q.body.token,q.body.name);r.setHeader('Set-Cookie',remote.cookie(result.credential));clearTimeout(remoteExpiry);broadcast();r.set('Cache-Control','no-store').json({paired:true});}
  catch(e){r.status(403).json({error:e.message});}
 });
 app.post('/api/remote/leave',(q,r)=>{if(!remoteOnly(q,r))return;try{remote.forget(remote.phone(q).id);}catch{}r.setHeader('Set-Cookie','tunebox_remote=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');setTimeout(stopRemoteServerWhenUnused,250).unref();r.json({paired:false});});
