@@ -2,6 +2,10 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
+## GUI 3.10.0 POLISH — approved, in review
+
+On 19 November 2026 the owner approved the local GUI 3.10.0 POLISH candidate (`2026.11.19-polish.1`, cache 52) with "Push maar", after being told about the changes, the local results (unit 407/407, Python 109, Chromium 210/210, offline 16/16) and that WebKit and GitHub CI had not run. Scope: roadmap §3.10 items 2, 3, 4, 6, 10, 11, 12, 13, 14, 15, 17 and 18 as listed in `docs/polish-3-10.md`. The approval covers the review branch `claude/ota-update-test-status-alqo95`, required CI and fixes within this scope, merge and signed preview publication after the full configured CI passes. It does not cover live hardware experiments, a reboot or service restart on the Pi, or physical confirmations. The new restart controls also need a one-time host-helper refresh on the Pi.
+
 ## GUI 3.9.2 HOTFIX — published
 
 Merged via PR #8 as `f3a7e37a0fb22e9dd47e332bb84d944bdf62bc15` on 19 November 2026 after full PR CI passed; Verify on `main` and Publish signed preview passed, and release `ota-preview-f3a7e37a0fb22e9dd47e332bb84d944bdf62bc15` ("GUI 3.9.2 · HOTFIX · preview") is public with archive, manifest and signature. After approval, the owner's next sweep on 3.9.1 reported both channels "no sweep detected" (correlation 0.042/0.201, delays 177/207 ms, both audible); the hotfix therefore also replaced the correlation/bass-third rule with matched-filter peak prominence (≥ 12) plus middle/last-third energy. Pi installation not yet observed.
