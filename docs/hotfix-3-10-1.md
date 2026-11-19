@@ -3,7 +3,7 @@
 Release `2026.11.19-polish.2`, cache 53. Local candidate; needs the owner's approval before push/publication.
 
 ## Problem
-After installing 3.10.0 the owner reported "Het scrubben werkt niet". In the simulator, touch drag on the progress bar sends one seek on release (verified with real CDP touch events). The live path required the player to report `seek` in `supported_features` and used `players/cmd/seek`. A Squeezelite (slimproto) player may not report native seek, which disabled the bar on the real device. **This cause has not been confirmed on the Pi**: the owner has not yet shared the player's reported capabilities.
+After installing 3.10.0 the owner reported "Het scrubben werkt niet". In the simulator, touch drag on the progress bar sends one seek on release (verified with real CDP touch events). The live path required the player to report `seek` in `supported_features` and used `players/cmd/seek`. Confirmed on the owner's Pi on 19 November 2026 (read-only `/api/state` check): the player reports `['play_media','power','volume_set','set_members','enqueue','pause','gapless_playback','multi_device_dsp']`, with no `seek`, while the track has a duration (264 s) and `seekEnabled` is true. The owner sees the bar stay grey ("Blijft grijs gebeurt niks"). That matches the disabled state exactly. Whether `player_queues/seek` actually moves playback on the owner's server is still to be observed after installation.
 
 ## Change
 - `normalizeMusic` adds a `queue_seek` capability when the player lacks native `seek` but has an active Music Assistant queue and the track has a duration, and exposes the `queueId`.

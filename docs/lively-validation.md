@@ -18,5 +18,5 @@ Screenshots in [images/lively-3-11](images/lively-3-11): `before-playing-3.10.pn
 ## Not observed on the Pi
 - Smoothness and CPU/temperature of the blurred backdrop on the real Pi 4 panel.
 - Real artwork from Music Assistant; real source format reporting; widget values on hardware.
-- 3.10.1: whether the owner's Squeezelite player lacks native `seek` (diagnostic requested, not yet answered) and whether `player_queues/seek` moves playback on the real server.
+- 3.10.1: the cause is confirmed on the Pi (no `seek` in the player's features, duration 264 s); whether `player_queues/seek` moves playback on the real server is not yet observed.
 - Phone remote style on a real phone over the home Wi-Fi.
