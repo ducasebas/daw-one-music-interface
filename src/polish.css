@@ -49,3 +49,26 @@
 .audio-meter-pair svg text.meter-unit{font-size:12px;fill:var(--muted);letter-spacing:.08em}
 .audio-meter-pair svg text.meter-side{font-size:15px;fill:var(--text)}
 .audio-meter-pair svg{overflow:visible}
+
+/* 14 · Settings on the wall display: no main header row. The status icons stay reachable in a
+   compact overlay at the top right; the settings title row shares their height. */
+.music2[data-panel="wall-16-10"].compact-header{position:relative;grid-template-rows:0 minmax(0,1fr) 178px;row-gap:0}
+.music2[data-panel="wall-16-10"].compact-header>.m2-header{position:absolute;top:12px;right:24px;z-index:30;height:60px;width:auto;padding:0 0 0 10px;gap:4px;border:0;background:var(--background,transparent);border-radius:0 0 0 16px}
+.music2[data-panel="wall-16-10"].compact-header>.m2-header>.m2-brand,.music2[data-panel="wall-16-10"].compact-header>.m2-header>nav{display:none}
+.music2[data-panel="wall-16-10"].compact-header>.m2-header button{min-height:52px;min-width:52px}
+.music2[data-panel="wall-16-10"].compact-header>.m2-content{grid-row:2;padding-top:12px}
+.music2[data-panel="wall-16-10"].compact-header .hub-heading{padding-right:var(--status-overlay-width,330px)!important;gap:16px}
+.music2 .hub-heading .hub-restore{flex:none;min-height:52px;padding:10px 18px;font-size:17px;border:2px solid var(--divider);border-radius:12px;background:transparent;color:inherit}
+
+/* 18 · The save bar appears only with unsaved changes, while saving, or with a result/error. */
+.music2[data-panel="wall-16-10"] .settings-hub-v2:not([data-savebar]){grid-template-rows:60px minmax(0,1fr)}
+
+/* 6 · Topics inside a section look like the settings overview cards: panel, 2 px outline, icon. */
+.music2 .hub-section-links{top:-4px!important;display:grid!important;grid-template-columns:repeat(auto-fill,minmax(224px,1fr));gap:10px;padding:4px 0 14px!important}
+.music2 .hub-section-links button{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;position:relative;font-size:18px;text-align:left;border:2px solid var(--divider);border-radius:14px;background:var(--panel);color:inherit;line-height:1.25}
+.music2 .hub-section-links button>span{min-width:0;overflow-wrap:normal;hyphens:auto}
+.music2 .hub-section-links button .tb-icon{flex:none;color:var(--muted)}
+.music2 .hub-section-links button:hover{border-color:var(--accent)}
+.music2 .hub-section-links [aria-current=location]{border-color:var(--accent);color:var(--accent);box-shadow:inset 0 -3px var(--accent)}
+.music2 .hub-section-links [aria-current=location] .tb-icon{color:var(--accent)}
+.music2 .hub-section-links .attention-dot{position:absolute;top:8px;right:8px}

@@ -61,7 +61,7 @@ test('power setup stages boolean-only edits, cancels cleanly and saves through t
  await save.click();await expect(page.locator('[data-saved="true"]')).toBeVisible();
  expect(f.writes).toEqual([{command:'power-config',args:{settings:{ina228:true,husb238:true,currentPathVerified:true,voltageSenseVerified:true,startup100W:false,startup20V:false}}}]);
  expect(f.commands).not.toContain('clock-set');
- await expect(save).toBeDisabled();expect(f.reads()).toBe(initialReads);
+ await expect(save).toHaveCount(0);expect(f.reads()).toBe(initialReads);
  await page.getByRole('button',{name:'Restore defaults',exact:true}).click();await expect(ina).not.toBeChecked();await expect(pd).not.toBeChecked();
  await expect(save).toBeEnabled();expect(f.writes).toHaveLength(1);
  await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(ina).toBeChecked();await expect(pd).toBeChecked();
@@ -142,7 +142,7 @@ test('100 W setup requires a separate cable confirmation, shows pending feedback
  expect(f.requests).toEqual([{command:'power-request-20v',args:{confirmed:true,cable5AVerified:true,startup:true,amps:5}}]);
  expect(f.writes).toHaveLength(0);expect(f.settings.currentPathVerified).toBe(false);expect(f.settings.voltageSenseVerified).toBe(false);
  await expect(page.getByRole('checkbox',{name:'Keep these settings after restart',exact:true})).toBeChecked();
- await expect(page.getByRole('button',{name:'Save',exact:true})).toBeDisabled();
+ await expect(page.getByRole('button',{name:'Save',exact:true})).toHaveCount(0);
 });
 
 test('100 W setup cannot bypass staged changes and cancel does not negotiate',async({page})=>{
@@ -214,7 +214,7 @@ test('60W setup leaves the warning threshold unchanged when that separate choice
  await dialog.getByRole('checkbox',{name:'I verified a USB-C PD supply and cable rated for at least 60 W.',exact:true}).check();
  await dialog.getByRole('checkbox',{name:'Use verified capacity as the power warning threshold',exact:true}).uncheck();
  await dialog.getByRole('button',{name:'Request and verify power',exact:true}).click();await expect(dialog).toHaveCount(0);
- await expect(page.getByLabel('Required power (W)',{exact:true})).toHaveValue('100');await expect(page.getByRole('button',{name:'Save',exact:true})).toBeDisabled();
+ await expect(page.getByLabel('Required power (W)',{exact:true})).toHaveValue('100');await expect(page.getByRole('button',{name:'Save',exact:true})).toHaveCount(0);
  expect(f.requests).toHaveLength(1);expect(f.settings.startup20V).toBe(false);
 });
 

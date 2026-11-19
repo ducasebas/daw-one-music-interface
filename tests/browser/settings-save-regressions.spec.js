@@ -17,9 +17,9 @@ test.beforeEach(async({page})=>{
 test('the update-window checkbox uses the common Save/Cancel bar and survives reopening',async({page})=>{
  await open(page,'Updates');
  const checkbox=page.getByLabel('Only within a time window',{exact:false}),save=page.getByRole('button',{name:'Save',exact:true});
- await expect(save).toBeDisabled();await checkbox.check();await expect(save).toBeEnabled();await save.click();await expect(page.locator('[data-saved=true]')).toBeVisible();await expect(save).toBeDisabled();
+ await expect(save).toHaveCount(0);await checkbox.check();await expect(save).toBeEnabled();await save.click();await expect(page.locator('[data-saved=true]')).toBeVisible();await expect(save).toHaveCount(0);
  expect((await(await page.request.get('/api/updates')).json()).manager.policy.windowEnabled).toBe(true);
- await checkbox.uncheck();await expect(save).toBeEnabled();await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(checkbox).toBeChecked();await expect(save).toBeDisabled();
+ await checkbox.uncheck();await expect(save).toBeEnabled();await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(checkbox).toBeChecked();await expect(save).toHaveCount(0);
  await page.reload();await open(page,'Updates');await expect(checkbox).toBeChecked();
 });
 test('the Developer update shortcut shares Save and protects edits when returning to Developer',async({page})=>{
@@ -29,15 +29,15 @@ test('the Developer update shortcut shares Save and protects edits when returnin
  expect((await(await page.request.get('/api/updates')).json()).manager.policy.windowEnabled).toBe(true);
 });
 test('each date and time checkbox enables Save on its own without changing an unrelated clock value',async({page})=>{
- await open(page,'Date & time');const save=page.getByRole('button',{name:'Save',exact:true});await expect(save).toBeDisabled();
+ await open(page,'Date & time');const save=page.getByRole('button',{name:'Save',exact:true});await expect(save).toHaveCount(0);
  for(const name of ['Automatic date and time','12-hour clock']){
-  const checkbox=page.getByLabel(name,{exact:true});const old=await checkbox.isChecked();await checkbox.setChecked(!old);await expect(save).toBeEnabled();await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(checkbox).toBeChecked({checked:old});await expect(save).toBeDisabled();
+  const checkbox=page.getByLabel(name,{exact:true});const old=await checkbox.isChecked();await checkbox.setChecked(!old);await expect(save).toBeEnabled();await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(checkbox).toBeChecked({checked:old});await expect(save).toHaveCount(0);
  }
 });
 test('audio master and automatic brightness checkbox edits enable the central Save action',async({page})=>{
  await page.route('**/api/audio?watch=1',r=>r.fulfill({json:{configured:true,enabled:false,status:'disabled',measurement:null}}));
  await page.route('**/api/display',async r=>{const response=await r.fetch();const value=await response.json();await r.fulfill({json:{...value,backlight:{supported:true}}});});
- await open(page,'Audio');const save=page.getByRole('button',{name:'Save',exact:true});await expect(save).toBeDisabled();await page.getByLabel('Enable audio analysis',{exact:true}).check();await expect(save).toBeEnabled();await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(save).toBeDisabled();
+ await open(page,'Audio');const save=page.getByRole('button',{name:'Save',exact:true});await expect(save).toHaveCount(0);await page.getByLabel('Enable audio analysis',{exact:true}).check();await expect(save).toBeEnabled();await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(save).toHaveCount(0);
  await chooseSettingsSection(page,'Display');await page.getByLabel('Automatic brightness',{exact:true}).check();await expect(save).toBeEnabled();await save.click();await expect(page.locator('[data-saved=true]')).toBeVisible();expect((await(await page.request.get('/api/preferences')).json()).display.brightnessMode).toBe('auto');
 });
 test('Dutch topic tiles and saved feedback fit all six skins',async({page})=>{

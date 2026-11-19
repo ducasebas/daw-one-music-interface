@@ -263,7 +263,7 @@ export function MusicShell({
   );
   return (
     <main
-      className={"music2"+(page==="settings"&&(wall||settingsPage>=12)?" immersive-settings":"")}
+      className={"music2"+(page==="settings"&&(wall||settingsPage>=12)?" immersive-settings":"")+(page==="settings"&&wall?" compact-header":"")}
       data-panel={wall ? "wall-16-10" : "legacy-wide"}
       onContextMenu={e=>{if(!e.target.closest('input,textarea,[contenteditable="true"]'))e.preventDefault();}}
       onDragStart={e=>{if(e.target.tagName==='IMG')e.preventDefault();}}
