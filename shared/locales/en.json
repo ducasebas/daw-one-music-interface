@@ -1923,5 +1923,7 @@
   "Power setup did not complete": "Power setup did not complete",
   "Room measurement is not installed on this TuneBox yet. See the installation note above.": "Room measurement is not installed on this TuneBox yet. See the installation note above.",
   "TuneBox player not found in Music Assistant": "TuneBox player not found in Music Assistant",
-  "TuneBox player not found in Music Assistant; check that the local player is running": "TuneBox player not found in Music Assistant; check that the local player is running"
+  "TuneBox player not found in Music Assistant; check that the local player is running": "TuneBox player not found in Music Assistant; check that the local player is running",
+  "Open results": "Open results",
+  "Measurement complete.": "Measurement complete."
 }

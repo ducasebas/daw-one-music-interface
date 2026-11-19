@@ -56,3 +56,17 @@ test('confirming the sweep stops other audio first, then shows remaining time an
  await expect(page.getByText('Measurement stopped. No correction was applied.')).toBeVisible();
  await expect(page.getByRole('button',{name:'Start audible sweep…',exact:true})).toBeEnabled();
 });
+
+test('a finished sweep opens Results by itself, and a completed status offers an Open results button',async({page})=>{
+ const fake=await fakeMeasurement(page);
+ await openMeasure(page);
+ await page.getByRole('button',{name:'Start audible sweep…',exact:true}).click();
+ const dialog=page.getByRole('dialog',{name:'Start audible measurement'});await dialog.getByRole('checkbox').check();await dialog.getByRole('button',{name:'Confirm audible measurement',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Measuring the left speaker'})).toBeVisible();
+ fake.set({running:false,phase:'complete',percent:100,remainingSeconds:undefined});
+ const topics=page.getByRole('navigation',{name:'Measurement topics'});
+ await expect(topics.getByRole('button',{name:'Results',exact:true})).toHaveAttribute('aria-pressed','true');
+ await topics.getByRole('button',{name:'Measure',exact:true}).click();
+ await page.getByRole('button',{name:'Open results',exact:true}).click();
+ await expect(topics.getByRole('button',{name:'Results',exact:true})).toHaveAttribute('aria-pressed','true');
+});

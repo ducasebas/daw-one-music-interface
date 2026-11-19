@@ -3,7 +3,7 @@ export const release = Object.freeze({
   id: "2026.11.19-update-flow.1",
   label: "GUI 3.9.1 · UPDATE FLOW",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Install works even when Music Assistant is offline (if the speaker is silent). The Install button always responds. A clear message when the power setup stops the player. Clearer Music Assistant errors. Room measurement install fix.",
+  notes: "Install works even when Music Assistant is offline (if the speaker is silent). The Install button always responds. A clear message when the power setup stops the player. Clearer Music Assistant errors. Room measurement: install fix and results open after a sweep.",
 });
 export function buildAlignment(frontend, backend, offline = false) {
   if (offline) return "offline";
