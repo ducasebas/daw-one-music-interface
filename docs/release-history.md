@@ -2,7 +2,10 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.9.0 REMOTE — approved for publication
+## GUI 3.9.0 REMOTE — published
+
+Merged via PR #6 as `6fb1406b3359f8523299f906fed16cabe7ee51e2` on 19 November 2026. The first Verify run on `main` was cancelled by the 25-minute job timeout while the browser install stalled on the Ubuntu mirror; one re-run passed, Publish signed preview passed including the public channel check, and release `ota-preview-6fb1406b3359f8523299f906fed16cabe7ee51e2` ("GUI 3.9.0 · REMOTE · preview") is public with archive, manifest (label and notes) and signature. Pi installation and physical acceptance were not observed.
+
 
 On 19 November 2026 the owner approved the GUI 3.9.0 REMOTE candidate (`2026.11.19-remote.1`, cache 49) with "ja push maar", after being told it was committed locally and that the final local Chromium/offline/WebKit run was still in progress. Scope: phone remote control by QR code; room-measurement start fix, remaining time, large stop button and automatic stop of other audio after confirmation; volume rail on the 1280×800 Now Playing screen; tap-to-step volume; readable update names. The approval covers the review branch (`claude/ota-update-test-status-alqo95`, PR #6, which also carries the AGENTS.md cleanup), required CI and fixes within this scope, merge and signed preview publication after the full configured CI passes. It does not cover live hardware experiments or physical confirmations; phone pairing over the real Wi-Fi, a real microphone sweep and the Pi screen layout remain unobserved.
 
