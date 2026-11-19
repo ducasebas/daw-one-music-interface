@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 import {createHash,verify} from 'node:crypto';
 export const repository='ducasebas/daw-one-music-interface';
 export function verifyManifest(raw,signature,key,channel,lastSequence=0){
@@ -5,6 +6,28 @@ export function verifyManifest(raw,signature,key,channel,lastSequence=0){
  const m=JSON.parse(raw.toString('utf8'));
  if(m.schema!==1||m.repository!==repository||m.channel!==channel||!['preview','stable'].includes(channel)||!Number.isSafeInteger(m.sequence)||m.sequence<=lastSequence||!/^[a-f0-9]{40}$/.test(m.commit)||!/^[a-f0-9]{64}$/.test(m.sha256)||typeof m.release!=='string'||!m.release||m.release.length>100||(m.notes!==undefined&&(typeof m.notes!=='string'||m.notes.length>500))||!Number.isInteger(m.bytes)||m.bytes<1||m.bytes>33554432)throw Error('Invalid, replayed or incompatible OTA manifest');
  return m;
+}
+/** True only when every local ALSA playback device is closed or merely opened (nothing streaming). */
+export function localOutputIdle(read=path=>readFileSync(path,'utf8')){
+  let pcm;try{pcm=read('/proc/asound/pcm');}catch{return false;}
+  const entries=pcm.split('\n').slice(0,64).map(line=>line.match(/^(\d{2})-(\d{2}): .*playback \d+/)).filter(Boolean);
+  if(!entries.length)return false;
+  for(const m of entries){try{const state=read(`/proc/asound/card${Number(m[1])}/pcm${Number(m[2])}p/sub0/status`);if(!/^closed\s*$|^state:\s+(?:OPEN|SETUP|PREPARED)\s*$/m.test(state))return false;}catch{return false;}}
+  return true;
+}
+/**
+ * A manual install normally needs the same idle proof as an automatic one. When Music
+ * Assistant itself is unreachable (and so cannot report playback), the owner may still
+ * install if every other gate holds and the local audio output is provably silent.
+ * Scheduled/automatic installs keep the strict canUpdate rule.
+ */
+export function canInstallManually(state,hardwareIdle){
+  if(canUpdate(state))return true;
+  const a=state?.activity||{},d=state?.device;
+  if(state?.mode!=='music-assistant'||state.musicAssistant?.connected===true)return false;
+  if(a.syncCalibration===true||a.bluetoothActive===true||a.roomMeasurement===true||a.roomControl===true||a.localPlayback===true)return false;
+  if(!['ready','standby'].includes(d?.mode)||d.amplifierEnabled!==false||!Array.isArray(d.faults)||d.faults.length)return false;
+  return hardwareIdle===true;
 }
 export function verifyArchive(bytes,m){if(bytes.length!==m.bytes||createHash('sha256').update(bytes).digest('hex')!==m.sha256)throw Error('OTA archive integrity failed');}
 export function canUpdate(state){

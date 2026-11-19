@@ -1,7 +1,7 @@
 import {readFileSync,writeFileSync,mkdirSync,existsSync,renameSync,symlinkSync,realpathSync,rmSync,copyFileSync,readdirSync,statfsSync,lstatSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
-import {repository,verifyArchive,canUpdate,activate,restorePrevious,prunableSlots} from './policy.mjs';
+import {repository,verifyArchive,canUpdate,canInstallManually,localOutputIdle,activate,restorePrevious,prunableSlots} from './policy.mjs';
 import {updateSettings,installationDecision} from './settings.mjs';
 import {verifyTree} from './verify-tree.mjs';
 import {prepareRuntime} from './prepare-runtime.mjs';
@@ -62,7 +62,10 @@ const host={
  commitRollback:async(previous,target)=>{const metadata=json(target+'/deployment-ota.json'),health=await local('/api/health');current={...current,commit:metadata.commit||null,release:health.build?.id,previous};atomic(base+'/installed.json',current);config={...config,policy:{...updateSettings(config.policy),mode:'paused'}};atomic(configPath,config);},
  clearJournal:async()=>rmSync(base+'/pending.json',{force:true})
 };
-async function prepareDisplay(){report('installing');await new Promise(resolve=>setTimeout(resolve,5000));if(!canUpdate(await local('/api/state')))throw Error('Playback/state changed before activation; update deferred');}
+// Manual installs may proceed while Music Assistant is offline if the local output is silent.
+let manualInstall=false;
+const idleNow=async()=>{const state=await local('/api/state');return manualInstall?canInstallManually(state,localOutputIdle()):canUpdate(state);};
+async function prepareDisplay(){report('installing');await new Promise(resolve=>setTimeout(resolve,5000));if(!await idleNow())throw Error('Playback/state changed before activation; update deferred');}
 try{
  if(existsSync(base+'/pending.json')){
   const pending=json(base+'/pending.json');kiosk=pending.kiosk===true;report('rolling-back');await host.stop();await host.select(pending.previous);await host.start();if(!await host.healthy(null))throw Error('Recovery requires manual service repair');await host.clearJournal();report('rolled-back');process.exit(0);
@@ -70,6 +73,7 @@ try{
  if(process.argv.includes('--recover'))process.exit(0);
  const request=json(base+'/request.json',{action:'auto'});rmSync(base+'/request.json',{force:true});
  if(!['auto','check','install','rollback'].includes(request.action))throw Error('Invalid update action');
+ manualInstall=request.action==='install';
  if(!['preview','stable'].includes(channel))throw Error('Invalid channel');
  const policy=updateSettings(config.policy);
  if(request.action==='rollback'){
@@ -85,7 +89,7 @@ try{
  if(releaseIsCurrent(selection,current)){report('up-to-date');process.exit(0);}
  available={release:manifest.release,commit:manifest.commit,notes:manifest.notes||'Verified TuneBox build',...(typeof manifest.label==='string'&&manifest.label.length<=80?{label:manifest.label}:{})};
  const needsIdle=request.action==='install'||request.action==='auto'&&policy.mode==='auto';
- const decision=installationDecision(policy,request.action,needsIdle?canUpdate(await local('/api/state')):false);
+ const decision=installationDecision(policy,request.action,needsIdle?await idleNow():false);
  if(decision!=='install'){report(decision);process.exit(0);}
  const disk=statfsSync(slots);if(disk.bavail*disk.bsize<268435456)throw Error('At least 256 MiB free staging space required');
  report('downloading',{percent:0});
@@ -97,7 +101,7 @@ try{
  for(const file of ['kiosk.sh','set-display-mode.sh','health.sh','deployment-target','panel-profile','read-sensors.py'])if(existsSync(app+'/'+file))copyFileSync(app+'/'+file,dest+'/'+file);
  for(const file of ['kiosk.sh','set-display-mode.sh','health.sh'])if(existsSync(dest+'/'+file))run('chmod',['755',dest+'/'+file]);
  atomic(dest+'/deployment-ota.json',{commit:manifest.commit});run('chmod',['644',dest+'/deployment-ota.json']);
- const latestPolicy=updateSettings(json(configPath).policy);const finalDecision=installationDecision(latestPolicy,request.action,canUpdate(await local('/api/state')));
+ const latestPolicy=updateSettings(json(configPath).policy);const finalDecision=installationDecision(latestPolicy,request.action,await idleNow());
  if(finalDecision!=='install'){report(finalDecision);process.exit(0);}
  await prepareDisplay();
  if(realpathSync(app)===app){const old=slots+'/legacy-'+Date.now();atomic(base+'/pending.json',{previous:old,candidate:manifest.commit,kiosk:false});renameSync(app,old);symlinkSync(old,app);}
