@@ -1,3 +1,5 @@
+import {trackUpdate,updateNotification} from './update-notice.js';
+import {release,releaseTitle} from './release.js';
 import {powerStatus} from './power-status.js';
 /** Wall display presentation contracts. Never grant actuator permissions. */
 export const sleepModes = ['clock','widgets','sunset','glow','playing','black','vu','spectrum','bars'];
@@ -38,16 +40,17 @@ export function sunsetAt(date,latitude,longitude) {
   hours+=24*Math.round(((18-longitude/15)-hours)/24);
   return new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())+hours*3600000);
 }
-export function wallNotifications(snapshot,updates,offline=false,now=Date.now()) {
+export function wallNotifications(snapshot,updates,offline=false,now=Date.now(),updateMemory=trackUpdate({},updates,now)) {
   const simulated=snapshot.mode==='simulation';
   const power=powerStatus(offline?null:snapshot.hostTelemetry?.power,snapshot.preferences?.dashboard?.requiredWatts,now);
   const faults=snapshot.device?.faults||[];
   return [
     {id:'status',icon:'status',title:'Systeemrapport',detail:offline?'Backend offline · status niet actueel':`${snapshot.device?.mode||'onbekend'} · ${snapshot.musicAssistant?.connected?'Music Assistant verbonden':simulated?'gesimuleerde muziek':'Music Assistant niet verbonden'}`,action:'status'},
-    {id:'update',icon:'update',title:'Update',detail:updates?.offline?'Updateservice niet bereikbaar':updates?.available?updates.available.release:updates?.status==='up-to-date'?'Up to date':updates?.status||'Nog geen updatestatus',attention:!!updates?.available||updates?.status==='error',action:'updates'},
+    // Update notices follow their condition: offer → progress → outcome, and vanish when resolved.
+    updateNotification(updateMemory,updates,offline),
     {id:'hardware',icon:'alert',title:'Hardware alert',detail:faults.length?faults.join(', '):power.severity==='unknown'?'PD contract unavailable. Open Sensors to check power monitoring.':power.title,attention:faults.length>0||power.severity!=='ok',simulated,action:'sensors'},
     {id:'newsletter',icon:'mail',title:'Newsletter',detail:'Geen nieuwsbrief gekoppeld. Er wordt niets automatisch opgehaald of verstuurd.'},
-    {id:'whatsnew',icon:'discover',title:'What’s new',detail:'GUI 3.3 · Direct track selection, larger music controls, grouped settings, Wi-Fi setup and a quiet appliance interface.'},
+    {id:'whatsnew',icon:'discover',title:'What’s new',detail:`${releaseTitle(release)} · ${release.notes}`},
     {id:'tutorial',icon:'tutorial',title:'Tutorial',detail:'Choose a track to play. Settings are grouped by topic; scroll for related options. Screen rest keeps music playing. Tap once to wake.'},
-  ];
+  ].filter(Boolean);
 }

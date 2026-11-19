@@ -31,11 +31,14 @@ test('wifi levels require a valid connected measurement and clear on offline',()
  assert.equal(wifiReading({connected:true,signal:73},true).level,null);
 });
 test('unknown PD never becomes a measured 100W pass; notifications distinguish simulation',()=>{
- const rows=wallNotifications({device:{mode:'ready',faults:[]},mode:'music-assistant'},null);
- assert.equal(rows.length,6);assert.equal(rows[2].attention,true);assert.equal(rows[2].simulated,false);
- assert.match(rows[2].detail,/unavailable/);assert.equal(rows[2].action,'sensors');
- const sim=wallNotifications({mode:'simulation',device:{faults:['thermal-alarm']},boot:{checks:[{id:'power',status:'pass',reason:'100 W simulatie'}]}});
- assert.equal(sim[2].attention,true);assert.equal(sim[2].simulated,true);
+ const rows=wallNotifications({device:{mode:'ready',faults:[]},mode:'music-assistant'},null),hw=rows.find(r=>r.id==='hardware');
+ // Without an update condition there is no update row (GUI 3.10 notification lifecycle).
+ assert.equal(rows.length,5);assert.equal(rows.some(r=>r.id==='update'),false);assert.equal(hw.attention,true);assert.equal(hw.simulated,false);
+ assert.match(hw.detail,/unavailable/);assert.equal(hw.action,'sensors');
+ const sim=wallNotifications({mode:'simulation',device:{faults:['thermal-alarm']},boot:{checks:[{id:'power',status:'pass',reason:'100 W simulatie'}]}}).find(r=>r.id==='hardware');
+ assert.equal(sim.attention,true);assert.equal(sim.simulated,true);
+ const offered=wallNotifications({device:{faults:[]}},{status:'available',available:{release:'r2',label:'GUI 3.10.0 · POLISH'}});
+ assert.equal(offered.find(r=>r.id==='update').title,'Update available');
 });
 test('screen sleep/wake preserves playback and standby wake cannot enable amplifier',()=>{
  const r=new DeviceRuntime(0);r.dispatch({type:'boot-complete'},0);r.dispatch({type:'play'},1);

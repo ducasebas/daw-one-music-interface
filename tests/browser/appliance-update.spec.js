@@ -50,10 +50,26 @@ test('a notification opens the matching settings section with its category highl
  const existing=await(await page.request.get('/api/updates')).json();
  await page.route('**/api/updates',r=>r.fulfill({json:{...existing,status:'available',available:{release:'new-test'},manager:{...existing.manager,configured:true}}}));
  await page.goto(url);await page.getByRole('button',{name:'Notifications',exact:true}).click();
- const tray=page.getByRole('dialog',{name:'Notification panel',exact:true});await expect(tray.getByRole('heading',{name:'Update',exact:true})).toBeVisible();
- await tray.getByRole('button',{name:'Open Update',exact:true}).click();await expect(tray).not.toBeVisible();
+ const tray=page.getByRole('dialog',{name:'Notification panel',exact:true});await expect(tray.getByRole('heading',{name:'Update available',exact:true})).toBeVisible();
+ await tray.getByRole('button',{name:'Open Updates',exact:true}).click();await expect(tray).not.toBeVisible();
  await expect(page.locator('[data-section=updates]')).toHaveAttribute('data-current','true');await expect(page.locator('[data-section=updates]')).toBeInViewport();
  await expect(page.getByRole('navigation',{name:'Settings categories'}).getByRole('button',{name:'System',exact:true})).toHaveAttribute('aria-current','page');
+});
+test('the update notice follows its condition: offer, then "Update installed" until dismissed',async({page})=>{
+ const existing=await(await page.request.get('/api/updates')).json();
+ let info={...existing,status:'available',current:{release:'old-test',label:'GUI 3.9.2 · HOTFIX'},available:{release:'new-test',label:'GUI 3.10.0 · POLISH'},manager:{...existing.manager,configured:true,simulated:true}};
+ await page.route('**/api/updates',r=>r.fulfill({json:info}));
+ await page.goto(url);const bell=page.getByRole('button',{name:'Notifications',exact:true});await bell.click();
+ const tray=page.getByRole('dialog',{name:'Notification panel',exact:true});
+ await tray.getByRole('button',{name:'Update available',exact:true}).click();await expect(tray.getByRole('heading',{name:'Update available',exact:true})).toBeVisible();
+ await tray.getByRole('button',{name:'Close notifications',exact:true}).click();
+ // The device restarts on the new release and already reports up to date.
+ info={...info,status:'up-to-date',current:{release:'new-test',label:'GUI 3.10.0 · POLISH'},available:null};
+ await page.waitForTimeout(3500);await bell.click();
+ await tray.getByRole('button',{name:'Update installed',exact:true}).click();await expect(tray.getByRole('heading',{name:'Update installed',exact:true})).toBeVisible();await expect(tray).toContainText('GUI 3.10.0 · POLISH');
+ await expect(tray.getByRole('button',{name:'Update available',exact:true})).toHaveCount(0);
+ await tray.getByRole('button',{name:'Dismiss',exact:true}).click();await expect(tray.getByRole('button',{name:'Update installed',exact:true})).toHaveCount(0);
+ await page.reload();await bell.click();await expect(tray.getByRole('button',{name:'Update installed',exact:true})).toHaveCount(0);
 });
 test('a tap on the progress bar seeks once to that spot and the bar does not snap back',async({page})=>{
  const seeks=[];await page.route('**/api/event',async r=>{const e=r.request().postDataJSON();if(e.type==='seek')seeks.push(e);return r.continue();});

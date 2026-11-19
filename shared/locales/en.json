@@ -1931,5 +1931,15 @@
   "{db} dB short of the {minimum} dB needed.": "{db} dB short of the {minimum} dB needed.",
   "Measure again 6 dB louder ({level} dBFS)…": "Measure again 6 dB louder ({level} dBFS)…",
   "The sweep is already at its maximum level. Raise the amplifier volume a little, keep the room quiet and move the microphone closer, then measure again.": "The sweep is already at its maximum level. Raise the amplifier volume a little, keep the room quiet and move the microphone closer, then measure again.",
-  "Type at least 3 characters": "Type at least 3 characters"
+  "Type at least 3 characters": "Type at least 3 characters",
+  "Installing update": "Installing update",
+  "Update in progress": "Update in progress",
+  "Update installed": "Update installed",
+  "Update failed": "Update failed",
+  "The previous version was restored. Your settings are unchanged.": "The previous version was restored. Your settings are unchanged.",
+  "The update could not be installed. Open Updates to retry.": "The update could not be installed. Open Updates to retry.",
+  "Open Updates": "Open Updates",
+  "Open Updates to retry.": "Open Updates to retry.",
+  "Dismiss": "Dismiss",
+  "Polish: larger footer volume on Now Playing, faster search suggestions above the keyboard, an analogue VU scale, scrubbing on the progress bar, a roomier Settings screen, wizards in your skin, and update notices that clear themselves.": "Polish: larger footer volume on Now Playing, faster search suggestions above the keyboard, an analogue VU scale, scrubbing on the progress bar, a roomier Settings screen, wizards in your skin, and update notices that clear themselves."
 }

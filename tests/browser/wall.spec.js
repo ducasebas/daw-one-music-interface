@@ -70,7 +70,7 @@ test('a real uploaded video replaces the mock and follows music pause and seek',
  await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-linked-video.png'});
 });
 test('notifications preserve modal focus and critical faults remain visible over black rest',async({page})=>{
- await page.getByRole('button',{name:'Notifications',exact:true}).click();const tray=page.getByRole('dialog',{name:'Notification panel'});for(const name of ['System report','Update','Hardware alert','Newsletter','What’s new','Tutorial']){await tray.getByRole('button',{name,exact:true}).click();await expect(tray.getByRole('heading',{name,exact:true})).toBeVisible();}
+ await page.getByRole('button',{name:'Notifications',exact:true}).click();const tray=page.getByRole('dialog',{name:'Notification panel'});for(const name of ['System report','Hardware alert','Newsletter','What’s new','Tutorial']){await tray.getByRole('button',{name,exact:true}).click();await expect(tray.getByRole('heading',{name,exact:true})).toBeVisible();}
  await page.keyboard.press('Escape');await expect(page.getByRole('button',{name:'Notifications',exact:true})).toBeFocused();
  await settings(page,'Display');await page.getByLabel('Screen rest view').selectOption('black');await page.getByRole('button',{name:'Screen rest',exact:true}).click();await page.request.post('/api/event',{data:{type:'thermal-alarm'}});await expect(page.locator('.sleep-fault')).toContainText('thermal-alarm');await page.getByRole('button',{name:'Wake display',exact:true}).tap();await expect(page.locator('.sleep-surface')).not.toBeVisible();const state=await(await page.request.get('/api/state')).json();expect(state.device.amplifierEnabled).toBe(false);expect(state.device.faults).toContain('thermal-alarm');
 });

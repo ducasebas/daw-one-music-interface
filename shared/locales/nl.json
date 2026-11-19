@@ -1931,5 +1931,15 @@
   "{db} dB short of the {minimum} dB needed.": "{db} dB te weinig van de benodigde {minimum} dB.",
   "Measure again 6 dB louder ({level} dBFS)…": "Opnieuw meten, 6 dB harder ({level} dBFS)…",
   "The sweep is already at its maximum level. Raise the amplifier volume a little, keep the room quiet and move the microphone closer, then measure again.": "De sweep staat al op het maximale niveau. Zet de versterker iets harder, houd de kamer stil en zet de microfoon dichterbij, en meet dan opnieuw.",
-  "Type at least 3 characters": "Typ minstens 3 tekens"
+  "Type at least 3 characters": "Typ minstens 3 tekens",
+  "Installing update": "Update wordt geïnstalleerd",
+  "Update in progress": "Update bezig",
+  "Update installed": "Update geïnstalleerd",
+  "Update failed": "Update mislukt",
+  "The previous version was restored. Your settings are unchanged.": "De vorige versie is teruggezet. Je instellingen zijn ongewijzigd.",
+  "The update could not be installed. Open Updates to retry.": "De update kon niet worden geïnstalleerd. Open Updates om het opnieuw te proberen.",
+  "Open Updates": "Open Updates",
+  "Open Updates to retry.": "Open Updates om het opnieuw te proberen.",
+  "Dismiss": "Sluiten",
+  "Polish: larger footer volume on Now Playing, faster search suggestions above the keyboard, an analogue VU scale, scrubbing on the progress bar, a roomier Settings screen, wizards in your skin, and update notices that clear themselves.": "Polish: grotere volumeregeling onder Nu spelen, snellere zoeksuggesties boven het toetsenbord, een analoge VU-schaal, scrubben op de voortgangsbalk, een ruimer Instellingen-scherm, wizards in je eigen skin en updatemeldingen die zichzelf opruimen."
 }
