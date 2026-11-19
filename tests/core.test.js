@@ -172,6 +172,8 @@ test("settings whitelist, clamp and safe defaults", () => {
       syncAutomatic: false,
       seekEnabled: true,
       screen: { mode: "clock", latitude: null, longitude: null },
+      backdrop: "art",
+      widgets: ["clock", "upnext", "source"],
       startupAnimation: "auto",
       visualizer: "off",
       visualizerBands: 32,

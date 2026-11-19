@@ -219,4 +219,9 @@ export class MusicAssistantTransport {
     if (action === "mute") args.muted = value;
     return this.command(`players/cmd/${commands[action]}`, args);
   }
+  /** Seek within the active Music Assistant queue, for players without native seek. */
+  async queueSeek(queueId, position) {
+    if (typeof queueId !== "string" || !queueId || !Number.isFinite(position) || position < 0) throw Error("Seek unavailable");
+    return this.command("player_queues/seek", { queue_id: queueId, position: Math.round(position) });
+  }
 }

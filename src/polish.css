@@ -93,3 +93,40 @@
 .restart-controls{margin-top:28px;padding-top:20px;border-top:2px solid var(--divider,var(--border-color))}
 .restart-controls .restart-actions{display:flex;flex-wrap:wrap;gap:14px}
 .restart-dialog[open]{display:block}
+
+/* GUI 3.11 · LIVELY ------------------------------------------------------------------ */
+/* 5 · Now Playing backdrop: enlarged, blurred and darkened artwork that cross-fades per track.
+   The blur runs on a quarter-size layer that is scaled up, which keeps it cheap on the Pi. */
+.music2[data-page="playing"]{isolation:isolate}
+.np-backdrop{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:radial-gradient(120% 90% at 20% 30%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%)}
+.np-backdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,color-mix(in srgb,var(--background) 62%,transparent) 0%,color-mix(in srgb,var(--background) 48%,transparent) 45%,color-mix(in srgb,var(--background) 82%,transparent) 100%)}
+.np-backdrop-layer{position:absolute;left:37.5%;top:37.5%;width:25%;height:25%;background:center/cover no-repeat;filter:blur(9px) saturate(1.35);transform:scale(4.6);opacity:0;will-change:opacity}
+.np-backdrop-layer[data-current=true]{animation:np-fade-in 900ms ease-out forwards}
+.np-backdrop-layer[data-current=false]{opacity:1}
+@keyframes np-fade-in{from{opacity:0}to{opacity:1}}
+/* Low-power / Pi 3: a calm, static tint in the skin colour; no artwork layer, blur or cross-fade. */
+.np-backdrop[data-mode=static] .np-backdrop-layer{display:none}
+@media (prefers-reduced-motion:reduce){.np-backdrop-layer[data-current=true]{animation:none;opacity:1}.np-backdrop-layer[data-current=false]{display:none}}
+/* Let the backdrop show through the Now Playing chrome. */
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-header,.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player,.music2[data-panel="wall-16-10"][data-page="playing"] .m2-content,.music2[data-panel="wall-16-10"][data-page="playing"] .m2-heading{background:transparent}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-playing .real-artwork,.music2[data-panel="wall-16-10"][data-page="playing"] .m2-playing>.m2-cover{box-shadow:0 18px 50px #0008}
+
+/* 1 · Widgets on Now Playing: compact tiles below the track, chosen in Settings → Display. */
+.music2[data-panel="wall-16-10"] .m2-playing{row-gap:16px}
+.music2[data-panel="wall-16-10"] .m2-playing>.np-widgets{grid-column:1/-1;align-self:end}
+.np-widgets{display:grid;grid-template-columns:repeat(var(--np-widget-count,4),minmax(0,1fr));gap:12px}
+.np-widgets[data-count="1"]{--np-widget-count:1}.np-widgets[data-count="2"]{--np-widget-count:2}.np-widgets[data-count="3"]{--np-widget-count:3}
+.music2 .np-widget,.np-widget{display:flex;align-items:center;gap:14px;min-width:0;min-height:84px;padding:12px 16px;border:3px solid color-mix(in srgb,var(--divider,var(--border-color)) 80%,transparent);border-radius:calc(var(--radius,6px) + 8px);background:color-mix(in srgb,var(--panel,var(--surface)) 72%,transparent);color:inherit;text-align:left;font:inherit;backdrop-filter:none}
+.music2[data-panel="wall-16-10"] .m2-playing .np-widget{border:3px solid color-mix(in srgb,var(--divider,var(--border-color)) 80%,transparent)}
+.music2[data-panel="wall-16-10"] .m2-playing button.np-widget:active{border-color:var(--accent)}
+.np-widget>.tb-icon{flex:none;color:var(--accent)}
+.np-widget-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.np-widget-text small{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.np-widget-text strong{font-size:21px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.np-widget-text em{font-style:normal;font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-widget[data-available=false] strong{color:var(--muted);font-weight:400}
+.np-widget[data-available=false]>.tb-icon{color:var(--muted)}
+.music2[data-performance=pi3] .np-widget{background:var(--panel,var(--surface))}
+.hub-fields>.np-settings{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:2px solid var(--divider,var(--border-color))}
+.np-settings h4{margin:0;font-size:22px;font-weight:500}
+.np-widget-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}

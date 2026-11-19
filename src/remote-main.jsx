@@ -8,7 +8,7 @@ import './remote.css';
  * it only plays, pauses, skips, searches and changes volume through /api/remote/*.
  */
 const words={
- nl:{'Opening TuneBox remote…':'Afstandsbediening openen…','Pairing with TuneBox…':'Koppelen met TuneBox…','Scan the QR code on TuneBox':'Scan de QR-code op TuneBox','On TuneBox, open Settings → Connections → Phone remote and choose Pair a phone.':'Open op TuneBox Instellingen → Verbindingen → Telefoon-afstandsbediening en kies Telefoon koppelen.','Your phone must be on the same Wi-Fi network as TuneBox.':'Je telefoon moet op hetzelfde wifi-netwerk zitten als TuneBox.','Paired with TuneBox':'Gekoppeld met TuneBox','Reconnecting to TuneBox…':'Opnieuw verbinden met TuneBox…','Nothing is playing':'Er speelt niets','Play':'Afspelen','Pause':'Pauzeren','Previous':'Vorige','Next':'Volgende','Volume down':'Zachter','Volume up':'Harder','Mute':'Dempen','Unmute':'Dempen opheffen','Volume':'Volume','limit':'limiet','Search music':'Muziek zoeken','Song, artist, album or playlist':'Nummer, artiest, album of playlist','Search':'Zoeken','Searching…':'Zoeken…','No results':'Geen resultaten','More results':'Meer resultaten','Play now':'Nu afspelen','Add to queue':'Aan wachtrij','Added to the queue':'Toegevoegd aan de wachtrij','Playing now':'Speelt nu','Search needs a connected Music Assistant.':'Zoeken werkt met een verbonden Music Assistant.','Bluetooth is playing. Choose and skip music on the connected phone; volume works here.':'Bluetooth speelt af. Kies en sla muziek over op de verbonden telefoon; volume werkt hier.','Unpair this phone':'Deze telefoon ontkoppelen','Unpair this phone? You need a new QR code to pair again.':'Deze telefoon ontkoppelen? Je hebt een nieuwe QR-code nodig om opnieuw te koppelen.','Cancel':'Annuleren','Unpair':'Ontkoppelen','Working…':'Bezig…','TuneBox could not be reached. Check the Wi-Fi connection.':'TuneBox is niet bereikbaar. Controleer de wifi-verbinding.','track':'nummer','album':'album','playlist':'playlist','radio':'radio','artist':'artiest'},
+ nl:{'Up next':'Hierna','Track position':'Positie in het nummer','Opening TuneBox remote…':'Afstandsbediening openen…','Pairing with TuneBox…':'Koppelen met TuneBox…','Scan the QR code on TuneBox':'Scan de QR-code op TuneBox','On TuneBox, open Settings → Connections → Phone remote and choose Pair a phone.':'Open op TuneBox Instellingen → Verbindingen → Telefoon-afstandsbediening en kies Telefoon koppelen.','Your phone must be on the same Wi-Fi network as TuneBox.':'Je telefoon moet op hetzelfde wifi-netwerk zitten als TuneBox.','Paired with TuneBox':'Gekoppeld met TuneBox','Reconnecting to TuneBox…':'Opnieuw verbinden met TuneBox…','Nothing is playing':'Er speelt niets','Play':'Afspelen','Pause':'Pauzeren','Previous':'Vorige','Next':'Volgende','Volume down':'Zachter','Volume up':'Harder','Mute':'Dempen','Unmute':'Dempen opheffen','Volume':'Volume','limit':'limiet','Search music':'Muziek zoeken','Song, artist, album or playlist':'Nummer, artiest, album of playlist','Search':'Zoeken','Searching…':'Zoeken…','No results':'Geen resultaten','More results':'Meer resultaten','Play now':'Nu afspelen','Add to queue':'Aan wachtrij','Added to the queue':'Toegevoegd aan de wachtrij','Playing now':'Speelt nu','Search needs a connected Music Assistant.':'Zoeken werkt met een verbonden Music Assistant.','Bluetooth is playing. Choose and skip music on the connected phone; volume works here.':'Bluetooth speelt af. Kies en sla muziek over op de verbonden telefoon; volume werkt hier.','Unpair this phone':'Deze telefoon ontkoppelen','Unpair this phone? You need a new QR code to pair again.':'Deze telefoon ontkoppelen? Je hebt een nieuwe QR-code nodig om opnieuw te koppelen.','Cancel':'Annuleren','Unpair':'Ontkoppelen','Working…':'Bezig…','TuneBox could not be reached. Check the Wi-Fi connection.':'TuneBox is niet bereikbaar. Controleer de wifi-verbinding.','track':'nummer','album':'album','playlist':'playlist','radio':'radio','artist':'artiest'},
 };
 let lang='en';
 const t=key=>words[lang]?.[key]??key;
@@ -49,15 +49,37 @@ function Remote(){
  return <Player view={view} pending={pending} error={error} online={online} act={act} onUnpaired={()=>setPhase('unpaired')}/>;
 }
 
+const styleKeys={background:'--remote-bg',surface:'--remote-panel',text:'--remote-text',muted:'--remote-muted',accent:'--remote-accent',font:'--remote-font',radius:'--remote-radius'};
+/** The phone follows the TuneBox skin: same colours and font, applied as CSS variables. */
+function useTuneBoxStyle(style){
+ useEffect(()=>{const root=document.documentElement;
+  for(const [key,name] of Object.entries(styleKeys)){const v=style?.[key];if(typeof v==='string'&&v.length<120&&!/[;{}<>]/.test(v))root.style.setProperty(name,v);else root.style.removeProperty(name);}
+  root.dataset.skin=style?.skin||'';
+  const meta=document.querySelector('meta[name=theme-color]');if(meta&&style?.background)meta.setAttribute('content',style.background);
+ },[style?.skin,style?.background,style?.accent,style?.text,style?.surface,style?.muted,style?.font,style?.radius]);
+}
+const clock=n=>`${Math.floor(n/60)}:${String(Math.floor(n%60)).padStart(2,'0')}`;
+/** Read-only progress: the phone shows where the track is, it does not seek. */
+function Progress({p}){
+ const [now,setNow]=useState(Date.now);
+ useEffect(()=>{if(!p.playing||!p.duration)return;const timer=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer);},[p.playing,p.duration]);
+ if(!p.duration)return null;
+ const at=Math.max(0,Math.min(p.duration,p.position+(p.playing&&p.observedAt?Math.max(0,now-p.observedAt)/1000:0)));
+ return <div className="remote-progress" aria-label={t('Track position')}><div><span style={{width:`${at/p.duration*100}%`}}/></div><small><span>{clock(at)}</span><span>{clock(p.duration)}</span></small></div>;
+}
 function Player({view,pending,error,online,act,onUnpaired}){
  const p=view.playback,bt=view.bluetooth,disabled=!!pending||!online,volumeKnown=Number.isFinite(p.volume);
  const [leave,setLeave]=useState(false);
+ useTuneBoxStyle(view.style);
  const step=delta=>act(delta>0?'Volume up':'Volume down','/api/remote/event',{type:'volume',value:Math.max(0,Math.min(view.volumeLimit,(p.volume||0)+delta))});
  return <main className="remote" aria-busy={!!pending}>
   <header className="remote-top"><strong>TuneBox</strong><span className={online?'remote-online':'remote-offline'} role="status">{online?(p.playerName||t('Paired with TuneBox')):t('Reconnecting to TuneBox…')}</span></header>
+  {p.artwork&&<div className="remote-backdrop" aria-hidden="true"><div key={p.artwork} style={{backgroundImage:`url("${p.artwork.replace(/["\\]/g,'')}")`}}/></div>}
   <section className="remote-now" aria-label={p.title||t('Nothing is playing')}>
    <div className="remote-art">{p.artwork?<img src={p.artwork} alt=""/>:<Icon name="playing" size={64}/>}</div>
    <h1>{p.title||t('Nothing is playing')}</h1>{p.artist&&<p>{p.artist}</p>}{p.album&&<p className="remote-album">{p.album}</p>}
+   {p.quality&&<p className="remote-quality">{p.quality}</p>}
+   <Progress p={p}/>
   </section>
   {bt&&<p className="remote-note">{t('Bluetooth is playing. Choose and skip music on the connected phone; volume works here.')}</p>}
   <section className="remote-transport">
@@ -71,6 +93,7 @@ function Player({view,pending,error,online,act,onUnpaired}){
    <button aria-label={t('Volume up')} disabled={disabled||!volumeKnown||p.volume>=view.volumeLimit} onClick={()=>step(5)}>+</button>
    {!bt&&<button className="remote-mute" aria-pressed={p.muted} aria-label={t(p.muted?'Unmute':'Mute')} disabled={disabled} onClick={()=>act('Mute','/api/remote/event',{type:'mute',value:!p.muted})}><Icon name={p.muted?'mute':'volume'} size={26}/></button>}
   </section>
+  {p.next&&<section className="remote-next" aria-label={t('Up next')}><small>{t('Up next')}</small><strong>{p.next.title}</strong>{p.next.artist&&<span>{p.next.artist}</span>}</section>}
   <p className="remote-status" role={error?'alert':'status'} aria-live="polite">{error||(pending?<><span className="remote-spinner" aria-hidden="true"/>{t('Working…')}</>:'')}</p>
   <Search view={view} disabled={disabled} act={act}/>
   <footer className="remote-footer"><button onClick={()=>setLeave(true)}>{t('Unpair this phone')}</button></footer>
