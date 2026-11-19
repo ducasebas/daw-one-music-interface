@@ -52,3 +52,29 @@ test('a failed band write restores the previous equalizer and channel gains',asy
  try{const dsp=dspController({run,statePath:join(dir,'standby.json')});await assert.rejects(()=>dsp.set([{id:22,value:0},{id:1,value:6}]),/previous ALSA values/);assert.deepEqual(values,original);}
  finally{rmSync(dir,{recursive:true,force:true});}
 });
+test('local volume while Music Assistant is away moves the gains between silent and the saved level, never louder',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'tb-local-')),values={1:0,2:-10,3:-20,22:1};
+ const run=async(_p,args)=>{if(args.includes('contents'))return raw(values);const i=args.indexOf('cset');if(i>=0){values[Number(args[i+1].split('=')[1])]=Number(args[i+2]);}return '';};
+ try{const dsp=dspController({run,statePath:join(dir,'standby.json'),volumePath:join(dir,'local-volume.json')});
+  let r=await dsp.localVolume(1);assert.deepEqual(r,{level:100,active:false,supported:true});assert.equal(values[2],-10,'louder than saved is impossible');
+  r=await dsp.localVolume(-1);assert.equal(r.level,90);assert.equal(values[2],-20);assert.equal(values[3],-29);
+  for(let i=0;i<12;i++)r=await dsp.localVolume(-1);assert.equal(r.level,0);assert.equal(values[2],-110);assert.equal(values[3],-110);
+  r=await dsp.localVolume(1);assert.equal(r.level,10);
+  r=await dsp.localVolume(0);assert.deepEqual(r,{level:100,active:false,supported:true});assert.equal(values[2],-10);assert.equal(values[3],-20);
+  // Standby (local pause) and local volume never fight over the same gains.
+  await dsp.standby(true);await assert.rejects(dsp.localVolume(-1),/Resume local playback/);await dsp.standby(false);
+  await assert.rejects(dsp.localVolume(5),/quieter or louder/);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+test('the simple sound layer adds bass, treble and loudness to a preset, within the band limits',async()=>{
+ const {soundCurve,soundSettings}=await import('../shared/dsp-settings.js');
+ const band=(id,hz,value=0)=>({id,name:`${String(hz).padStart(5,'0')} Hz`,type:'INTEGER',min:-15,max:15,value});
+ const controls=[band(1,60,4),band(2,500),band(3,6000),band(4,12000),{id:9,name:'Channel Left Gain',type:'INTEGER',min:-110,max:0,value:-5},{id:22,name:'Equalizer',type:'ENUMERATED',min:0,max:1,value:1,options:[{value:0,label:'On'},{value:1,label:'Off'}]}];
+ const at=(list,id)=>list.find(c=>c.id===id).value;
+ let curve=soundCurve(controls,{preset:'flat',bass:4,treble:-2});
+ assert.equal(at(curve,1),4);assert.equal(at(curve,2),0);assert.equal(at(curve,3),-2);assert.equal(at(curve,4),-2);assert.equal(at(curve,22),0,'equalizer switched on');
+ curve=soundCurve(controls,{preset:'flat',loudness:true});assert.equal(at(curve,1),3);assert.equal(at(curve,4),2);assert.equal(at(curve,2),0);
+ curve=soundCurve(controls,{preset:'warm',treble:-6});assert.equal(at(curve,4),-9,'warm −3 plus treble −6');
+ curve=soundCurve(controls.map(c=>c.id===1?{...c,min:-3,max:3}:c),{preset:'flat',bass:6,loudness:true});assert.equal(at(curve,1),3,'clamped to the band maximum');
+ assert.deepEqual(soundSettings({preset:'loud',bass:99,treble:'x',loudness:1}),{preset:'warm',bass:6,treble:0,loudness:false});
+});

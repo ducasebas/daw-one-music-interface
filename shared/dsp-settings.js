@@ -26,3 +26,16 @@ export function startingDspControls(controls,choice='warm'){
  return dspPreset(controls,choice);
 }
 export function dspControlLabel(control){const hz=dspBandFrequency(control);return hz===null?control.name:hz>=1000?`${Number((hz/1000).toFixed(2))} kHz`:`${hz} Hz`;}
+/** GUI 3.14 SOUND: the simple layer. A preset curve plus bass, treble and loudness, each
+ * clamped to the band limits. The device manager still reserves headroom for positive gains. */
+export const soundDefaults=Object.freeze({preset:'warm',bass:0,treble:0,loudness:false});
+export function soundSettings(input={}){
+ const v=input&&typeof input==='object'?input:{};const step=n=>Number.isFinite(n)?Math.max(-6,Math.min(6,Math.round(n))):0;
+ return {preset:['flat','soft','warm'].includes(v.preset)?v.preset:soundDefaults.preset,bass:step(v.bass),treble:step(v.treble),loudness:v.loudness===true};
+}
+export function soundCurve(controls,input){
+ const sound=soundSettings(input),base=dspPreset(controls,sound.preset);
+ return base.map(c=>{const hz=dspBandFrequency(c);if(hz===null)return c;
+  const offset=(hz<250?sound.bass:0)+(hz>=4000?sound.treble:0)+(sound.loudness?(hz<150?3:hz>=8000?2:0):0);
+  return {...c,value:clamp(c,c.value+offset)};});
+}

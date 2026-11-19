@@ -142,5 +142,14 @@ test('HTTP: with a PIN, pairing a phone needs the unlocked wall settings',async(
   assert.equal((await call(port,'/api/remote/phones')).status,423);
   const admin=set.headers['set-cookie'][0].split(';')[0];
   assert.equal((await call(port,'/api/remote/pairing',{method:'POST',headers:{...wall,Cookie:admin},body:{action:'start'}})).status,200);
+  // GUI 3.12 PARTY: the wall can show the code without unlocking, but then the phone needs the PIN.
+  assert.equal((await call(port,'/api/remote/party',{method:'POST',body:{action:'start'}})).status,403,'device token still required');
+  const party=await call(port,'/api/remote/party',{method:'POST',headers:wall,body:{action:'start'}});
+  assert.equal(party.status,200);assert.equal(typeof party.json.phones,'number','no phone names without unlocking');assert.equal(party.json.pinRequired,true);
+  const code=party.json.url.split('#pair=')[1];
+  const ask=await call(remotePort,'/api/remote/pair',{method:'POST',body:{token:code,name:'Guest'}});assert.equal(ask.status,403);assert.equal(ask.json.code,'pin-required');
+  const typo=await call(remotePort,'/api/remote/pair',{method:'POST',body:{token:code,name:'Guest',pin:'000000'}});assert.equal(typo.status,403);assert.equal(typo.json.code,'pin-wrong');
+  const ok=await call(remotePort,'/api/remote/pair',{method:'POST',body:{token:code,name:'Guest',pin:'572941'}});assert.equal(ok.status,200,'a typo does not use up the code');
+  assert.equal((await call(remotePort,'/api/remote/pair',{method:'POST',body:{token:code,name:'Again',pin:'572941'}})).status,403,'single use');
  }finally{const ended=once(child,'exit');child.kill('SIGTERM');await ended;rmSync(dir,{recursive:true,force:true});}
 });

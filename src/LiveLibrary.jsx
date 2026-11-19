@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Artwork } from "./Artwork.jsx";
 import { Icon } from "./Icon.jsx";
 import {KeyboardField} from "./TouchKeyboard.jsx";
+import {Modal} from "./Modal.jsx";
 import {panelProfile} from "../shared/display.js";
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
 const kinds = [
@@ -38,7 +39,7 @@ export function LiveLibrary({
     [loading, setLoading] = useState(true),
     [error, setError] = useState(""),
     [pending, setPending] = useState(false),
-    [message, setMessage] = useState(""),[pendingId,setPendingId]=useState(null),[keyboardCycle,setKeyboardCycle]=useState(0);
+    [message, setMessage] = useState(""),[pendingId,setPendingId]=useState(null),[replaceChoice,setReplaceChoice]=useState(null),[keyboardCycle,setKeyboardCycle]=useState(0);
   const mounted = useRef(true);
   useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
   const generation = useRef(0),
@@ -118,7 +119,7 @@ export function LiveLibrary({
       abort.abort();
     };
   }, [view, kind, term, offset, parent?.id, favorite, source, available, state.refresh]);
-  async function play(item, option) {
+  async function play(item, option, {confirmReplace = false} = {}) {
     if (lock.current) return;
     lock.current = true;
     setPending(true);setPendingId(item.id);
@@ -127,9 +128,14 @@ export function LiveLibrary({
       const r = await fetch("/api/library/play", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: item.id, option }),
+        body: JSON.stringify({ id: item.id, option, ...(confirmReplace ? {confirmReplace: true} : {}) }),
       });
       const data = await r.json();
+      // Music is waiting in the queue: ask before throwing it away.
+      if (r.status === 409 && data.code === "queue-not-empty") {
+        if (mounted.current) setReplaceChoice({item, upcoming: data.upcoming || 0});
+        return;
+      }
       if (!r.ok) throw Error(data.error || "Actie geweigerd");
       onSnapshot(data);
       setMessage(
@@ -144,6 +150,28 @@ export function LiveLibrary({
       lock.current = false;
       setPending(false);setPendingId(null);
     }
+  }
+  async function choose(how) {
+    const choice = replaceChoice;
+    if (!choice || lock.current) return;
+    if (how === "cancel") { setReplaceChoice(null); return; }
+    if (how === "save") {
+      setReplaceChoice({...choice, saving: true, error: ""});
+      try {
+        const r = await fetch("/api/library/save-queue", {method: "POST", headers: {"Content-Type": "application/json"}, body: "{}"});
+        const data = await r.json();
+        if (!r.ok) throw Error(data.error || "The queue could not be saved. Nothing was replaced.");
+        setReplaceChoice(null);
+        await play(choice.item, "replace", {confirmReplace: true});
+        // Starting playback opens Now Playing, so announce the saved playlist in the player bar.
+        window.dispatchEvent(new CustomEvent("tunebox-notice", {detail: translateFormat("Saved the queue as “{name}” ({count} tracks)", {name: data.name, count: data.saved})}));
+      } catch (e) {
+        if (mounted.current) setReplaceChoice({...choice, saving: false, error: e.message});
+      }
+      return;
+    }
+    setReplaceChoice(null);
+    await play(choice.item, how === "replace" ? "replace" : how, {confirmReplace: how === "replace"});
   }
   function open(item) {
     if (["artist", "album", "playlist"].includes(item.type)) {
@@ -295,6 +323,19 @@ export function LiveLibrary({
       className={`live-library ${view === "search" && !parent && !touch ? "with-keyboard" : ""}`}
       aria-label={tr("Music Assistant bibliotheek")}
     >
+      {replaceChoice&&<Modal label="Music is waiting in the queue" onCancel={()=>choose('cancel')} className="queue-choice">
+        <h3>{tr('Music is waiting in the queue')}</h3>
+        <p>{translateFormat(replaceChoice.upcoming===1?'{count} track is queued after the current one. Someone may have added it.':'{count} tracks are queued after the current one. Someone may have added them.',{count:replaceChoice.upcoming})}</p>
+        <p className="queue-choice-item"><strong>{replaceChoice.item.name}</strong>{replaceChoice.item.artist?<span> · {replaceChoice.item.artist}</span>:null}</p>
+        <div className="queue-choice-actions">
+          <button disabled={replaceChoice.saving} onClick={()=>choose('next')}><strong>{tr('Play next')}</strong><span>{tr('After the current track; the queue stays')}</span></button>
+          <button disabled={replaceChoice.saving} onClick={()=>choose('add')}><strong>{tr('Add to the end')}</strong><span>{tr('The queue stays as it is')}</span></button>
+          <button disabled={replaceChoice.saving} onClick={()=>choose('save')}><strong>{tr(replaceChoice.saving?'Saving playlist…':'Save queue as playlist, then play')}</strong><span>{tr('Keeps the current queue in Music Assistant')}</span></button>
+          <button disabled={replaceChoice.saving} className="queue-choice-replace" onClick={()=>choose('replace')}><strong>{tr('Replace the queue')}</strong><span>{tr('The waiting tracks are removed')}</span></button>
+        </div>
+        {replaceChoice.error&&<p role="alert">{tr(replaceChoice.error)}</p>}
+        <button className="queue-choice-cancel" disabled={replaceChoice.saving} onClick={()=>choose('cancel')}>{tr('Cancel')}</button>
+      </Modal>}
       <div className="live-library-main">{tr(body)}</div>
       {view === "search" && !parent && !touch && (
         <div className="live-keyboard" aria-label={tr("Zoektoetsenbord")}>

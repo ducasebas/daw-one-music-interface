@@ -7,7 +7,7 @@ import {powerDefaults} from '../shared/power-settings.js';
 import {release} from '../shared/release.js';
 export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,onEvent=()=>{}}={}){
  let saved={};try{saved=JSON.parse(readFileSync(join(directory,'device.json'),'utf8'));}catch{}
- let policy=updateSettings(saved.policy),current={release:release.id,commit:null},previous=null,progress={status:'up-to-date'},available=null,running=false;
+ let localLevel=100,policy=updateSettings(saved.policy),current={release:release.id,commit:null},previous=null,progress={status:'up-to-date'},available=null,running=false;
  const save=()=>{mkdirSync(directory,{recursive:true});writeFileSync(join(directory,'device.json.tmp'),JSON.stringify({policy,setupComplete:saved.setupComplete})+'\n',{mode:0o600});renameSync(join(directory,'device.json.tmp'),join(directory,'device.json'));};
  const report=status=>{progress={status,checkedAt:new Date().toISOString(),percent:null};onEvent(status);};
  const phase=async status=>{report(status);await new Promise(r=>setTimeout(r,delay));};
@@ -40,6 +40,7 @@ export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,o
    if(command==='clock')return {supported:true,simulated:true,timeZone:'Europe/Amsterdam',automatic:true,synchronized:false,iso:new Date().toISOString()};
    if(command==='clock-set')return {saved:true,supported:true,simulated:true,...args};
    if(command==='local-standby')return {muted:args.enabled,simulated:true,supported:true};
+   if(command==='local-volume'){localLevel=args.step===0?100:Math.max(0,Math.min(100,localLevel+args.step*10));return {level:localLevel,active:localLevel<100,supported:true,simulated:true};}
    if(command==='dsp')return {supported:false,simulated:true,controls:[],faults:[]};
    if(command==='erase-setup')return {erased:false,simulated:true};
    if(command==='wifi')return {connected:true,simulated:true};

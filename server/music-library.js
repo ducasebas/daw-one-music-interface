@@ -128,9 +128,21 @@ export class MusicLibrary {
       this.pages.delete(this.pages.keys().next().value);
     return result;
   }
-  async enqueue(id, option) {
+  /** Tracks queued after the one that plays now (what a replace would throw away). */
+  upcoming() {
+    const q = this.service.playback?.queue;
+    return Array.isArray(q) ? q.filter((t, i) => i > 0 && t && t.id !== "none").length : 0;
+  }
+  async enqueue(id, option, {confirmReplace = false} = {}) {
     if (!["replace", "next", "add"].includes(option))
       throw Error("Onbekende wachtrijactie");
+    // Someone may have queued music: replacing it needs an explicit choice.
+    const waiting = option === "replace" && confirmReplace !== true ? this.upcoming() : 0;
+    if (waiting > 0) {
+      const e = Error("The queue has music waiting. Choose play next, add to the end, save it first, or replace it.");
+      e.code = "queue-not-empty"; e.upcoming = waiting; e.status = 409;
+      throw e;
+    }
     const item = this.get(id),
       s = this.service;
     if (
@@ -168,6 +180,23 @@ export class MusicLibrary {
     });
     await s.refresh();
     return { ok: true }; // Mutations are never retried.
+  }
+  /** Save the current queue (from the playing track on) as a Music Assistant playlist. */
+  async saveQueue(name) {
+    const s = this.service;
+    if (s.status !== "connected" || !s.config.controlEnabled || !s.queueId) throw Error("Music Assistant is unavailable or read-only");
+    const title = typeof name === "string" && name.trim() ? name.trim().slice(0, 80) : `TuneBox queue ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
+    const queue = await s.transport.command("player_queues/get", { queue_id: s.queueId });
+    const start = Number.isInteger(queue?.current_index) && queue.current_index > 0 ? queue.current_index : 0;
+    const items = await s.transport.command("player_queues/items", { queue_id: s.queueId, limit: 500, offset: start }, { maxItems: 500 });
+    const uris = (Array.isArray(items) ? items : []).map((i) => i?.media_item?.uri || i?.uri).filter((u) => typeof u === "string" && u.length < 512);
+    if (!uris.length) throw Error("The queue has no tracks to save");
+    const playlist = await s.transport.command("music/playlists/create_playlist", { name: title });
+    const playlistId = playlist?.item_id;
+    if (playlistId === undefined || playlistId === null) throw Error("Music Assistant did not create the playlist");
+    await s.transport.command("music/playlists/add_playlist_tracks", { db_playlist_id: playlistId, uris });
+    this.pages.clear();
+    return { saved: uris.length, name: title };
   }
   async favorite(id,enabled){
     if(typeof enabled!=='boolean')throw Error('Choose a favorite state');

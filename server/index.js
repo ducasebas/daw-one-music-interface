@@ -83,6 +83,7 @@ function syncContext(){
  const rooms=multiroom.status(),audio=audioAnalysis.get({selectedId:music?.playerId});
  return synchronizationContext({rooms,playback:music?.playback,audio,route:routeCache.value,connected:music?.status==='connected',bluetooth:bluetoothState().active,busy:multiroom.busy||music?.controlBusy===true});
 }
+let localStandby=false,localVolume={level:100,active:false};
 const snapshot = () => {
   const bluetooth=bluetoothState();
   const profileCount=syncProfiles.profiles.length,context=profileCount?syncContext():null;
@@ -96,7 +97,8 @@ const snapshot = () => {
     navigation:{buttonWakeId},
     youtube:youtube.get(),
     bluetooth,
-    remoteControl:{phones:remote.phones.length,pairing:remote.pairing()},
+    remoteControl:{phones:remote.phones.length,pairing:remote.pairing(),pinRequired:remotePinRequired()},
+    localControl:{standby:localStandby,level:localVolume.level,lowered:localVolume.active,needed:!!music&&music.status!=='connected'},
     playerBlocked:music?readPlayerStartupBlock(music.status==='connected'?(music.players||[]).some(p=>p.player_id===multiroom.localId):music.errorCode==='player-missing'?false:null):null,
     videoRevision,
     hardwareTelemetry: readSensorTelemetry(process.env.DAW_SENSOR_FILE),
@@ -179,7 +181,7 @@ app.use('/api',(q,r,next)=>{
    if(paired&&!remote.phone(q))return r.status(401).json({error:'Scan the remote code shown on TuneBox'});
    return next();
   }
-  if(path.startsWith('/remote/')&&!['/remote/pairing','/remote/forget'].includes(path)&&!(q.method==='GET'&&path==='/remote/phones'))return r.status(404).json({error:'Not found'});
+  if(path.startsWith('/remote/')&&!['/remote/pairing','/remote/party','/remote/forget'].includes(path)&&!(q.method==='GET'&&path==='/remote/phones'))return r.status(404).json({error:'Not found'});
   if(q.provisioning){
    const allowed=q.method==='GET'&&['/updates','/network','/security/status'].includes(path)||q.method==='POST'&&(path==='/setup/pair'||path==='/device'&&provisionCommands.includes(q.body?.command));
    if(!allowed)return r.status(403).json({error:'This setup connection only controls Wi-Fi'});
@@ -190,7 +192,20 @@ app.use('/api',(q,r,next)=>{
   next();
  }catch(e){r.status(e.status||423).json({error:e.message});}
 });
-let localStandby=false;
+// GUI 3.13 OFFLINE: when Music Assistant is unreachable, pause (local amplifier standby) and
+// volume (amplifier gains, never above the level when local control began) still work here.
+app.post('/api/local',async(q,r)=>{
+ if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before using local controls.'});
+ const action=q.body?.action;
+ try{
+  if(!['pause','resume','quieter','louder','restore'].includes(action)||Object.keys(q.body).length!==1)throw Error('Choose pause, resume, quieter, louder or restore');
+  const away=!!music&&music.status!=='connected';
+  if(['pause','quieter','louder'].includes(action)&&!away)throw Error('Music Assistant is connected: use the normal controls.');
+  if(action==='pause'||action==='resume'){const state=await manage({command:'local-standby',args:{enabled:action==='pause'}});localStandby=state.muted===true;}
+  else{const state=await manage({command:'local-volume',args:{step:action==='quieter'?-1:action==='louder'?1:0}});localVolume={level:Number.isInteger(state.level)?state.level:100,active:state.active===true};}
+  broadcast();r.set('Cache-Control','no-store').json(snapshot());
+ }catch(e){r.status(409).json({error:e.message});}
+});
 app.post('/api/button',async(q,r)=>{
  try{let token;try{token=readFileSync(process.env.DAW_BUTTON_TOKEN_FILE||'/run/daw-one-button/token','utf8').trim();}catch{return r.sendStatus(403);}const given=q.get('X-TuneBox-Button')||'';if(!/^[a-f0-9]{64}$/.test(token)||Buffer.byteLength(token)!==Buffer.byteLength(given)||!timingSafeEqual(Buffer.from(token),Buffer.from(given)))return r.sendStatus(403);
  if(q.body.type==='long'){await manage({command:'power-off',args:{confirmed:true}});return r.json({queued:true});}
@@ -425,9 +440,10 @@ app.post("/api/library/play", async (q, r) => {
   if (!library)
     return r.status(409).json({ error: "Live bibliotheek niet actief" });
   try {
-    await musicControl(()=>library.enqueue(q.body.id, q.body.option));
+    await musicControl(()=>library.enqueue(q.body.id, q.body.option, {confirmReplace:q.body.confirmReplace===true}));
     r.json(snapshot());
   } catch (e) {
+    if(e.code==='queue-not-empty')return r.status(409).json({error:e.message,code:e.code,upcoming:e.upcoming});
     runtime.record(Date.now(),'library-play-rejected',runtime.device.mode,e.message);
     debug.record('music','library-play-rejected',{code:Number.isFinite(e.code)?e.code:0});
     r.status(409).json({
@@ -436,6 +452,12 @@ app.post("/api/library/play", async (q, r) => {
         : e.message,
     });
   }
+});
+app.post('/api/library/save-queue',async(q,r)=>{
+  if(!library)return r.status(409).json({error:'Live library not active'});
+  if(!q.body||Object.keys(q.body).some(k=>k!=='name')||q.body.name!==undefined&&typeof q.body.name!=='string')return r.status(400).json({error:'Invalid playlist request'});
+  try{r.set('Cache-Control','no-store').json(await musicControl(()=>library.saveQueue(q.body.name)));}
+  catch(e){debug.record('music','save-queue-rejected',{});r.status(409).json({error:String(e.message).startsWith('Music Assistant')||/command|unknown/i.test(e.message)?'Music Assistant could not save the queue as a playlist. Nothing was replaced.':String(e.message).slice(0,160)});}
 });
 app.post('/api/library/favorite',async(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before changing favorites'});
@@ -562,19 +584,27 @@ function stopRemoteServerWhenUnused(){
  if(remote.phones.length||remote.pairing()||!remoteServer)return;
  clearTimeout(remoteStop);remoteStop=setTimeout(()=>{if(remote.phones.length||remote.pairing()||!remoteServer)return;for(const c of remoteClients)c.end();remoteClients.clear();remoteServer.close();remoteServer=null;},Number(process.env.DAW_REMOTE_IDLE_MS||30000));remoteStop.unref();
 }
-const remoteStatus=()=>({phones:remote.list(),pairing:remote.pairing(),listening:!!remoteServer,address:remoteAddress(),port:remotePort,limit:8});
+const remoteStatus=()=>({phones:remote.list(),pairing:remote.pairing(),listening:!!remoteServer,address:remoteAddress(),port:remotePort,limit:8,pinRequired:remotePinRequired()});
+// Hoisted: snapshot() may run during startup, before the security store is defined below.
+function remotePinRequired(){try{return security.status({headers:{}}).enabled===true;}catch{return false;}}
 app.get('/api/remote/phones',(q,r)=>{try{security.requireAdmin(q);r.set('Cache-Control','no-store').json(remoteStatus());}catch(e){r.status(e.status||423).json({error:e.message});}});
-app.post('/api/remote/pairing',async(q,r)=>{
- if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before pairing a remote'});
+// The Party sheet shows the pairing code without unlocking settings: when a settings PIN
+// exists the phone must enter that PIN, so the code alone never grants control.
+async function remotePairing(q,r,{party=false}={}){
+ const status=()=>party?{...remoteStatus(),phones:remote.list().length}:remoteStatus();
  try{
-  if(q.body?.action==='cancel'){remote.cancelPair();stopRemoteServerWhenUnused();return r.set('Cache-Control','no-store').json(remoteStatus());}
+  if(q.body?.action==='cancel'){remote.cancelPair();stopRemoteServerWhenUnused();return r.set('Cache-Control','no-store').json(status());}
   if(q.body?.action!=='start'||Object.keys(q.body).length!==1)throw Error('Unknown remote action');
   const address=process.env.DAW_REMOTE_ADDRESS||remoteAddress();if(!address)throw Error('Connect TuneBox to your home network first');
   const pair=remote.createPair();await startRemoteServer();
   clearTimeout(remoteExpiry);remoteExpiry=setTimeout(stopRemoteServerWhenUnused,pair.expiresAt-Date.now()+1000);remoteExpiry.unref();
-  r.set('Cache-Control','no-store').json({...remoteStatus(),url:`http://${address}:${remotePort}/remote.html#pair=${pair.token}`,expiresAt:pair.expiresAt});
+  r.set('Cache-Control','no-store').json({...status(),url:`http://${address}:${remotePort}/remote.html#pair=${pair.token}`,expiresAt:pair.expiresAt});
  }catch(e){r.status(e.status||409).json({error:e.code==='EADDRINUSE'?'The remote port is in use':e.message});}
-});
+}
+// Where a person on the home network finishes onboarding of a Music Assistant server on this Pi.
+app.get('/api/local-ma/address',(_q,r)=>{const address=process.env.DAW_REMOTE_ADDRESS||remoteAddress();r.set('Cache-Control','no-store').json({url:address?`http://${address}:8095`:null});});
+app.post('/api/remote/pairing',async(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before pairing a remote'});return remotePairing(q,r);});
+app.post('/api/remote/party',async(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before showing the party code'});return remotePairing(q,r,{party:true});});
 app.post('/api/remote/forget',(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before forgetting a phone'});
  try{if(q.body?.all===true)remote.forgetAll();else if(typeof q.body?.id==='string')remote.forget(q.body.id);else throw Error('Choose a phone');for(const c of [...remoteClients])if(!remote.phone(c.req)){c.end();remoteClients.delete(c);}stopRemoteServerWhenUnused();r.set('Cache-Control','no-store').json(remoteStatus());}
@@ -585,7 +615,14 @@ const remoteOnly=(q,r)=>{if(q.remote)return true;r.status(404).json({error:'Not 
 app.get('/api/remote/session',(q,r)=>{if(!remoteOnly(q,r))return;const phone=remote.phone(q);r.set('Cache-Control','no-store').json({paired:!!phone,name:phone?.name||null});});
 app.post('/api/remote/pair',(q,r)=>{
  if(!remoteOnly(q,r))return;
- try{if(!q.body||Object.keys(q.body).some(k=>!['token','name'].includes(k)))throw Error('Unexpected pairing request');const result=remote.complete(q.body.token,q.body.name);r.setHeader('Set-Cookie',remote.cookie(result.credential));clearTimeout(remoteExpiry);broadcast();r.set('Cache-Control','no-store').json({paired:true});}
+ try{if(!q.body||Object.keys(q.body).some(k=>!['token','name','pin'].includes(k)))throw Error('Unexpected pairing request');
+  // With a settings PIN, the phone proves it knows that PIN before the single-use code is spent.
+  if(remotePinRequired()){
+   if(!remote.pairing())throw Error('This remote code expired or was already used. Show a new code on TuneBox.');
+   if(q.body.pin===undefined)return r.status(403).json({error:'Enter the TuneBox settings PIN to pair this phone.',code:'pin-required'});
+   try{security.verify(q.body.pin);}catch(e){return r.status(e.status||403).json({error:e.status===429?e.message:'That PIN is not correct.',code:e.status===429?'pin-locked':'pin-wrong'});}
+  }
+  const result=remote.complete(q.body.token,q.body.name);r.setHeader('Set-Cookie',remote.cookie(result.credential));clearTimeout(remoteExpiry);broadcast();r.set('Cache-Control','no-store').json({paired:true});}
  catch(e){r.status(403).json({error:e.message});}
 });
 app.post('/api/remote/leave',(q,r)=>{if(!remoteOnly(q,r))return;try{remote.forget(remote.phone(q).id);}catch{}r.setHeader('Set-Cookie','tunebox_remote=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');setTimeout(stopRemoteServerWhenUnused,250).unref();r.json({paired:false});});
@@ -610,9 +647,9 @@ app.get('/api/remote/search',async(q,r)=>{
 });
 app.post('/api/remote/play',async(q,r)=>{
  if(!remoteOnly(q,r))return;
- try{if(!library)throw Error('Search needs Music Assistant');if(!q.body||Object.keys(q.body).some(k=>!['id','option'].includes(k))||typeof q.body.id!=='string'||!remoteQueueOptions.includes(q.body.option))throw Error('Choose play now or add to queue');
-  await musicControl(()=>library.enqueue(q.body.id,q.body.option));debug.record('remote','library-'+q.body.option,{accepted:true});broadcast();r.json(remoteView(snapshot()));}
- catch(e){r.status(409).json({error:String(e.message).startsWith('Music Assistant')?'Music Assistant refused the request; it was not retried':String(e.message).slice(0,180)});}
+ try{if(!library)throw Error('Search needs Music Assistant');if(!q.body||Object.keys(q.body).some(k=>!['id','option','confirmReplace'].includes(k))||typeof q.body.id!=='string'||!remoteQueueOptions.includes(q.body.option)||q.body.confirmReplace!==undefined&&typeof q.body.confirmReplace!=='boolean')throw Error('Choose play now or add to queue');
+  await musicControl(()=>library.enqueue(q.body.id,q.body.option,{confirmReplace:q.body.confirmReplace===true}));debug.record('remote','library-'+q.body.option,{accepted:true});broadcast();r.json(remoteView(snapshot()));}
+ catch(e){if(e.code==='queue-not-empty')return r.status(409).json({error:e.message,code:e.code,upcoming:e.upcoming});r.status(409).json({error:String(e.message).startsWith('Music Assistant')?'Music Assistant refused the request; it was not retried':String(e.message).slice(0,180)});}
 });
 if(remote.phones.length)startRemoteServer().catch(e=>console.error('Remote control listener unavailable:',e.code||e.message));
 // Public documentation only; never expose the repository root or configuration.

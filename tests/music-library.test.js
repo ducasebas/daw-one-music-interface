@@ -148,3 +148,26 @@ test('a known grouped member can start music on the verified group queue without
  await lib.enqueue(page.items[0].id,'replace');assert.deepEqual(calls.at(-1),['player_queues/play_media',{queue_id:'leader',media:album.uri,option:'replace'}]);
  s.players[1].volume_level=75;const before=calls.length;await assert.rejects(()=>lib.enqueue(page.items[0].id,'replace'),/every affected room/);assert.equal(calls.length,before);
 });
+test('replacing a queue with music waiting needs an explicit choice; next and add never ask',async()=>{
+ const {lib,calls,s}=fixture();const page=await lib.browse({});const id=page.items[0].id;
+ s.playback.queue=[{id:'now'},{id:'mine'},{id:'theirs'}];
+ const before=calls.length;
+ await assert.rejects(lib.enqueue(id,'replace'),e=>e.code==='queue-not-empty'&&e.upcoming===2);
+ assert.equal(calls.length,before,'nothing was sent to Music Assistant');
+ await lib.enqueue(id,'next');assert.equal(calls.at(-1)[1].option,'next');
+ await lib.enqueue(id,'add');assert.equal(calls.at(-1)[1].option,'add');
+ await lib.enqueue(id,'replace',{confirmReplace:true});assert.equal(calls.at(-1)[1].option,'replace');
+ s.playback.queue=[{id:'now'}];await lib.enqueue(id,'replace');assert.equal(calls.at(-1)[1].option,'replace','only the current track: no question');
+ s.playback.queue=[{id:'none'}];await lib.enqueue(id,'replace');
+});
+test('the queue is saved as a Music Assistant playlist from the playing track on',async()=>{
+ const {lib,calls,s}=fixture();const answers={'player_queues/get':{current_index:2},'player_queues/items':[{media_item:{uri:'tidal://track/1'}},{uri:'spotify://track/2'},{media_item:{}}],'music/playlists/create_playlist':{item_id:'77'}};
+ s.transport.command=async(c,a)=>{calls.push([c,a]);return answers[c];};
+ const result=await lib.saveQueue('Party mix');
+ assert.deepEqual(result,{saved:2,name:'Party mix'});
+ assert.deepEqual(calls.find(c=>c[0]==='player_queues/items')[1],{queue_id:'queue',limit:500,offset:2});
+ assert.deepEqual(calls.at(-1),['music/playlists/add_playlist_tracks',{db_playlist_id:'77',uris:['tidal://track/1','spotify://track/2']}]);
+ answers['music/playlists/create_playlist']=null;await assert.rejects(lib.saveQueue(),/did not create/);
+ answers['player_queues/items']=[];await assert.rejects(lib.saveQueue(),/no tracks/);
+ s.config.controlEnabled=false;await assert.rejects(lib.saveQueue(),/read-only/);
+});

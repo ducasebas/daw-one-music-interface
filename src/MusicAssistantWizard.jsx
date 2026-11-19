@@ -3,14 +3,14 @@ import {WizardShell} from './WizardShell.jsx';
 import {KeyboardField} from './TouchKeyboard.jsx';
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
 import {tr} from '../shared/i18n.js';
-export function MusicAssistantWizard({snapshot,offline,onClose,onComplete}){
+export function MusicAssistantWizard({snapshot,offline,onClose,onComplete,suggestedUrl}){
  const savedMusic=snapshot.mode==='music-assistant'?snapshot.musicAssistant:null;
  // Start from the saved server and player, even while the connection is down. Never the token.
- const device=useDeviceUpdates(),[step,setStep]=useState(0),[url,setUrl]=useState(()=>savedMusic?.serverUrl||''),[token,setToken]=useState(''),[probe,setProbe]=useState(null),[player,setPlayer]=useState(()=>savedMusic?.playerId||''),[control,setControl]=useState(()=>savedMusic?.controlEnabled===true),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false),[kind,setKind]=useState(''),generation=useRef(0);
+ const device=useDeviceUpdates(),[step,setStep]=useState(0),[url,setUrl]=useState(()=>suggestedUrl||savedMusic?.serverUrl||''),[token,setToken]=useState(''),[probe,setProbe]=useState(null),[player,setPlayer]=useState(()=>savedMusic?.playerId||''),[control,setControl]=useState(()=>savedMusic?.controlEnabled===true),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[saved,setSaved]=useState(false),[kind,setKind]=useState(''),generation=useRef(0);
  useEffect(()=>()=>{generation.current++;},[]);
  const touched=useRef(false);
  // A snapshot that arrives after opening (e.g. after a reconnect) fills fields the user has not edited.
- useEffect(()=>{if(touched.current||!savedMusic)return;if(savedMusic.serverUrl)setUrl(old=>old||savedMusic.serverUrl);if(savedMusic.playerId)setPlayer(old=>old||savedMusic.playerId);},[savedMusic?.serverUrl,savedMusic?.playerId]);
+ useEffect(()=>{if(touched.current||!savedMusic)return;if(savedMusic.serverUrl&&!suggestedUrl)setUrl(old=>old||savedMusic.serverUrl);if(savedMusic.playerId)setPlayer(old=>old||savedMusic.playerId);},[savedMusic?.serverUrl,savedMusic?.playerId]);
  function close(){generation.current++;setToken('');onClose();}
  const existing=snapshot.mode==='music-assistant'&&snapshot.musicAssistant?.connected&&snapshot.playback?.connected,bt=snapshot.bluetooth?.active;
  const usable=!offline&&device.info?.manager?.managed&&device.info?.controlToken&&!busy;
