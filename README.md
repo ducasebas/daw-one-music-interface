@@ -1,4 +1,6 @@
-> **GUI 3.8.3 · PD QUERY**, `2026.11.18-pd-query.1`, approved for preview publication on 19 November 2026. Includes the [HUSB238 source-query repair](docs/pd-source-query.md) and [clearer setup, Developer organization, visible waiting and cursor corrections](docs/usability-and-cursor.md). The previous readback remains 25 W active / 60 W offered; 100 W availability is not established. Publication is gated on Verify/signing; [validation and physical limits](docs/usability-validation.md) are recorded separately.
+> **Local candidate GUI 3.9.0 · REMOTE**, `2026.11.19-remote.1`, cache 49 — not published. Adds a [phone remote control](docs/remote-control.md): pair a phone once by QR code, then play, pause, skip, search and change volume over the home network. See [validation](docs/remote-validation.md).
+
+**Published GUI 3.8.3 · PD QUERY**, `2026.11.18-pd-query.1`, at `ffc0be8801584c83170e3f22ec0db0ca75f04caa`. Includes the [HUSB238 source-query repair](docs/pd-source-query.md) and [clearer setup, Developer organization, visible waiting and cursor corrections](docs/usability-and-cursor.md). The previous readback remains 25 W active / 60 W offered; 100 W availability is not established. [Validation and physical limits](docs/usability-validation.md) are recorded separately.
 
 **Published GUI 3.8.2 · PD60**, `2026.11.18-pd60.1`, at `2cdb40149c52a3fcb7301ee229cf22d9aaf6ca9b`: verified signed preview with [offered 20 V setup](docs/pd60-setup.md) and [test evidence](docs/pd60-validation.md). Installation/physical PD acceptance is unobserved here.
 

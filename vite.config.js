@@ -28,5 +28,5 @@ export default defineConfig({
       "/docs": "http://127.0.0.1:3001",
     },
   },
-  build: { target: "es2022" },
+  build: { target: "es2022", rollupOptions: { input: { main: "index.html", remote: "remote.html" } } },
 });

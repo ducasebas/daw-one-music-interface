@@ -13,10 +13,10 @@ import {playbackHardwareIdle} from '../deploy/manager/audio-idle.mjs';
 import {SyncProfiles,synchronizationContext,playbackRoute} from '../server/sync-profiles.js';
 
 test('network, Bluetooth and Music Assistant readiness are independent and can all be true',()=>{
- const snapshot={mode:'music-assistant',musicAssistant:{connected:true},playback:{connected:true},bluetooth:{supported:true,active:true,devices:[{connected:true}]},automaticDsp:{settings:{enabled:true}},sync:{active:{valid:true}}};
- const all=setupConnectionStatus(snapshot,{connected:true,interfaces:[{type:'ethernet',state:'connected'}]});assert.deepEqual(all,{network:true,ethernet:true,bluetooth:true,bluetoothConnected:true,music:true,automaticSound:true,sync:true});
+ const snapshot={mode:'music-assistant',musicAssistant:{connected:true},playback:{connected:true},bluetooth:{supported:true,active:true,devices:[{connected:true}]},automaticDsp:{settings:{enabled:true}},sync:{active:{valid:true}},remoteControl:{phones:1}};
+ const all=setupConnectionStatus(snapshot,{connected:true,interfaces:[{type:'ethernet',state:'connected'}]});assert.deepEqual(all,{network:true,ethernet:true,bluetooth:true,bluetoothConnected:true,music:true,automaticSound:true,sync:true,remote:true});
  assert.equal(setupConnectionStatus({...snapshot,mode:'simulation'},{}).bluetoothConnected,true);assert.equal(setupConnectionStatus({...snapshot,bluetooth:{supported:false}},{}).music,true);
- const empty=setupConnectionStatus();assert.equal(empty.music,false);assert.equal(empty.network,false);assert.equal(empty.bluetoothConnected,false);
+ const empty=setupConnectionStatus();assert.equal(empty.remote,false);assert.equal(empty.music,false);assert.equal(empty.network,false);assert.equal(empty.bluetoothConnected,false);
 });
 
 test('automation and microphone commands require fixed arguments and explicit confirmation',()=>{

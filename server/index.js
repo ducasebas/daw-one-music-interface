@@ -15,6 +15,7 @@ import {HostTelemetry} from './host-telemetry.js';
 import {DebugLog} from './debug-log.js';
 import {roomProfile,roomDefaults} from '../shared/room-measurement.js';
 import {DeviceSecurity} from './security.js';
+import {RemoteAccess,remoteAddress,remoteView,remoteEvent,remoteQueueOptions} from './remote-control.js';
 import {createServer} from 'node:http';
 import {finished} from 'node:stream/promises';
 import {timingSafeEqual,randomUUID} from 'node:crypto';
@@ -48,6 +49,7 @@ const stateDirectory=process.env.DAW_STATE_DIR||'.tunebox-state';
 let previousAudio=false;try{previousAudio=JSON.parse(readFileSync(join(stateDirectory,'audio-analysis.json'),'utf8')).enabled===true;}catch{}
 const preferences=new PreferencesStore(stateDirectory,{display:displayConfiguration,audioEnabled:previousAudio});
 const security=new DeviceSecurity(stateDirectory);
+const remote=new RemoteAccess(stateDirectory);
 const host=new HostTelemetry();
 const debug=new DebugLog(stateDirectory);
 const presence=new PresencePolicy(process.env.DAW_PRESENCE_FILE);
@@ -91,6 +93,7 @@ const snapshot = () => {
     navigation:{buttonWakeId},
     youtube:youtube.get(),
     bluetooth,
+    remoteControl:{phones:remote.phones.length,pairing:remote.pairing()},
     videoRevision,
     hardwareTelemetry: readSensorTelemetry(process.env.DAW_SENSOR_FILE),
     hostTelemetry:host.value,
@@ -138,15 +141,24 @@ const snapshot = () => {
   };
 };
 const streamWriter = snapshotWriter();
+const remoteWriter=snapshotWriter(),remoteClients=new Set();let lastRemoteView='';
 const publishDisplay=()=>{try{const path='/run/daw-one-display/activity.json';writeFileSync(path+'.tmp',JSON.stringify({awake:runtime.device.displayAwake,mode:runtime.device.mode,observedAt:Date.now()})+'\n',{mode:0o660});renameSync(path+'.tmp',path);}catch{}};
 const broadcast = () => {
   publishDisplay();
   const body = `data: ${JSON.stringify(snapshot())}\n\n`;
   for (const client of clients) streamWriter.write(client, body);
+  if(remoteClients.size){const view=JSON.stringify(remoteView(snapshot()));if(view!==lastRemoteView){lastRemoteView=view;for(const client of remoteClients)remoteWriter.write(client,`data: ${view}\n\n`);}}
 };
 music?.on("change", broadcast);
 music?.start();
 app.use(requestPolicy);
+// The phone remote listener serves the app shell, static assets and a small API allowlist.
+app.use((q,r,next)=>{
+ if(!q.remote)return next();
+ if(q.path.startsWith('/docs'))return r.sendStatus(404);
+ if(q.method==='GET'&&(q.path==='/'||q.path==='/index.html'))return r.redirect(302,'/remote.html');
+ next();
+});
 app.use('/api/preferences',express.json({limit:'64kb'}));
 app.use(express.json({ limit: "8kb" }));
 app.disable('x-powered-by');
@@ -156,12 +168,20 @@ const provisionCommands=['network','wifi-scan','wifi','hotspot-stop'];
 app.use('/api',(q,r,next)=>{
  try{
   const mutating=!['GET','HEAD','OPTIONS'].includes(q.method),path=q.path;
+  if(q.remote){
+   const open=q.method==='GET'&&path==='/remote/session'||q.method==='POST'&&path==='/remote/pair';
+   const paired=q.method==='GET'&&(['/remote/state','/remote/events','/remote/search'].includes(path)||/^\/artwork\/[^/]+$/.test(path))||q.method==='POST'&&['/remote/event','/remote/play','/remote/leave'].includes(path);
+   if(!open&&!paired)return r.status(403).json({error:'This remote can only control playback'});
+   if(paired&&!remote.phone(q))return r.status(401).json({error:'Scan the remote code shown on TuneBox'});
+   return next();
+  }
+  if(path.startsWith('/remote/')&&!['/remote/pairing','/remote/forget'].includes(path)&&!(q.method==='GET'&&path==='/remote/phones'))return r.status(404).json({error:'Not found'});
   if(q.provisioning){
    const allowed=q.method==='GET'&&['/updates','/network','/security/status'].includes(path)||q.method==='POST'&&(path==='/setup/pair'||path==='/device'&&provisionCommands.includes(q.body?.command));
    if(!allowed)return r.status(403).json({error:'This setup connection only controls Wi-Fi'});
    if(mutating&&path!=='/setup/pair'&&security.session(q)?.role!=='provision')return r.status(423).json({error:'Scan the setup link shown on the TuneBox'});
   }
-   const admin=mutating&&(['/device','/preferences','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/video/youtube','/youtube/settings','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/rooms'&&['group','leave','transfer','join'].includes(q.body?.action)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
+   const admin=mutating&&(['/remote/pairing','/remote/forget','/device','/preferences','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/video/youtube','/youtube/settings','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/rooms'&&['group','leave','transfer','join'].includes(q.body?.action)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
   if(admin&&!(q.provisioning&&path==='/device'&&provisionCommands.includes(q.body?.command)))security.requireAdmin(q);
   next();
  }catch(e){r.status(e.status||423).json({error:e.message});}
@@ -478,32 +498,36 @@ app.post("/api/scenario", (q, r) => {
     r.status(400).json({ error: e.message });
   }
 });
-app.post("/api/event", async (q, r) => {
-  try {
-    if(!['activity','display-timeout'].includes(q.body.type))manualUpdate.assertAvailable();
+/** Shared by the wall display and the phone remote, so both obey the same gates. */
+async function playbackEvent(body){
+    if(!['activity','display-timeout'].includes(body.type))manualUpdate.assertAvailable();
     const bt=bluetoothState();
-    if(q.body.sourceId!==undefined&&q.body.sourceId!==bt.sessionId)throw Error('The audio source changed; adjust its current volume again.');
-    if(bt.active&&['play','pause','previous','next','seek','volume','mute','queue-select','queue-remove','queue-add'].includes(q.body.type)){
-      if(q.body.type!=='volume'||!Number.isInteger(q.body.value)||q.body.sourceId!==bt.sessionId||Object.keys(q.body).some(k=>!['type','value','sourceId'].includes(k)))throw Error('Control Bluetooth playback on your phone, or switch back to Music Assistant.');
-      await manage({command:'bluetooth-volume',args:{value:q.body.value,sessionId:bt.sessionId}});broadcast();return r.json(snapshot());
+    if(body.sourceId!==undefined&&body.sourceId!==bt.sessionId)throw Error('The audio source changed; adjust its current volume again.');
+    if(bt.active&&['play','pause','previous','next','seek','volume','mute','queue-select','queue-remove','queue-add'].includes(body.type)){
+      if(body.type!=='volume'||!Number.isInteger(body.value)||body.sourceId!==bt.sessionId||Object.keys(body).some(k=>!['type','value','sourceId'].includes(k)))throw Error('Control Bluetooth playback on your phone, or switch back to Music Assistant.');
+      await manage({command:'bluetooth-volume',args:{value:body.value,sessionId:bt.sessionId}});broadcast();return;
     }
-    if(q.body.type==='volume'&&Number.isFinite(q.body.value)&&q.body.value>preferences.get().maxVolume&&preferences.get().revision>0)throw Error('Volume exceeds the saved limit');
-    if (['activity','display-timeout'].includes(q.body.type)) {
-      runtime.dispatch(q.body);
+    if(body.type==='volume'&&Number.isFinite(body.value)&&body.value>preferences.get().maxVolume&&preferences.get().revision>0)throw Error('Volume exceeds the saved limit');
+    if (['activity','display-timeout'].includes(body.type)) {
+      runtime.dispatch(body);
     } else if (music) {
       const selected=multiroom.status().rooms.find(p=>p.id===music.playerId);
-      if(selected?.type==='group'&&['volume','mute'].includes(q.body.type)){
-        const value=q.body.type==='volume'&&Number.isFinite(q.body.value)?Math.max(0,Math.min(music.config.volumeLimit,Math.round(q.body.value))):q.body.value;
-        await multiroom.act({action:q.body.type==='volume'?'group-volume':'group-mute',playerId:selected.id,value,revision:multiroom.status().revision});
-      }else await musicControl(()=>music.control(q.body));
+      if(selected?.type==='group'&&['volume','mute'].includes(body.type)){
+        const value=body.type==='volume'&&Number.isFinite(body.value)?Math.max(0,Math.min(music.config.volumeLimit,Math.round(body.value))):body.value;
+        await multiroom.act({action:body.type==='volume'?'group-volume':'group-mute',playerId:selected.id,value,revision:multiroom.status().revision});
+      }else await musicControl(()=>music.control(body));
       runtime.record(
         Date.now(),
         "music-command",
         runtime.device.mode,
-        `Music Assistant ${q.body.type} completed`,
+        `Music Assistant ${body.type} completed`,
       );
-    } else runtime.dispatch(q.body);
+    } else runtime.dispatch(body);
     broadcast();
+}
+app.post("/api/event", async (q, r) => {
+  try {
+    await playbackEvent(q.body);
     r.json(snapshot());
   } catch (e) {
     runtime.record(Date.now(), "error", runtime.device.mode, e.message);
@@ -511,6 +535,73 @@ app.post("/api/event", async (q, r) => {
     r.status(music ? 409 : 400).json({ error: e.message });
   }
 });
+// ---- Phone remote control -------------------------------------------------
+// A separate LAN listener runs only while a phone is paired or a QR code is shown.
+const remotePort=Number(process.env.DAW_REMOTE_PORT||3005),remoteHost=process.env.DAW_REMOTE_HOST||'0.0.0.0';
+let remoteServer=null,remoteStarting=null,remoteExpiry=null,remoteStop=null;
+async function startRemoteServer(){
+ clearTimeout(remoteStop);if(remoteServer)return;
+ remoteStarting||=new Promise((resolve,reject)=>{const s=createServer((request,response)=>{request.remote=true;app(request,response);});s.once('error',reject);s.listen(remotePort,remoteHost,()=>{remoteServer=s;resolve();});}).finally(()=>{remoteStarting=null;});
+ await remoteStarting;
+}
+// A revoked phone briefly still reaches the listener, so it can show "scan again" instead of an outage.
+function stopRemoteServerWhenUnused(){
+ if(remote.phones.length||remote.pairing()||!remoteServer)return;
+ clearTimeout(remoteStop);remoteStop=setTimeout(()=>{if(remote.phones.length||remote.pairing()||!remoteServer)return;for(const c of remoteClients)c.end();remoteClients.clear();remoteServer.close();remoteServer=null;},Number(process.env.DAW_REMOTE_IDLE_MS||30000));remoteStop.unref();
+}
+const remoteStatus=()=>({phones:remote.list(),pairing:remote.pairing(),listening:!!remoteServer,address:remoteAddress(),port:remotePort,limit:8});
+app.get('/api/remote/phones',(q,r)=>{try{security.requireAdmin(q);r.set('Cache-Control','no-store').json(remoteStatus());}catch(e){r.status(e.status||423).json({error:e.message});}});
+app.post('/api/remote/pairing',async(q,r)=>{
+ if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before pairing a remote'});
+ try{
+  if(q.body?.action==='cancel'){remote.cancelPair();stopRemoteServerWhenUnused();return r.set('Cache-Control','no-store').json(remoteStatus());}
+  if(q.body?.action!=='start'||Object.keys(q.body).length!==1)throw Error('Unknown remote action');
+  const address=process.env.DAW_REMOTE_ADDRESS||remoteAddress();if(!address)throw Error('Connect TuneBox to your home network first');
+  const pair=remote.createPair();await startRemoteServer();
+  clearTimeout(remoteExpiry);remoteExpiry=setTimeout(stopRemoteServerWhenUnused,pair.expiresAt-Date.now()+1000);remoteExpiry.unref();
+  r.set('Cache-Control','no-store').json({...remoteStatus(),url:`http://${address}:${remotePort}/remote.html#pair=${pair.token}`,expiresAt:pair.expiresAt});
+ }catch(e){r.status(e.status||409).json({error:e.code==='EADDRINUSE'?'The remote port is in use':e.message});}
+});
+app.post('/api/remote/forget',(q,r)=>{
+ if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before forgetting a phone'});
+ try{if(q.body?.all===true)remote.forgetAll();else if(typeof q.body?.id==='string')remote.forget(q.body.id);else throw Error('Choose a phone');for(const c of [...remoteClients])if(!remote.phone(c.req)){c.end();remoteClients.delete(c);}stopRemoteServerWhenUnused();r.set('Cache-Control','no-store').json(remoteStatus());}
+ catch(e){r.status(409).json({error:e.message});}
+});
+// Routes below are reached by paired phones through the remote listener only.
+const remoteOnly=(q,r)=>{if(q.remote)return true;r.status(404).json({error:'Not found'});return false;};
+app.get('/api/remote/session',(q,r)=>{if(!remoteOnly(q,r))return;const phone=remote.phone(q);r.set('Cache-Control','no-store').json({paired:!!phone,name:phone?.name||null});});
+app.post('/api/remote/pair',(q,r)=>{
+ if(!remoteOnly(q,r))return;
+ try{if(!q.body||Object.keys(q.body).some(k=>!['token','name'].includes(k)))throw Error('Unexpected pairing request');const result=remote.complete(q.body.token,q.body.name);r.setHeader('Set-Cookie',remote.cookie(result.credential));clearTimeout(remoteExpiry);broadcast();r.set('Cache-Control','no-store').json({paired:true});}
+ catch(e){r.status(403).json({error:e.message});}
+});
+app.post('/api/remote/leave',(q,r)=>{if(!remoteOnly(q,r))return;try{remote.forget(remote.phone(q).id);}catch{}r.setHeader('Set-Cookie','tunebox_remote=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');setTimeout(stopRemoteServerWhenUnused,250).unref();r.json({paired:false});});
+app.get('/api/remote/state',(q,r)=>{if(!remoteOnly(q,r))return;r.set('Cache-Control','no-store').json(remoteView(snapshot()));});
+app.get('/api/remote/events',(q,r)=>{
+ if(!remoteOnly(q,r))return;
+ if(remoteClients.size>=16)return r.status(429).json({error:'Too many remote connections'});
+ r.set({"Content-Type":"text/event-stream","Cache-Control":"no-cache",Connection:"keep-alive","X-Accel-Buffering":"no"});r.flushHeaders();
+ r.req=q;remoteWriter.write(r,`data: ${JSON.stringify(remoteView(snapshot()))}\n\n`);remoteClients.add(r);
+ q.on('close',()=>{remoteClients.delete(r);remoteWriter.remove(r);});
+});
+app.post('/api/remote/event',async(q,r)=>{
+ if(!remoteOnly(q,r))return;
+ try{const view=remoteView(snapshot()),body=remoteEvent(q.body,view);if(view.bluetooth&&body.type==='mute')throw Error('Use volume to quiet Bluetooth audio');
+  await playbackEvent(view.bluetooth&&body.type==='volume'?{...body,sourceId:bluetoothState().sessionId}:body);debug.record('remote',body.type,{accepted:true});r.json(remoteView(snapshot()));}
+ catch(e){debug.record('remote','rejected');r.status(409).json({error:String(e.message).slice(0,180),state:remoteView(snapshot())});}
+});
+app.get('/api/remote/search',async(q,r)=>{
+ if(!remoteOnly(q,r))return;
+ try{if(!library)throw Error('Search needs Music Assistant');const text=typeof q.query.q==='string'?q.query.q.trim():'',offset=Number(q.query.offset||0);if(!text||text.length>120)throw Error('Type something to search');r.set('Cache-Control','no-store').json(await library.browse({kind:'tracks',q:text,offset}));}
+ catch(e){r.status(409).json({error:e.message==='Music Assistant is niet verbonden'?'Music Assistant is not connected':String(e.message).slice(0,180)});}
+});
+app.post('/api/remote/play',async(q,r)=>{
+ if(!remoteOnly(q,r))return;
+ try{if(!library)throw Error('Search needs Music Assistant');if(!q.body||Object.keys(q.body).some(k=>!['id','option'].includes(k))||typeof q.body.id!=='string'||!remoteQueueOptions.includes(q.body.option))throw Error('Choose play now or add to queue');
+  await musicControl(()=>library.enqueue(q.body.id,q.body.option));debug.record('remote','library-'+q.body.option,{accepted:true});broadcast();r.json(remoteView(snapshot()));}
+ catch(e){r.status(409).json({error:String(e.message).startsWith('Music Assistant')?'Music Assistant refused the request; it was not retried':String(e.message).slice(0,180)});}
+});
+if(remote.phones.length)startRemoteServer().catch(e=>console.error('Remote control listener unavailable:',e.code||e.message));
 // Public documentation only; never expose the repository root or configuration.
 app.get(["/docs", "/docs/"], (_q, r) =>
   r
@@ -570,6 +661,7 @@ const server = app.listen(
 for (const signal of ["SIGINT", "SIGTERM"])
   process.on(signal, () => {
     phoneServer?.close();
+    for(const c of remoteClients)c.end();remoteServer?.close();
     music?.stop();
     audioAnalysis.close();automaticSound.close();localAudio.close();
     for (const c of clients) c.end();

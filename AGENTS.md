@@ -5,8 +5,8 @@ Standing rules for every agent (Claude, Codex) working in this repository. Past 
 ## Current state
 
 - Published preview OTA: GUI 3.8.3 · PD QUERY, release `2026.11.18-pd-query.1`, service-worker cache 48, commit `ffc0be8801584c83170e3f22ec0db0ca75f04caa` (19 November 2026).
-- Next candidate: bump `shared/release.js` and the cache in `public/sw.js` (next is 49).
-- Physical acceptance still open: 3.8.3 installation on the Pi, cursor hidden on cold start, real PD source query and 20 V contract/stability, INA228 VBUS wiring.
+- Local candidate (not published): GUI 3.9.0 · REMOTE, release `2026.11.19-remote.1`, cache 49, on branch `claude/ota-update-test-status-alqo95` (PR #6). Phone remote control; see [docs/remote-control.md](docs/remote-control.md). The next candidate after it uses cache 50.
+- Physical acceptance still open: 3.8.3 installation on the Pi, cursor hidden on cold start, real PD source query and 20 V contract/stability, INA228 VBUS wiring; for 3.9.0, phone pairing and control over the real home Wi-Fi.
 
 ## Approval per update
 
