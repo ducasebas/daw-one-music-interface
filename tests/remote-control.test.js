@@ -67,6 +67,16 @@ test('the remote view exposes playback only',()=>{
  const bt=remoteView({bluetooth:{active:true,volume:12,limit:30},playback:{queue:[]}});
  assert.equal(bt.playback.volume,12);assert.equal(bt.volumeLimit,30);assert.equal(bt.searchAvailable,false);
 });
+test('the remote mirrors the TuneBox style and what plays next, without telemetry or settings',()=>{
+ const view=remoteView({mode:'music-assistant',preferences:{themePreferences:{selected:'cinematic',mode:'manual'},clock:{timeZone:'Europe/Amsterdam'}},hostTelemetry:{power:{watts:12}},
+  playback:{index:0,sourceFormat:{codec:'flac',sampleRate:96000,bitDepth:24},queue:[{title:'Now'},{title:'Next song',artist:'Next artist',artwork:'/api/artwork/x'}]}});
+ assert.deepEqual(view.playback.next,{title:'Next song',artist:'Next artist'});assert.equal(view.playback.quality,'FLAC · 96 kHz · 24-bit');
+ assert.equal(view.style.skin,'cinematic');assert.match(view.style.accent,/^#[0-9a-f]{6}$/i);
+ assert.deepEqual(Object.keys(view.style).sort(),['accent','background','font','muted','radius','skin','surface','text']);
+ const json=JSON.stringify(view);for(const word of ['watts','timeZone','themePreferences'])assert.equal(json.includes(word),false,word);
+ const bt=remoteView({bluetooth:{active:true,volume:5,limit:30},playback:{index:0,queue:[{title:'Phone'},{title:'Hidden'}],sourceFormat:{codec:'aac'}}});
+ assert.equal(bt.playback.next,null);assert.equal(bt.playback.quality,null);
+});
 
 test('remote commands are allowlisted and volume rises in bounded steps',()=>{
  const view={playback:{volume:20},volumeLimit:40};

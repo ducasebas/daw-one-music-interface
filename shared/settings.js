@@ -1,5 +1,6 @@
 import {presentationTiming} from './presentation-timing.js';
 import { screenSettings } from "./wall.js";
+import {widgetSelection,widgetDefaults} from "./now-playing.js";
 export const defaults = {
   timing: presentationTiming(),
   syncAutomatic: false,
@@ -13,6 +14,8 @@ export const defaults = {
   artwork: "cover",
   correction: 0,
   startupAnimation: 'auto',
+  backdrop: 'art',
+  widgets: [...widgetDefaults],
 };
 export function settings(input = {}) {
   input = input && typeof input === "object" ? input : {};
@@ -23,6 +26,8 @@ export function settings(input = {}) {
     volumeLimitConfigured: input.volumeLimitConfigured===true,
     startupAnimation: ['off','auto','video','still'].includes(input.startupAnimation)?input.startupAnimation:'auto',
     screen: screenSettings(input.screen),
+    backdrop: input.backdrop === 'off' ? 'off' : 'art',
+    widgets: widgetSelection(input.widgets),
     visualizer: ["meters","spectrum"].includes(input.visualizer)?input.visualizer:"off",
     visualizerBands: input.visualizerBands===16?16:32,
     volumeControl: input.volumeControl === "circular" ? "circular" : "linear",

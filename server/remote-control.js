@@ -3,6 +3,8 @@ import {mkdirSync,readFileSync,writeFileSync,renameSync} from 'node:fs';
 import {join} from 'node:path';
 import {networkInterfaces} from 'node:os';
 import {controlVolumeLimit} from '../shared/volume.js';
+import {resolveTheme,themeVariables} from '../shared/themes.js';
+import {sourceQuality} from '../shared/now-playing.js';
 
 /**
  * Phone remote control. A phone pairs once by scanning a single-use QR code shown on
@@ -57,6 +59,20 @@ export function remoteAddress(interfaces=networkInterfaces()){
  return rows[0]?.address||null;
 }
 
+const text=(v,max=120)=>typeof v==='string'?v.slice(0,max):'';
+function remoteNext(p,bluetooth){
+ if(bluetooth||!Array.isArray(p.queue))return null;
+ const next=p.queue[(p.index||0)+1];
+ return next&&typeof next.title==='string'?{title:text(next.title),artist:text(next.artist)}:null;
+}
+/** The TuneBox skin colours and font family only, so the phone feels like the same device. */
+export function remoteStyle(snapshot){
+ try{
+  const theme=resolveTheme(snapshot?.preferences?.themePreferences,{device:snapshot?.device,playback:snapshot?.playback});
+  const v=themeVariables(theme);
+  return {skin:theme.id,background:v['--background'],surface:v['--surface'],text:v['--text'],muted:v['--muted'],accent:v['--accent'],font:v['--font'],radius:v['--radius']};
+ }catch{return null;}
+}
 /** Only what a remote needs. No settings, network names, telemetry or tokens. */
 export function remoteView(snapshot){
  const p=snapshot?.playback||{},track=Array.isArray(p.queue)?p.queue[p.index||0]:null,bluetooth=snapshot?.bluetooth?.active===true;
@@ -69,7 +85,10 @@ export function remoteView(snapshot){
   playback:{connected:p.connected===true,playing:p.playing===true,position:Number.isFinite(p.position)?p.position:0,observedAt:Number.isFinite(p.observedAt)?p.observedAt:0,
    title:typeof track?.title==='string'?track.title:'',artist:typeof track?.artist==='string'?track.artist:'',album:typeof track?.album==='string'?track.album:'',
    duration:Number.isFinite(track?.duration)?track.duration:null,artwork:typeof track?.artwork==='string'&&track.artwork.startsWith('/api/artwork/')?track.artwork:null,
-   volume,muted,playerName:typeof p.playerName==='string'?p.playerName.slice(0,60):''},
+   volume,muted,playerName:typeof p.playerName==='string'?p.playerName.slice(0,60):'',
+   // GUI 3.11: the same calm presentation as the wall: what plays next and the source quality.
+   next:remoteNext(p,bluetooth),quality:bluetooth?null:sourceQuality(p.sourceFormat)},
+  style:remoteStyle(snapshot),
   volumeLimit:bluetooth&&Number.isInteger(snapshot.bluetooth.limit)?snapshot.bluetooth.limit:controlVolumeLimit(snapshot||{}),
  };
 }

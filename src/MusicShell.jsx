@@ -27,6 +27,7 @@ import {KeyboardField} from './TouchKeyboard.jsx';
 import {settingsSections} from '../shared/interface.js';
 import {Rooms} from './Rooms.jsx';
 import {BluetoothPairing} from './BluetoothReceiver.jsx';
+import {NowPlayingBackdrop,NowPlayingWidgets} from './NowPlayingExtras.jsx';
 
 const duration = (n) =>
   Number.isFinite(n)
@@ -283,6 +284,7 @@ export function MusicShell({
       data-motion={direction}
     >
       <GlobalUpdateProgress />
+      {wall&&page==='playing'&&!bluetoothActive&&!video&&<NowPlayingBackdrop snapshot={snapshot} prefs={prefs} offline={offline}/>}
       {(sleeping||waking) && <SleepSurface prefs={prefs} snapshot={snapshot} offline={offline} wake={wake} waking={waking} />}
 
       <StartupScreen
@@ -696,6 +698,7 @@ export function MusicShell({
                 />
               )}
             </aside>
+            {wall&&<NowPlayingWidgets snapshot={snapshot} prefs={prefs} offline={offline} onOpen={target=>{if(target==='queue'||target==='rooms')go(target);else{const section=settingsSections.find(s=>s[0]===(target==='remote'?'connections':target));if(section){setSettingsPage(section[3]);go('settings');}}}}/>}
           </div>
         )}
       </section>

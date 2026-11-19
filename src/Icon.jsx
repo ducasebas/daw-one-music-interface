@@ -49,6 +49,8 @@ const paths = {
     "M3 8h18v13H3ZM4 8l15-6M6 12h5M6 16h5M18 15a2 2 0 1 1-4 0 2 2 0 0 1 4 0",
   speaker:
     "M6 2h12v20H6ZM15 15a3 3 0 1 1-6 0 3 3 0 0 1 6 0M13 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0",
+  phone: "M7 2h10v20H7ZM11 18h2",
+  hardware: "M13 2 4 14h7l-1 8 9-12h-7Z",
 };
 export function Icon({ name, size = 20, className='' }) {
   return (

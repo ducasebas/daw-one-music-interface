@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.19-polish.2",
-  label: "GUI 3.10.1 · HOTFIX",
+  id: "2026.11.19-lively.1",
+  label: "GUI 3.11.0 · LIVELY",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Hotfix: the progress bar can scrub on players without built-in seek (such as Squeezelite) by seeking through the Music Assistant queue.",
+  notes: "Lively: Now Playing shows the album art as a soft, blurred background that changes with each track, with widgets you choose in Display (clock, up next, quality, rooms, temperature, Wi-Fi, power, party). The phone remote now matches your TuneBox style. Includes the 3.10.1 scrubbing fix.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {
