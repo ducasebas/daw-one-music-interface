@@ -25,8 +25,11 @@ export function analyse(signal,recording,calibration=[]){
  const reference=median(points.filter(p=>p.hz>=500&&p.hz<=2000).map(p=>p.db));for(const p of points)p.db=Math.round((p.db-reference)*10)/10;
  // IFFT(Y * conj(X)): distinguish the actual sweep from unrelated sound with a high SNR.
  for(let k=0;k<n;k++){const real=yr[k]*xr[k]+yi[k]*xi[k],imag=yi[k]*xr[k]-yr[k]*xi[k];yr[k]=real;yi[k]=-imag;}
- fft(yr,yi);let peak=0,lag=0;
- for(let k=-Math.floor(rate*.3);k<=rate;k++){const value=Math.abs(yr[(k+n)%n]/n);if(value>peak){peak=value;lag=k;}}
+ fft(yr,yi);let peak=0,lag=0;const search=new Float32Array(Math.floor(rate*.3)+rate+1);
+ for(let k=-Math.floor(rate*.3),j=0;k<=rate;k++,j++){const value=Math.abs(yr[(k+n)%n]/n);search[j]=value;if(value>peak){peak=value;lag=k;}}
+ // A real sweep compresses into one sharp impulse-response peak; unrelated sound does not.
+ // Prominence is robust to room reverberation and speaker/microphone coloration.
+ const floor=Float32Array.from(search).sort()[search.length>>1]||1e-30,prominence=peak/Math.max(1e-30,floor);
  const correlation=peak/Math.sqrt(Math.max(1e-30,energy*referenceEnergy)),complete=leadSeconds*rate+lag>=0&&(leadSeconds+sweepSeconds)*rate+lag<recording.length-rate*.1;
  const segments=[];
  for(let part=0;part<3;part++){
@@ -34,7 +37,12 @@ export function analyse(signal,recording,calibration=[]){
   for(let i=start;i<end;i++){const x=signal[i],y=recording[i+lag]||0;sum+=x*y;a+=x*x;b+=y*y;}
   segments.push(Math.abs(sum)/Math.sqrt(Math.max(1e-30,a*b)));
  }
- const sweepDetected=complete&&correlation>=.08&&segments.every(v=>v>=.03);
+ const power0=(a,b)=>{a=Math.max(0,Math.floor(a));b=Math.min(recording.length,Math.floor(b));if(b<=a)return 0;let e=0;for(let i=a;i<b;i++)e+=recording[i]*recording[i];return e/(b-a);};
+ const leadQuiet=power0(rate*.15,leadSeconds*rate+lag-rate*.03);
+ // The middle and last thirds must be clearly louder than the quiet lead-in: catches truncated captures.
+ const thirds=[0,1,2].map(part=>power0((leadSeconds+part*sweepSeconds/3+.04)*rate+lag,(leadSeconds+(part+1)*sweepSeconds/3-.04)*rate+lag));
+ // The bass third is left out: small speakers and room rumble legitimately mask it.
+ const sweepDetected=complete&&prominence>=12&&thirds.slice(1).every(p=>p>Math.max(2*leadQuiet,1e-12));
  // Signal power only while the sweep plays; noise from the quiet lead-in after the
  // microphone settles (its first 150 ms can hold a start-up click) and from the late tail.
  const power=(a,b)=>{a=Math.max(0,Math.floor(a));b=Math.min(recording.length,Math.floor(b));if(b-a<rate*.08)return null;let e=0;for(let i=a;i<b;i++)e+=recording[i]*recording[i];return e/(b-a);};
@@ -43,6 +51,6 @@ export function analyse(signal,recording,calibration=[]){
  const signalPower=sweepDetected?power(sweepStart,sweepEnd):null;
  const snrDb=signalPower!==null&&quiet.length?10*Math.log10(Math.max(1e-15,signalPower)/Math.max(1e-15,Math.min(...quiet))):legacySnrDb;
  const neededDb=snrDb<minimumSnrDb?Math.ceil(minimumSnrDb-snrDb):0;
- return {valid:snrDb>=minimumSnrDb&&clipPercent<.1&&sweepDetected,snrDb:Math.round(snrDb*10)/10,neededDb,clipPercent:Math.round(clipPercent*100)/100,sweepDetected,correlation:Math.round(correlation*1000)/1000,captureDelayMs:Math.round(lag/rate*10000)/10,points,calibrated:calibration.length>0,absoluteSpl:false,reference:'Relative to median 500–2000 Hz; 1/6-octave bands',warnings:[...(snrDb<minimumSnrDb?['Measurement signal is too close to the noise floor.']:[]),...(clipPercent>=.1?['Microphone clipping detected; lower the level and measure again.']:[]),...(!sweepDetected?['A complete reference sweep was not detected. Check the microphone, output and room noise, then repeat.']:[]),...(!calibration.length?['No microphone calibration: response includes microphone coloration.']:[])]};
+ return {valid:snrDb>=minimumSnrDb&&clipPercent<.1&&sweepDetected,snrDb:Math.round(snrDb*10)/10,neededDb,clipPercent:Math.round(clipPercent*100)/100,sweepDetected,correlation:Math.round(correlation*1000)/1000,prominence:Math.round(prominence*10)/10,captureDelayMs:Math.round(lag/rate*10000)/10,points,calibrated:calibration.length>0,absoluteSpl:false,reference:'Relative to median 500–2000 Hz; 1/6-octave bands',warnings:[...(snrDb<minimumSnrDb?['Measurement signal is too close to the noise floor.']:[]),...(clipPercent>=.1?['Microphone clipping detected; lower the level and measure again.']:[]),...(!sweepDetected?['A complete reference sweep was not detected. Check the microphone, output and room noise, then repeat.']:[]),...(!calibration.length?['No microphone calibration: response includes microphone coloration.']:[])]};
 }
 export function cutProposal(channels){if(!channels.length||channels.some(c=>!c.valid))return [];return channels[0].points.filter(p=>p.hz<=8000).map((p,i)=>({hz:p.hz,db:-Math.min(6,Math.max(0,Math.round(channels.reduce((n,c)=>n+c.points[i].db,0)/channels.length)))}));}
