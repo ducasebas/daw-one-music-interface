@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.19-lively.4",
-  label: "GUI 3.11.3 · QUEUE",
+  id: "2026.11.19-party.1",
+  label: "GUI 3.12.0 · PARTY",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Queue: when music is already waiting in the queue, Play now first asks what you want: play next, add to the end, save the queue as a playlist and then play, or replace it. The phone remote asks too.",
+  notes: "Party: tap the Party widget on Now Playing to show the phone code to your guests. With a settings PIN, guests also enter that PIN on their phone. The sheet shows how many phones are paired, whether the music keeps playing, and which rooms the phones control.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

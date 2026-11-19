@@ -2029,7 +2029,6 @@
   "Saved the queue as “{name}” ({count} tracks)": "Wachtrij opgeslagen als “{name}” ({count} nummers)",
   "The queue has music waiting. Choose play next, add to the end, save it first, or replace it.": "Er staat muziek in de wachtrij. Kies als volgende, achteraan, eerst opslaan of vervangen.",
   "Music Assistant could not save the queue as a playlist. Nothing was replaced.": "Music Assistant kon de wachtrij niet als playlist opslaan. Er is niets vervangen.",
-  "Queue: when music is already waiting in the queue, Play now first asks what you want: play next, add to the end, save the queue as a playlist and then play, or replace it. The phone remote asks too.": "Wachtrij: staat er al muziek in de wachtrij, dan vraagt Nu afspelen eerst wat je wilt: als volgende afspelen, achteraan toevoegen, de wachtrij als playlist opslaan en dan afspelen, of vervangen. De telefoon-remote vraagt het ook.",
   "Close": "Sluiten",
   "This code has expired.": "Deze code is verlopen.",
   "The party code is not available right now.": "De feestcode is nu niet beschikbaar.",
@@ -2042,5 +2041,6 @@
   "Keep the music playing is on: the music continues when the queue ends.": "Blijf muziek spelen staat aan: de muziek gaat door als de wachtrij op is.",
   "Keep the music playing is on.": "Blijf muziek spelen staat aan.",
   "Phones control the group that {room} plays in. Other rooms in that group play along.": "Telefoons bedienen de groep waarin {room} speelt. Andere ruimtes in die groep spelen mee.",
-  "Phones control {room} only. Other rooms are not affected.": "Telefoons bedienen alleen {room}. Andere ruimtes merken er niets van."
+  "Phones control {room} only. Other rooms are not affected.": "Telefoons bedienen alleen {room}. Andere ruimtes merken er niets van.",
+  "Party: tap the Party widget on Now Playing to show the phone code to your guests. With a settings PIN, guests also enter that PIN on their phone. The sheet shows how many phones are paired, whether the music keeps playing, and which rooms the phones control.": "Feest: tik op de Feest-widget op Nu spelen om de telefooncode aan je gasten te tonen. Met een pincode voor instellingen voeren gasten die pincode ook in op hun telefoon. Het scherm toont hoeveel telefoons gekoppeld zijn, of de muziek blijft spelen en welke ruimtes de telefoons bedienen."
 }
