@@ -284,7 +284,7 @@ export function MusicShell({
       data-motion={direction}
     >
       <GlobalUpdateProgress />
-      {wall&&page==='playing'&&!bluetoothActive&&!video&&<NowPlayingBackdrop snapshot={snapshot} prefs={prefs} offline={offline}/>}
+      {wall&&(page==='settings'||page==='playing'&&!bluetoothActive&&!video)&&<NowPlayingBackdrop snapshot={snapshot} prefs={prefs} offline={offline}/>}
       {(sleeping||waking) && <SleepSurface prefs={prefs} snapshot={snapshot} offline={offline} wake={wake} waking={waking} />}
 
       <StartupScreen
@@ -780,7 +780,7 @@ export function MusicShell({
           disabled={
             !control ||
             pending ||
-            (!simulated && !playback.capabilities?.includes("volume_mute"))
+            (!simulated && !["volume_mute","volume_mute_soft"].some(c=>playback.capabilities?.includes(c)))
           }
           onClick={() => command({ type: "mute", value: !muted })}
         >

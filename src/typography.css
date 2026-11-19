@@ -1,0 +1,73 @@
+/* GUI interface typography. One readable typeface across the shell, Settings, wizards, the
+   on-screen keyboard, dialogs and full-screen overlays. Chosen under Settings → Appearance:
+   Inter (default), Manrope Heavy, or the skin's own font. Fonts are self-hosted (no network). */
+@font-face{font-family:"Inter Variable";src:url("/fonts/Inter-Variable-latin.woff2") format("woff2-variations"),url("/fonts/Inter-Variable-latin.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Inter Variable";src:url("/fonts/Inter-Variable-latin-ext.woff2") format("woff2-variations"),url("/fonts/Inter-Variable-latin-ext.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+html[data-font=inter]{--ui-font:"Inter Variable",Inter,Manrope,"Helvetica Neue",Arial,sans-serif}
+html[data-font=manrope-heavy]{--ui-font:Manrope,"Inter Variable","Helvetica Neue",Arial,sans-serif}
+/* The skin's inline --font loses to the chosen interface font (important beats normal inline). */
+html[data-font=inter] :is(body,.music2,.wizard-skin,.first-start,.touch-keyboard,dialog,.power-off-surface,.update-overlay),
+html[data-font=manrope-heavy] :is(body,.music2,.wizard-skin,.first-start,.touch-keyboard,dialog,.power-off-surface,.update-overlay){--font:var(--ui-font)!important;--font-body:var(--ui-font)!important;font-family:var(--ui-font)}
+html:is([data-font=inter],[data-font=manrope-heavy]) :is(.music2,.first-start,.touch-keyboard,dialog) :is(button,input,select,textarea,label,output){font-family:var(--ui-font)}
+html[data-font=inter] body{font-feature-settings:"cv11","ss01";font-optical-sizing:auto;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+/* Manrope Heavy: the whole interface one step bolder, headings at the heaviest weight. */
+html[data-font=manrope-heavy] :is(.music2,.first-start,.touch-keyboard,dialog,.power-off-surface){font-variation-settings:"wght" 620}
+html[data-font=manrope-heavy] :is(h1,h2,h3,h4,strong,b,.m2-brand,.hub-heading h2){font-variation-settings:"wght" 800}
+html[data-font=manrope-heavy] :is(button,select,label){font-variation-settings:"wght" 700}
+
+/* Readable sizes on the 7" 1280×800 DSI panel: body ≥ 18 px, secondary ≥ 15 px, no hairline weights. */
+html:is([data-font=inter],[data-font=manrope-heavy]) .music2[data-panel="wall-16-10"]{
+  --type-title:30px;--type-heading:25px;--type-label:19px;--type-body:18px;--type-small:15px}
+.music2[data-panel="wall-16-10"] .hub-heading h2{font-size:var(--type-title,30px);font-weight:600;letter-spacing:-.01em}
+.music2[data-panel="wall-16-10"] .hub-heading .hub-back{font-size:var(--type-label,19px);font-weight:500}
+.music2[data-panel="wall-16-10"] .settings-hub-v2>.settings-categories button{font-size:var(--type-label,19px);font-weight:500}
+.music2[data-panel="wall-16-10"] .settings-hub-v2.settings-overview>.settings-categories button>span{font-size:23px;font-weight:600}
+.music2[data-panel="wall-16-10"] .settings-hub-v2.settings-overview>.settings-categories button>small{font-size:16px;font-weight:450;color:var(--muted);line-height:1.4}
+.music2[data-panel="wall-16-10"] .hub-section>h3,.music2[data-panel="wall-16-10"] .hub-body h3{font-size:var(--type-heading,25px);font-weight:600;letter-spacing:-.005em}
+.music2[data-panel="wall-16-10"] .hub-body h4{font-size:21px;font-weight:600}
+.music2[data-panel="wall-16-10"] .hub-fields>label,.music2[data-panel="wall-16-10"] .hub-check,.music2[data-panel="wall-16-10"] .touch-field{font-size:var(--type-label,19px);font-weight:500}
+.music2[data-panel="wall-16-10"] .hub-body p{font-size:var(--type-body,18px);font-weight:400;line-height:1.55}
+.music2[data-panel="wall-16-10"] .hub-body small{font-size:var(--type-small,15px)}
+.music2[data-panel="wall-16-10"] .hub-body button,.music2[data-panel="wall-16-10"] .hub-savebar button,.music2[data-panel="wall-16-10"] .hub-heading .hub-restore{font-size:18px;font-weight:500}
+.music2[data-panel="wall-16-10"] .hub-body select,.music2[data-panel="wall-16-10"] .hub-body input:not([type=checkbox]):not([type=range]){font-size:19px;font-weight:450}
+.music2[data-panel="wall-16-10"] .hub-savebar [role=status]{font-size:17px;font-weight:500}
+.music2 .hub-section-links button{font-weight:500}
+.music2[data-panel="wall-16-10"] .m2-header nav button{font-weight:500}
+.music2[data-panel="wall-16-10"] .m2-playing h2{font-weight:600;letter-spacing:-.015em}
+
+/* Wizards */
+html .first-start h2{font-size:34px;font-weight:600;letter-spacing:-.01em}
+html .first-start h3,html .setup-journey h3{font-size:26px;font-weight:600}
+html .first-start p,html .setup-journey p{font-size:19px;line-height:1.55;font-weight:400}
+html .first-start label,html .first-start .touch-field{font-size:19px;font-weight:500}
+html .first-start button{font-size:19px;font-weight:500}
+html .setup-journey .journey-steps li{font-size:18px;font-weight:500}
+html .setup-journey .setup-cards strong{font-weight:600}
+
+/* Full-screen interaction: keyboard, confirmations, notifications, power. */
+.touch-keyboard>header h2{font-weight:600}
+.touch-keyboard .keyboard-keys button{font-weight:500}
+.touch-keyboard .keyboard-entry input{font-weight:500}
+.keyboard-suggestions strong{font-weight:600}
+.hub-confirm h3,.power-dialog h2,.wall-notifications h2,.wall-notifications h3{font-weight:600;letter-spacing:-.005em}
+.hub-confirm p,.power-dialog p,.wall-notifications p{font-size:19px;line-height:1.55}
+
+/* Font picker (Settings → Appearance): each tile renders its own sample. */
+.font-choice{margin-top:22px;display:flex;flex-direction:column;gap:12px}
+.font-choice h4{margin:0;font-size:21px;font-weight:600}
+.font-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.music2 .font-tiles button{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:104px;padding:16px 18px;text-align:left;border:2px solid var(--divider,var(--border-color));border-radius:14px;background:var(--panel,var(--surface))}
+.music2 .font-tiles button[aria-checked=true]{border-color:var(--accent);box-shadow:inset 0 -3px var(--accent)}
+.font-tiles strong{font-size:24px;line-height:1.1}
+.font-tiles span{font-size:15px;color:var(--muted);line-height:1.35}
+.music2 .font-tiles [data-font-option=inter],.music2 .font-tiles [data-font-option=inter] *{font-family:"Inter Variable",Inter,sans-serif!important;font-variation-settings:normal!important}
+.music2 .font-tiles [data-font-option=manrope-heavy],.music2 .font-tiles [data-font-option=manrope-heavy] *{font-family:Manrope,sans-serif!important;font-variation-settings:"wght" 760!important}
+.music2 .font-tiles [data-font-option=skin] strong{font-family:inherit}
+/* Refinements after review on the 1280×800 layout. */
+.touch-keyboard .keyboard-keys button{font-size:26px}
+.touch-keyboard .keyboard-row:last-child button{font-size:21px}
+html .first-start .touch-field{margin-top:12px}
+.music2[data-panel="wall-16-10"] .settings-hub-v2:not(.settings-overview){grid-template-columns:224px minmax(0,1fr)}
+.music2[data-panel="wall-16-10"] .settings-hub-v2>.settings-categories button>span{white-space:nowrap}

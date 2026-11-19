@@ -2,6 +2,7 @@
 
 The project’s own software and documentation are licensed under MIT; see LICENSE. Dependencies and separately identified assets retain their own terms. Repository visibility is independent of these licences.
 
+- Inter font (variable, latin and latin-ext subsets from @fontsource-variable/inter 5.1.0): bundled under the SIL Open Font License; see `public/fonts/OFL-Inter.txt`.
 - Manrope font: bundled under the SIL Open Font License; see `public/fonts/OFL-Manrope.txt`. Keep that licence with redistributed font files.
 - npm dependencies retain their own licences. Inspect the installed package licence files and package-lock metadata; this document does not replace their notices.
 - The shared SVG icon components are authored as repository source, not a downloaded external icon collection. They are covered by the project’s MIT licence.

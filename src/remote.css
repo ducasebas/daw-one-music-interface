@@ -79,3 +79,7 @@ body{font-family:var(--remote-font,Arial,sans-serif)}
 .remote-transport .remote-main{color:var(--remote-bg)}
 .remote .remote-transport button{border-radius:50%}
 :root[data-skin]:not([data-skin=""]){--remote-line:color-mix(in srgb,var(--remote-text) 20%,transparent)}
+@font-face{font-family:"Inter Variable";src:url("/fonts/Inter-Variable-latin.woff2") format("woff2");font-weight:100 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212}
+@font-face{font-family:Manrope;src:url("/fonts/Manrope-Variable.ttf") format("truetype");font-weight:200 800;font-display:swap}
+:root[data-weight=heavy] body{font-variation-settings:"wght" 620}
+:root[data-weight=heavy] :is(h1,h2,strong,button){font-variation-settings:"wght" 800}

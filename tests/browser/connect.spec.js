@@ -81,3 +81,12 @@ test('a Music Assistant player without native seek can still be scrubbed through
  await expect.poll(()=>seeks.length).toBe(1);expect(Math.abs(seeks[0]-120)).toBeLessThanOrEqual(8);
  state.playback.capabilities=['volume_set','volume_mute'];await page.reload();await page.getByRole('button',{name:'Now Playing',exact:true}).first().click();await expect(seek).toBeDisabled();
 });
+test('a player without native mute can still be muted from Now Playing',async({page})=>{
+ const state=await live(page);state.playback.capabilities=['volume_set','volume_mute_soft'];
+ const sent=[];await page.route('**/api/event',r=>{const e=r.request().postDataJSON();sent.push(e);if(e.type==='mute'){state.playback.muted=e.value;}return r.fulfill({json:state});});
+ await page.goto(url);await page.getByRole('button',{name:'Now Playing',exact:true}).first().click();
+ const mute=page.locator('.m2-player').getByRole('button',{name:'Mute',exact:true});await expect(mute).toBeEnabled();
+ await mute.click();await expect.poll(()=>sent.filter(e=>e.type==='mute').length).toBe(1);expect(sent.find(e=>e.type==='mute')).toEqual({type:'mute',value:true});
+ state.playback.capabilities=['volume_set'];await page.reload();await page.getByRole('button',{name:'Now Playing',exact:true}).first().click();
+ await expect(page.locator('.m2-player').getByRole('button',{name:/^(Mute|Unmute)$/})).toBeDisabled();
+});

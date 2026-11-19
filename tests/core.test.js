@@ -174,6 +174,7 @@ test("settings whitelist, clamp and safe defaults", () => {
       screen: { mode: "clock", latitude: null, longitude: null },
       backdrop: "art",
       widgets: ["clock", "upnext", "source"],
+      font: "inter",
       startupAnimation: "auto",
       visualizer: "off",
       visualizerBands: 32,

@@ -98,6 +98,8 @@ export class LiveMusicService extends EventEmitter {
     this.retryTimer = null;
     this.pollTimer = null;
     this.queueIds = [];
+    // Mute for players without native mute: the volume to restore, kept in memory only.
+    this.softMute = null;
     this.queueActive = false;
     this.players = [];
     this.playerId = config.playerId;
@@ -255,7 +257,7 @@ export class LiveMusicService extends EventEmitter {
               if(volume!==null)capabilities.add('volume_set');else capabilities.delete('volume_set');
               if(outputs.length&&outputs.every(p=>p.available&&p.canMute))capabilities.add('volume_mute');else capabilities.delete('volume_mute');
               this.playback.capabilities=[...capabilities];
-            }
+            }else this.applySoftMute(selected);
           }
         }
         this.notify();
@@ -353,15 +355,50 @@ export class LiveMusicService extends EventEmitter {
     if (action === "mute") {
       if (
         typeof event.value !== "boolean" ||
-        !this.playback.capabilities.includes("volume_mute")
+        !["volume_mute", "volume_mute_soft"].some((c) => this.playback.capabilities.includes(c))
       )
         throw Error("Mute unavailable");
       value = event.value;
+      if (!this.playback.capabilities.includes("volume_mute")) return this.softMuteControl(value);
     }
     try {
       if (action === "seek" && !this.playback.capabilities.includes("seek"))
         await this.transport.queueSeek(this.playback.queueId, value);
       else await this.transport.control(this.playerId, action, value);
+      await this.refresh();
+    } catch {
+      throw Error("Music Assistant command failed; command was not retried");
+    }
+  }
+  /** A player with volume but no native mute (e.g. Squeezelite in Music Assistant) gets a
+   * soft mute: volume 0 while muted, then exactly the previous level back. Never louder. */
+  applySoftMute(selected) {
+    const caps = this.playback.capabilities;
+    if (caps.includes("volume_mute") || !caps.includes("volume_set") || !Number.isFinite(this.playback.volume)) {
+      this.softMute = null;
+      return;
+    }
+    this.playback.capabilities = [...caps, "volume_mute_soft"];
+    // Someone raised the volume elsewhere (or another player is selected): the mute has ended.
+    // A short grace period covers Music Assistant still reporting the old level right after muting.
+    if (this.softMute && (this.softMute.playerId !== selected || (this.playback.volume > 0 && Date.now() - this.softMute.at > 3000))) this.softMute = null;
+    this.playback.muted = !!this.softMute;
+  }
+  async softMuteControl(muted) {
+    const playerId = this.playerId;
+    try {
+      if (muted) {
+        if (this.softMute) return;
+        const restore = this.playback.volume;
+        if (!Number.isFinite(restore)) throw Error("Volume unknown");
+        if (restore > 0) await this.transport.control(playerId, "volume", 0);
+        this.softMute = {playerId, restore, at: Date.now()};
+      } else {
+        const saved = this.softMute;
+        this.softMute = null;
+        if (saved && saved.playerId === playerId && saved.restore > 0 && this.playback.volume === 0)
+          await this.transport.control(playerId, "volume", Math.min(saved.restore, this.config.volumeLimit));
+      }
       await this.refresh();
     } catch {
       throw Error("Music Assistant command failed; command was not retried");

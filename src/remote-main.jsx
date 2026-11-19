@@ -55,8 +55,9 @@ function useTuneBoxStyle(style){
  useEffect(()=>{const root=document.documentElement;
   for(const [key,name] of Object.entries(styleKeys)){const v=style?.[key];if(typeof v==='string'&&v.length<120&&!/[;{}<>]/.test(v))root.style.setProperty(name,v);else root.style.removeProperty(name);}
   root.dataset.skin=style?.skin||'';
+  root.dataset.weight=style?.weight==='heavy'?'heavy':'normal';
   const meta=document.querySelector('meta[name=theme-color]');if(meta&&style?.background)meta.setAttribute('content',style.background);
- },[style?.skin,style?.background,style?.accent,style?.text,style?.surface,style?.muted,style?.font,style?.radius]);
+ },[style?.skin,style?.background,style?.accent,style?.text,style?.surface,style?.muted,style?.font,style?.radius,style?.weight]);
 }
 const clock=n=>`${Math.floor(n/60)}:${String(Math.floor(n%60)).padStart(2,'0')}`;
 /** Read-only progress: the phone shows where the track is, it does not seek. */

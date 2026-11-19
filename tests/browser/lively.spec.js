@@ -65,3 +65,22 @@ test('the phone remote follows the TuneBox skin and shows what plays next and th
  await expect(page.locator('.remote-backdrop>div')).toHaveCount(1);await expect(page.locator('.remote-progress')).toBeVisible();
  await page.screenshot({path:'test-results/lively-remote.png'});await ctx.close();
 });
+test('Inter is the interface font everywhere, Manrope Heavy is one tap away, and Settings shares the artwork backdrop',async({page})=>{
+ await live(page);await page.goto(url);
+ const family=sel=>page.locator(sel).first().evaluate(e=>getComputedStyle(e).fontFamily.split(',')[0].replace(/"/g,'').trim());
+ await expect(page.locator('html')).toHaveAttribute('data-font','inter');
+ await page.getByRole('button',{name:'Now Playing',exact:true}).first().click();expect(await family('.m2-playing h2')).toBe('Inter Variable');
+ await page.locator('.m2-header').getByRole('button',{name:'Settings',exact:true}).click();
+ await expect(page.locator('.np-backdrop')).toHaveAttribute('data-artwork','true');expect(await family('.hub-heading h2')).toBe('Inter Variable');
+ expect(await page.evaluate(()=>document.fonts.check('600 20px "Inter Variable"'))).toBe(true);
+ await chooseSettingsSection(page,'Connections');await page.locator('.setup-cards button').filter({hasText:'Music Assistant'}).first().click();
+ const wizard=page.getByRole('dialog',{name:'Music Assistant setup',exact:true});expect(await family('.first-start h2')).toBe('Inter Variable');
+ await wizard.getByLabel('Music Assistant server address',{exact:true}).click();
+ const keyboard=page.getByRole('dialog',{name:'Touch keyboard',exact:true});await expect(keyboard).toBeVisible();
+ expect(await keyboard.locator('.keyboard-keys button').first().evaluate(e=>[getComputedStyle(e).fontFamily.split(',')[0].replace(/"/g,''),parseFloat(getComputedStyle(e).fontSize)])).toEqual(['Inter Variable',26]);
+ await keyboard.getByRole('button',{name:'Done typing',exact:true}).click();await wizard.getByRole('button',{name:'Finish later',exact:true}).click();
+ await chooseSettingsSection(page,'Appearance');const fonts=page.getByRole('radiogroup',{name:'Interface font',exact:true});
+ await expect(fonts.getByRole('radio',{name:/^Inter/})).toHaveAttribute('aria-checked','true');
+ await fonts.getByRole('radio',{name:/^Manrope Heavy/}).click();await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('[data-saved=true]')).toBeVisible();
+ expect((await(await page.request.get('/api/preferences')).json()).prefs.font).toBe('manrope-heavy');
+});

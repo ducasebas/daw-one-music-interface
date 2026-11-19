@@ -1990,5 +1990,12 @@
   "{used} W in use": "{used} W in use",
   "{count} phone": "{count} phone",
   "{count} phones": "{count} phones",
-  "Lively: Now Playing shows the album art as a soft, blurred background that changes with each track, with widgets you choose in Display (clock, up next, quality, rooms, temperature, Wi-Fi, power, party). The phone remote now matches your TuneBox style. Includes the 3.10.1 scrubbing fix.": "Lively: Now Playing shows the album art as a soft, blurred background that changes with each track, with widgets you choose in Display (clock, up next, quality, rooms, temperature, Wi-Fi, power, party). The phone remote now matches your TuneBox style. Includes the 3.10.1 scrubbing fix."
+  "Interface font": "Interface font",
+  "Inter": "Inter",
+  "Manrope Heavy": "Manrope Heavy",
+  "Skin font": "Skin font",
+  "Clear and neutral, made for screens": "Clear and neutral, made for screens",
+  "Bold and characterful": "Bold and characterful",
+  "Each skin keeps its own typeface": "Each skin keeps its own typeface",
+  "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume.": "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume."
 }

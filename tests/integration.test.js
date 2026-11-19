@@ -369,3 +369,21 @@ test('a player without native seek seeks through its active Music Assistant queu
  s.playback={...normalizeMusic({player,queue},12000)};await s.control({type:'seek',position:40});
  assert.deepEqual(sent,[['queue','pi',50],['player','pi','seek',40]]);
 });
+test('a player without native mute gets a soft mute that restores exactly the previous level, never louder',async()=>{
+ const squeezelite={...player,supported_features:['volume_set','pause'],volume_level:30};
+ const sent=[];let level=30;
+ const fake={subscribe:()=>()=>{},close(){},control:async(id,a,v)=>{sent.push([a,v]);if(a==='volume')level=v;}};
+ const s=new LiveMusicService({...configuration,playerId:'pi',controlEnabled:true,volumeLimit:25},{transport:fake});s.status='connected';
+ s.refresh=async()=>{s.playback={...normalizeMusic({player:{...squeezelite,volume_level:level},queue},Date.now()),connected:true};s.applySoftMute('pi');};
+ await s.refresh();
+ assert.ok(s.playback.capabilities.includes('volume_mute_soft'));assert.equal(s.playback.muted,false);
+ await s.control({type:'mute',value:true});assert.deepEqual(sent.at(-1),['volume',0]);assert.equal(s.playback.muted,true);
+ await s.control({type:'mute',value:false});assert.deepEqual(sent.at(-1),['volume',25],'restores the previous level, capped by the volume limit');assert.equal(s.playback.muted,false);
+ // Raising the volume elsewhere while muted ends the mute; a later unmute never jumps.
+ level=10;await s.refresh();await s.control({type:'mute',value:true});s.softMute.at=0;level=12;await s.refresh();
+ assert.equal(s.playback.muted,false);const before=sent.length;await s.control({type:'mute',value:false});assert.equal(sent.length,before,'nothing to restore');
+ // Native mute is still used where the player supports it.
+ const native=new LiveMusicService({...configuration,playerId:'pi',controlEnabled:true},{transport:fake});native.status='connected';native.refresh=async()=>{};
+ native.playback={...normalizeMusic({player,queue},Date.now()),connected:true};native.applySoftMute('pi');
+ assert.ok(!native.playback.capabilities.includes('volume_mute_soft'));await native.control({type:'mute',value:true});assert.deepEqual(sent.at(-1),['mute',true]);
+});

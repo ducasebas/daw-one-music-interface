@@ -10,7 +10,9 @@ Local candidate; simulator and unit results only. No Pi observations.
 - `connect.spec.js` (3.10.1): scrubbing a `queue_seek`-only player by touch.
 
 ## Results
-See the final run recorded below.
+- Unit: 413/413. Python: 109 passed.
+- Full local Chromium suite: 217/217. Offline/production suite: 16/16.
+- PR #11 CI (all six jobs, including WebKit) passed; Verify and Publish signed preview on `main` passed. Release `ota-preview-4d358b1…` verified independently (signature, manifest, hash, inventory of 353 files, channel selection).
 
 ## Evidence
 Screenshots in [images/lively-3-11](images/lively-3-11): `before-playing-3.10.png`, `lively-playing.png`, `lively-playing-pi3.png`, `lively-remote-*.png`.
