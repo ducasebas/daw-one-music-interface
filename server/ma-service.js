@@ -126,6 +126,9 @@ export class LiveMusicService extends EventEmitter {
       serverVersion: this.transport.info?.server_version || null,
       schemaVersion: this.transport.info?.schema_version ?? null,
       playerId: this.playerId,
+      // The saved server address (validated, without credentials) so setup can show it again
+      // when the connection drops. The access token never leaves the server.
+      serverUrl: typeof this.config.url === "string" ? this.config.url : null,
       controlEnabled: this.config.controlEnabled,
       volumeLimit: this.config.volumeLimit,
       defaultVolumeLimit: this.defaultVolumeLimit,

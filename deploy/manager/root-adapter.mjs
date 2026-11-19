@@ -48,7 +48,7 @@ export function rootAdapter(){const powerReader=powerMonitoring({run,context:()=
  const adapter={
  async status(){
   const config=readJson(configPath,{}),installed=readJson(base+'/installed.json',{}),setup=readJson('/var/lib/daw-one-manager/setup.json',{});
-  return {powerMonitoring:powerResponse(powerReader.status()),automaticDsp:automatic.publicStatus(),managed:true,simulated:false,configured:existsSync('/etc/daw-one-updater/public.pem')&&['preview','stable'].includes(config.channel),channel:config.channel||null,policy:updateSettings(config.policy||{}),current:installed.commit||null,previousAvailable:typeof installed.previous==='string'&&existsSync(installed.previous),setupComplete:setup.complete===true,networkSupported:existsSync('/usr/bin/nmcli'),audioTestSupported:existsSync('/usr/bin/aplay'),progressDisplay:true,appliance:readJson('/var/lib/daw-one-manager/appliance.json',null),powerOffSupported:power.supported(),powerOffQueued:power.queued};
+  return {powerMonitoring:powerResponse(powerReader.status()),automaticDsp:automatic.publicStatus(),managed:true,simulated:false,configured:existsSync('/etc/daw-one-updater/public.pem')&&['preview','stable'].includes(config.channel),channel:config.channel||null,policy:updateSettings(config.policy||{}),current:installed.commit||null,previousAvailable:typeof installed.previous==='string'&&existsSync(installed.previous),setupComplete:setup.complete===true,networkSupported:existsSync('/usr/bin/nmcli'),audioTestSupported:existsSync('/usr/bin/aplay'),progressDisplay:true,appliance:readJson('/var/lib/daw-one-manager/appliance.json',null),powerOffSupported:power.supported(),rebootSupported:power.rebootSupported(),restartServiceSupported:true,powerOffQueued:power.queued};
  },
  async perform(command,args){
   if(power.queued)throw Error('Power off already queued');
@@ -67,6 +67,8 @@ export function rootAdapter(){const powerReader=powerMonitoring({run,context:()=
   if(['dsp-set','measurement-start','measurement-apply','measurement-undo','bluetooth-start','save-music','erase-setup'].includes(command)&&(await sync.status()).running)throw Error('Finish synchronization before changing the audio path');
   if(bluetooth.active()&&['dsp-set','local-standby','measurement-start','measurement-apply','measurement-undo','save-music','erase-setup'].includes(command))throw Error('Switch back to Music Assistant before changing this audio setup');
   if(['dsp-set','local-standby','measurement-apply','measurement-undo','local-ma-install'].includes(command)&&(await measurement.status()).running)throw Error('Stop the room measurement before changing audio hardware or installing a server');
+  if(command==='reboot'){if(!await idle())throw Error('Stop playback before restarting TuneBox');if((await sync.status()).running||(await measurement.status()).running)throw Error('Finish the running measurement before restarting');if(bluetooth.active())await bluetooth.stop({restartPlayers:false});return power.reboot();}
+  if(command==='restart-service')return power.restartService();
   if(command==='power-off'){if((await sync.status()).running)await sync.stop();if(bluetooth.active())await bluetooth.stop({restartPlayers:false});return power.queue();}
   if(command.startsWith('bluetooth-')){
    if((await measurement.status()).running)throw Error('Finish the microphone measurement before switching sources');

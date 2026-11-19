@@ -12,7 +12,7 @@ export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,o
  const report=status=>{progress={status,checkedAt:new Date().toISOString(),percent:null};onEvent(status);};
  const phase=async status=>{report(status);await new Promise(r=>setTimeout(r,delay));};
  const manager=new DeviceManager({
-  status:async()=>({managed:true,simulated:true,configured:true,channel:'preview',policy,current:current.commit,previousAvailable:!!previous,setupComplete:saved.setupComplete!==false,networkSupported:true,audioTestSupported:true,progressDisplay:false,powerOffSupported:true}),
+  status:async()=>({managed:true,simulated:true,configured:true,channel:'preview',policy,current:current.commit,previousAvailable:!!previous,setupComplete:saved.setupComplete!==false,networkSupported:true,audioTestSupported:true,progressDisplay:false,powerOffSupported:true,rebootSupported:true,restartServiceSupported:true}),
   async perform(command,args){
    if(command==='power-status')return {supported:false,simulated:true,settings:{...powerDefaults},readOnly:true};
    if(['power-request-100w','power-request-20v','power-discover-20v','power-request-max20v'].includes(command))throw Error('Power setup requires real HUSB238 hardware');
@@ -23,6 +23,8 @@ export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,o
    if(command==='sync-stop')return {stopped:true,simulated:true};
    if(['sync-start','dsp-auto-config','dsp-auto-update'].includes(command))throw Error('Automatic sound and synchronization require the real Louder output and microphone/PCM support');
    if(command.startsWith('bluetooth-'))throw Error('Bluetooth requires the optional receiver installation on the real Pi');
+   if(command==='reboot'){if(running)throw Error('Wait for the software update to finish before restarting');if(!canUpdate(snapshot()))throw Error('Stop playback before restarting TuneBox');return {queued:true,simulated:true,reboot:true};}
+   if(command==='restart-service'){if(running)throw Error('Wait for the software update to finish before restarting the service');return {restarting:true,simulated:true};}
    if(command==='power-off'){if(running)throw Error('Wait for the software update to finish before powering off');return {queued:true,simulated:true,powerOff:true};}
    if(command==='policy'){policy=args;save();return {saved:true,policy};}
    if(command==='measurement-status')return {supported:false,simulated:true,running:false,microphones:[],phase:'unavailable'};

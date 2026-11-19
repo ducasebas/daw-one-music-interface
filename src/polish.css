@@ -72,3 +72,24 @@
 .music2 .hub-section-links [aria-current=location]{border-color:var(--accent);color:var(--accent);box-shadow:inset 0 -3px var(--accent)}
 .music2 .hub-section-links [aria-current=location] .tb-icon{color:var(--accent)}
 .music2 .hub-section-links .attention-dot{position:absolute;top:8px;right:8px}
+
+/* 11 · Wizards follow the active skin: its colours, font, corner radius and outline width. */
+.wizard-skin{display:contents}
+/* Resolve the skin where it is defined (shell or wizard wrapper); the wizard used to pin its own palette. */
+:root,.music2,.wizard-skin{--wizard-line:var(--divider,var(--border-color,#394349));--wizard-panel:var(--panel,var(--surface,#1b2226));--wizard-bg:var(--background,#11171b);--wizard-text:var(--text,#f2f0e9);--wizard-muted:var(--muted,#a1abae);--wizard-accent:var(--accent,#c5a36b);--wizard-font:var(--font-body,var(--font,sans-serif));--wizard-radius:calc(var(--radius,6px) + 6px);--wizard-border:max(2px,var(--border-width,2px))}
+.first-start{--divider:var(--wizard-line);--panel:var(--wizard-panel);--background:var(--wizard-bg);--text:var(--wizard-text);--muted:var(--wizard-muted);--accent:var(--wizard-accent);background:var(--wizard-bg);color:var(--wizard-text);font-family:var(--wizard-font)}
+.first-start h2,.first-start h3,.first-start p,.first-start button,.first-start input,.first-start select,.first-start label{font-family:inherit}
+.first-start button,.first-start input:not([type=checkbox]),.first-start select{border-radius:var(--wizard-radius);border-width:var(--wizard-border);border-color:var(--wizard-line)}
+.first-start small{color:var(--accent,#c5a36b)}
+.setup-journey .journey-steps li{border-radius:var(--wizard-radius);border-color:var(--wizard-line);border-width:var(--wizard-border)}
+.setup-journey .journey-steps [aria-current=step]{border-color:var(--accent);background:var(--wizard-panel);color:var(--accent)}
+.setup-journey .setup-cards button,.setup-journey .setup-result,.setup-journey .automatic-sound-summary,.setup-journey .sync-setup-summary{border-radius:calc(var(--wizard-radius) + 4px);border-color:var(--wizard-line);background:var(--wizard-panel)}
+.setup-journey .setup-cards span{color:var(--muted)}
+.setup-journey footer>button:last-child:not(:disabled){background:var(--accent);color:var(--background);border-color:var(--accent);font-weight:600}
+.setup-journey [aria-pressed=true]{border-color:var(--accent)!important;background:var(--wizard-panel)}
+.setup-journey input[type=checkbox],.setup-journey input[type=range],.setup-journey progress{accent-color:var(--accent)}
+
+/* 13 · Developer → Services: restart controls. */
+.restart-controls{margin-top:28px;padding-top:20px;border-top:2px solid var(--divider,var(--border-color))}
+.restart-controls .restart-actions{display:flex;flex-wrap:wrap;gap:14px}
+.restart-dialog[open]{display:block}

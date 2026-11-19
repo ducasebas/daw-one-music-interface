@@ -523,7 +523,7 @@ function App() {
     </main>
   );
   if(!firstSnapshot&&!offline&&new URLSearchParams(location.search).get('display')==='dsi-production')return <main className="appliance-boot" aria-label={tr('Starting TuneBox')}><strong>TuneBox</strong><span className="ui-spinner"/></main>;
-  if(!setupDismissed&&(snapshot.onboardingRequired||deviceUpdates?.info?.manager?.managed&&!deviceUpdates.info.manager.simulated&&deviceUpdates.info.manager.setupComplete===false&&!snapshot.preferences?.setupCompleted)&&!snapshot.preferences?.setupDeferred&&new URLSearchParams(location.search).get('screen')==='1')return <FirstStartWizard snapshot={snapshot} offline={offline} onComplete={()=>{setSetupDismissed(true);fetch('/api/state').then(r=>r.json()).then(setSnapshot).catch(()=>{});}}/>;
+  if(!setupDismissed&&(snapshot.onboardingRequired||deviceUpdates?.info?.manager?.managed&&!deviceUpdates.info.manager.simulated&&deviceUpdates.info.manager.setupComplete===false&&!snapshot.preferences?.setupCompleted)&&!snapshot.preferences?.setupDeferred&&new URLSearchParams(location.search).get('screen')==='1')return <div className="wizard-skin" data-theme={theme.id} style={themeVariables(theme)}><FirstStartWizard snapshot={snapshot} offline={offline} onComplete={()=>{setSetupDismissed(true);fetch('/api/state').then(r=>r.json()).then(setSnapshot).catch(()=>{});}}/></div>;
   return lab && !embedded ? (
     <TestWorkbench
       gui2={gui2}
