@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.19-offline.1",
-  label: "GUI 3.13.0 · OFFLINE",
+  id: "2026.11.19-sound.1",
+  label: "GUI 3.14.0 · SOUND",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Offline: when Music Assistant is unreachable, Now Playing still lets you pause and change the volume on this TuneBox, never louder than before. Developer → Services now guides you through running Music Assistant on the TuneBox itself, with a setup QR and a one-tap connect.",
+  notes: "Sound: Audio & DSP now starts with simple controls (a preset, bass, treble and loudness) with a one-line explanation each, and shows your room correction. All amplifier controls stay available under Advanced. Changes still apply on Save with automatic headroom.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {
