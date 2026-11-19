@@ -29,3 +29,7 @@ New or changed tests: `release.test.js` (startup title), `search-suggest.test.js
 ## Before/after evidence
 
 Simulator screenshots at 1280×800 (`panel=wall-16-10`) are in [images/polish-3-10](images/polish-3-10): `before-*` (3.9.2 HOTFIX) and `after-*` (this candidate) for Now Playing, meters, Settings overview/section/system/dirty, search and wizards (warm-bronze, cinematic), plus `polish-startup.png` and `connect-suggestions.png`.
+
+## Verify on main (after merge of PR #9)
+
+The first Verify run on `main` (`65fcce0`) failed in `wall.spec.js:57` ("Video Artwork" not found). Cause: the test taps "Open Now Playing" right after Save, and `SettingsHub` silently ignored navigation while a save was in progress (`move()` returned early). The slower CI runner hit that window; locally the test passed 38 times. This race existed before 3.10. Fix: navigation tapped during a save now runs once the save succeeds; on a failed save you stay in Settings and see the error. New tests in `settings-save-regressions.spec.js` (slow save, failed save). The slow-save test fails without the fix and passes with it.
