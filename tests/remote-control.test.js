@@ -23,7 +23,7 @@ test('a remote QR code pairs exactly one phone and stores only a hash',()=>{
   assert.equal(statSync(join(dir,'remote.json')).mode&0o777,0o600);
   const phone=access.phone(req('a=b; tunebox_remote='+credential));
   assert.equal(phone.name,'Pixel script');
-  assert.equal(access.phone(req('tunebox_remote='+credential.slice(0,-1)+'0')),null);
+  const tampered=credential.slice(0,-1)+(credential.endsWith('0')?'1':'0');assert.equal(access.phone(req('tunebox_remote='+tampered)),null);
   assert.match(access.cookie(credential),/HttpOnly; SameSite=Strict/);
   // Survives a restart until forgotten.
   const restarted=new RemoteAccess(dir,{now:()=>now});
