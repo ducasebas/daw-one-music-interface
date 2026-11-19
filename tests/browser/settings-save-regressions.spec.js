@@ -53,3 +53,18 @@ test('Dutch topic tiles and saved feedback fit all six skins',async({page})=>{
   await page.getByLabel(translate('Night schedule','nl'),{exact:true}).uncheck();await page.getByRole('button',{name:'Opslaan',exact:true}).click();await expect(page.getByRole('button',{name:translate('Open Now Playing','nl'),exact:true})).toBeInViewport();
  }
 });
+test('a tap on Now Playing during a slow save is carried out after the save, never dropped',async({page})=>{
+ let release;const gate=new Promise(r=>release=r);
+ await page.route('**/api/preferences',async r=>{if(r.request().method()==='POST')await gate;return r.continue();});
+ await open(page,'Playback');await page.getByLabel('Allow seeking',{exact:true}).click();
+ await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.getByRole('button',{name:'Saving…',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();
+ await expect(page.locator('.music2')).toHaveAttribute('data-page','settings');
+ release();await expect(page.locator('.music2')).toHaveAttribute('data-page','playing');
+});
+test('a failed save keeps the person in Settings with the error instead of leaving',async({page})=>{
+ await page.route('**/api/preferences',r=>r.request().method()==='POST'?r.fulfill({status:500,json:{error:'Storage is full'}}):r.continue());
+ await open(page,'Playback');await page.getByLabel('Allow seeking',{exact:true}).click();
+ await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();
+ await expect(page.locator('.hub-savebar [role=status]')).toContainText('Storage is full');await expect(page.locator('.music2')).toHaveAttribute('data-page','settings');
+});
