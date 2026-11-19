@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.19-update-flow.1",
-  label: "GUI 3.9.1 · UPDATE FLOW",
+  id: "2026.11.19-update-flow.2",
+  label: "GUI 3.9.2 · HOTFIX",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Install works even when Music Assistant is offline (if the speaker is silent). The Install button always responds. A clear message when the power setup stops the player. Clearer Music Assistant errors. Room measurement: install fix and results open after a sweep.",
+  notes: "Room measurement hotfix: a microphone start-up click no longer causes a false noise error, results say how many dB are missing, and you can measure again 6 dB louder (up to -24 dBFS) after confirming.",
 });
 export function buildAlignment(frontend, backend, offline = false) {
   if (offline) return "offline";

@@ -2,6 +2,10 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
+## GUI 3.9.2 HOTFIX — approved for publication
+
+On 19 November 2026 the owner asked for a hotfix rather than a new named update, and approved it with "push maar als het werkt". The owner reported 3.9.1 installed, a working sweep with SNR left −1.1 dB / right 9.6 dB (left audibly played; Louder Digital 103/127, Analog Gain 31/31, channel gains 0 dB). Scope: SNR from the aligned sweep window against the quiet lead-in after microphone start-up (and the tail), missing-dB tip per channel, and an optional retry 6 dB louder with consent, limited to −36/−30/−24 dBFS and validated in the UI, manager and capture helper. Release `2026.11.19-update-flow.2`, cache 51. Covers push, required CI, merge and signed preview publication after the full CI passes.
+
 ## GUI 3.9.1 UPDATE FLOW — published
 
 Merged via PR #7 as `d7e96962f83f70db4568e0d3a23f4f801432b559` on 19 November 2026. Verify on `main` passed in about 6.5 minutes with the new CI, Publish signed preview passed including the public channel check, and release `ota-preview-d7e96962f83f70db4568e0d3a23f4f801432b559` ("GUI 3.9.1 · UPDATE FLOW · preview") is public with archive, manifest and signature. Pi installation not yet observed.

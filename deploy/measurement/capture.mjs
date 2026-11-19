@@ -3,7 +3,7 @@ import {spawn} from 'node:child_process';
 import {setTimeout as delay} from 'node:timers/promises';
 import {roomProfile,measuredBaseline,measurementSetupKey} from '../../shared/room-measurement.js';
 import {usbMicrophones} from './devices.mjs';
-import {sweep,wav,analyse,cutProposal,rate} from './signal.mjs';
+import {sweep,sweepLevels,wav,analyse,cutProposal,rate} from './signal.mjs';
 const dir='/var/lib/daw-one-measurement';
 const status=v=>{writeFileSync(dir+'/status.tmp',JSON.stringify({...v,observedAt:Date.now()})+'\n',{mode:0o640});renameSync(dir+'/status.tmp',dir+'/status.json');};
 const children=new Set();let cancelled=false;
@@ -28,7 +28,8 @@ try{
  if(!usbMicrophones().some(m=>m.id===job.microphone)||!['plughw:CARD=Headphones,DEV=0','plughw:CARD=LouderRaspberry,DEV=0'].includes(config.output)||config.verified!==true)throw Error('Verified output and a supported USB capture device are required');
  let baseline=null;
  if(job.verifyCorrection===true){try{baseline=JSON.parse(readFileSync(dir+'/baseline.json','utf8'));}catch{}if(!measuredBaseline(baseline)||measurementSetupKey(baseline)!==measurementSetupKey({profile,output:config.output,microphone:job.microphone}))throw Error('Record a valid flat baseline with this microphone and setup before verification.');}
- const signal=sweep(),channels=[];
+ const level=job.levelDbfs===undefined?-36:job.levelDbfs;if(!sweepLevels.includes(level))throw Error('Unsupported sweep level');
+ const signal=sweep(level),channels=[];
  for(let channel=0;channel<2;channel++){
   if(cancelled)throw Error('Cancelled');
   status({phase:channel?'measuring-right':'measuring-left',percent:channel?50:5,output:config.output,estimatedEndAt:Date.now()+(channel?7500:15000)});
@@ -42,7 +43,7 @@ try{
   status({phase:'analysing',percent:channel?85:35,estimatedEndAt:Date.now()+(channel?1500:9000)});channels.push({...analyse(signal,samples,profile.calibration),channel:channel?'right':'left'});
   rmSync(dir+'/capture.raw',{force:true});
  }
- const result={channels,proposal:cutProposal(channels),profile,output:config.output,microphone:job.microphone,measuredAt:new Date().toISOString(),levelDbfs:-36,baseline:job.verifyCorrection===true?'current-dsp':config.output.includes('Louder')?'flat-eq':'verified-output',...(baseline?{baselineChannels:baseline.channels}:{}),applied:false,absoluteSpl:false};
+ const result={channels,proposal:cutProposal(channels),profile,output:config.output,microphone:job.microphone,measuredAt:new Date().toISOString(),levelDbfs:level,baseline:job.verifyCorrection===true?'current-dsp':config.output.includes('Louder')?'flat-eq':'verified-output',...(baseline?{baselineChannels:baseline.channels}:{}),applied:false,absoluteSpl:false};
  if(measuredBaseline(result)){writeFileSync(dir+'/baseline.tmp',JSON.stringify(result)+'\n',{mode:0o640});renameSync(dir+'/baseline.tmp',dir+'/baseline.json');}
  status({phase:'complete',percent:100,output:config.output,result});
 }catch(error){
