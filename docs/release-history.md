@@ -2,7 +2,13 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.11.1 STYLE — approved, in review
+## GUI 3.11.2 ENDLESS — approved, in review
+
+On 19 November 2026 the owner approved the local GUI 3.11.2 ENDLESS candidate (`2026.11.19-lively.3`, cache 56) with "Ja ga door". The owner had been told about the scope ("Keep the music playing", on by default, with a read-only Music Assistant readiness check when switched on, TuneBox's own queue only) and that the full local Chromium run was in progress (152 passed, no failures at that point). Scope: `docs/endless-3-11-2.md`. The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full configured CI passes. It does not cover live hardware experiments or physical confirmations.
+
+## GUI 3.11.1 STYLE — published
+
+Merged via PR #12 as `a6ec18028f6f575104174304d77b434c136b81f1` on 19 November 2026. The first PR CI run failed in `polish.spec.js:19`: the test still expected the skin's serif in the wizard, while Inter is now the default by design. The test was updated to choose "Skin font" (`87f2e8c`), after which all six PR jobs passed. Verify on `main` and Publish signed preview (run 44623863340) passed on the first attempt, including the public channel check. Release `ota-preview-a6ec18028f6f575104174304d77b434c136b81f1` is public. Verified independently: the signature verifies with the unchanged project key; the manifest names commit `a6ec180`, release `2026.11.19-lively.2` and label "GUI 3.11.1 · STYLE"; the archive hash matches; the inventory is complete (365 files, cache v55, Inter woff2 + OFL in `dist/fonts`); `checkChannel` selects it. Local results: Chromium 218 passed with the one test above failing before its fix (that file re-run 4/4 after the fix), offline 16/16. Pi installation and physical acceptance were not observed (fonts on the DSI panel, soft mute on the real player).
 
 On 19 November 2026 the owner approved the local GUI 3.11.1 STYLE candidate (`2026.11.19-lively.2`, cache 55) with "Push maar". The owner had been told about the changes (Inter interface font with Manrope Heavy / skin font choice, readable type scale, Settings artwork backdrop, soft mute for players without native mute) and that the local full Chromium run was in progress (103 passed, no failures at that point). Scope: `docs/style-3-11-1.md`. The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full configured CI passes. It does not cover live hardware experiments or physical confirmations. "Keep the music playing" (endless mode), asked about in the same message, is not part of this update.
 

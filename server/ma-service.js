@@ -75,6 +75,8 @@ export function normalizeMusic(
     // Music Assistant queue, which restarts the stream at the chosen position.
     capabilities: seekCapabilities(player.supported_features, activeQueue ? queue : null, track.duration),
     queueId: activeQueue && typeof queue.queue_id === "string" ? queue.queue_id : null,
+    // null: this Music Assistant version does not report "Don't stop the music".
+    keepPlaying: typeof queue?.dont_stop_the_music_enabled === "boolean" ? queue.dont_stop_the_music_enabled : null,
     source: "music-assistant",
     sourceFormat,
   };
@@ -100,6 +102,10 @@ export class LiveMusicService extends EventEmitter {
     this.queueIds = [];
     // Mute for players without native mute: the volume to restore, kept in memory only.
     this.softMute = null;
+    // "Keep the music playing": what the owner wants, and the last request per queue (no loops).
+    this.keepPlayingWanted = null;
+    this.keepPlayingSent = null;
+    this.keepPlayingError = null;
     this.queueActive = false;
     this.players = [];
     this.playerId = config.playerId;
@@ -136,6 +142,7 @@ export class LiveMusicService extends EventEmitter {
       serverVersion: this.transport.info?.server_version || null,
       schemaVersion: this.transport.info?.schema_version ?? null,
       playerId: this.playerId,
+      keepPlaying: {wanted: this.keepPlayingWanted, active: this.playback.keepPlaying ?? null, error: this.keepPlayingError},
       // The saved server address (validated, without credentials) so setup can show it again
       // when the connection drops. The access token never leaves the server.
       serverUrl: typeof this.config.url === "string" ? this.config.url : null,
@@ -260,6 +267,7 @@ export class LiveMusicService extends EventEmitter {
             }else this.applySoftMute(selected);
           }
         }
+        this.syncKeepPlaying();
         this.notify();
       } while (this.dirty && !this.stopped);
      } finally {
@@ -369,6 +377,47 @@ export class LiveMusicService extends EventEmitter {
     } catch {
       throw Error("Music Assistant command failed; command was not retried");
     }
+  }
+  /** Read-only readiness check when someone switches "Keep the music playing" on.
+   * Changes nothing: it asks Music Assistant which sources can suggest similar tracks. */
+  async checkKeepPlaying() {
+    const own = this.config.playerId;
+    if (this.status !== "connected") return {ok: false, reason: "disconnected"};
+    if (!this.config.controlEnabled) return {ok: false, reason: "read-only"};
+    if (!own || this.playerId !== own || this.queueId !== own) return {ok: false, reason: "not-own-queue"};
+    if (this.playback.keepPlaying === null || this.playback.keepPlaying === undefined) return {ok: false, reason: "unsupported-version"};
+    let providers = null;
+    try {
+      const list = await this.transport.command("providers", {}, {maxItems: 128});
+      if (Array.isArray(list)) providers = list
+        .filter((p) => p && p.available !== false && Array.isArray(p.supported_features) && p.supported_features.includes("similar_tracks"))
+        .map((p) => String(p.name || p.domain || p.instance_id || "").slice(0, 40)).filter(Boolean);
+    } catch {}
+    if (providers === null) return {ok: true, reason: "sources-unknown", providers: [], active: this.playback.keepPlaying};
+    if (!providers.length) return {ok: false, reason: "no-similar-sources", providers: []};
+    return {ok: true, reason: "ready", providers: [...new Set(providers)].slice(0, 8), active: this.playback.keepPlaying};
+  }
+  /** Set by the server from the saved preference. Applied to TuneBox's own queue only. */
+  wantKeepPlaying(enabled) {
+    if (typeof enabled !== "boolean" || enabled === this.keepPlayingWanted) return;
+    this.keepPlayingWanted = enabled;
+    this.keepPlayingSent = null;
+    this.keepPlayingError = null;
+    this.syncKeepPlaying();
+  }
+  syncKeepPlaying() {
+    const wanted = this.keepPlayingWanted, queueId = this.queueId, own = this.config.playerId;
+    if (wanted === null || this.status !== "connected" || !this.config.controlEnabled) return;
+    // Only the local TuneBox player's own queue: never a group or another room's queue.
+    if (!own || this.playerId !== own || queueId !== own) return;
+    const current = this.playback.keepPlaying;
+    if (current === null || current === undefined || current === wanted) { if (current === wanted) this.keepPlayingError = null; return; }
+    const key = `${queueId}:${wanted}`;
+    if (this.keepPlayingSent === key) return;
+    this.keepPlayingSent = key;
+    Promise.resolve(this.transport.setKeepPlaying?.(queueId, wanted))
+      .then(() => { this.keepPlayingError = null; this.dirty = true; return this.refresh?.(); })
+      .catch(() => { this.keepPlayingError = "unsupported"; this.notify?.(); });
   }
   /** A player with volume but no native mute (e.g. Squeezelite in Music Assistant) gets a
    * soft mute: volume 0 while muted, then exactly the previous level back. Never louder. */

@@ -65,6 +65,7 @@ runtime.displayTimeoutMs = displayConfiguration.timeoutSeconds === 0 ? Infinity 
 const music =
   config.mode === "music-assistant" ? new LiveMusicService(config) : null;
 if(music)music.setVolumeLimit(savedVolumeLimit(preferences.get(),music.defaultVolumeLimit));
+music?.wantKeepPlaying(preferences.get().prefs?.keepPlaying!==false);
 const audioAnalysis=new AudioAnalysis({onStatus:status=>{runtime.record(Date.now(),"audio-analysis",runtime.device.mode,"Local PCM measurement: "+status);broadcast();}});
 const multiroom = new MultiroomService(music,{localId:audioAnalysis.playerId||config.playerId});
 const library = music ? new MusicLibrary(music) : null;
@@ -184,7 +185,7 @@ app.use('/api',(q,r,next)=>{
    if(!allowed)return r.status(403).json({error:'This setup connection only controls Wi-Fi'});
    if(mutating&&path!=='/setup/pair'&&security.session(q)?.role!=='provision')return r.status(423).json({error:'Scan the setup link shown on the TuneBox'});
   }
-   const admin=mutating&&(['/remote/pairing','/remote/forget','/device','/preferences','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/video/youtube','/youtube/settings','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/rooms'&&['group','leave','transfer','join'].includes(q.body?.action)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
+   const admin=mutating&&(['/remote/pairing','/remote/forget','/device','/preferences','/music/keep-playing/check','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/video/youtube','/youtube/settings','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/rooms'&&['group','leave','transfer','join'].includes(q.body?.action)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
   if(admin&&!(q.provisioning&&path==='/device'&&provisionCommands.includes(q.body?.command)))security.requireAdmin(q);
   next();
  }catch(e){r.status(e.status||423).json({error:e.message});}
@@ -214,8 +215,9 @@ app.post('/api/setup/defer',(q,r)=>{
  broadcast();r.json({deferred:true});
 });
 app.post('/api/setup/pair',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload setup'});try{r.json(security.pair(q.body.token,r));}catch(e){r.status(403).json({error:e.message});}});
-function applyPreferences(value){if(value.audioEnabled!==audioAnalysis.enabled)audioAnalysis.setEnabled(value.audioEnabled);if(music)music.setVolumeLimit(savedVolumeLimit(value,music.defaultVolumeLimit));displayConfiguration=value.display;runtime.displayTimeoutMs=value.display.timeoutSeconds===0?Infinity:value.display.timeoutSeconds*1000;broadcast();}
+function applyPreferences(value){if(value.audioEnabled!==audioAnalysis.enabled)audioAnalysis.setEnabled(value.audioEnabled);if(music)music.setVolumeLimit(savedVolumeLimit(value,music.defaultVolumeLimit));music?.wantKeepPlaying?.(value.prefs?.keepPlaying!==false);displayConfiguration=value.display;runtime.displayTimeoutMs=value.display.timeoutSeconds===0?Infinity:value.display.timeoutSeconds*1000;broadcast();}
 app.get('/api/preferences',(_q,r)=>r.set('Cache-Control','no-store').json(preferences.get()));
+app.post('/api/music/keep-playing/check',async(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before checking.'});try{r.set('Cache-Control','no-store').json(music?await music.checkKeepPlaying():{ok:false,reason:'no-music'});}catch{r.status(502).json({ok:false,reason:'check-failed'});}});
 app.post('/api/preferences',(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before saving settings'});
  try{if(Object.keys(q.body||{}).some(k=>!['revision','patch'].includes(k)))throw Error('Invalid settings request');if(q.body.patch?.audioEnabled===true&&!audioAnalysis.configured)throw Error('Install the PCM reader before enabling measurement');const value=preferences.save(q.body.revision,q.body.patch);applyPreferences(value);r.json({settings:value,snapshot:snapshot()});}catch(e){r.status(e.status||400).json({error:e.message});}

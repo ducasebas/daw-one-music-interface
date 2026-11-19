@@ -142,3 +142,6 @@
 .music2[data-panel="wall-16-10"][data-page="settings"] .hub-section-links{background:color-mix(in srgb,var(--background) 80%,transparent)}
 .music2[data-panel="wall-16-10"][data-page="settings"] .hub-body :is(input:not([type=checkbox]):not([type=range]),select){background:color-mix(in srgb,var(--background) 82%,transparent)}
 .music2[data-panel="wall-16-10"][data-page="settings"] .np-backdrop::after{background:linear-gradient(180deg,color-mix(in srgb,var(--background) 74%,transparent),color-mix(in srgb,var(--background) 86%,transparent))}
+.hub-fields>.keep-playing{grid-column:1/-1;display:flex;flex-direction:column;gap:4px}
+.keep-playing p{margin:0}
+.keep-playing .keep-playing-status{color:var(--accent);font-weight:500}

@@ -219,6 +219,11 @@ export class MusicAssistantTransport {
     if (action === "mute") args.muted = value;
     return this.command(`players/cmd/${commands[action]}`, args);
   }
+  /** Music Assistant "Don't stop the music": add similar tracks when this queue runs out. */
+  async setKeepPlaying(queueId, enabled) {
+    if (typeof queueId !== "string" || !queueId || typeof enabled !== "boolean") throw Error("Keep playing unavailable");
+    return this.command("player_queues/dont_stop_the_music", { queue_id: queueId, dont_stop_the_music_enabled: enabled });
+  }
   /** Seek within the active Music Assistant queue, for players without native seek. */
   async queueSeek(queueId, position) {
     if (typeof queueId !== "string" || !queueId || !Number.isFinite(position) || position < 0) throw Error("Seek unavailable");

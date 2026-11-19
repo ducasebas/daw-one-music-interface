@@ -17,6 +17,7 @@ export const defaults = {
   backdrop: 'art',
   widgets: [...widgetDefaults],
   font: 'inter',
+  keepPlaying: true,
 };
 export function settings(input = {}) {
   input = input && typeof input === "object" ? input : {};
@@ -29,6 +30,7 @@ export function settings(input = {}) {
     screen: screenSettings(input.screen),
     backdrop: input.backdrop === 'off' ? 'off' : 'art',
     font: ['inter','manrope-heavy','skin'].includes(input.font) ? input.font : 'inter',
+    keepPlaying: input.keepPlaying !== false,
     widgets: widgetSelection(input.widgets),
     visualizer: ["meters","spectrum"].includes(input.visualizer)?input.visualizer:"off",
     visualizerBands: input.visualizerBands===16?16:32,
