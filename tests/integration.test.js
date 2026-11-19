@@ -338,3 +338,17 @@ test('live queue selection and deletion use registered queue-item IDs and never 
   assert.equal(FixtureSocket.calls.filter(c=>['player_queues/play_index','player_queues/delete_item'].includes(c.command)).length,sent);
  }finally{service.stop();}
 });
+
+test("a reachable server without this TuneBox's player reports player-missing, not a connection failure", async () => {
+  const t = transport();
+  t.connect = async () => {};
+  t.command = async (name) => {
+    if (name === "players/all") return [{ player_id: "kitchen", name: "Kitchen", available: true }];
+    throw Error("unexpected " + name);
+  };
+  const s = new LiveMusicService(configuration, { transport: t, retryMs: 10000 });
+  await s.start();
+  assert.equal(s.publicStatus().errorCode, "player-missing");
+  assert.match(s.publicStatus().error, /TuneBox player not found/);
+  s.stop();
+});

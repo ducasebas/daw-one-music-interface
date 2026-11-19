@@ -2,7 +2,19 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.9.0 REMOTE — approved for publication
+## GUI 3.9.1 UPDATE FLOW — approved for publication
+
+On 19 November 2026 the owner approved GUI 3.9.1 UPDATE FLOW (`2026.11.19-update-flow.1`, cache 50) with "ja push maar als de tests groen zijn": push once the local tests are green. Scope: manual install while Music Assistant is offline when the local ALSA output is silent (automatic installs unchanged), Install button independent of the global device-activity flag with persistent error/started messages, on-screen notice when the opt-in PD startup guard keeps the player stopped, `player-missing` Music Assistant status, manager restart in the measurement/sync installers (EROFS fix), missing-install reason under the sweep button, Results opening after a sweep, plus the CI speed-up and documentation on the same branch (PR #7). Covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full configured CI passes. It does not cover hardware actions or physical confirmations.
+
+## CI speed-up (no app change)
+
+On 19 November 2026 the owner approved pushing the CI restructure (preinstalled Playwright image, sharded browser tests, one run per pull request) and the 3.9.0 publication record with "jazeker moet je die pushen!". No application code or release ID changes. Merging it to `main` makes the publish workflow sign a new preview build with the same app and release ID (`2026.11.19-remote.1`); merging therefore needs the owner's go-ahead.
+
+## GUI 3.9.0 REMOTE — published
+
+Merged via PR #6 as `6fb1406b3359f8523299f906fed16cabe7ee51e2` on 19 November 2026. The first Verify run on `main` was cancelled by the 25-minute job timeout while the browser install stalled on the Ubuntu mirror; one re-run passed, Publish signed preview passed including the public channel check, and release `ota-preview-6fb1406b3359f8523299f906fed16cabe7ee51e2` ("GUI 3.9.0 · REMOTE · preview") is public with archive, manifest (label and notes) and signature. Pi installation and physical acceptance were not observed at publication.
+
+The owner reported on 19 November 2026 that 3.9.0 installed on the Pi, after the local player was restored. Installation had been blocked because `tunebox-player.service` could not start: the opt-in `startupMaximum20V` policy was enabled while the last PD request had failed with an I²C `[Errno 5] Input/output error`, so `player_power_guard.py` kept the player stopped; Music Assistant therefore could not sync the player and manual install refused (playback state unknown). The owner disabled the startup policy on the device. Remote pairing, the room sweep and the volume rail were not yet reported.
 
 On 19 November 2026 the owner approved the GUI 3.9.0 REMOTE candidate (`2026.11.19-remote.1`, cache 49) with "ja push maar", after being told it was committed locally and that the final local Chromium/offline/WebKit run was still in progress. Scope: phone remote control by QR code; room-measurement start fix, remaining time, large stop button and automatic stop of other audio after confirmation; volume rail on the 1280×800 Now Playing screen; tap-to-step volume; readable update names. The approval covers the review branch (`claude/ota-update-test-status-alqo95`, PR #6, which also carries the AGENTS.md cleanup), required CI and fixes within this scope, merge and signed preview publication after the full configured CI passes. It does not cover live hardware experiments or physical confirmations; phone pairing over the real Wi-Fi, a real microphone sweep and the Pi screen layout remain unobserved.
 

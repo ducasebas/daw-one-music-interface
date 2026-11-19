@@ -1,4 +1,4 @@
-import {canUpdate} from '../deploy/ota/policy.mjs';
+import {canUpdate,canInstallManually,localOutputIdle} from '../deploy/ota/policy.mjs';
 import {updatePhases} from '../shared/update-settings.js';
 import {validateRequest} from '../shared/device-manager.js';
 import {roomLeader,roomOutputs} from '../shared/multiroom.js';
@@ -18,8 +18,8 @@ function installArguments(request){
 
 /** Explicit installation may pause music. The timer/updater never uses this path. */
 export class ManualUpdate {
-  constructor({snapshot,status,manage,music,multiroom,pauseSimulation,sleep=ms=>new Promise(r=>setTimeout(r,ms)),now=()=>performance.now()}){
-    Object.assign(this,{snapshot,status,manage,music,multiroom,pauseSimulation,sleep,now});
+  constructor({snapshot,status,manage,music,multiroom,pauseSimulation,sleep=ms=>new Promise(r=>setTimeout(r,ms)),now=()=>performance.now(),hardwareIdle=()=>localOutputIdle()}){
+    Object.assign(this,{snapshot,status,manage,music,multiroom,pauseSimulation,sleep,now,hardwareIdle});
     this.busy=false;
   }
 
@@ -37,9 +37,16 @@ export class ManualUpdate {
       if(updatePhases.includes(update.status)||update.status==='checking')throw conflict('Wait for the current update action to finish.');
       if(!update.available?.commit||! /^[a-f0-9]{40}$/.test(update.available.commit))throw conflict('Check for an update before installing.');
       if(this.multiroom?.busy||this.music?.controlBusy||this.music?.roomCommandBusy)throw conflict('Wait for the room change to finish.');
-      if(this.music)await this.music.refresh();
+      if(this.music?.status==='connected')await this.music.refresh();
       const state=this.snapshot();
       const localPlaying=state.activity?.localPlayback;
+      // Music Assistant offline: it cannot report or pause playback. Install only when
+      // every other gate holds and the local audio output is provably silent.
+      if(this.music&&state.musicAssistant?.connected!==true){
+        if(!canInstallManually(state,this.hardwareIdle()))throw conflict('Music Assistant is offline and TuneBox could not confirm that its audio output is silent. Stop local audio, or reconnect Music Assistant, then install.');
+        const result=await this.manage({command:'install',args:{}});
+        return {...result,pausedForUpdate:false,withoutMusicAssistant:true};
+      }
       if(typeof state.playback?.playing!=='boolean'||typeof localPlaying!=='boolean')throw conflict('Playback state is unavailable. Reconnect Music Assistant before installing.');
       // Keep every existing fault/activity gate. Only the effects of an actual
       // pause are projected; the virtual amplifier is a simulator-only value.

@@ -1912,5 +1912,18 @@
   "music paused": "music paused",
   "second remaining": "second remaining",
   "seconds remaining": "seconds remaining",
-  "sync measurement stopped": "sync measurement stopped"
+  "sync measurement stopped": "sync measurement stopped",
+  "Installing without Music Assistant: the audio output is silent. TuneBox restarts when the update is ready.": "Installing without Music Assistant: the audio output is silent. TuneBox restarts when the update is ready.",
+  "Update started. TuneBox restarts when it is ready.": "Update started. TuneBox restarts when it is ready.",
+  "Music Assistant is offline and TuneBox could not confirm that its audio output is silent. Stop local audio, or reconnect Music Assistant, then install.": "Music Assistant is offline and TuneBox could not confirm that its audio output is silent. Stop local audio, or reconnect Music Assistant, then install.",
+  "Local player stopped: automatic power setup is blocked": "Local player stopped: automatic power setup is blocked",
+  "Last attempt": "Last attempt",
+  "Repair power setup, or turn off “Keep these settings after restart”, in Sensors.": "Repair power setup, or turn off “Keep these settings after restart”, in Sensors.",
+  "Open Sensors": "Open Sensors",
+  "Power setup did not complete": "Power setup did not complete",
+  "Room measurement is not installed on this TuneBox yet. See the installation note above.": "Room measurement is not installed on this TuneBox yet. See the installation note above.",
+  "TuneBox player not found in Music Assistant": "TuneBox player not found in Music Assistant",
+  "TuneBox player not found in Music Assistant; check that the local player is running": "TuneBox player not found in Music Assistant; check that the local player is running",
+  "Open results": "Open results",
+  "Measurement complete.": "Measurement complete."
 }

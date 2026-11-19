@@ -32,3 +32,10 @@ test('the independent update page has its cursor boundary in HTML before JavaScr
   assert.doesNotMatch(invalid,/<img src=x>/);
  }finally{await new Promise(resolve=>server.close(resolve));}
 });
+
+test('Install update is not disabled by unrelated background device activity',async()=>{
+  const {readFileSync}=await import('node:fs');
+  const install=readFileSync(new URL('../src/InstallUpdate.jsx',import.meta.url),'utf8');
+  assert.doesNotMatch(install,/disabled=\{[^}]*pending/);
+  for(const file of ['../src/UpdateSettings.jsx','../src/LegacyUpdateSettings.jsx']){const s=readFileSync(new URL(file,import.meta.url),'utf8');assert.match(s,/<InstallUpdate disabled=\{!installable/);assert.doesNotMatch(s.match(/const installable=[^;]*;/)[0],/pending/);}
+});

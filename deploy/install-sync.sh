@@ -33,4 +33,7 @@ StandardOutput=journal
 StandardError=journal
 UNIT
 systemctl daemon-reload
+# The manager only gets write access to optional state directories that existed when it
+# started (ReadWritePaths=-/var/lib/daw-one-sync). Restart it so a fresh install is writable (EROFS otherwise).
+systemctl try-restart daw-one-manager.service
 echo 'On-demand USB synchronization support installed. No microphone capture was started.'

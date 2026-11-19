@@ -97,3 +97,29 @@ test('manual preparation rejects a concurrent install and releases its busy guar
 test('automatic policy keeps waiting for playing music and never enters the manual pause path',()=>{
   const f=fixture();assert.equal(installationDecision(updateSettings({mode:'auto'}),'auto',canUpdate(f.snapshot())),'waiting-idle');assert.deepEqual(f.calls,[]);
 });
+
+test('with Music Assistant offline, a manual install proceeds only when the local output is provably silent',async()=>{
+  const {canInstallManually,localOutputIdle}=await import('../deploy/ota/policy.mjs');
+  const offline={mode:'music-assistant',musicAssistant:{connected:false},device:{mode:'ready',amplifierEnabled:false,faults:[]},playback:{connected:false,playing:false},activity:{localPlayback:null,syncCalibration:false,bluetoothActive:false,roomMeasurement:false,roomControl:false}};
+  assert.equal(canUpdate(offline),false,'automatic installs stay strict');
+  assert.equal(canInstallManually(offline,true),true);
+  assert.equal(canInstallManually(offline,false),false);
+  for(const change of [{activity:{...offline.activity,bluetoothActive:true}},{activity:{...offline.activity,roomMeasurement:true}},{device:{...offline.device,faults:['pd']}},{device:{...offline.device,mode:'fault'}},{musicAssistant:{connected:true}},{mode:'simulation'}])
+    assert.equal(canInstallManually({...offline,...change},true),false,JSON.stringify(change));
+  const files={'/proc/asound/pcm':'00-00: Headphones : Headphones : playback 8\n03-00: Louder : Louder : playback 1\n04-00: USB Audio : USB Audio : capture 1\n','/proc/asound/card0/pcm0p/sub0/status':'closed\n','/proc/asound/card3/pcm0p/sub0/status':'closed\n'};
+  assert.equal(localOutputIdle(p=>{if(!(p in files))throw Error('missing');return files[p];}),true);
+  files['/proc/asound/card3/pcm0p/sub0/status']='state: RUNNING\nowner_pid   : 812\n';
+  assert.equal(localOutputIdle(p=>files[p]),false);
+  assert.equal(localOutputIdle(()=>{throw Error('no proc');}),false);
+});
+
+test('the server installs without pausing when Music Assistant is offline and the output is silent, and refuses otherwise',async()=>{
+  for(const idle of [true,false]){
+    const calls=[];
+    const state={mode:'music-assistant',musicAssistant:{connected:false},device:{mode:'ready',amplifierEnabled:false,faults:[]},playback:{connected:false,playing:false},activity:{localPlayback:null}};
+    const music={status:'disconnected',async refresh(){throw Error('must not refresh a disconnected server');}};
+    const install=new ManualUpdate({snapshot:()=>state,status:async()=>({status:'available',available:{commit:'b'.repeat(40)},manager:{managed:true,configured:true}}),music,multiroom:{busy:false},manage:async r=>{calls.push(r);return {queued:true};},hardwareIdle:()=>idle});
+    if(idle){const r=await install.install({command:'install'});assert.deepEqual(calls,[{command:'install',args:{}}]);assert.equal(r.withoutMusicAssistant,true);assert.equal(r.pausedForUpdate,false);}
+    else{await assert.rejects(install.install({command:'install'}),/could not confirm that its audio output is silent/);assert.deepEqual(calls,[]);}
+  }
+});
