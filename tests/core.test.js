@@ -176,6 +176,7 @@ test("settings whitelist, clamp and safe defaults", () => {
       widgets: ["clock", "upnext", "source"],
       font: "inter",
       keepPlaying: true,
+      sound: { preset: "warm", bass: 0, treble: 0, loudness: false },
       startupAnimation: "auto",
       visualizer: "off",
       visualizerBands: 32,

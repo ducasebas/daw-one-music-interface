@@ -1,6 +1,7 @@
 import {presentationTiming} from './presentation-timing.js';
 import { screenSettings } from "./wall.js";
 import {widgetSelection,widgetDefaults} from "./now-playing.js";
+import {soundSettings,soundDefaults} from "./dsp-settings.js";
 export const defaults = {
   timing: presentationTiming(),
   syncAutomatic: false,
@@ -18,6 +19,7 @@ export const defaults = {
   widgets: [...widgetDefaults],
   font: 'inter',
   keepPlaying: true,
+  sound: {...soundDefaults},
 };
 export function settings(input = {}) {
   input = input && typeof input === "object" ? input : {};
@@ -31,6 +33,7 @@ export function settings(input = {}) {
     backdrop: input.backdrop === 'off' ? 'off' : 'art',
     font: ['inter','manrope-heavy','skin'].includes(input.font) ? input.font : 'inter',
     keepPlaying: input.keepPlaying !== false,
+    sound: soundSettings(input.sound),
     widgets: widgetSelection(input.widgets),
     visualizer: ["meters","spectrum"].includes(input.visualizer)?input.visualizer:"off",
     visualizerBands: input.visualizerBands===16?16:32,

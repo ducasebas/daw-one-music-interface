@@ -10,7 +10,7 @@ async function fixture(page,on=0,labels=true){
  let controls=[{id:22,name:'Equalizer',min:0,max:1,value:off,type:'ENUMERATED',...(labels?{options:[{value:on,label:'On'},{value:off,label:'Off'}]}:{})},{id:5,name:'00020 Hz',min:-15,max:15,value:-2,type:'INTEGER'},{id:6,name:'Channel Left Gain',min:-110,max:0,value:-3,type:'INTEGER'},{id:7,name:'Channel Right Gain',min:-110,max:0,value:-3,type:'INTEGER'}];
  const status=()=>({supported:true,card:'LouderRaspberry',controls,faults:[]});
  await page.route('**/api/device',async route=>{const body=route.request().postDataJSON();if(body.command==='dsp')return route.fulfill({json:status()});if(body.command==='dsp-set'){calls.push(body.args.controls);controls=controls.map(c=>({...c,value:body.args.controls.find(x=>x.id===c.id)?.value??c.value}));return route.fulfill({json:{saved:true,...status()}});}return route.continue();});
- await page.goto(url);await chooseSettingsSection(page,'Audio',{open:true});
+ await page.goto(url);await chooseSettingsSection(page,'Audio',{open:true});await page.getByText('Advanced: all amplifier controls',{exact:true}).click();
  return {calls,off,on,controls:()=>controls};
 }
 for(const on of [0,1])test(`equalizer follows ALSA labels with On=${on}; presets preview, cancel and save correctly`,async({page})=>{
@@ -26,4 +26,18 @@ for(const on of [0,1])test(`equalizer follows ALSA labels with On=${on}; presets
 });
 test('missing driver enum labels disable switching and presets instead of guessing',async({page})=>{
  const f=await fixture(page,0,false);await expect(page.getByRole('checkbox',{name:'Equalizer',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Flat',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Soft',exact:true})).toBeDisabled();await expect(page.getByText('Equalizer labels are unavailable. Complete the device update to use DSP presets.',{exact:true})).toBeVisible();expect(f.calls).toHaveLength(0);
+});
+test('the simple sound layer explains each control and previews preset, bass, treble and loudness before Save',async({page})=>{
+ const token=(await(await page.request.get('/api/updates')).json()).controlToken;
+ await page.request.post('/api/reset',{headers:{'X-TuneBox-Control':token},data:{kind:'preferences',confirmed:true}});
+ let controls=[{id:22,name:'Equalizer',min:0,max:1,value:1,type:'ENUMERATED',options:[{value:0,label:'On'},{value:1,label:'Off'}]},{id:5,name:'00060 Hz',min:-15,max:15,value:0,type:'INTEGER'},{id:8,name:'08000 Hz',min:-15,max:15,value:0,type:'INTEGER'},{id:6,name:'Channel Left Gain',min:-110,max:0,value:0,type:'INTEGER'},{id:7,name:'Channel Right Gain',min:-110,max:0,value:0,type:'INTEGER'}];const calls=[];
+ await page.route('**/api/device',async route=>{const body=route.request().postDataJSON();if(body.command==='dsp')return route.fulfill({json:{supported:true,card:'LouderRaspberry',controls,faults:[]}});if(body.command==='dsp-set'){calls.push(body.args.controls);controls=controls.map(c=>({...c,value:body.args.controls.find(x=>x.id===c.id)?.value??c.value}));return route.fulfill({json:{saved:true,supported:true,controls,faults:[]}});}return route.continue();});
+ await page.goto(url);await chooseSettingsSection(page,'Audio',{open:true});
+ const sound=page.getByRole('region',{name:'Sound',exact:true});await expect(sound).toContainText('More or less low end (below 250 Hz).');
+ await sound.getByRole('radio',{name:/^Flat/}).click();await sound.getByRole('slider',{name:'Bass',exact:true}).fill('4');await sound.getByLabel('Loudness').check();
+ expect(calls).toHaveLength(0);
+ await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('[data-saved=true]')).toBeVisible();
+ expect(calls.at(-1)).toEqual(expect.arrayContaining([{id:22,value:0},{id:5,value:7},{id:8,value:2}]));
+ expect((await(await page.request.get('/api/preferences')).json()).prefs.sound).toEqual({preset:'flat',bass:4,treble:0,loudness:true});
+ await page.screenshot({path:'test-results/simple-sound.png'});
 });

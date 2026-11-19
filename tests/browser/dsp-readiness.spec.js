@@ -9,14 +9,14 @@ test('DSP waits for the control connection and loads automatically when the toke
  await reset(page);const original=await(await page.request.get('/api/updates')).json();let ready=false,reads=0;
  await page.route('**/api/updates',route=>{const value={...original,manager:{...original.manager,configured:true,progressDisplay:true}};if(!ready)delete value.controlToken;return route.fulfill({json:value});});
  await page.route('**/api/device',route=>{if(route.request().postDataJSON().command==='dsp'){reads++;return route.fulfill({json:dsp});}return route.continue();});
- await page.goto(url);await chooseSettingsSection(page,'Audio',{open:true});
+ await page.goto(url);await chooseSettingsSection(page,'Audio',{open:true});await page.getByText('Advanced: all amplifier controls',{exact:true}).click();
  await expect(page.getByText('Connecting to the device manager…',{exact:true})).toBeVisible();expect(reads).toBe(0);await expect(page.getByText('Louder ALSA controls are unavailable.',{exact:false})).toHaveCount(0);
  ready=true;await expect(page.getByRole('checkbox',{name:'Equalizer',exact:true})).toBeChecked();expect(reads).toBe(1);
 });
 test('a failed amplifier read has an explicit retry and a staged EQ edit cannot be overwritten by refreshing',async({page})=>{
  await reset(page);let reads=0,writes=0;
  await page.route('**/api/device',route=>{const command=route.request().postDataJSON().command;if(command==='dsp'){reads++;return route.fulfill(reads===1?{status:503,json:{error:'Device manager temporarily unavailable.'}}:{json:dsp});}if(command==='dsp-set')writes++;return route.continue();});
- await page.goto(url);await chooseSettingsSection(page,'Audio',{open:true});await expect(page.getByRole('alert')).toContainText('Device manager temporarily unavailable.');await expect(page.getByText('Louder ALSA controls are unavailable.',{exact:false})).toHaveCount(0);
+ await page.goto(url);await chooseSettingsSection(page,'Audio',{open:true});await page.getByText('Advanced: all amplifier controls',{exact:true}).click();await expect(page.getByRole('alert')).toContainText('Device manager temporarily unavailable.');await expect(page.getByText('Louder ALSA controls are unavailable.',{exact:false})).toHaveCount(0);
  const refresh=page.getByRole('button',{name:'Refresh amplifier controls',exact:true});await refresh.click();const eq=page.getByRole('checkbox',{name:'Equalizer',exact:true});await expect(eq).toBeChecked();expect(reads).toBe(2);
  await eq.uncheck();await expect(refresh).toBeDisabled();await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(eq).toBeChecked();await expect(refresh).toBeEnabled();expect(writes).toBe(0);
 });
@@ -25,7 +25,7 @@ test('unlocking an expired settings session rereads the amplifier without leavin
  await page.route('**/api/security/status',route=>route.fulfill({json:{enabled:true,unlocked,remainingSeconds:0}}));
  await page.route('**/api/security/unlock',route=>{unlocked=true;return route.fulfill({json:{enabled:true,unlocked:true,remainingSeconds:0}});});
  await page.route('**/api/device',route=>{if(route.request().postDataJSON().command==='dsp'){reads++;return route.fulfill({json:value});}return route.continue();});
- await page.goto(url);await chooseSettingsSection(page,'Audio',{open:true});
+ await page.goto(url);await chooseSettingsSection(page,'Audio',{open:true});await page.getByText('Advanced: all amplifier controls',{exact:true}).click();
  await expect(page.getByRole('checkbox',{name:'Equalizer',exact:true})).toBeChecked();expect(reads).toBe(1);
  unlocked=false;
  await expect(page.getByRole('heading',{name:'Unlock settings'})).toBeVisible({timeout:20000});
