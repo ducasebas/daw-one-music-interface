@@ -119,6 +119,7 @@ if [[ ! -f /etc/daw-one.env ]]; then
   chown root:dawone /etc/daw-one.env
   chmod 640 /etc/daw-one.env
 fi
+install -d -m 755 /usr/local/share/icons
 python3 "$repo/deploy/display/cursor-theme.py"
 bash "$repo/deploy/install-manager.sh"
 if [[ $target == pi4 && -d /sys/class/backlight/10-0045 ]]; then bash "$repo/deploy/install-display.sh"; fi

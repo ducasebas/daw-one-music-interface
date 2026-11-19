@@ -69,9 +69,11 @@ PYTHON
 }
 trap cleanup_request EXIT
 python3 "$repo/deploy/chromium/configure.py"
+install -d -m 755 /usr/local/share/icons
 python3 "$repo/deploy/display/cursor-theme.py"
 install -m 755 "$repo/deploy/kiosk.sh" "$repo/kiosk.sh"
 install -m 755 "$repo/deploy/set-panel-profile.sh" "$repo/set-panel-profile.sh"
+python3 "$repo/deploy/ota/migrate-kiosk.py"
 if [[ $target == pi4 ]]; then
   bash "$repo/deploy/install-display.sh"
   python3 "$repo/deploy/display/quiet-boot.py"

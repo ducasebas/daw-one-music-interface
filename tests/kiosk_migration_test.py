@@ -19,3 +19,12 @@ class KioskMigrationTests(unittest.TestCase):
         source=(Path(__file__).resolve().parents[1]/'deploy/daw-one-kiosk.service').read_text()
         self.assertIn('Wants=daw-one.service',source)
         self.assertNotIn('Requires=daw-one.service',source)
+        self.assertIn('TTYReset=no', source)
+
+    def test_existing_ota_install_stops_resetting_the_hidden_console_cursor(self):
+        source='[Unit]\nWants=daw-one.service\n[Service]\nUser=dawone\nTTYReset=yes\nTTYVHangup=yes\nExecStart=/opt/daw-one/kiosk.sh\n'
+        result=module.independent_kiosk(source)
+        self.assertIn('TTYReset=no', result)
+        self.assertIn('TTYVHangup=yes', result)
+        self.assertEqual(result.count('Wants=daw-one.service'), 1)
+        self.assertEqual(module.independent_kiosk(result), result)

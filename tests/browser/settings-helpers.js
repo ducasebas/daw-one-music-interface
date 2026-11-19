@@ -10,3 +10,10 @@ export async function chooseSettingsSection(page,name,{open=false}={}){
  await page.getByRole('navigation',{name:translate('Settings categories',language)}).getByRole('button',{name:translate(group.id==='audio'?'Audio':group.title,language),exact:true}).click();
  if(section[0]!==group.id)await page.getByRole('navigation',{name:translate('In this section',language)}).getByRole('button',{name:translate(section[1],language),exact:true}).click();
 }
+
+export async function chooseDeveloperTopic(page,topic,{open=false}={}){
+ await chooseSettingsSection(page,'Developer',{open});
+ const language=await page.locator('html').getAttribute('lang')||'en';
+ const button=page.getByRole('navigation',{name:translate('Developer topics',language)}).getByRole('button',{name:translate(topic,language),exact:true});
+ await button.click();
+}

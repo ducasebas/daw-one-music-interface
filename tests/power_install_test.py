@@ -56,7 +56,8 @@ with open(os.environ['POWER_INSTALL_CALLS'],'a') as stream: stream.write(json.du
     def test_fresh_install_creates_guard_units_runtime_and_disabled_policy_without_requesting_power(self):
         root, config, calls = self.install()
         settings = json.loads(config.read_text())
-        self.assertFalse(settings['startup100W']); self.assertFalse(settings['voltageSenseVerified'])
+        self.assertFalse(settings['startup100W']); self.assertFalse(settings['startup20V'])
+        self.assertFalse(settings['startupMaximum20V']); self.assertFalse(settings['voltageSenseVerified'])
         self.assertEqual(calls[0], ['daemon-reload'])
         self.assertIn(['disable', 'daw-one-pd-startup.service'], calls)
         self.assertFalse(any('start' in row or 'restart' in row or '--now' in row for row in calls))
@@ -70,14 +71,15 @@ with open(os.environ['POWER_INSTALL_CALLS'],'a') as stream: stream.write(json.du
             # The worker handles unavailable I2C after journalling an authorized
             # attempt. Policy-off startup must not fail a hardware precheck.
             self.assertNotIn('ExecStartPre=/usr/bin/test', (root/f'etc/systemd/system/daw-one-{name}.service').read_text())
+            self.assertIn('TimeoutStartSec=12', (root/f'etc/systemd/system/daw-one-{name}.service').read_text())
         self.assertTrue((root/'etc/systemd/system/tunebox-player.service.d/power.conf').is_file())
 
     def test_legacy_wiring_and_existing_startup_choice_are_preserved_without_starting_a_request(self):
         legacy = dict(ina228=True, husb238=True, currentPathVerified=True, voltageSenseVerified=False)
-        for settings in [legacy, dict(legacy, startup100W=True), dict(legacy, startup20V=True)]:
+        for settings in [legacy, dict(legacy, startup100W=True), dict(legacy, startup20V=True), dict(legacy, startupMaximum20V=True)]:
             _, config, calls = self.install(settings)
             self.assertEqual(json.loads(config.read_text()), settings)
-            action = 'enable' if settings.get('startup100W') or settings.get('startup20V') else 'disable'
+            action = 'enable' if any(settings.get(k) for k in ('startup100W', 'startup20V', 'startupMaximum20V')) else 'disable'
             self.assertIn([action, 'daw-one-pd-startup.service'], calls)
             self.assertFalse(any('start' in row or 'restart' in row or '--now' in row for row in calls))
 

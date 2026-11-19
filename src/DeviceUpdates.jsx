@@ -1,10 +1,13 @@
 import {tr} from "../shared/i18n.js";
 import React,{createContext,useContext,useEffect,useRef,useState,useCallback,useMemo} from 'react';
 import {updatePhases} from '../shared/update-settings.js';
+import {deviceActionMessage} from '../shared/device-feedback.js';
+import {BusyStatus} from './BusyStatus.jsx';
 const Context=createContext(null);
 export const phaseLabels={checking:'Updates controleren',available:'Update beschikbaar',paused:'Updates gepauzeerd','waiting-idle':'Wachten tot muziek gestopt is','waiting-window':'Wachten op het tijdvenster',downloading:'Downloaden',verifying:'Handtekening controleren',preparing:'Voorbereiden',installing:'Installeren',restarting:'Opnieuw starten','checking-health':'Opstartcontrole','rolling-back':'Vorige versie herstellen',installed:'Update voltooid','rolled-back':'Vorige versie hersteld','up-to-date':'Bijgewerkt','no-release':'Nog geen ondertekende release','not-configured':'Nog niet ingesteld',error:'Update niet voltooid'};
 export function DeviceUpdatesProvider({children}){
- const [info,setInfo]=useState(null),[pending,setPending]=useState(false),[notice,setNotice]=useState('');
+ const [info,setInfo]=useState(null),[pending,setPending]=useState(false),[notice,setNotice]=useState(''),[activity,setActivity]=useState(null);
+ const operations=useRef(new Map()),operationId=useRef(0);
  const inFlight=useRef(0);
  const latest=useRef(null),serialized=useRef(''),fastUntil=useRef(0),refreshRef=useRef(()=>{});
  useEffect(()=>{let active=true,timer,controller,generation=0;const read=async()=>{
@@ -15,13 +18,15 @@ export function DeviceUpdatesProvider({children}){
  };refreshRef.current=()=>{clearTimeout(timer);controller?.abort();read();};const visible=()=>{if(!document.hidden)refreshRef.current();};document.addEventListener('visibilitychange',visible);read();return()=>{active=false;clearTimeout(timer);controller?.abort();document.removeEventListener('visibilitychange',visible);};},[]);
  const refresh=useCallback(()=>{fastUntil.current=performance.now()+60000;refreshRef.current();},[]);
  const action=useCallback(async(command,args={})=>{
+  const id=++operationId.current,label=deviceActionMessage(command);
+  if(label){operations.current.set(id,label);setActivity(operations.current.values().next().value);}
   inFlight.current++;setPending(true);setNotice('');
   try{const response=await fetch('/api/device',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':latest.current?.controlToken||''},body:JSON.stringify({command,args}),signal:AbortSignal.timeout(30000)});const data=await response.json();if(!response.ok)throw Object.assign(Error(data.error||'Actie niet gelukt'),data.code==='update-group-confirmation'?{code:data.code,rooms:data.rooms,roomsRevision:data.roomsRevision}:{});setNotice(data.message|| (data.queued?'':data.saved?'Opgeslagen':''));refresh();return data;}
   catch(error){setNotice(error.name==='TimeoutError'?'Verbinding onderbroken; controleer de apparaatstatus voordat je opnieuw probeert':error.message);throw error;}
-  finally{inFlight.current=Math.max(0,inFlight.current-1);if(!inFlight.current)setPending(false);}
+  finally{operations.current.delete(id);setActivity(operations.current.values().next().value||null);inFlight.current=Math.max(0,inFlight.current-1);if(!inFlight.current)setPending(false);}
  },[refresh]);
  const value=useMemo(()=>({info,pending,notice,action,refresh}),[info,pending,notice,action,refresh]);
- return <Context.Provider value={value}>{tr(children)}</Context.Provider>;
+ return <Context.Provider value={value}>{tr(children)}<BusyStatus busy={!!activity} label={activity||'Working…'} name="Device activity" className="global-device-activity"/></Context.Provider>;
 }
 export const useDeviceUpdates=()=>useContext(Context);
 export function UpdateProgress({info,compact=false}){

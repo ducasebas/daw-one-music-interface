@@ -1,4 +1,6 @@
-> Local candidate: **GUI 3.8.2 · PD60**, `2026.11.18-pd60.1`. [Offered 20 V setup](docs/pd60-setup.md) accepts a verified 60 W source offer and distinguishes it from an active 25 W startup contract and real INA228 consumption. The owner approved preview publication on 18 November 2026; availability follows successful Verify/signing checks. [Validation](docs/pd60-validation.md).
+> **GUI 3.8.3 · PD QUERY**, `2026.11.18-pd-query.1`, approved for preview publication on 19 November 2026. Includes the [HUSB238 source-query repair](docs/pd-source-query.md) and [clearer setup, Developer organization, visible waiting and cursor corrections](docs/usability-and-cursor.md). The previous readback remains 25 W active / 60 W offered; 100 W availability is not established. Publication is gated on Verify/signing; [validation and physical limits](docs/usability-validation.md) are recorded separately.
+
+**Published GUI 3.8.2 · PD60**, `2026.11.18-pd60.1`, at `2cdb40149c52a3fcb7301ee229cf22d9aaf6ca9b`: verified signed preview with [offered 20 V setup](docs/pd60-setup.md) and [test evidence](docs/pd60-validation.md). Installation/physical PD acceptance is unobserved here.
 
 # DAW TuneBox v1 — Raspberry Pi streaming amplifier prototype
 

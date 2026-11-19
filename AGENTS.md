@@ -1,3 +1,13 @@
+# GUI 3.8.3 publication approval
+
+On 19 November 2026 the owner explicitly approved publishing this expanded candidate with “Als je klaar bent mag je ota pushen”. This authorizes the scoped review branch, required CI and fixes within this update, merge and signed preview publication after the configured checks pass. It includes the HUSB238 source-query repair and the requested beginner wording, Developer organization, visible waiting and cursor corrections (release `2026.11.18-pd-query.1`, cache 48). It does not authorize live PD experiments or fabricated hardware confirmation. Physical cold-start and power acceptance remain separately unobserved.
+
+# Current HUSB238 source-query repair
+
+The owner subsequently asked to include beginner-friendly wizard/settings wording, move engineering controls under Developer, make waiting visible and remove cursor flashes during cold start/OTA. This extends the same 3.8.3 candidate; publication is now separately approved above. Preserve the existing PD safety/qualification semantics and splash artwork. Revalidate the changed UI, cursor installation under the updater's private umask, first-paint progress page and relevant offline/startup flows. The preceding local review archive is superseded until this expanded candidate is validated.
+
+On 18 November 2026 the owner asked to read the HUSB238 documentation and fix the negotiation while the system is off. This authorizes local implementation and testing of GUI 3.8.3 PD QUERY (`2026.11.18-pd-query.1`, cache 47), not a new push, signed publication or live PD operation. Add an explicit bounded Get_SRC_Cap query before setup/request and an opt-in maximum-offered-20V startup policy; preserve the legacy exact-profile/100W policies, cable confirmations, idle gates and interruption journal. The stored 3A offer does not prove a 5A offer exists. Do not force 5A, select 5V, issue hard reset or invent INA228 voltage-sense confirmation. Complete local validation and present the candidate before separate publication approval.
+
 # GUI 3.8.2 publication approval
 
 On 18 November 2026 the owner explicitly approved the reviewed GUI 3.8.2 PD60 candidate with “Ja push maar”, after being told that 3.8.2 was tested locally and 3.8.1 remained the published OTA. This authorizes the scoped review branch, required CI and fixes within PD60 scope, merge and signed preview publication after the configured checks pass. It does not authorize a live PD request, a voltage change on the Pi or physical INA228 wiring confirmation. Later updates still need separate approval.

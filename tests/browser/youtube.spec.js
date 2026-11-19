@@ -48,7 +48,7 @@ test('account wizard hands login to Music Assistant, shows source checks and kee
  await accountFixture(page);await playerFixture(page);await page.goto(url);
  const wizard=await setup(page);await expect(wizard.getByText('Account accepted by Music Assistant',{exact:true})).toBeVisible();
  await wizard.getByRole('button',{name:'Connect or repair account',exact:true}).click();await expect(wizard.getByRole('img',{name:'Open Music Assistant',exact:true})).toBeVisible();
- await expect(wizard.getByText('The login cookie stays in Music Assistant. There is no Google OAuth login for the YouTube Music library.',{exact:true})).toBeVisible();
+ await expect(wizard.getByText('Your account details stay in Music Assistant. Follow its instructions on your computer; do not enter your Google password on TuneBox.',{exact:true})).toBeVisible();
  await expect(wizard.locator('input[type=password]')).toHaveCount(0);
  for(const button of await wizard.locator(':scope > nav button').all()){await expect(button).toBeInViewport();expect((await button.boundingBox()).height).toBeGreaterThanOrEqual(56);}
  const tabs=await wizard.locator(':scope > nav button').evaluateAll(nodes=>nodes.map(n=>({x:n.getBoundingClientRect().x,y:n.getBoundingClientRect().y,width:n.getBoundingClientRect().width})));
