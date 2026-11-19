@@ -2,7 +2,9 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.11.2 ENDLESS — approved, in review
+## GUI 3.11.2 ENDLESS — published
+
+Merged via PR #13 as `393b82a3b2dc9b99ef221394ee07d2a46636e6fe` on 19 November 2026 after all six PR CI jobs passed. Verify on `main` and Publish signed preview (run 44628902804) passed on the first attempt, including the public channel check. Release `ota-preview-393b82a3b2dc9b99ef221394ee07d2a46636e6fe` is public. Verified independently: the signature verifies with the unchanged project key; the manifest names commit `393b82a`, release `2026.11.19-lively.3` and label "GUI 3.11.2 · ENDLESS"; the archive hash matches; the inventory is complete (366 files, cache v56); `checkChannel` selects it. The final local run passed Chromium 220/220 and offline 16/16. Not observed on the Pi: the readiness check against the owner's Music Assistant (Tidal/Spotify/YouTube Music) and the queue filling itself.
 
 On 19 November 2026 the owner approved the local GUI 3.11.2 ENDLESS candidate (`2026.11.19-lively.3`, cache 56) with "Ja ga door". The owner had been told about the scope ("Keep the music playing", on by default, with a read-only Music Assistant readiness check when switched on, TuneBox's own queue only) and that the full local Chromium run was in progress (152 passed, no failures at that point). Scope: `docs/endless-3-11-2.md`. The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full configured CI passes. It does not cover live hardware experiments or physical confirmations.
 
