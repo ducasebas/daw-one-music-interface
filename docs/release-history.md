@@ -2,6 +2,10 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
+## GUI 3.11.0 LIVELY (incl. 3.10.1 HOTFIX) — approved, in review
+
+On 19 November 2026 the owner wrote "Push m" (read as "Push maar") after being shown the local 3.10.1 HOTFIX (scrub through the Music Assistant queue; cause confirmed on the Pi: the player reports no `seek`) and the 3.11.0 LIVELY candidate (`2026.11.19-lively.1`, cache 54: artwork backdrop, Now Playing widgets, phone remote in TuneBox style). It was published as one update, 3.11.0, which includes the 3.10.1 fix. The local full Chromium run was still in progress (155 tests passed, no failures at that point). Scope: `docs/hotfix-3-10-1.md` and `docs/lively-3-11.md`. The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full configured CI passes. It does not cover live hardware experiments or physical confirmations. A mute fallback for players without `volume_mute` is not in this scope.
+
 ## GUI 3.10.0 POLISH — published
 
 On 19 November 2026 the owner confirmed that 3.10.0 is installed on the Pi ("Ziet er prachtig uit", then "Ja" when asked whether this was on the real screen). Individual points ("Update installed" notice, footer volume and scrubbing by touch, startup title over the splash, restart controls after the host-helper refresh) have not been reported separately and stay open.
