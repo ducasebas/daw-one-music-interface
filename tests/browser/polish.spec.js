@@ -18,7 +18,8 @@ test('the startup screen names the update and its version',async({page})=>{
 });
 test('wizards use the active skin colours, font and radius',async({page})=>{
  const saved=await(await page.request.get('/api/preferences')).json();
- await preferences(page,{themePreferences:{...saved.themePreferences,selected:'warm-bronze',mode:'manual'}});
+ // GUI 3.11.1: the skin's own font applies when "Skin font" is chosen; Inter is the default.
+ await preferences(page,{themePreferences:{...saved.themePreferences,selected:'warm-bronze',mode:'manual'},prefs:{font:'skin'}});
  await page.goto(url);await page.locator('.m2-header').getByRole('button',{name:'Settings',exact:true}).click();
  await page.getByRole('navigation',{name:'Settings categories'}).getByRole('button',{name:'Connections',exact:true}).click();
  await page.locator('.setup-cards button').filter({hasText:'Music Assistant'}).first().click();
