@@ -4,9 +4,9 @@ Standing rules for every agent (Claude, Codex) working in this repository. Past 
 
 ## Current state
 
-- Published preview OTA: GUI 3.9.1 · UPDATE FLOW, release `2026.11.19-update-flow.1`, service-worker cache 50, commit `d7e96962f83f70db4568e0d3a23f4f801432b559` (19 November 2026).
-- Candidate GUI 3.9.2 · HOTFIX (`2026.11.19-update-flow.2`, cache 51): room-measurement SNR and stepped sweep level. The next candidate uses cache 52 and must update `notes` in `shared/release.js`.
-- 3.9.0 is installed on the owner's Pi (reported 19 November 2026). The last PD request failed with an I²C I/O error; the startup PD policy was disabled on the device.
+- Published preview OTA: GUI 3.9.2 · HOTFIX, release `2026.11.19-update-flow.2`, service-worker cache 51, commit `f3a7e37a0fb22e9dd47e332bb84d944bdf62bc15` (19 November 2026).
+- Local candidate GUI 3.10.0 · POLISH (`2026.11.19-polish.1`, cache 52): see `docs/polish-3-10.md` and `docs/polish-validation.md`; approved 19 November 2026 ("Push maar"), in review. The next candidate uses cache 53 and must update `notes` in `shared/release.js`.
+- 3.9.1 is installed on the owner's Pi (reported 19 November 2026). The last PD request failed with an I²C I/O error; the startup PD policy was disabled on the device.
 - Physical acceptance still open: cursor hidden on cold start, real PD source query and 20 V contract/stability, INA228 VBUS wiring; for 3.9.0, phone pairing and control over the real home Wi-Fi.
 
 ## Approval per update

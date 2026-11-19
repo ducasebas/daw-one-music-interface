@@ -1,4 +1,6 @@
-> **Published GUI 3.9.1 · UPDATE FLOW**, `2026.11.19-update-flow.1`, at `d7e96962f83f70db4568e0d3a23f4f801432b559`. Manual install works while Music Assistant is offline if the local audio output is silent; the Install button always responds; Now Playing explains when the power setup keeps the player stopped; clearer Music Assistant errors; the measurement installer makes its state directory writable.
+> **Published GUI 3.9.2 · HOTFIX**, `2026.11.19-update-flow.2`, at `f3a7e37a0fb22e9dd47e332bb84d944bdf62bc15`: room-measurement sweep detection in reverberant rooms, robust SNR, missing-dB tip and an optional 6 dB louder retry.
+
+> GUI 3.9.1 · UPDATE FLOW, `2026.11.19-update-flow.1`, at `d7e96962f83f70db4568e0d3a23f4f801432b559`. Manual install works while Music Assistant is offline if the local audio output is silent; the Install button always responds; Now Playing explains when the power setup keeps the player stopped; clearer Music Assistant errors; the measurement installer makes its state directory writable.
 
 > GUI 3.9.0 · REMOTE, `2026.11.19-remote.1`, at `6fb1406b3359f8523299f906fed16cabe7ee51e2`. Adds a [phone remote control](docs/remote-control.md) (pair once by QR code; play, pause, skip, search and volume over the home network), a full-height volume rail on the 1280×800 Now Playing screen, tap-to-step volume, clearer update names and [room measurement fixes](docs/room-measurement.md).
 

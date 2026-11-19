@@ -17,7 +17,7 @@ test('settings have five visible groups, related sections share a scrollable pag
  await page.goto(url);await openSettings(page);const nav=page.getByRole('navigation',{name:'Settings categories'});await expect(nav.getByRole('button')).toHaveCount(5);
  for(const b of await nav.getByRole('button').all()){await expect(b).toBeInViewport();expect(await b.evaluate(e=>e.scrollWidth<=e.clientWidth+1&&e.scrollHeight<=e.clientHeight+1)).toBe(true);}
  await nav.getByRole('button',{name:'Display',exact:true}).click();await expect(page.locator('[data-section=display]')).toBeVisible();await expect(page.locator('[data-section=presence]')).toHaveCount(1);await expect(page.locator('[data-section=appearance]')).toHaveCount(1);await expect(page.getByText('More below',{exact:false})).toBeVisible();
- await page.getByLabel('Show wake hint',{exact:true}).uncheck();const save=page.getByRole('button',{name:'Save',exact:true});await expect(save).toBeEnabled();await save.click();await expect(page.locator('[data-saved=true]')).toBeVisible();await expect(save).toBeDisabled();
+ await page.getByLabel('Show wake hint',{exact:true}).uncheck();const save=page.getByRole('button',{name:'Save',exact:true});await expect(save).toBeEnabled();await save.click();await expect(page.locator('[data-saved=true]')).toBeVisible();await expect(save).toHaveCount(0);
  expect((await(await page.request.get('/api/preferences')).json()).prefs.screen.showHint).toBe(false);await page.screenshot({path:'test-results/appliance-settings.png'});
  await nav.getByRole('button',{name:'Audio',exact:true}).click();await expect(page.locator('[data-section=measurement]')).toHaveCount(1);await expect(page.locator('[data-section=video]')).toHaveCount(1);expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBe(800);
 });
@@ -50,10 +50,39 @@ test('a notification opens the matching settings section with its category highl
  const existing=await(await page.request.get('/api/updates')).json();
  await page.route('**/api/updates',r=>r.fulfill({json:{...existing,status:'available',available:{release:'new-test'},manager:{...existing.manager,configured:true}}}));
  await page.goto(url);await page.getByRole('button',{name:'Notifications',exact:true}).click();
- const tray=page.getByRole('dialog',{name:'Notification panel',exact:true});await expect(tray.getByRole('heading',{name:'Update',exact:true})).toBeVisible();
- await tray.getByRole('button',{name:'Open Update',exact:true}).click();await expect(tray).not.toBeVisible();
+ const tray=page.getByRole('dialog',{name:'Notification panel',exact:true});await expect(tray.getByRole('heading',{name:'Update available',exact:true})).toBeVisible();
+ await tray.getByRole('button',{name:'Open Updates',exact:true}).click();await expect(tray).not.toBeVisible();
  await expect(page.locator('[data-section=updates]')).toHaveAttribute('data-current','true');await expect(page.locator('[data-section=updates]')).toBeInViewport();
  await expect(page.getByRole('navigation',{name:'Settings categories'}).getByRole('button',{name:'System',exact:true})).toHaveAttribute('aria-current','page');
+});
+test('the update notice follows its condition: offer, then "Update installed" until dismissed',async({page})=>{
+ const existing=await(await page.request.get('/api/updates')).json();
+ let info={...existing,status:'available',current:{release:'old-test',label:'GUI 3.9.2 · HOTFIX'},available:{release:'new-test',label:'GUI 3.10.0 · POLISH'},manager:{...existing.manager,configured:true,simulated:true}};
+ await page.route('**/api/updates',r=>r.fulfill({json:info}));
+ await page.goto(url);const bell=page.getByRole('button',{name:'Notifications',exact:true});await bell.click();
+ const tray=page.getByRole('dialog',{name:'Notification panel',exact:true});
+ await tray.getByRole('button',{name:'Update available',exact:true}).click();await expect(tray.getByRole('heading',{name:'Update available',exact:true})).toBeVisible();
+ await tray.getByRole('button',{name:'Close notifications',exact:true}).click();
+ // The device restarts on the new release and already reports up to date.
+ info={...info,status:'up-to-date',current:{release:'new-test',label:'GUI 3.10.0 · POLISH'},available:null};
+ await page.waitForTimeout(3500);await bell.click();
+ await tray.getByRole('button',{name:'Update installed',exact:true}).click();await expect(tray.getByRole('heading',{name:'Update installed',exact:true})).toBeVisible();await expect(tray).toContainText('GUI 3.10.0 · POLISH');
+ await expect(tray.getByRole('button',{name:'Update available',exact:true})).toHaveCount(0);
+ await tray.getByRole('button',{name:'Dismiss',exact:true}).click();await expect(tray.getByRole('button',{name:'Update installed',exact:true})).toHaveCount(0);
+ await page.reload();await bell.click();await expect(tray.getByRole('button',{name:'Update installed',exact:true})).toHaveCount(0);
+});
+test('a tap on the progress bar seeks once to that spot and the bar does not snap back',async({page})=>{
+ const seeks=[];await page.route('**/api/event',async r=>{const e=r.request().postDataJSON();if(e.type==='seek')seeks.push(e);return r.continue();});
+ await page.goto(url);const seek=page.locator('.seek-control input');await expect(seek).toBeEnabled();
+ const box=await seek.boundingBox(),max=Number(await seek.getAttribute('max'));
+ await page.touchscreen.tap(box.x+10+(box.width-20)*.5,box.y+box.height/2);
+ await expect.poll(()=>seeks.length).toBe(1);expect(Math.abs(seeks[0].position-max/2)).toBeLessThanOrEqual(max*.03);
+ await page.waitForTimeout(600);expect(seeks).toHaveLength(1);
+ expect(Math.abs(Number(await seek.inputValue())-max/2)).toBeLessThanOrEqual(max*.03+2);
+ // Drag shows the preview time in the clock while the finger moves, and only the release seeks.
+ await page.mouse.move(box.x+box.width*.2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width*.3,box.y+box.height/2,{steps:3});
+ await expect(page.locator('.seek-control')).toHaveAttribute('data-dragging','true');expect(seeks).toHaveLength(1);
+ await page.mouse.up();await expect.poll(()=>seeks.length).toBe(2);await expect(page.locator('.seek-control')).not.toHaveAttribute('data-dragging','true');
 });
 test('seeking previews during drag, sends one final request and can be disabled in Playback',async({page})=>{
  const seeks=[];await page.route('**/api/event',async r=>{const e=r.request().postDataJSON();if(e.type==='seek')seeks.push(e);return r.continue();});

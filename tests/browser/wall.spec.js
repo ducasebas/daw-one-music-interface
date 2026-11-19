@@ -14,11 +14,11 @@ test('English default, larger transport and all top-level routes fit the physica
  }
  await page.getByRole('navigation',{name:'Music navigation'}).getByRole('button',{name:'Now Playing',exact:true}).click();
  const play=await page.locator('.m2-play').boundingBox();expect(play.width).toBeGreaterThanOrEqual(100);expect(play.height).toBeGreaterThanOrEqual(100);
- // Layout B: a lower transport footer and a full-height volume rail on Now Playing.
+ // GUI 3.10: the footer carries transport and a large volume again; no side rail.
  const footer=await page.locator('.m2-player').boundingBox();expect(footer.height).toBeGreaterThanOrEqual(120);
- const rail=await page.locator('.m2-volume-rail').boundingBox();expect(rail.height).toBeGreaterThanOrEqual(600);expect(rail.x+rail.width).toBeLessThanOrEqual(1280);
+ const slider=await page.locator('.m2-player').getByRole('slider',{name:'Volume',exact:true}).boundingBox();expect(slider.width).toBeGreaterThanOrEqual(300);expect(slider.x+slider.width).toBeLessThanOrEqual(1280);await expect(page.locator('.m2-volume-rail')).toHaveCount(0);
  for(const name of ['Previous track','Next track']){const b=await page.getByRole('button',{name,exact:true}).boundingBox();expect(b.width).toBeGreaterThanOrEqual(64);expect(b.height).toBeGreaterThanOrEqual(64);}
- expect(await page.evaluate(()=>getComputedStyle(document.querySelector('.m2-play')).borderTopWidth)).toBe('2px');
+ expect(await page.evaluate(()=>getComputedStyle(document.querySelector('.m2-play')).borderTopWidth)).toBe('3px');
  expect(await page.evaluate(()=>getComputedStyle(document.querySelector('.m2-play')).cursor)).toBe('none');
  await expect(page.locator('.m2-brand')).not.toContainText('MUSIC FIRST');
  await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-now-playing.png'});
@@ -36,8 +36,8 @@ test('large settings categories, sensor cards and all six skins remain usable',a
  await page.getByRole('button',{name:'Save',exact:true}).click();await settings(page,'Display');await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-display-settings.png'});
 });
 test('language changes immediately, persists and uses the requested Dutch Spaces label',async({page})=>{
- await settings(page,'Language');await page.getByRole('button',{name:'Nederlands',exact:true}).click();await expect(page.getByRole('button',{name:'Ruimtes',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Instellingen',exact:true})).toBeVisible();await page.getByRole('button',{name:'Opslaan',exact:true}).click();
- expect(await page.evaluate(()=>document.documentElement.lang)).toBe('nl');await page.reload();await page.getByRole('button',{name:'Instellingen',exact:true}).click();await chooseSettingsSection(page,'Language');await page.getByRole('button',{name:'English',exact:true}).click();await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.getByRole('button',{name:'Rooms',exact:true})).toBeVisible();
+ await settings(page,'Language');await page.getByRole('button',{name:'Nederlands',exact:true}).click();await expect(page.locator('.m2-header>nav').getByRole('button',{name:'Ruimtes',exact:true,includeHidden:true})).toBeAttached();await expect(page.getByRole('button',{name:'Instellingen',exact:true})).toBeVisible();await page.getByRole('button',{name:'Opslaan',exact:true}).click();
+ expect(await page.evaluate(()=>document.documentElement.lang)).toBe('nl');await page.reload();await page.getByRole('button',{name:'Instellingen',exact:true}).click();await chooseSettingsSection(page,'Language');await page.getByRole('button',{name:'English',exact:true}).click();await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('.m2-header>nav').getByRole('button',{name:'Rooms',exact:true,includeHidden:true})).toBeAttached();
 });
 test('clock fills the rest view; a single touch shows wake feedback and never toggles playback',async({page})=>{
  await settings(page,'Display');await page.getByLabel('Screen rest view').selectOption('widgets');
@@ -70,7 +70,7 @@ test('a real uploaded video replaces the mock and follows music pause and seek',
  await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-linked-video.png'});
 });
 test('notifications preserve modal focus and critical faults remain visible over black rest',async({page})=>{
- await page.getByRole('button',{name:'Notifications',exact:true}).click();const tray=page.getByRole('dialog',{name:'Notification panel'});for(const name of ['System report','Update','Hardware alert','Newsletter','What’s new','Tutorial']){await tray.getByRole('button',{name,exact:true}).click();await expect(tray.getByRole('heading',{name,exact:true})).toBeVisible();}
+ await page.getByRole('button',{name:'Notifications',exact:true}).click();const tray=page.getByRole('dialog',{name:'Notification panel'});for(const name of ['System report','Hardware alert','Newsletter','What’s new','Tutorial']){await tray.getByRole('button',{name,exact:true}).click();await expect(tray.getByRole('heading',{name,exact:true})).toBeVisible();}
  await page.keyboard.press('Escape');await expect(page.getByRole('button',{name:'Notifications',exact:true})).toBeFocused();
  await settings(page,'Display');await page.getByLabel('Screen rest view').selectOption('black');await page.getByRole('button',{name:'Screen rest',exact:true}).click();await page.request.post('/api/event',{data:{type:'thermal-alarm'}});await expect(page.locator('.sleep-fault')).toContainText('thermal-alarm');await page.getByRole('button',{name:'Wake display',exact:true}).tap();await expect(page.locator('.sleep-surface')).not.toBeVisible();const state=await(await page.request.get('/api/state')).json();expect(state.device.amplifierEnabled).toBe(false);expect(state.device.faults).toContain('thermal-alarm');
 });

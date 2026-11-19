@@ -13,3 +13,13 @@ test('measurement master switch, bands and unavailable source are explicit and f
 test('offline audio clears measured values and disables the master switch',async({page})=>{
  await measured(page);await page.getByRole('button',{name:"Settings",exact:true}).click();await page.getByLabel('Settings page',{exact:true}).selectOption('14');await expect(page.locator('.audio-spectrum')).toBeVisible();await page.unroute('**/api/audio?watch=1');await page.route('**/api/audio?watch=1',r=>r.abort());await expect(page.getByText("Backend offline · readings unavailable",{exact:true})).toBeVisible();await expect(page.getByLabel("Enable audio analysis",{exact:true})).toBeDisabled();await expect(page.locator('.audio-spectrum')).toHaveCount(0);
 });
+test('peak meters print an analogue dB scale with a red zone, and the needle points at the measured level',async({page})=>{
+ await measured(page);await page.getByRole('button',{name:"Open Now Playing",exact:true}).click();
+ const switcher=page.getByRole('button',{name:"Switch visualizer",exact:true});await switcher.click();await switcher.click();
+ const dial=page.getByRole('img',{name:"Left peak level -6.0 dBFS",exact:true});await expect(dial).toBeVisible();
+ expect(await dial.locator('.meter-label').allTextContents()).toEqual(['−60','−40','−20','−10','0']);
+ await expect(dial.locator('.meter-hot.meter-arc')).toHaveCount(1);await expect(dial).toHaveAttribute('data-scale','dBFS');
+ // −6 dBFS sits at 48° on a −60…0 dB sweep of 120°.
+ await expect.poll(()=>dial.locator('.meter-needle').evaluate(e=>Number(getComputedStyle(e).getPropertyValue('--level')))).toBeCloseTo(.9,2);
+ await page.screenshot({path:'test-results/meter-scale.png'});
+});

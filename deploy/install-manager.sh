@@ -23,6 +23,7 @@ install -d -m 750 -o root -g dawone /etc/daw-one
 install -m 644 "$repo"/deploy/manager/{starting-sound.mjs,automatic-dsp.mjs,audio-idle.mjs,sync.mjs,service.mjs,root-adapter.mjs,update-lock.mjs,music-credentials.mjs,bluetooth.mjs,io.mjs,progress-server.mjs,progress.html,power.mjs,power-telemetry.mjs,network.mjs,clock.mjs,dsp.mjs,local-ma.mjs,local-ma-job.mjs,measurement.mjs} "$base/deploy/manager/"
 install -m 644 "$repo"/dist/{appliance.js,appliance.css} "$base/public/"
 install -m 755 "$repo/deploy/manager/power-off.sh" "$base/deploy/manager/power-off.sh"
+install -m 755 "$repo/deploy/manager/reboot.sh" "$base/deploy/manager/reboot.sh"
 install -m 644 "$repo"/deploy/ota/policy.mjs "$base/deploy/ota/"
 install -m 644 "$repo"/shared/{power-settings.js,pd-profile.js,automatic-dsp.js,dsp-settings.js,sync-calibration.js,presentation-timing.js,device-manager.js,bluetooth.js,update-settings.js,host-capacity.js,room-measurement.js,room-targets.js} "$base/shared/"
 install -m 644 "$repo"/server/{update-status.js,ma-transport.js} "$base/server/"

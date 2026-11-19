@@ -25,24 +25,24 @@ test.beforeEach(async({page})=>{
 });
 test('a single checkbox edit enables Save, persists and can be undone',async({page})=>{
  await open(page,'Presence');const save=page.getByRole('button',{name:'Save',exact:true});
- await expect(save).toBeDisabled();await page.getByLabel('Presence detection',{exact:true}).check();await expect(save).toBeEnabled();
+ await expect(save).toHaveCount(0);await page.getByLabel('Presence detection',{exact:true}).check();await expect(save).toBeEnabled();
  await save.click();await expect(page.locator('[data-saved=true]')).toBeVisible();
  const status=page.locator('[data-saved=true]');await unclipped(status);await expect(status.locator('svg')).toBeInViewport();
- await page.screenshot({path:'test-results/touch-saved.png'});await expect(save).toBeDisabled();
+ await page.screenshot({path:'test-results/touch-saved.png'});await expect(save).toHaveCount(0);
  expect((await(await page.request.get('/api/preferences')).json()).presence.enabled).toBe(true);
  await page.getByLabel('Presence detection',{exact:true}).uncheck();await expect(save).toBeEnabled();
- await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(page.getByLabel('Presence detection',{exact:true})).toBeChecked();await expect(save).toBeDisabled();
+ await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(page.getByLabel('Presence detection',{exact:true})).toBeChecked();await expect(save).toHaveCount(0);
  for(const name of ['Presence detection','Night schedule']){
   const checkbox=page.getByLabel(name,{exact:true});await checkbox.setChecked(!await checkbox.isChecked());await expect(save).toBeEnabled();
-  await checkbox.setChecked(!await checkbox.isChecked());await expect(save).toBeDisabled();
+  await checkbox.setChecked(!await checkbox.isChecked());await expect(save).toHaveCount(0);
  }
  await chooseSettingsSection(page,'Display');
  for(const name of ['Show date','Show wake hint']){
   const checkbox=page.getByLabel(name,{exact:true});await checkbox.setChecked(!await checkbox.isChecked());await expect(save).toBeEnabled();
-  await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(save).toBeDisabled();
+  await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(save).toHaveCount(0);
  }
 });
-test('all settings tiles and each topic fit all six skins, including the fixed save and player bars',async({page})=>{
+test('all settings tiles and each topic fit all six skins, including the on-demand save bar and the player bar',async({page})=>{
  test.setTimeout(180000);
  for(const skin of presets){
   const old=await(await page.request.get('/api/preferences')).json();
@@ -63,7 +63,9 @@ test('all settings tiles and each topic fit all six skins, including the fixed s
     await new Promise(resolve=>requestAnimationFrame(resolve));
     return e.scrollTop+e.clientHeight>=e.scrollHeight-2;
    }),{message:`${skin.id}: ${name} must scroll to its final content`}).toBe(true);
-   await expect(page.locator('.hub-savebar')).toBeInViewport();await expect(page.getByRole('button',{name:'Save',exact:true})).toBeInViewport();
+   // GUI 3.10: without changes there is no save bar; status icons stay reachable in the compact overlay.
+   if(await page.locator('.hub-savebar').count())await expect(page.locator('.hub-savebar')).toBeInViewport();else await expect(page.getByRole('button',{name:'Save',exact:true})).toHaveCount(0);
+   await expect(page.locator('.m2-header').getByRole('button',{name:'Settings',exact:true})).toBeInViewport();await expect(page.locator('.m2-header>nav')).toBeHidden();
    await expect(page.locator('.m2-player')).toBeInViewport();await expect(page.getByRole('button',{name:'Open Now Playing',exact:true})).toBeEnabled();
    expect(await page.evaluate(()=>document.documentElement.scrollHeight)).toBe(800);
   }

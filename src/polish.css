@@ -1,0 +1,95 @@
+/* GUI 3.10 · POLISH. Loaded last so these refinements win over the earlier layers. */
+
+/* 2 · Startup names the update and its version over the (unchanged) splash artwork. */
+.startup-screen>.startup-release{position:absolute;left:0;right:0;bottom:44px;z-index:2;text-align:center;font:500 20px/1.2 var(--font-body,var(--font,sans-serif));letter-spacing:.04em;color:var(--muted,#c9c3b6);pointer-events:none}
+.music2[data-panel="wall-16-10"] .startup-screen>.startup-release{font-size:24px;bottom:56px}
+
+/* 4 · Now Playing: the 3.9.0 volume rail is gone. The footer volume returns, larger and
+   more prominent; transport sits on the left because the footer track summary would only
+   repeat the track shown above it. */
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player{grid-template-columns:304px 80px minmax(0,1fr);gap:22px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player>.m2-mute{width:80px;min-width:80px;height:80px;border-radius:16px;border-color:var(--divider,var(--skin-line));background:transparent}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player>.m2-mute[aria-pressed=true]{border-color:var(--accent)}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player>.m2-mute .tb-icon{width:34px;height:34px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player>.touch-volume{gap:14px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-readout{width:104px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-readout strong{font-size:44px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-readout strong small{font-size:18px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-slider{height:96px;min-width:200px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-track{left:28px;right:28px;height:14px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-track>i{width:52px;height:52px;border-width:7px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-step{width:88px;min-width:88px;height:80px;min-height:80px;font-size:40px;border-radius:16px}
+
+/* Thicker outlines (≥ 3 px) on Now Playing: 1–2 px edges look grainy on the DSI panel. */
+.music2[data-panel="wall-16-10"][data-page="playing"] button,
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-step{border-width:3px;border-style:solid}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-header button,
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-transport>button:not(.m2-play){border-width:0}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-play{border:3px solid var(--accent)}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player{border-top-width:3px}
+
+/* No scrollbar on Now Playing: the layout fits the screen; overflow is clipped, not scrolled. */
+.music2[data-page="playing"]>.m2-content{overflow:hidden;scrollbar-width:none}
+.music2[data-page="playing"]>.m2-content::-webkit-scrollbar,.music2[data-page="playing"] .m2-playing *::-webkit-scrollbar{display:none}
+.music2[data-page="playing"] .m2-playing,.music2[data-page="playing"] .m2-playing>aside{scrollbar-width:none}
+
+/* 17 · Progress bar: a tall touch target, drag preview and one seek on release. */
+.seek-control input[type=range]{touch-action:none;cursor:pointer}
+.seek-control[data-dragging] input[type=range]{accent-color:var(--accent)}
+.seek-control[data-dragging] .m2-times>span:first-child{color:var(--accent);font-weight:600}
+
+/* 15 · Analogue meter dial: scale arc, dB marks with labels and a red zone. */
+.audio-meter-pair svg .meter-arc{fill:none;stroke:var(--muted);stroke-width:2}
+.audio-meter-pair svg .meter-arc.meter-hot{stroke:#d9534f;stroke-width:5}
+.audio-meter-pair svg .meter-tick{stroke:var(--muted);stroke-width:2;transform:none}
+.audio-meter-pair svg .meter-tick[data-major=true]{stroke:var(--text);stroke-width:3}
+.audio-meter-pair svg .meter-hot .meter-tick{stroke:#d9534f}
+.audio-meter-pair svg text.meter-label{font-size:13px;fill:var(--text);font-variant-numeric:tabular-nums}
+.audio-meter-pair svg .meter-hot text.meter-label{fill:#e0716d}
+.audio-meter-pair svg text.meter-unit{font-size:12px;fill:var(--muted);letter-spacing:.08em}
+.audio-meter-pair svg text.meter-side{font-size:15px;fill:var(--text)}
+.audio-meter-pair svg{overflow:visible}
+
+/* 14 · Settings on the wall display: no main header row. The status icons stay reachable in a
+   compact overlay at the top right; the settings title row shares their height. */
+.music2[data-panel="wall-16-10"].compact-header{position:relative;grid-template-rows:0 minmax(0,1fr) 178px;row-gap:0}
+.music2[data-panel="wall-16-10"].compact-header>.m2-header{position:absolute;top:12px;right:24px;z-index:30;height:60px;width:auto;padding:0 0 0 10px;gap:4px;border:0;background:var(--background,transparent);border-radius:0 0 0 16px}
+.music2[data-panel="wall-16-10"].compact-header>.m2-header>.m2-brand,.music2[data-panel="wall-16-10"].compact-header>.m2-header>nav{display:none}
+.music2[data-panel="wall-16-10"].compact-header>.m2-header button{min-height:52px;min-width:52px}
+.music2[data-panel="wall-16-10"].compact-header>.m2-content{grid-row:2;padding-top:12px}
+.music2[data-panel="wall-16-10"].compact-header .hub-heading{padding-right:var(--status-overlay-width,330px)!important;gap:16px}
+.music2 .hub-heading .hub-restore{flex:none;min-height:52px;padding:10px 18px;font-size:17px;border:2px solid var(--divider);border-radius:12px;background:transparent;color:inherit}
+
+/* 18 · The save bar appears only with unsaved changes, while saving, or with a result/error. */
+.music2[data-panel="wall-16-10"] .settings-hub-v2:not([data-savebar]){grid-template-rows:60px minmax(0,1fr)}
+
+/* 6 · Topics inside a section look like the settings overview cards: panel, 2 px outline, icon. */
+.music2 .hub-section-links{top:-4px!important;display:grid!important;grid-template-columns:repeat(auto-fill,minmax(224px,1fr));gap:10px;padding:4px 0 14px!important}
+.music2 .hub-section-links button{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;position:relative;font-size:18px;text-align:left;border:2px solid var(--divider);border-radius:14px;background:var(--panel);color:inherit;line-height:1.25}
+.music2 .hub-section-links button>span{min-width:0;overflow-wrap:normal;hyphens:auto}
+.music2 .hub-section-links button .tb-icon{flex:none;color:var(--muted)}
+.music2 .hub-section-links button:hover{border-color:var(--accent)}
+.music2 .hub-section-links [aria-current=location]{border-color:var(--accent);color:var(--accent);box-shadow:inset 0 -3px var(--accent)}
+.music2 .hub-section-links [aria-current=location] .tb-icon{color:var(--accent)}
+.music2 .hub-section-links .attention-dot{position:absolute;top:8px;right:8px}
+
+/* 11 · Wizards follow the active skin: its colours, font, corner radius and outline width. */
+.wizard-skin{display:contents}
+/* Resolve the skin where it is defined (shell or wizard wrapper); the wizard used to pin its own palette. */
+:root,.music2,.wizard-skin{--wizard-line:var(--divider,var(--border-color,#394349));--wizard-panel:var(--panel,var(--surface,#1b2226));--wizard-bg:var(--background,#11171b);--wizard-text:var(--text,#f2f0e9);--wizard-muted:var(--muted,#a1abae);--wizard-accent:var(--accent,#c5a36b);--wizard-font:var(--font-body,var(--font,sans-serif));--wizard-radius:calc(var(--radius,6px) + 6px);--wizard-border:max(2px,var(--border-width,2px))}
+.first-start{--divider:var(--wizard-line);--panel:var(--wizard-panel);--background:var(--wizard-bg);--text:var(--wizard-text);--muted:var(--wizard-muted);--accent:var(--wizard-accent);background:var(--wizard-bg);color:var(--wizard-text);font-family:var(--wizard-font)}
+.first-start h2,.first-start h3,.first-start p,.first-start button,.first-start input,.first-start select,.first-start label{font-family:inherit}
+.first-start button,.first-start input:not([type=checkbox]),.first-start select{border-radius:var(--wizard-radius);border-width:var(--wizard-border);border-color:var(--wizard-line)}
+.first-start small{color:var(--accent,#c5a36b)}
+.setup-journey .journey-steps li{border-radius:var(--wizard-radius);border-color:var(--wizard-line);border-width:var(--wizard-border)}
+.setup-journey .journey-steps [aria-current=step]{border-color:var(--accent);background:var(--wizard-panel);color:var(--accent)}
+.setup-journey .setup-cards button,.setup-journey .setup-result,.setup-journey .automatic-sound-summary,.setup-journey .sync-setup-summary{border-radius:calc(var(--wizard-radius) + 4px);border-color:var(--wizard-line);background:var(--wizard-panel)}
+.setup-journey .setup-cards span{color:var(--muted)}
+.setup-journey footer>button:last-child:not(:disabled){background:var(--accent);color:var(--background);border-color:var(--accent);font-weight:600}
+.setup-journey [aria-pressed=true]{border-color:var(--accent)!important;background:var(--wizard-panel)}
+.setup-journey input[type=checkbox],.setup-journey input[type=range],.setup-journey progress{accent-color:var(--accent)}
+
+/* 13 · Developer → Services: restart controls. */
+.restart-controls{margin-top:28px;padding-top:20px;border-top:2px solid var(--divider,var(--border-color))}
+.restart-controls .restart-actions{display:flex;flex-wrap:wrap;gap:14px}
+.restart-dialog[open]{display:block}

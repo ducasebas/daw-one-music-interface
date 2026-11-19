@@ -2,6 +2,7 @@ import {tr} from "../shared/i18n.js";
 import React,{useEffect,useRef,useState} from 'react';
 import {Icon} from './Icon.jsx';
 import {sleepModes,screenSettings,sunsetAt,wallNotifications} from '../shared/wall.js';
+import {trackUpdate,loadUpdateMemory,saveUpdateMemory} from '../shared/update-notice.js';
 import {settingsAttention} from '../shared/interface.js';
 import {useTemperatureDisplay} from './useTemperatureDisplay.js';
 import {getLanguage} from '../shared/i18n.js';
@@ -45,8 +46,11 @@ export function SleepSurface({prefs,snapshot,offline,wake,waking=false}) {
 }
 export function WallControls({snapshot,offline,updates,security,onSleep,onNavigate}) {
  const dialog=useRef(null),trigger=useRef(null);const [page,setPage]=useState(0);
+ const [updateMemory,setUpdateMemory]=useState(()=>loadUpdateMemory());
+ useEffect(()=>{setUpdateMemory(old=>{const next=trackUpdate(old,updates?.info);if(JSON.stringify(next)===JSON.stringify(old))return old;saveUpdateMemory(next);return next;});},[updates?.info]);
+ const dismiss=()=>{const next={...updateMemory,outcome:null};saveUpdateMemory(next);setUpdateMemory(next);setPage(0);};
  const extra=settingsAttention(snapshot,updates?.info||{},security||{}).filter(n=>!['update','update-error','hardware','power'].includes(n.id)).map(n=>({...n,attention:true,action:n.section}));
- const notifications=[...wallNotifications(snapshot,updates?.info,offline),...extra],item=notifications[Math.min(page,notifications.length-1)];
+ const notifications=[...wallNotifications(snapshot,updates?.info,offline,Date.now(),updateMemory),...extra],item=notifications[Math.min(page,notifications.length-1)];
  const open=()=>{setPage(Math.max(0,notifications.findIndex(n=>n.attention)));dialog.current.showModal();};
  const navigate=id=>{dialog.current.close();onNavigate(id);};
  return <><button aria-label={tr("Schermrust")} onClick={onSleep}><Icon name="moon" size={24}/></button><PowerOffButton offline={offline}/>
@@ -55,7 +59,7 @@ export function WallControls({snapshot,offline,updates,security,onSleep,onNaviga
  <div className="wall-tray"><header><h2>{tr("Meldingen")}</h2><button aria-label={tr("Meldingen sluiten")} onClick={()=>dialog.current.close()}><Icon name="close"/></button></header>
  <nav aria-label={tr("Meldingcategorieën")}>{notifications.map((n,i)=><button key={n.id} aria-label={tr(n.title)} aria-pressed={page===i} onClick={()=>setPage(i)}><Icon name={n.icon} size={25}/>{n.attention&&<i className="attention-dot"/>}</button>)}</nav>
  <article data-attention={item.attention||false}><Icon name={item.icon} size={36}/><h3>{tr(item.title)}</h3>{item.simulated&&<small>{tr("GESIMULEERDE HARDWARESTATUS")}</small>}<p>{tr(item.detail)}</p>
- {item.action&&<button onClick={()=>navigate(item.action)}>{tr("Open ")}{tr(item.title)}</button>}
+ {item.label&&<p>{tr(item.label)}</p>}{item.action&&<button onClick={()=>navigate(item.action)}>{tr(item.id==='update'?'Open Updates':'Open ')}{item.id==='update'?null:tr(item.title)}</button>}{item.dismissible&&<button onClick={dismiss}>{tr('Dismiss')}</button>}
  {item.id==='status'&&<><p>{tr("Versterker: ")}{tr(snapshot.device?.verified?'simulatie geverifieerd':'niet geverifieerd')}{tr(" · fouten: ")}{tr(snapshot.device?.faults?.length||0)}</p><button onClick={()=>navigate('screen')}>{tr("Schermrust instellen")}</button></>}
  {item.id==='tutorial'&&<button onClick={()=>navigate('playing')}>{tr("Open Nu spelen")}</button>}
  </article><footer><button aria-label={tr("Vorige melding")} disabled={page===0} onClick={()=>setPage(p=>p-1)}>←</button><span>{tr(page+1)} / {tr(notifications.length)}</span><button aria-label={tr("Volgende melding")} disabled={page===notifications.length-1} onClick={()=>setPage(p=>p+1)}>→</button></footer></div></dialog></>;

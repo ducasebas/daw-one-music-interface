@@ -1,10 +1,18 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.19-update-flow.2",
-  label: "GUI 3.9.2 · HOTFIX",
+  id: "2026.11.19-polish.1",
+  label: "GUI 3.10.0 · POLISH",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Room measurement hotfix: real sweeps in reverberant rooms are detected, a microphone start-up click no longer causes a false noise error, results say how many dB are missing, and you can measure again 6 dB louder (up to -24 dBFS) after confirming.",
+  notes: "Polish: larger footer volume on Now Playing, faster search suggestions above the keyboard, an analogue VU scale, scrubbing on the progress bar, a roomier Settings screen, wizards in your skin, and update notices that clear themselves.",
 });
+/** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
+export function releaseTitle(value = release) {
+  const label = String(value?.label || "").trim();
+  const match = /^(GUI\s+[\d.]+)\s*·\s*(.+)$/u.exec(label);
+  if (!match) return label;
+  const name = match[2].trim().toLocaleLowerCase("en").replace(/(^|\s)\p{L}/gu, (c) => c.toLocaleUpperCase("en"));
+  return `${name} · ${match[1]}`;
+}
 export function buildAlignment(frontend, backend, offline = false) {
   if (offline) return "offline";
   if (!backend?.id) return "unknown";
