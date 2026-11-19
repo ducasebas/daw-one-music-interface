@@ -22,6 +22,8 @@ function WallUpdateSettings({onDirty,actionsRef,build}={}){
  useEffect(()=>{onDirty?.(dirty);},[dirty,onDirty]);useEffect(()=>()=>onDirty?.(false),[onDirty]);
  const active=updatePhases.includes(info?.status),busy=checking||info?.status==='checking';
  const usable=info?.manager?.managed&&info.manager.configured&&!info.offline&&!pending&&!active&&!checking;
+ // Install depends on its own request only, never on unrelated background device reads.
+ const installable=info?.manager?.managed&&info.manager.configured&&!info.offline&&!active&&!checking;
  async function run(command,args){setError('');if(command==='check'){checkedBefore.current=info?.checkedAt;setChecking(true);}try{await action(command,args);}catch(e){setError(e.message);setChecking(false);}}
  async function savePolicy(){if(!dirty&&actionsRef)return true;if(!usable)return false;try{await action('policy',draft);setSavedPolicy(JSON.stringify(draft));return true;}catch(e){setError(e.message);return false;}}
  if(actionsRef)actionsRef.current={save:savePolicy,discard:()=>setDraft(JSON.parse(savedPolicy||policy))};
@@ -31,7 +33,7 @@ function WallUpdateSettings({onDirty,actionsRef,build}={}){
    <div className="update-result" data-current={current} role="status">{busy?<span className="ui-spinner"/>:current?<Icon name="check" size={38}/>:<Icon name={info?.available?'update':'status'} size={36}/>}<strong>{tr(busy?'Checking for updates…':current?'Up to date':info?.available?'Update available':info?.status==='error'?'Update needs attention':info?.manager?.configured?'Ready to check':'Updates are not configured')}</strong></div>
    <p className="update-last-check">{tr('Last checked')}: {relativeTime(info?.checkedAt,now,getLanguage())}</p>
    {info?.available&&<p className="available-version">{tr('Available version')}: <strong>{info.available.label||info.available.notes?.split(' — ')[0]||info.available.release}</strong>{(info.available.label||info.available.notes?.includes(' — '))&&<small> · {info.available.release}</small>}</p>}
-   <div className="update-actions"><button disabled={!usable} aria-busy={busy} onClick={()=>run('check')}>{busy&&<Icon name="update" className="is-spinning"/>}{tr('Check for updates')}</button>{info?.available&&<InstallUpdate disabled={!usable}/>}</div>
+   <div className="update-actions"><button disabled={!usable} aria-busy={busy} onClick={()=>run('check')}>{busy&&<Icon name="update" className="is-spinning"/>}{tr('Check for updates')}</button>{info?.available&&<InstallUpdate disabled={!installable}/>}</div>
   </section>
   {active&&<UpdateProgress info={info}/>}
   {error&&<p role="alert">{tr(error)}</p>}{info?.offline&&<p role="status">{tr('Offline · device changes are unavailable')}</p>}

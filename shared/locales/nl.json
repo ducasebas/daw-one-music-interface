@@ -1912,5 +1912,16 @@
   "music paused": "muziek gepauzeerd",
   "second remaining": "seconde",
   "seconds remaining": "seconden",
-  "sync measurement stopped": "synchronisatiemeting gestopt"
+  "sync measurement stopped": "synchronisatiemeting gestopt",
+  "Installing without Music Assistant: the audio output is silent. TuneBox restarts when the update is ready.": "Installeren zonder Music Assistant: de geluidsuitgang is stil. TuneBox start opnieuw zodra de update klaar is.",
+  "Update started. TuneBox restarts when it is ready.": "Update gestart. TuneBox start opnieuw zodra hij klaar is.",
+  "Music Assistant is offline and TuneBox could not confirm that its audio output is silent. Stop local audio, or reconnect Music Assistant, then install.": "Music Assistant is offline en TuneBox kon niet bevestigen dat de geluidsuitgang stil is. Stop lokale audio of verbind Music Assistant opnieuw en installeer dan.",
+  "Local player stopped: automatic power setup is blocked": "Lokale speler gestopt: automatische stroomsetup is geblokkeerd",
+  "Last attempt": "Laatste poging",
+  "Repair power setup, or turn off “Keep these settings after restart”, in Sensors.": "Herstel de stroomsetup of zet “Bewaar deze instellingen na opnieuw opstarten” uit in Sensoren.",
+  "Open Sensors": "Sensoren openen",
+  "Power setup did not complete": "Stroomsetup is niet voltooid",
+  "Room measurement is not installed on this TuneBox yet. See the installation note above.": "Kamermeting is nog niet geïnstalleerd op deze TuneBox. Zie de installatie-uitleg hierboven.",
+  "TuneBox player not found in Music Assistant": "TuneBox-speler niet gevonden in Music Assistant",
+  "TuneBox player not found in Music Assistant; check that the local player is running": "TuneBox-speler niet gevonden in Music Assistant; controleer of de lokale speler draait"
 }

@@ -16,6 +16,7 @@ import {DebugLog} from './debug-log.js';
 import {roomProfile,roomDefaults} from '../shared/room-measurement.js';
 import {DeviceSecurity} from './security.js';
 import {prepareMeasurement} from './measurement-prepare.js';
+import {readPlayerStartupBlock} from './player-block.js';
 import {RemoteAccess,remoteAddress,remoteView,remoteEvent,remoteQueueOptions} from './remote-control.js';
 import {createServer} from 'node:http';
 import {finished} from 'node:stream/promises';
@@ -95,6 +96,7 @@ const snapshot = () => {
     youtube:youtube.get(),
     bluetooth,
     remoteControl:{phones:remote.phones.length,pairing:remote.pairing()},
+    playerBlocked:music?readPlayerStartupBlock(music.status==='connected'?(music.players||[]).some(p=>p.player_id===multiroom.localId):music.errorCode==='player-missing'?false:null):null,
     videoRevision,
     hardwareTelemetry: readSensorTelemetry(process.env.DAW_SENSOR_FILE),
     hostTelemetry:host.value,

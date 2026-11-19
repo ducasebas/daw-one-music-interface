@@ -38,3 +38,22 @@ test('changed groups require a new confirmation and forward only the latest revi
   await expect(dialog.getByRole('listitem')).toHaveText(['Rivo','TuneBox','Hall']);await dialog.getByRole('button',{name:'Pause rooms and install',exact:true}).click();
   await expect(dialog).not.toBeVisible();expect(requests).toEqual([{command:'install',args:{}},{command:'install',args:{pauseGroup:true,roomsRevision:'a'.repeat(64)}},{command:'install',args:{pauseGroup:true,roomsRevision:'b'.repeat(64)}}]);
 });
+
+test('Install shows a readable version, and its error or started result stays visible',async({page})=>{
+  const original=await(await page.request.get('/api/updates')).json();const installs=[];let answer='error';
+  await page.route('**/api/updates',r=>r.fulfill({json:{...original,status:'available',available:{commit:'b'.repeat(40),release:'new-test',label:'GUI 9.9.9 · TEST'},manager:{...original.manager,managed:true,configured:true}}}));
+  await page.route('**/api/device',async r=>{
+    const request=r.request().postDataJSON();
+    if(request.command==='install'){installs.push(request);return answer==='error'?r.fulfill({status:409,json:{error:'Music Assistant is offline and TuneBox could not confirm that its audio output is silent. Stop local audio, or reconnect Music Assistant, then install.'}}):r.fulfill({json:{queued:true,withoutMusicAssistant:true}});}
+    return r.continue();
+  });
+  await openUpdates(page);
+  await expect(page.getByText('GUI 9.9.9 · TEST')).toBeVisible();
+  const install=page.getByRole('button',{name:'Install update',exact:true});
+  await expect(install).toBeEnabled();await install.click();
+  const alert=page.locator('.install-update-error');await expect(alert).toContainText('could not confirm that its audio output is silent');
+  await page.waitForTimeout(1500);await expect(alert).toBeVisible();
+  answer='queued';await install.click();
+  await expect(page.getByText('Installing without Music Assistant: the audio output is silent.',{exact:false})).toBeVisible();
+  expect(installs).toHaveLength(2);
+});

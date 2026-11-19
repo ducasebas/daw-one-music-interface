@@ -171,10 +171,13 @@ export class LiveMusicService extends EventEmitter {
         21: ["Authentication failed; check token", "auth-failed"],
         22: ["Insufficient MA permissions", "permissions"],
       }[error?.code];
+      // The server answered but this TuneBox's own player is not registered with it.
+      const missing=!auth&&error?.message==="Configured player unavailable";
       this.failed(
         auth?.[0] ||
-          "Connection or player sync failed; check server settings and version",
-        auth?.[1] || "connection",
+          (missing?"TuneBox player not found in Music Assistant; check that the local player is running":
+          "Connection or player sync failed; check server settings and version"),
+        auth?.[1] || (missing?"player-missing":"connection"),
       );
     }
   }

@@ -142,7 +142,9 @@ export function bootReport({
             ? "Authenticatie mislukt · token controleren"
             : music.errorCode === "permissions"
               ? "Onvoldoende Music Assistant-rechten"
-              : "Server niet verbonden; lokale instellingen blijven beschikbaar",
+              : music.errorCode === "player-missing"
+                ? "TuneBox player not found in Music Assistant"
+                : "Server niet verbonden; lokale instellingen blijven beschikbaar",
   );
   const player = simulated
     ? playback.connected

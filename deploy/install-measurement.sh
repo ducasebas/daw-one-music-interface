@@ -41,4 +41,7 @@ ReadWritePaths=/var/lib/daw-one-measurement /var/lib/daw-one-manager
 RestrictAddressFamilies=AF_UNIX
 UNIT
 systemctl daemon-reload
+# The manager only gets write access to optional state directories that existed when it
+# started (ReadWritePaths=-/var/lib/daw-one-measurement). Restart it so a fresh install is writable (EROFS otherwise).
+systemctl try-restart daw-one-manager.service
 echo 'USB microphone sweep support installed. No sweep was started. The wizard requires explicit audible consent.'
