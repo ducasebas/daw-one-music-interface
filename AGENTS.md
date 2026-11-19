@@ -6,7 +6,8 @@ Standing rules for every agent (Claude, Codex) working in this repository. Past 
 
 - Published preview OTA: GUI 3.9.0 · REMOTE, release `2026.11.19-remote.1`, service-worker cache 49, commit `6fb1406b3359f8523299f906fed16cabe7ee51e2` (19 November 2026). Phone remote control; see [docs/remote-control.md](docs/remote-control.md).
 - Next candidate: bump `shared/release.js` (including its user-facing `notes`) and the cache in `public/sw.js` (next is 50).
-- Physical acceptance still open: 3.8.3 installation on the Pi, cursor hidden on cold start, real PD source query and 20 V contract/stability, INA228 VBUS wiring; for 3.9.0, phone pairing and control over the real home Wi-Fi.
+- 3.9.0 is installed on the owner's Pi (reported 19 November 2026). The last PD request failed with an I²C I/O error; the startup PD policy was disabled on the device.
+- Physical acceptance still open: cursor hidden on cold start, real PD source query and 20 V contract/stability, INA228 VBUS wiring; for 3.9.0, phone pairing and control over the real home Wi-Fi.
 
 ## Approval per update
 
