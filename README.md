@@ -1,4 +1,4 @@
-> **Local candidate GUI 3.9.0 · REMOTE**, `2026.11.19-remote.1`, cache 49 — not published. Adds a [phone remote control](docs/remote-control.md): pair a phone once by QR code, then play, pause, skip, search and change volume over the home network. See [validation](docs/remote-validation.md).
+> **Local candidate GUI 3.9.0 · REMOTE**, `2026.11.19-remote.1`, cache 49 — not published. Adds a [phone remote control](docs/remote-control.md) (pair once by QR code; play, pause, skip, search and volume over the home network), a full-height volume rail on the 1280×800 Now Playing screen, tap-to-step volume, clearer update names and [room measurement fixes](docs/room-measurement.md).
 
 **Published GUI 3.8.3 · PD QUERY**, `2026.11.18-pd-query.1`, at `ffc0be8801584c83170e3f22ec0db0ca75f04caa`. Includes the [HUSB238 source-query repair](docs/pd-source-query.md) and [clearer setup, Developer organization, visible waiting and cursor corrections](docs/usability-and-cursor.md). The previous readback remains 25 W active / 60 W offered; 100 W availability is not established. [Validation and physical limits](docs/usability-validation.md) are recorded separately.
 
