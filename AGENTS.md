@@ -4,8 +4,8 @@ Standing rules for every agent (Claude, Codex) working in this repository. Past 
 
 ## Current state
 
-- Published preview OTA: GUI 3.11.1 · STYLE, release `2026.11.19-lively.2`, service-worker cache 55, commit `a6ec18028f6f575104174304d77b434c136b81f1` (19 November 2026).
-- Candidate GUI 3.11.2 · ENDLESS (`2026.11.19-lively.3`, cache 56): approved 19 November 2026 ("Ja ga door"), in review. The next candidate uses cache 57 and must update `notes` in `shared/release.js`. Restart controls from 3.10 need `sudo bash deploy/update-appliance.sh --apply` once on the Pi.
+- Published preview OTA: GUI 3.11.2 · ENDLESS, release `2026.11.19-lively.3`, service-worker cache 56, commit `393b82a3b2dc9b99ef221394ee07d2a46636e6fe` (19 November 2026).
+- Next candidate: bump `shared/release.js` (including its user-facing `notes`) and the cache in `public/sw.js` (next is 57). Restart controls from 3.10 need `sudo bash deploy/update-appliance.sh --apply` once on the Pi.
 - 3.10.0 is installed on the owner's Pi (reported 19 November 2026, "looks beautiful"); its individual touch/notification points are not separately confirmed. The last PD request (on 3.9.x) failed with an I²C I/O error; the startup PD policy was disabled on the device.
 - Physical acceptance still open: cursor hidden on cold start, real PD source query and 20 V contract/stability, INA228 VBUS wiring; for 3.9.0, phone pairing and control over the real home Wi-Fi.
 
