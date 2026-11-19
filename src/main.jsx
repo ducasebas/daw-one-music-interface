@@ -41,6 +41,7 @@ import "./settings-hub.css";
 import "./appliance-layout.css";
 import "./sync.css";
 import "./polish.css";
+import "./typography.css";
 function load() {
   try {
     return normalize(JSON.parse(localStorage.getItem("daw-settings") || "{}"));
@@ -199,6 +200,9 @@ function App() {
       playing: playback.playing,
     }),
     update = (key, value) => setPrefs((p) => normalize({ ...p, [key]: value }));
+  // The interface font applies to the whole page, so dialogs, the keyboard and full-screen
+  // overlays in the top layer use it too.
+  useEffect(()=>{document.documentElement.dataset.font=prefs.font||'inter';},[prefs.font]);
   const liveMusic = snapshot.mode === "music-assistant";
   const writable =
     !offline &&

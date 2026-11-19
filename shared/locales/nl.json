@@ -1990,5 +1990,12 @@
   "{used} W in use": "{used} W in gebruik",
   "{count} phone": "{count} telefoon",
   "{count} phones": "{count} telefoons",
-  "Hotfix: Mute now works on players without a built-in mute (such as Squeezelite). TuneBox lowers the volume to 0 and restores exactly the previous level, never louder and never above your volume limit.": "Hotfix: Dempen werkt nu ook op spelers zonder eigen dempfunctie (zoals Squeezelite). TuneBox zet het volume op 0 en herstelt daarna precies het vorige niveau, nooit harder en nooit boven je volumelimiet."
+  "Interface font": "Lettertype van de interface",
+  "Inter": "Inter",
+  "Manrope Heavy": "Manrope Heavy",
+  "Skin font": "Lettertype van de skin",
+  "Clear and neutral, made for screens": "Helder en neutraal, gemaakt voor schermen",
+  "Bold and characterful": "Stevig en met karakter",
+  "Each skin keeps its own typeface": "Elke skin houdt een eigen lettertype",
+  "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume.": "Stijl: Inter is het nieuwe, goed leesbare lettertype van de hele interface, met Manrope Heavy of het lettertype van je skin als alternatief onder Uiterlijk. Instellingen toont nu dezelfde zachte albumhoes-achtergrond als Nu spelen. Dempen werkt ook op spelers zonder eigen dempfunctie en zet daarna precies je vorige volume terug."
 }

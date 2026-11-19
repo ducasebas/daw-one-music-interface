@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
   id: "2026.11.19-lively.2",
-  label: "GUI 3.11.1 · HOTFIX",
+  label: "GUI 3.11.1 · STYLE",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Hotfix: Mute now works on players without a built-in mute (such as Squeezelite). TuneBox lowers the volume to 0 and restores exactly the previous level, never louder and never above your volume limit.",
+  notes: "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

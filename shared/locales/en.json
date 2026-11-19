@@ -1990,5 +1990,12 @@
   "{used} W in use": "{used} W in use",
   "{count} phone": "{count} phone",
   "{count} phones": "{count} phones",
-  "Hotfix: Mute now works on players without a built-in mute (such as Squeezelite). TuneBox lowers the volume to 0 and restores exactly the previous level, never louder and never above your volume limit.": "Hotfix: Mute now works on players without a built-in mute (such as Squeezelite). TuneBox lowers the volume to 0 and restores exactly the previous level, never louder and never above your volume limit."
+  "Interface font": "Interface font",
+  "Inter": "Inter",
+  "Manrope Heavy": "Manrope Heavy",
+  "Skin font": "Skin font",
+  "Clear and neutral, made for screens": "Clear and neutral, made for screens",
+  "Bold and characterful": "Bold and characterful",
+  "Each skin keeps its own typeface": "Each skin keeps its own typeface",
+  "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume.": "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume."
 }

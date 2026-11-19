@@ -70,7 +70,9 @@ export function remoteStyle(snapshot){
  try{
   const theme=resolveTheme(snapshot?.preferences?.themePreferences,{device:snapshot?.device,playback:snapshot?.playback});
   const v=themeVariables(theme);
-  return {skin:theme.id,background:v['--background'],surface:v['--surface'],text:v['--text'],muted:v['--muted'],accent:v['--accent'],font:v['--font'],radius:v['--radius']};
+  const choice=snapshot?.preferences?.prefs?.font||'inter';
+  const font=choice==='inter'?'"Inter Variable", Inter, sans-serif':choice==='manrope-heavy'?'Manrope, sans-serif':v['--font'];
+  return {skin:theme.id,background:v['--background'],surface:v['--surface'],text:v['--text'],muted:v['--muted'],accent:v['--accent'],font,weight:choice==='manrope-heavy'?'heavy':'normal',radius:v['--radius']};
  }catch{return null;}
 }
 /** Only what a remote needs. No settings, network names, telemetry or tokens. */

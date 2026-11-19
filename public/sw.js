@@ -21,6 +21,8 @@ self.addEventListener("install", (event) =>
         "/media/startup-still.png",
         "/media/startup.webp",
         "/fonts/Manrope-Variable.ttf",
+        "/fonts/Inter-Variable-latin.woff2",
+        "/fonts/Inter-Variable-latin-ext.woff2",
       ]);
       self.skipWaiting();
     })(),

@@ -130,3 +130,15 @@
 .hub-fields>.np-settings{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:2px solid var(--divider,var(--border-color))}
 .np-settings h4{margin:0;font-size:22px;font-weight:500}
 .np-widget-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}
+
+/* Settings uses the same blurred artwork backdrop as Now Playing; panels become slightly
+   translucent so it shows through, while text keeps solid contrast. */
+.music2[data-page="settings"]{isolation:isolate}
+.music2[data-panel="wall-16-10"][data-page="settings"] :is(.m2-content,.m2-settings,.m2-player,.settings-hub-v2,.hub-body){background:transparent}
+.music2[data-panel="wall-16-10"][data-page="settings"].compact-header>.m2-header{background:color-mix(in srgb,var(--background) 55%,transparent);border-radius:0 0 0 18px}
+.music2[data-panel="wall-16-10"][data-page="settings"] .settings-hub-v2.settings-overview>.settings-categories button,
+.music2[data-panel="wall-16-10"][data-page="settings"] .hub-section-links button,
+.music2[data-panel="wall-16-10"][data-page="settings"] .settings-categories button[aria-current=page]{background:color-mix(in srgb,var(--panel,var(--surface)) 78%,transparent)}
+.music2[data-panel="wall-16-10"][data-page="settings"] .hub-section-links{background:color-mix(in srgb,var(--background) 80%,transparent)}
+.music2[data-panel="wall-16-10"][data-page="settings"] .hub-body :is(input:not([type=checkbox]):not([type=range]),select){background:color-mix(in srgb,var(--background) 82%,transparent)}
+.music2[data-panel="wall-16-10"][data-page="settings"] .np-backdrop::after{background:linear-gradient(180deg,color-mix(in srgb,var(--background) 74%,transparent),color-mix(in srgb,var(--background) 86%,transparent))}
