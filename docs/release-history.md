@@ -2,7 +2,10 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.9.1 UPDATE FLOW — approved for publication
+## GUI 3.9.1 UPDATE FLOW — published
+
+Merged via PR #7 as `d7e96962f83f70db4568e0d3a23f4f801432b559` on 19 November 2026. Verify on `main` passed in about 6.5 minutes with the new CI, Publish signed preview passed including the public channel check, and release `ota-preview-d7e96962f83f70db4568e0d3a23f4f801432b559` ("GUI 3.9.1 · UPDATE FLOW · preview") is public with archive, manifest and signature. Pi installation not yet observed.
+
 
 On 19 November 2026 the owner approved GUI 3.9.1 UPDATE FLOW (`2026.11.19-update-flow.1`, cache 50) with "ja push maar als de tests groen zijn": push once the local tests are green. Scope: manual install while Music Assistant is offline when the local ALSA output is silent (automatic installs unchanged), Install button independent of the global device-activity flag with persistent error/started messages, on-screen notice when the opt-in PD startup guard keeps the player stopped, `player-missing` Music Assistant status, manager restart in the measurement/sync installers (EROFS fix), missing-install reason under the sweep button, Results opening after a sweep, plus the CI speed-up and documentation on the same branch (PR #7). Covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full configured CI passes. It does not cover hardware actions or physical confirmations.
 
