@@ -2,7 +2,10 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.9.2 HOTFIX — approved for publication
+## GUI 3.9.2 HOTFIX — published
+
+Merged via PR #8 as `f3a7e37a0fb22e9dd47e332bb84d944bdf62bc15` on 19 November 2026 after full PR CI passed; Verify on `main` and Publish signed preview passed, and release `ota-preview-f3a7e37a0fb22e9dd47e332bb84d944bdf62bc15` ("GUI 3.9.2 · HOTFIX · preview") is public with archive, manifest and signature. After approval, the owner's next sweep on 3.9.1 reported both channels "no sweep detected" (correlation 0.042/0.201, delays 177/207 ms, both audible); the hotfix therefore also replaced the correlation/bass-third rule with matched-filter peak prominence (≥ 12) plus middle/last-third energy. Pi installation not yet observed.
+
 
 On 19 November 2026 the owner asked for a hotfix rather than a new named update, and approved it with "push maar als het werkt". The owner reported 3.9.1 installed, a working sweep with SNR left −1.1 dB / right 9.6 dB (left audibly played; Louder Digital 103/127, Analog Gain 31/31, channel gains 0 dB). Scope: SNR from the aligned sweep window against the quiet lead-in after microphone start-up (and the tail), missing-dB tip per channel, and an optional retry 6 dB louder with consent, limited to −36/−30/−24 dBFS and validated in the UI, manager and capture helper. Release `2026.11.19-update-flow.2`, cache 51. Covers push, required CI, merge and signed preview publication after the full CI passes.
 
