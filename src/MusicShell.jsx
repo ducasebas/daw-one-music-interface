@@ -665,7 +665,7 @@ export function MusicShell({
               <p>
                 {current.artist} <span>— {current.album}</span>
               </p>
-              <PlaybackSeekControl playback={playback} duration={current.duration} disabled={!control||!current.duration||prefs.seekEnabled===false||(!simulated&&!playback.capabilities?.includes('seek'))} onSeek={value=>command({type:'seek',position:value})}/>
+              <PlaybackSeekControl playback={playback} duration={current.duration} disabled={!control||!current.duration||prefs.seekEnabled===false||(!simulated&&!['seek','queue_seek'].some(c=>playback.capabilities?.includes(c)))} onSeek={value=>command({type:'seek',position:value})}/>
             </div>
             <aside>
               <div className="m2-artwork-controls"><button

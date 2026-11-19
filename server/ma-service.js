@@ -12,6 +12,11 @@ const emptyTrack = {
   album: "",
   duration: null,
 };
+export function seekCapabilities(features, queue, duration) {
+  const list = Array.isArray(features) ? features.filter((f) => typeof f === "string") : [];
+  if (!list.includes("seek") && queue && typeof queue.queue_id === "string" && duration) list.push("queue_seek");
+  return list;
+}
 export function normalizeMusic(
   { player, queue, items = [] },
   now = Date.now(),
@@ -66,7 +71,10 @@ export function normalizeMusic(
     muted: player.volume_muted === true,
     playerName: player.name || player.player_id,
     playerId: player.player_id,
-    capabilities: player.supported_features || [],
+    // A player without native seek (e.g. Squeezelite) can still seek through its active
+    // Music Assistant queue, which restarts the stream at the chosen position.
+    capabilities: seekCapabilities(player.supported_features, activeQueue ? queue : null, track.duration),
+    queueId: activeQueue && typeof queue.queue_id === "string" ? queue.queue_id : null,
     source: "music-assistant",
     sourceFormat,
   };
@@ -335,7 +343,7 @@ export class LiveMusicService extends EventEmitter {
       if (
         !Number.isFinite(event.position) ||
         event.position < 0 ||
-        !this.playback.capabilities.includes("seek")
+        !["seek", "queue_seek"].some((c) => this.playback.capabilities.includes(c))
       )
         throw Error("Seek unavailable");
       const duration = this.playback.queue[0].duration;
@@ -351,7 +359,9 @@ export class LiveMusicService extends EventEmitter {
       value = event.value;
     }
     try {
-      await this.transport.control(this.playerId, action, value);
+      if (action === "seek" && !this.playback.capabilities.includes("seek"))
+        await this.transport.queueSeek(this.playback.queueId, value);
+      else await this.transport.control(this.playerId, action, value);
       await this.refresh();
     } catch {
       throw Error("Music Assistant command failed; command was not retried");

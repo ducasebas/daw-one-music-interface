@@ -1941,7 +1941,6 @@
   "Open Updates": "Open Updates",
   "Open Updates to retry.": "Open Updates om het opnieuw te proberen.",
   "Dismiss": "Sluiten",
-  "Polish: larger footer volume on Now Playing, faster search suggestions above the keyboard, an analogue VU scale, scrubbing on the progress bar, a roomier Settings screen, wizards in your skin, and update notices that clear themselves.": "Polish: grotere volumeregeling onder Nu spelen, snellere zoeksuggesties boven het toetsenbord, een analoge VU-schaal, scrubben op de voortgangsbalk, een ruimer Instellingen-scherm, wizards in je eigen skin en updatemeldingen die zichzelf opruimen.",
   "Restart": "Herstarten",
   "Use a restart when TuneBox behaves unexpectedly. Your settings are kept.": "Herstart als TuneBox zich onverwacht gedraagt. Je instellingen blijven bewaard.",
   "Restart TuneBox service": "TuneBox-service herstarten",
@@ -1961,5 +1960,6 @@
   "Simulation — nothing will be restarted.": "Simulatie — er wordt niets herstart.",
   "Stop playback before restarting TuneBox": "Stop het afspelen voordat je TuneBox herstart",
   "Confirm restarting this TuneBox": "Bevestig het herstarten van deze TuneBox",
-  "Confirm restarting the TuneBox service": "Bevestig het herstarten van de TuneBox-service"
+  "Confirm restarting the TuneBox service": "Bevestig het herstarten van de TuneBox-service",
+  "Hotfix: the progress bar can scrub on players without built-in seek (such as Squeezelite) by seeking through the Music Assistant queue.": "Hotfix: de voortgangsbalk kan scrubben op spelers zonder eigen seek-functie (zoals Squeezelite), door via de Music Assistant-wachtrij te zoeken."
 }

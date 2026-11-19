@@ -371,7 +371,7 @@ function App() {
                   disabled={
                     !writable ||
                     !track.duration ||
-                    (liveMusic && !playback.capabilities?.includes("seek"))
+                    (liveMusic && !["seek","queue_seek"].some((c) => playback.capabilities?.includes(c)))
                   }
                   value={track.duration ? position : 0}
                   onChange={(e) =>

@@ -72,3 +72,12 @@ test('search suggestions start at 3 characters, debounce, reuse prefixes and sta
  const shown=await suggestions.boundingBox(),keys=await keyboard.locator('.keyboard-keys').boundingBox();
  expect(shown.y+shown.height).toBeLessThanOrEqual(keys.y+1);expect(shown.y).toBeGreaterThanOrEqual(0);
 });
+test('a Music Assistant player without native seek can still be scrubbed through its queue',async({page})=>{
+ const state=await live(page);state.playback.capabilities=['volume_set','volume_mute','queue_seek'];state.playback.queueId='pi';
+ const seeks=[];await page.route('**/api/event',r=>{const e=r.request().postDataJSON();if(e.type==='seek')seeks.push(e.position);return r.fulfill({json:state});});
+ await page.goto(url);await page.getByRole('button',{name:'Now Playing',exact:true}).first().click();
+ const seek=page.locator('.seek-control input');await expect(seek).toBeEnabled();
+ const box=await seek.boundingBox();await page.touchscreen.tap(box.x+10+(box.width-20)*.5,box.y+box.height/2);
+ await expect.poll(()=>seeks.length).toBe(1);expect(Math.abs(seeks[0]-120)).toBeLessThanOrEqual(8);
+ state.playback.capabilities=['volume_set','volume_mute'];await page.reload();await page.getByRole('button',{name:'Now Playing',exact:true}).first().click();await expect(seek).toBeDisabled();
+});

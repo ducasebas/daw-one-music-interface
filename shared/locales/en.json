@@ -1941,7 +1941,6 @@
   "Open Updates": "Open Updates",
   "Open Updates to retry.": "Open Updates to retry.",
   "Dismiss": "Dismiss",
-  "Polish: larger footer volume on Now Playing, faster search suggestions above the keyboard, an analogue VU scale, scrubbing on the progress bar, a roomier Settings screen, wizards in your skin, and update notices that clear themselves.": "Polish: larger footer volume on Now Playing, faster search suggestions above the keyboard, an analogue VU scale, scrubbing on the progress bar, a roomier Settings screen, wizards in your skin, and update notices that clear themselves.",
   "Restart": "Restart",
   "Use a restart when TuneBox behaves unexpectedly. Your settings are kept.": "Use a restart when TuneBox behaves unexpectedly. Your settings are kept.",
   "Restart TuneBox service": "Restart TuneBox service",
@@ -1961,5 +1960,6 @@
   "Simulation — nothing will be restarted.": "Simulation — nothing will be restarted.",
   "Stop playback before restarting TuneBox": "Stop playback before restarting TuneBox",
   "Confirm restarting this TuneBox": "Confirm restarting this TuneBox",
-  "Confirm restarting the TuneBox service": "Confirm restarting the TuneBox service"
+  "Confirm restarting the TuneBox service": "Confirm restarting the TuneBox service",
+  "Hotfix: the progress bar can scrub on players without built-in seek (such as Squeezelite) by seeking through the Music Assistant queue.": "Hotfix: the progress bar can scrub on players without built-in seek (such as Squeezelite) by seeking through the Music Assistant queue."
 }

@@ -352,3 +352,20 @@ test("a reachable server without this TuneBox's player reports player-missing, n
   assert.match(s.publicStatus().error, /TuneBox player not found/);
   s.stop();
 });
+test('a player without native seek seeks through its active Music Assistant queue',async()=>{
+ const {seekCapabilities}=await import('../server/ma-service.js');
+ const squeezelite={...player,supported_features:['volume_set','volume_mute','pause']};
+ const music=normalizeMusic({player:squeezelite,queue},12000);
+ assert.ok(music.capabilities.includes('queue_seek'));assert.ok(!music.capabilities.includes('seek'));assert.equal(music.queueId,'pi');
+ assert.ok(!normalizeMusic({player:squeezelite},12000).capabilities.includes('queue_seek'),'no queue, no fallback');
+ assert.deepEqual(seekCapabilities(['seek'],queue,200),['seek'],'native seek is preferred');
+ assert.deepEqual(seekCapabilities(['pause'],queue,null),['pause'],'live streams without a duration cannot seek');
+ FixtureSocket.calls=[];const t=transport();await t.connect();
+ await t.queueSeek('pi',61.6);assert.deepEqual([FixtureSocket.calls.at(-1).command,FixtureSocket.calls.at(-1).args],['player_queues/seek',{queue_id:'pi',position:62}]);
+ await assert.rejects(t.queueSeek('',10));await assert.rejects(t.queueSeek('pi',-1));t.close();
+ const sent=[];const fake={subscribe:()=>()=>{},close(){},queueSeek:async(id,p)=>sent.push(['queue',id,p]),control:async(id,a,v)=>sent.push(['player',id,a,v])};
+ const s=new LiveMusicService({...configuration,playerId:'pi',controlEnabled:true},{transport:fake});s.refresh=async()=>{};s.status='connected';
+ s.playback={...music};await s.control({type:'seek',position:50});
+ s.playback={...normalizeMusic({player,queue},12000)};await s.control({type:'seek',position:40});
+ assert.deepEqual(sent,[['queue','pi',50],['player','pi','seek',40]]);
+});

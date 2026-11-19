@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.19-polish.1",
-  label: "GUI 3.10.0 · POLISH",
+  id: "2026.11.19-polish.2",
+  label: "GUI 3.10.1 · HOTFIX",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Polish: larger footer volume on Now Playing, faster search suggestions above the keyboard, an analogue VU scale, scrubbing on the progress bar, a roomier Settings screen, wizards in your skin, and update notices that clear themselves.",
+  notes: "Hotfix: the progress bar can scrub on players without built-in seek (such as Squeezelite) by seeking through the Music Assistant queue.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {
