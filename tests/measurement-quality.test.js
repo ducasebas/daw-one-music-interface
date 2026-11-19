@@ -37,3 +37,43 @@ test('verification keeps current DSP and cannot be reused as a correction baseli
  const channels=['left','right'].map(channel=>({channel,valid:true,sweepDetected:true,snrDb:30,clipPercent:0}));assert.equal(measuredBaseline({baseline:'current-dsp',channels}),false);assert.equal(measuredBaseline({baseline:'flat-eq',channels}),true);assert.equal(measuredBaseline({channels}),false);
  const setup={profile:roomDefaults(),output:'output',microphone:'hw:1,0'};assert.equal(measurementSetupKey(setup),measurementSetupKey({...setup,profile:{...setup.profile,target:{...setup.profile.target,preset:'warm'}}}));assert.notEqual(measurementSetupKey(setup),measurementSetupKey({...setup,microphone:'hw:2,0'}));
 });
+
+test('a microphone start-up click no longer hides a real sweep; quiet sweeps report how many dB are missing',async()=>{
+ const {sweepLevels,minimumSnrDb}=await import('../deploy/measurement/signal.mjs');
+ const input=sweep(),recorded=new Float32Array(rate*5);let seed=11;
+ const level=.004;for(let i=0;i<recorded.length;i++){seed=(seed*16807)%2147483647;recorded[i]=(seed/2147483647-.5)*level;}
+ for(let i=0;i<input.length&&i+rate*.2<recorded.length;i++)recorded[i+rate*.2]+=input[i];
+ const clean=analyse(input,recorded);assert.equal(clean.sweepDetected,true);
+ // A loud click in the first 50 ms of the capture (USB microphone start-up).
+ const clicked=recorded.slice();for(let i=0;i<rate*.05;i++)clicked[i]+=i%2?.6:-.6;
+ const withClick=analyse(input,clicked);
+ assert.ok(withClick.snrDb>0,'click must not make the SNR negative: '+withClick.snrDb);
+ assert.ok(Math.abs(withClick.snrDb-clean.snrDb)<1.5,`${withClick.snrDb} vs ${clean.snrDb}`);
+ // Weak sweep: still detected, invalid, and reports the missing dB.
+ const weak=new Float32Array(rate*5);seed=3;for(let i=0;i<weak.length;i++){seed=(seed*16807)%2147483647;weak[i]=(seed/2147483647-.5)*.02;}
+ for(let i=0;i<input.length&&i+rate*.2<weak.length;i++)weak[i+rate*.2]+=input[i]*.5;
+ const quiet=analyse(input,weak);
+ if(quiet.sweepDetected){assert.equal(quiet.valid,quiet.snrDb>=minimumSnrDb);if(!quiet.valid)assert.equal(quiet.neededDb,Math.ceil(minimumSnrDb-quiet.snrDb));}
+ assert.deepEqual(sweepLevels,[-36,-30,-24]);
+ assert.throws(()=>sweep(-12),/Unsupported sweep level/);
+ const peak=a=>a.reduce((m,v)=>Math.max(m,Math.abs(v)),0),louder=sweep(-30);assert.ok(Math.abs(peak(louder)/peak(input)-10**(6/20))<.01);
+});
+
+test('a reverberant room with bass roll-off and rumble is detected (old correlation rule failed); unrelated noise still is not',()=>{
+ // Mirrors the owner's capture: audible sweep, correlation around 0.05, rumble masking the bass.
+ const input=sweep(),recorded=new Float32Array(rate*5),start=Math.floor(rate*.19);let seed=5;
+ const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647-.5;};
+ const ir=new Float32Array(Math.floor(rate*.7));ir[0]=1;ir[Math.floor(rate*.004)]=.6;ir[Math.floor(rate*.011)]=-.45;ir[Math.floor(rate*.019)]=.35;
+ // Sparse diffuse tail (every 24th sample, each reflection weaker than the direct sound) keeps the test fast.
+ for(let i=Math.floor(rate*.02);i<ir.length;i+=24)ir[i]+=rnd()*1.8*Math.exp(-i/(rate*.3));
+ const taps=[];for(let i=0;i<ir.length;i++)if(Math.abs(ir[i])>.02)taps.push([i,ir[i]]);
+ const wet=new Float32Array(input.length+ir.length);for(let i=0;i<input.length;i++){const x=input[i];if(!x)continue;for(const [d,g] of taps)wet[i+d]+=x*g;}
+ let prev=0,out=0;for(let i=0;i<wet.length&&i+start<recorded.length;i++){out=.98*(out+wet[i]-prev);prev=wet[i];recorded[i+start]=out*.5;}
+ let lf=0;for(let i=0;i<recorded.length;i++){lf=.999*lf+rnd()*.006;recorded[i]+=lf+rnd()*.0006;}
+ const r=analyse(input,recorded);
+ assert.ok(r.correlation<.08,'fixture must defeat the old 0.08 correlation rule: '+r.correlation);
+ assert.equal(r.sweepDetected,true,JSON.stringify({c:r.correlation,p:r.prominence,s:r.snrDb}));
+ assert.ok(Math.abs(r.captureDelayMs-190)<5);
+ for(let k=1;k<=6;k++){let s2=k*7919,l2=0;const r2=()=>{s2=(s2*16807)%2147483647;return s2/2147483647-.5;};const noise=new Float32Array(rate*5);for(let i=0;i<noise.length;i++){l2=.999*l2+r2()*.02;noise[i]=l2+r2()*.03;}
+  const n=analyse(input,noise);assert.equal(n.sweepDetected,false,JSON.stringify({p:n.prominence}));assert.equal(n.valid,false);}
+});

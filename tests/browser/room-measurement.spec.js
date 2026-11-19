@@ -70,3 +70,16 @@ test('a finished sweep opens Results by itself, and a completed status offers an
  await page.getByRole('button',{name:'Open results',exact:true}).click();
  await expect(topics.getByRole('button',{name:'Results',exact:true})).toHaveAttribute('aria-pressed','true');
 });
+
+test('a quiet result explains the missing dB and offers one 6 dB louder retry with consent',async({page})=>{
+ const fake=await fakeMeasurement(page);
+ const channel=(name,snr,needed)=>({channel:name,valid:needed===0,snrDb:snr,neededDb:needed,clipPercent:0,sweepDetected:true,warnings:needed?['Measurement signal is too close to the noise floor.']:[],points:[{hz:100,db:0},{hz:1000,db:0}]});
+ fake.set({phase:'complete',result:{baseline:'flat-eq',levelDbfs:-36,channels:[channel('left',12.4,3),channel('right',9.6,6)],profile:{}}});
+ await openMeasure(page);
+ await page.getByRole('navigation',{name:'Measurement topics'}).getByRole('button',{name:'Results',exact:true}).click();
+ await expect(page.getByText('6 dB short of the 15 dB needed.')).toBeVisible();
+ await page.getByRole('button',{name:'Measure again 6 dB louder (-30 dBFS)…'}).click();
+ const dialog=page.getByRole('dialog',{name:'Start audible measurement'});await expect(dialog.getByText('Sweep level: -30 dBFS')).toBeVisible();
+ await dialog.getByRole('checkbox').check();await dialog.getByRole('button',{name:'Confirm audible measurement',exact:true}).click();
+ await expect.poll(()=>fake.sent.find(r=>r.command==='measurement-start')?.args.levelDbfs).toBe(-30);
+});

@@ -19,3 +19,9 @@ test('a sweep that stopped without a final phase becomes a retryable failure ins
  // Final phases are left alone.
  for(const phase of ['complete','cancelled','failed'])assert.equal(measurementStatus({...base,running:false},{phase,observedAt:now},now+99999).phase,phase);
 });
+test('the device manager accepts only the three sweep levels',async()=>{
+ const {validateRequest}=await import('../shared/device-manager.js');
+ const base={command:'measurement-start',args:{microphone:'hw:4,0',confirmed:true,profile:{}}};
+ for(const level of [undefined,-36,-30,-24])assert.doesNotThrow(()=>validateRequest({...base,args:{...base.args,...(level===undefined?{}:{levelDbfs:level})}}));
+ for(const level of [-12,0,-30.5,'-30'])assert.throws(()=>validateRequest({...base,args:{...base.args,levelDbfs:level}}),/supported sweep level/);
+});

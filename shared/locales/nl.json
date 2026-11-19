@@ -1925,5 +1925,10 @@
   "TuneBox player not found in Music Assistant": "TuneBox-speler niet gevonden in Music Assistant",
   "TuneBox player not found in Music Assistant; check that the local player is running": "TuneBox-speler niet gevonden in Music Assistant; controleer of de lokale speler draait",
   "Open results": "Resultaten openen",
-  "Measurement complete.": "Meting voltooid."
+  "Measurement complete.": "Meting voltooid.",
+  "Sweep level: {level} dBFS": "Sweepniveau: {level} dBFS",
+  "louder than the default": "harder dan standaard",
+  "{db} dB short of the {minimum} dB needed.": "{db} dB te weinig van de benodigde {minimum} dB.",
+  "Measure again 6 dB louder ({level} dBFS)…": "Opnieuw meten, 6 dB harder ({level} dBFS)…",
+  "The sweep is already at its maximum level. Raise the amplifier volume a little, keep the room quiet and move the microphone closer, then measure again.": "De sweep staat al op het maximale niveau. Zet de versterker iets harder, houd de kamer stil en zet de microfoon dichterbij, en meet dan opnieuw."
 }

@@ -4,8 +4,8 @@ Standing rules for every agent (Claude, Codex) working in this repository. Past 
 
 ## Current state
 
-- Published preview OTA: GUI 3.9.0 · REMOTE, release `2026.11.19-remote.1`, service-worker cache 49, commit `6fb1406b3359f8523299f906fed16cabe7ee51e2` (19 November 2026). Phone remote control; see [docs/remote-control.md](docs/remote-control.md).
-- Local candidate (not published): GUI 3.9.1 · UPDATE FLOW, release `2026.11.19-update-flow.1`, cache 50, branch `claude/ota-update-test-status-alqo95` (with the CI speed-up). The next candidate uses cache 51 and must also update `notes` in `shared/release.js`.
+- Published preview OTA: GUI 3.9.1 · UPDATE FLOW, release `2026.11.19-update-flow.1`, service-worker cache 50, commit `d7e96962f83f70db4568e0d3a23f4f801432b559` (19 November 2026).
+- Candidate GUI 3.9.2 · HOTFIX (`2026.11.19-update-flow.2`, cache 51): room-measurement SNR and stepped sweep level. The next candidate uses cache 52 and must update `notes` in `shared/release.js`.
 - 3.9.0 is installed on the owner's Pi (reported 19 November 2026). The last PD request failed with an I²C I/O error; the startup PD policy was disabled on the device.
 - Physical acceptance still open: cursor hidden on cold start, real PD source query and 20 V contract/stability, INA228 VBUS wiring; for 3.9.0, phone pairing and control over the real home Wi-Fi.
 
