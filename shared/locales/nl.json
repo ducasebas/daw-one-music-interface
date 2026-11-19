@@ -2042,7 +2042,6 @@
   "Keep the music playing is on.": "Blijf muziek spelen staat aan.",
   "Phones control the group that {room} plays in. Other rooms in that group play along.": "Telefoons bedienen de groep waarin {room} speelt. Andere ruimtes in die groep spelen mee.",
   "Phones control {room} only. Other rooms are not affected.": "Telefoons bedienen alleen {room}. Andere ruimtes merken er niets van.",
-  "Party: tap the Party widget on Now Playing to show the phone code to your guests. With a settings PIN, guests also enter that PIN on their phone. The sheet shows how many phones are paired, whether the music keeps playing, and which rooms the phones control.": "Feest: tik op de Feest-widget op Nu spelen om de telefooncode aan je gasten te tonen. Met een pincode voor instellingen voeren gasten die pincode ook in op hun telefoon. Het scherm toont hoeveel telefoons gekoppeld zijn, of de muziek blijft spelen en welke ruimtes de telefoons bedienen.",
   "Local control": "Lokale bediening",
   "Music Assistant is unavailable": "Music Assistant is niet bereikbaar",
   "Local amplifier settings are active": "Lokale versterkerinstellingen zijn actief",
@@ -2064,5 +2063,6 @@
   "Open on your phone or computer": "Open op je telefoon of computer",
   "The server runs on this TuneBox. Finish its setup on a phone or computer on the same Wi-Fi: create the account and add your music services (Tidal, Spotify, YouTube Music).": "De server draait op deze TuneBox. Rond de setup af op een telefoon of computer op hetzelfde wifi: maak het account aan en voeg je muziekdiensten toe (Tidal, Spotify, YouTube Music).",
   "Then connect TuneBox to it. Your old server stays as it is until you save the new one.": "Koppel TuneBox er daarna aan. Je oude server blijft zoals hij is tot je de nieuwe opslaat.",
-  "Connect TuneBox to this server": "TuneBox aan deze server koppelen"
+  "Connect TuneBox to this server": "TuneBox aan deze server koppelen",
+  "Offline: when Music Assistant is unreachable, Now Playing still lets you pause and change the volume on this TuneBox, never louder than before. Developer → Services now guides you through running Music Assistant on the TuneBox itself, with a setup QR and a one-tap connect.": "Offline: is Music Assistant onbereikbaar, dan kun je op Nu spelen nog steeds pauzeren en het volume van deze TuneBox regelen, nooit harder dan eerst. Ontwikkelaar → Services begeleidt je nu bij Music Assistant op de TuneBox zelf, met een setup-QR en koppelen met één tik."
 }

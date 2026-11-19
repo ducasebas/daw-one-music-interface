@@ -2042,7 +2042,6 @@
   "Keep the music playing is on.": "Keep the music playing is on.",
   "Phones control the group that {room} plays in. Other rooms in that group play along.": "Phones control the group that {room} plays in. Other rooms in that group play along.",
   "Phones control {room} only. Other rooms are not affected.": "Phones control {room} only. Other rooms are not affected.",
-  "Party: tap the Party widget on Now Playing to show the phone code to your guests. With a settings PIN, guests also enter that PIN on their phone. The sheet shows how many phones are paired, whether the music keeps playing, and which rooms the phones control.": "Party: tap the Party widget on Now Playing to show the phone code to your guests. With a settings PIN, guests also enter that PIN on their phone. The sheet shows how many phones are paired, whether the music keeps playing, and which rooms the phones control.",
   "Local control": "Local control",
   "Music Assistant is unavailable": "Music Assistant is unavailable",
   "Local amplifier settings are active": "Local amplifier settings are active",
@@ -2064,5 +2063,6 @@
   "Open on your phone or computer": "Open on your phone or computer",
   "The server runs on this TuneBox. Finish its setup on a phone or computer on the same Wi-Fi: create the account and add your music services (Tidal, Spotify, YouTube Music).": "The server runs on this TuneBox. Finish its setup on a phone or computer on the same Wi-Fi: create the account and add your music services (Tidal, Spotify, YouTube Music).",
   "Then connect TuneBox to it. Your old server stays as it is until you save the new one.": "Then connect TuneBox to it. Your old server stays as it is until you save the new one.",
-  "Connect TuneBox to this server": "Connect TuneBox to this server"
+  "Connect TuneBox to this server": "Connect TuneBox to this server",
+  "Offline: when Music Assistant is unreachable, Now Playing still lets you pause and change the volume on this TuneBox, never louder than before. Developer → Services now guides you through running Music Assistant on the TuneBox itself, with a setup QR and a one-tap connect.": "Offline: when Music Assistant is unreachable, Now Playing still lets you pause and change the volume on this TuneBox, never louder than before. Developer → Services now guides you through running Music Assistant on the TuneBox itself, with a setup QR and a one-tap connect."
 }

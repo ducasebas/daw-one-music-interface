@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.19-party.1",
-  label: "GUI 3.12.0 · PARTY",
+  id: "2026.11.19-offline.1",
+  label: "GUI 3.13.0 · OFFLINE",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Party: tap the Party widget on Now Playing to show the phone code to your guests. With a settings PIN, guests also enter that PIN on their phone. The sheet shows how many phones are paired, whether the music keeps playing, and which rooms the phones control.",
+  notes: "Offline: when Music Assistant is unreachable, Now Playing still lets you pause and change the volume on this TuneBox, never louder than before. Developer → Services now guides you through running Music Assistant on the TuneBox itself, with a setup QR and a one-tap connect.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {
