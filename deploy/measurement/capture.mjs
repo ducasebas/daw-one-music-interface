@@ -31,7 +31,7 @@ try{
  const signal=sweep(),channels=[];
  for(let channel=0;channel<2;channel++){
   if(cancelled)throw Error('Cancelled');
-  status({phase:channel?'measuring-right':'measuring-left',percent:channel?50:5,output:config.output});
+  status({phase:channel?'measuring-right':'measuring-left',percent:channel?50:5,output:config.output,estimatedEndAt:Date.now()+(channel?7500:15000)});
   writeFileSync(dir+'/sweep.wav',wav(signal,channel),{mode:0o600});rmSync(dir+'/capture.raw',{force:true});
   const capture=run('/usr/bin/arecord',['-q','-D',job.microphone.replace(/^hw:/,'plughw:'),'-t','raw','-f','S16_LE','-r',String(rate),'-c','1','-d','5',dir+'/capture.raw']);
   await captureReady(capture);if(cancelled)throw Error('Cancelled');
@@ -39,7 +39,7 @@ try{
   if(cancelled)throw Error('Cancelled');
   const raw=readFileSync(dir+'/capture.raw');if(raw.length>rate*16)throw Error('Recording exceeds bounded capture size');
   const samples=new Float32Array(Math.floor(raw.length/2));for(let i=0;i<samples.length;i++)samples[i]=raw.readInt16LE(i*2)/32768;
-  status({phase:'analysing',percent:channel?85:35});channels.push({...analyse(signal,samples,profile.calibration),channel:channel?'right':'left'});
+  status({phase:'analysing',percent:channel?85:35,estimatedEndAt:Date.now()+(channel?1500:9000)});channels.push({...analyse(signal,samples,profile.calibration),channel:channel?'right':'left'});
   rmSync(dir+'/capture.raw',{force:true});
  }
  const result={channels,proposal:cutProposal(channels),profile,output:config.output,microphone:job.microphone,measuredAt:new Date().toISOString(),levelDbfs:-36,baseline:job.verifyCorrection===true?'current-dsp':config.output.includes('Louder')?'flat-eq':'verified-output',...(baseline?{baselineChannels:baseline.channels}:{}),applied:false,absoluteSpl:false};

@@ -15,6 +15,7 @@ import {HostTelemetry} from './host-telemetry.js';
 import {DebugLog} from './debug-log.js';
 import {roomProfile,roomDefaults} from '../shared/room-measurement.js';
 import {DeviceSecurity} from './security.js';
+import {prepareMeasurement} from './measurement-prepare.js';
 import {RemoteAccess,remoteAddress,remoteView,remoteEvent,remoteQueueOptions} from './remote-control.js';
 import {createServer} from 'node:http';
 import {finished} from 'node:stream/promises';
@@ -264,7 +265,15 @@ app.get("/api/updates",async(_q,r)=>{
 });
 app.post("/api/device",async(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:"Reload TuneBox before changing device settings"});
- try{if(q.body.command!=='install')manualUpdate.assertAvailable();const value=q.body.command==='install'?await manualUpdate.install(q.body):await manage(q.body);if(q.body.command==='hotspot-start'){
+ try{if(q.body.command!=='install')manualUpdate.assertAvailable();let value;
+   if(q.body.command==='install')value=await manualUpdate.install(q.body);
+   else if(q.body.command==='measurement-start'&&q.body.args?.stopOthers===true){
+    // Confirmed in the sweep dialog: stop interfering audio on this TuneBox first.
+    const {stopOthers,...args}=q.body.args;
+    const stopped=await prepareMeasurement({bluetooth:bluetoothState,syncRunning:synchronizationRunning,manage,music,multiroom,runtime});
+    if(stopped.length){localAudio.refresh(publicAutomaticDsp().settings?.enabled===true);broadcast();}
+    value={...await manage({command:'measurement-start',args}),stopped};
+   }else value=await manage(q.body);if(q.body.command==='hotspot-start'){
    if(!value.simulated&&!phoneServer){phoneServer=createServer((request,response)=>{request.provisioning=true;app(request,response);});await new Promise((resolve,reject)=>{phoneServer.once('error',reject);phoneServer.listen(3003,'10.42.0.1',resolve);});}
    value.pairingToken=security.createPair();value.setupUrl=(value.url||'http://10.42.0.1:3003/?setup=phone')+'#pair='+value.pairingToken;
   }if(['bluetooth-start','bluetooth-stop','dsp-auto-config'].includes(q.body.command)){localAudio.refresh(publicAutomaticDsp().settings?.enabled===true);automaticSound.schedule();}if(['wifi','hotspot-stop'].includes(q.body.command)){networkCache=null;if(phoneServer){phoneServer.close();phoneServer=null;}}

@@ -33,3 +33,21 @@ Physical sweep timing, USB microphone compatibility, acoustic repeatability, amp
 The [miniDSP UMIK-1](https://www.minidsp.com/products/acoustic-measurement/umik-1) is a suitable initial USB reference microphone: Linux class-compliant USB audio, 48 kHz and individual serial-number response files. The ASIN associated with the UMIK-1 is `B00N4Q25R8`; the [Amazon.nl product link](https://www.amazon.nl/dp/B00N4Q25R8) could not be accessed to verify current stock, seller or price. Check those and the actual return policy before ordering. No purchase was made.
 
 A cheaper replacement can be compared with the reference at the same position and level; do not reuse the UMIK calibration file on it. The present sweep uses relative amplitude, not a calibrated SPL reading or guaranteed acoustic safety level.
+
+## GUI 3.9.0 changes (local candidate `2026.11.19-remote.1`)
+
+The owner reported on 19 November 2026 that **Start audible sweep…** stayed grey after connecting and selecting the microphone, with measurement support installed. Causes found in code:
+
+- The button was also disabled by the global device-activity flag, so any other device action (including the measurement-status poll) greyed it out.
+- A sweep that ended without writing a final phase left `queued` (or `measuring-*`/`analysing`) in its status file. The page then polled every 1.5 s indefinitely, keeping the global flag busy.
+- Microphones were only detected when the page first opened, a single microphone was never chosen automatically, and the page never said why the button was grey.
+
+Changes:
+
+- The start button now depends only on measurement support, a detected and selected USB microphone, being online and its own start request. When it is disabled, the reason is shown below it.
+- The microphone picker and **Scan microphones** are also on the Measure page. Opening Room, Microphone or Measure re-detects microphones; a single detected microphone is selected automatically, and a removed one is deselected.
+- The manager reports a phase that has not progressed for 20 s while the service is not running as `failed` ("The measurement stopped before it finished. No correction was applied. Try again.").
+- While sweeping, the page shows the current step (left speaker, right speaker, analysis), **About N seconds remaining** and a full-width red **Stop measurement** button (≥ 88 px high), scrolled into view. The remaining time is an estimate from the fixed 5 s captures per channel plus microphone start and analysis, reported by the capture helper per phase and counted down locally.
+- Owner request: after confirming the sweep, TuneBox first stops interfering activity on this TuneBox only, once each and in this order: a running picture/meter sync capture, Bluetooth audio, group membership (leaving a group, or releasing members it leads) and local playback. Other rooms keep playing. Any failing step stops before the sweep and is not retried. The page lists what was stopped ("Before the sweep: left the group, music paused").
+
+The measurement helper is installed under `/usr/local/lib/daw-one-control`; the appliance update step reinstalls it when measurement support is configured, so the phase estimates arrive with the OTA's host-helper refresh. A real microphone sweep, its actual duration and the physical stop/restore were not exercised here.
