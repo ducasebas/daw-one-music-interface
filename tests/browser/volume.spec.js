@@ -17,7 +17,7 @@ async function start(page) {
 }
 const volume = async (page) =>
   (await (await page.request.get("/api/state")).json()).audio.volume;
-test('a tap at any rail or dial position never jumps to a different volume',async({page})=>{
+test('a tap beside the rail moves one bounded step towards it; the dial never jumps',async({page})=>{
  await start(page);
  for(const mode of ['linear','circular']){
   await page.getByRole('button',{name:'Settings',exact:true}).click();
@@ -26,11 +26,39 @@ test('a tap at any rail or dial position never jumps to a different volume',asyn
   await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();
   const slider=page.getByRole('slider',{name:'Volume',exact:true});
   const b=await slider.boundingBox();
+  if(mode==='linear'){
+   // Owner request: tapping left or right of the thumb steps there (5%), never straight to that spot.
+   for(const [x,expected] of [[b.width-4,'37'],[b.width-4,'42'],[4,'37']]){
+    await slider.click({position:{x,y:b.height/2}});await expect(slider).toHaveAttribute('aria-valuenow',expected);
+    await expect.poll(()=>volume(page)).toBe(Number(expected));
+   }
+   continue;
+  }
+  const before=await volume(page);
   for(const [x,y] of [[4,b.height/2],[b.width-4,b.height/2],[b.width/2,4],[b.width/2,b.height-4]]){
-   await slider.click({position:{x,y}});await expect(slider).toHaveAttribute('aria-valuenow','32');
-   expect(await volume(page)).toBe(32);
+   await slider.click({position:{x,y}});await expect(slider).toHaveAttribute('aria-valuenow',String(before));
+   expect(await volume(page)).toBe(before);
   }
  }
+});
+test('wall Now Playing has a full-height volume rail: taps step, holding steps up to the finger, the thumb ignores taps',async({page})=>{
+ await start(page);await page.setViewportSize({width:1280,height:800});
+ await page.goto('/?gui=2&screen=1&display=dsi-production&panel=wall-16-10');
+ await page.getByRole('button',{name:'Now Playing',exact:true}).first().click();
+ const rail=page.locator('.m2-volume-rail'),slider=rail.getByRole('slider',{name:'Volume',exact:true});
+ await expect(slider).toHaveAttribute('aria-orientation','vertical');
+ // The duplicate track summary is gone from the footer on Now Playing.
+ await expect(page.locator('.m2-player .m2-current')).toHaveCount(0);
+ const box=await slider.boundingBox();expect(box.height).toBeGreaterThan(250);
+ await slider.click({position:{x:box.width/2,y:24}});await expect(slider).toHaveAttribute('aria-valuenow','37');
+ await expect.poll(()=>volume(page)).toBe(37);
+ // Hold at about 55%: it keeps stepping and stops at the finger, not above it.
+ const target=box.y+box.height-18-(box.height-36)*.55;
+ await page.mouse.move(box.x+box.width/2,target);await page.mouse.down();await page.waitForTimeout(1500);await page.mouse.up();
+ await expect.poll(()=>volume(page)).toBeGreaterThanOrEqual(50);expect(await volume(page)).toBeLessThanOrEqual(56);
+ const now=await volume(page),thumb=rail.locator('.touch-volume-track>i');const t=await thumb.boundingBox();
+ await page.mouse.click(t.x+t.width/2,t.y+t.height/2);await page.waitForTimeout(300);expect(await volume(page)).toBe(now);
+ for(const name of ['Volume down','Volume up'])await expect(rail.getByRole('button',{name})).toBeVisible();
 });
 async function pointer(page) {
   if (page.context().browser().browserType().name() === "chromium")

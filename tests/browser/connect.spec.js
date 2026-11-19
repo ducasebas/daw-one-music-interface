@@ -52,6 +52,6 @@ test('Bluetooth pairing is an owned code confirmation and never unmutes automati
  await page.route('**/api/event',r=>{const e=r.request().postDataJSON();if(e.type==='volume'){writes.push(e);state.bluetooth.volume=e.value;return r.fulfill({json:state});}return r.continue();});
  await page.goto(url);const dialog=page.getByRole('dialog',{name:'Confirm Bluetooth pairing',exact:true});await expect(dialog).toContainText('123456');await dialog.getByRole('button',{name:'Codes match',exact:true}).click();await expect(dialog).not.toBeVisible();
  await expect(page.locator('.bluetooth-playing')).toBeVisible();await expect(page.getByRole('button',{name:'Play',exact:true})).toBeDisabled();
- const plus=page.locator('.m2-player').getByRole('button',{name:'Volume up',exact:true});await plus.click();await expect.poll(()=>writes.filter(e=>e.type==='volume').length).toBe(1);expect(writes.find(e=>e.type==='volume')).toEqual({type:'volume',value:1,sourceId:sessionId});expect(writes[0]).toEqual({command:'bluetooth-confirm',args:{nonce:'a'.repeat(32),accept:true}});
+ const plus=page.locator('.m2-volume-rail').getByRole('button',{name:'Volume up',exact:true});await plus.click();await expect.poll(()=>writes.filter(e=>e.type==='volume').length).toBe(1);expect(writes.find(e=>e.type==='volume')).toEqual({type:'volume',value:5,sourceId:sessionId});expect(writes[0]).toEqual({command:'bluetooth-confirm',args:{nonce:'a'.repeat(32),accept:true}});
  await page.screenshot({path:'test-results/connect-bluetooth.png'});
 });

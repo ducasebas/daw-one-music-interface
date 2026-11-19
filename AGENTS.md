@@ -1,51 +1,43 @@
-# GUI 3.8.3 publication approval
+# Agent instructions
 
-On 19 November 2026 the owner explicitly approved publishing this expanded candidate with “Als je klaar bent mag je ota pushen”. This authorizes the scoped review branch, required CI and fixes within this update, merge and signed preview publication after the configured checks pass. It includes the HUSB238 source-query repair and the requested beginner wording, Developer organization, visible waiting and cursor corrections (release `2026.11.18-pd-query.1`, cache 48). It does not authorize live PD experiments or fabricated hardware confirmation. Physical cold-start and power acceptance remain separately unobserved.
+Standing rules for every agent (Claude, Codex) working in this repository. Past approvals and per-release scope live in [docs/release-history.md](docs/release-history.md); read it only when the history matters.
 
-# Current HUSB238 source-query repair
+## Current state
 
-The owner subsequently asked to include beginner-friendly wizard/settings wording, move engineering controls under Developer, make waiting visible and remove cursor flashes during cold start/OTA. This extends the same 3.8.3 candidate; publication is now separately approved above. Preserve the existing PD safety/qualification semantics and splash artwork. Revalidate the changed UI, cursor installation under the updater's private umask, first-paint progress page and relevant offline/startup flows. The preceding local review archive is superseded until this expanded candidate is validated.
+- Published preview OTA: GUI 3.8.3 · PD QUERY, release `2026.11.18-pd-query.1`, service-worker cache 48, commit `ffc0be8801584c83170e3f22ec0db0ca75f04caa` (19 November 2026).
+- Local candidate (not published): GUI 3.9.0 · REMOTE, release `2026.11.19-remote.1`, cache 49, on branch `claude/ota-update-test-status-alqo95` (PR #6). Phone remote control; see [docs/remote-control.md](docs/remote-control.md). The next candidate after it uses cache 50.
+- Physical acceptance still open: 3.8.3 installation on the Pi, cursor hidden on cold start, real PD source query and 20 V contract/stability, INA228 VBUS wiring; for 3.9.0, phone pairing and control over the real home Wi-Fi.
 
-On 18 November 2026 the owner asked to read the HUSB238 documentation and fix the negotiation while the system is off. This authorizes local implementation and testing of GUI 3.8.3 PD QUERY (`2026.11.18-pd-query.1`, cache 47), not a new push, signed publication or live PD operation. Add an explicit bounded Get_SRC_Cap query before setup/request and an opt-in maximum-offered-20V startup policy; preserve the legacy exact-profile/100W policies, cable confirmations, idle gates and interruption journal. The stored 3A offer does not prove a 5A offer exists. Do not force 5A, select 5V, issue hard reset or invent INA228 voltage-sense confirmation. Complete local validation and present the candidate before separate publication approval.
+## Approval per update
 
-# GUI 3.8.2 publication approval
+The owner requires explicit permission before pushing or publishing updates (established 2026-11-13; earlier blanket authorization does not override it).
 
-On 18 November 2026 the owner explicitly approved the reviewed GUI 3.8.2 PD60 candidate with “Ja push maar”, after being told that 3.8.2 was tested locally and 3.8.1 remained the published OTA. This authorizes the scoped review branch, required CI and fixes within PD60 scope, merge and signed preview publication after the configured checks pass. It does not authorize a live PD request, a voltage change on the Pi or physical INA228 wiring confirmation. Later updates still need separate approval.
+- Local edits, builds, tests and read-only checks are authorized within the requested task.
+- Prepare changes locally, complete the relevant tests, then present the concrete changes and validation results.
+- Do not push commits, publish GitHub releases, trigger OTA publication or deploy an update without the owner's explicit approval for that update. Approval for one version never carries over to the next.
+- An approval covers that update's review branch, required CI and fixes within its scope, merge and signed preview publication after the full configured CI passes. It never authorizes live hardware experiments or physical confirmations.
+- Record each new approval (date, the owner's words, scope) and the published commit in `docs/release-history.md`, not here.
 
-After the local review, the owner opened ISET and reported loss of boot. The owner then measured about 5 V at the connected HUSB238 output, attempted an ISET bridge with a crocodile clip and subsequently reported that the Pi boots again. No post-recovery 20 V readback or new 60 W contract has been observed. ISET closed is sufficient for the software request; it is the original 1.25 A startup setting. Keep the startup profile and verified I2C request distinct. VBUS remains unconfirmed.
+## Workflow
 
-# Current local offered-profile repair
+Follow [docs/development-workflow.md](docs/development-workflow.md). Preserve before/after evidence, keep simulator and Pi measurements distinct, and check safe volume gestures, local/group audio independence, offline recovery and update progress when affected. Before publishing, notify the owner and collect remaining improvement points. Run the full available GitHub CI before merge/publication; report blocked checks honestly and never call them passed. A preview publication is not physical acceptance.
 
-On 18 November 2026 the owner said “Ja Lets go” to building a stable verified 60 W contract after real readbacks showed 25 W active and 60 W offered. This authorizes local implementation/testing of GUI 3.8.2 PD60 (`2026.11.18-pd60.1`, cache 46), not a new external push, publication or live negotiation. The offered fixed-20 V profile may be verified at 3–5 A; over 3 A still requires 5 A cable confirmation. Preserve legacy strict-100 W semantics, existing safety/OTA/audio gates and unconfirmed VBUS. Prepare a concrete tested candidate before requesting separate publication approval. See [the scope](docs/pd60-setup.md) and [validation](docs/pd60-validation.md).
+## Working with several agents
 
-GUI 3.8.1 PD was published at `fa5707c6130ffb2c38a4d5378a4305c9f28af867`; the owner confirmed installation. Real measurements show the INA228 ADC running but VBUS near 0 V, so its voltage-sense wiring remains unverified. Do not mark it confirmed in software.
+- One agent per branch at a time (`codex/...`, `claude/...`). Do not edit another agent's open branch without the owner asking.
+- Hand over through the repository: scope in a `docs/*.md` scope file, results in a `docs/*-validation.md` file, approvals in the release history.
+- Green CI on the exact commit decides readiness, whichever agent built it.
 
-# User approval for updates
+## Hardware and safety constraints
 
-The owner separately approved the reviewed GUI 3.8.1 PD candidate with “Push maar” on 18 November 2026. This authorizes its review branch, required checks and CI fixes within this PD scope, merge and signed preview OTA publication after the full configured CI passes. No new live PD request or physical VBUS confirmation is authorized by publication. This approval is specific to this update; later updates still require permission.
+- Never invent hardware confirmations. INA228 VBUS voltage-sense wiring is unverified (ADC runs, VBUS reads near 0 V); keep its confirmation false in software until the owner physically verifies it.
+- PD: no live PD experiments, arbitrary voltages, 5 V selection, hard resets or forced 5 A. Requests stay fixed 20 V at documented current targets, each separately confirmed on the device; above 3 A requires 5 A cable confirmation. A stored 3 A offer does not prove a 5 A offer exists.
+- Preserve legacy strict-100 W and exact-profile policies, cable confirmations, idle/audio/update gates, the interruption journal and opt-in startup policies.
+- Keep the HUSB238 ISET startup profile (closed = original 1.25 A) distinct from the verified I2C request.
+- Do not provoke the unresolved Pi/display power interruption.
 
-The owner requested a local patch for the observed 25 W contract and missing consumption, then said “Go” to continue on 18 November 2026. This authorizes local implementation/testing of GUI 3.8.1 PD (`2026.11.18-pd.1`, cache 45), not an external push or live negotiation. This new request extends the earlier POWER read-only scope only to a separately confirmed fixed 20 V / 5 A request, verified readback and opt-in qualified startup. See docs/pd-100w-patch.md. Telemetry stays read-only; no arbitrary voltages, resets, live Pi experiments or invented VBUS confirmations. Present the completed patch and tests before seeking approval to publish it. Prior POWER publication approval does not carry over.
+## Product decisions
 
-The owner requires explicit permission before pushing or publishing updates.
-
-- Prepare changes locally and complete the relevant tests first.
-- Present the concrete changes and validation results for review.
-- Do not push commits, publish GitHub releases, trigger OTA publication, or deploy an update without the owner's explicit approval for that update.
-- Earlier blanket authorization to push updates does not override this requirement, established on 2026-11-13.
-- Local edits, builds, tests and read-only checks remain authorized within the requested task.
-
-The owner approved publishing GUI 3.5.0 to the preview channel on 2026-11-14. That approval is specific to this update and does not authorize later updates.
-
-# Performance and candidate review
-
-Follow [the development workflow](docs/development-workflow.md) for GUI/system changes. Preserve before/after evidence, keep simulator and Pi measurements distinct, and check safe volume gestures, local/group audio independence, offline recovery and update progress when affected. Before publishing a candidate, notify the owner and collect their remaining improvement points.
-
-The owner approved the reviewed GUI 3.6.0 CONNECT candidate with "Oké push it" on 2026-11-16. It was merged as `cbb7a7e64a78cfb96dad9d07953e05e969d7edaf` and published to preview through successful Verify/signing workflows. The public signature, complete inventory, approved runtime sources and channel selection were independently checked. Pi installation and physical acceptance were not observed here.
-
-Later controls work, including manual-update pausing and the implemented wizard/DSP/sync work in [setup-automation.md](docs/setup-automation.md) and remaining proposals in [next-controls.md](docs/next-controls.md), was initially local only. The owner authorized publication of the SETUP candidate on 2026-11-17, as recorded below. The owner chose manual installs to pause music and scheduled installs to wait for idle. The owner will make the splash in Canva; do not change it as part of this work.
-
-The local SETUP candidate is GUI 3.7.0, release `2026.11.16-setup.1`, service-worker revision 42. Connection choices are additive: Wi-Fi/Ethernet/Bluetooth and Music Assistant may coexist. Optional sound/sync wizards never become mandatory for finishing basic setup. See [validation](docs/setup-validation.md); browser/socket/package fixture checks are blocked by the current sandbox and must not be called passed. The owner authorized this candidate with "Push maar" on 2026-11-17 after being told which checks remain open. This authorization covers the review branch, CI fixes within this scope, merge and signed preview OTA publication. Run the full available GitHub CI before merge/publication. Physical Pi and microphone acceptance remain separate, unobserved checks.
-
-GUI 3.7.0 was subsequently pushed as `df308ecb237fbff723cab98e464617e3671ce291`. Its public signature, complete archive/source inventory and preview selection were independently verified. The owner now reports that OTA runs but DSP Save fails. A separate local repair candidate, GUI 3.7.1 DSP (`2026.11.17-dsp.1`, cache 43), adds the amixer `--` option boundary for negative values in all four DSP write paths, with native GNU parser regression tests. The owner separately approved this reviewed repair with "Ja go" on 2026-11-17. This authorizes its review branch, required checks and fixes within this DSP scope, merge and signed preview publication. Do not treat this approval as permission for later updates. The owner confirmed a readable Equalizer with On=0/Off=1, current value 1 and cget exit 0 after restoring redirected SSH stdout; physical Save/readback of the repair remains unobserved.
-
-GUI 3.7.1 DSP was published and independently verified at `99a60d9139cdda2ddefe54ac8054ea3344202706`. The next local candidate is GUI 3.8.0 POWER (`2026.11.17-power.1`, cache 44): INA228 consumption and HUSB238 contract telemetry. The owner confirmed both Adafruit boards and series current wiring; VBUS voltage sense remains unconfirmed. See docs/power-monitoring.md and docs/power-validation.md. The owner separately approved this reviewed candidate on 17 November 2026 with “Zodra je klaar bent mag je de Ota pushen”. This authorizes its review branch, required CI fixes within POWER scope, merge and signed preview publication after the full available CI passes. Physical board acceptance remains unobserved; the INA228 VBUS confirmation must remain false until actually verified. Complete available local checks and report blocked browser/socket checks honestly; CI must pass on the approved review branch and before signed publication. PD hardware remains read-only; do not add voltage requests/resets on the live Pi supply.
+- The splash artwork is made by the owner in Canva; do not change it.
+- Manual installs pause music; scheduled installs wait for idle.
+- Connection choices are additive (Wi-Fi/Ethernet/Bluetooth and Music Assistant may coexist). Optional sound/sync wizards never become mandatory for basic setup.

@@ -76,7 +76,9 @@ test('All settings leads to Now Playing, and the footer always returns without l
  await expect(page.locator('.music2')).toHaveAttribute('data-page','settings');
  await page.getByRole('button',{name:'All settings',exact:true}).click();await dialog.getByRole('button',{name:'Save and continue'}).click();
  await expect(page.locator('.settings-overview')).toBeVisible();await page.locator('.hub-back').click();
- await expect(page.locator('.music2')).toHaveAttribute('data-page','playing');await expect(page.getByRole('button',{name:'Open Now Playing',exact:true})).toBeDisabled();
+ await expect(page.locator('.music2')).toHaveAttribute('data-page','playing');
+ // Layout B: Now Playing has no duplicate track summary (and no self-link) in the footer.
+ await expect(page.getByRole('button',{name:'Open Now Playing',exact:true})).toHaveCount(0);
  for(const name of ['Discover','My music','Search','Queue','Rooms']){
   await page.getByRole('button',{name,exact:true}).click();if(name==='Search')await page.getByRole('button',{name:'Done typing',exact:true}).click();await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();await expect(page.locator('.music2')).toHaveAttribute('data-page','playing');
  }
@@ -101,7 +103,7 @@ test('volume dial and real PCM preview are large; a saved cap changes the contro
  await chooseSettingsSection(page,'Audio');
  await expect(page.locator('.hub-audio .audio-spectrum')).toBeVisible();expect((await page.locator('.hub-audio .audio-spectrum').boundingBox()).height).toBeGreaterThanOrEqual(240);
  await page.getByLabel('Visualizer',{exact:true}).selectOption('spectrum');await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('[data-saved=true]')).toBeVisible();
- await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();await expect(page.locator('.m2-playing .audio-spectrum')).toBeVisible();expect((await page.locator('.m2-playing .audio-spectrum').boundingBox()).width).toBeGreaterThan(650);await page.screenshot({path:'test-results/touch-pcm-large.png'});
+ await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();await expect(page.locator('.m2-playing .audio-spectrum')).toBeVisible();expect((await page.locator('.m2-playing .audio-spectrum').boundingBox()).width).toBeGreaterThan(500); // The Now Playing volume rail takes about 190 px.await page.screenshot({path:'test-results/touch-pcm-large.png'});
  await dial.focus();await page.keyboard.press('End');await expect.poll(async()=>(await(await page.request.get('/api/state')).json()).audio.volume).toBe(65);
 });
 test('Wi-Fi header uses measured fan bars, with percentages only in details',async({page})=>{

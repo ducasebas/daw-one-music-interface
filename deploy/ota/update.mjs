@@ -83,7 +83,7 @@ try{
  if(!selection){report('no-release');process.exit(0);}
  const {url,manifest}=selection;
  if(releaseIsCurrent(selection,current)){report('up-to-date');process.exit(0);}
- available={release:manifest.release,commit:manifest.commit,notes:manifest.notes||'Verified TuneBox build'};
+ available={release:manifest.release,commit:manifest.commit,notes:manifest.notes||'Verified TuneBox build',...(typeof manifest.label==='string'&&manifest.label.length<=80?{label:manifest.label}:{})};
  const needsIdle=request.action==='install'||request.action==='auto'&&policy.mode==='auto';
  const decision=installationDecision(policy,request.action,needsIdle?canUpdate(await local('/api/state')):false);
  if(decision!=='install'){report(decision);process.exit(0);}

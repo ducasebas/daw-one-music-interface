@@ -47,13 +47,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TUNEBOX_OTA_SIGNING_KEY: ${{ secrets.TUNEBOX_OTA_SIGNING_KEY }}
           TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
-          TUNEBOX_UPDATE_NOTES: ${{ github.event.workflow_run.display_title }}
         run: |
           node deploy/ota/sign.mjs tunebox-release.tar.gz preview "$TESTED_SHA" "$GITHUB_RUN_ID"
           tag="ota-preview-$TESTED_SHA"
           if gh release view "$tag" --json isDraft --jq .isDraft 2>/dev/null | grep -qx false; then exit 0; fi
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$TESTED_SHA" --draft --prerelease --title "TuneBox preview $TESTED_SHA" --notes 'Automatically published after Verify passed. Signed OTA; hardware remains unverified.'
+            gh release create "$tag" --target "$TESTED_SHA" --draft --prerelease --title "$(node --input-type=module -e 'import {release} from "./shared/release.js";console.log(release.label+" · preview")')" --notes 'Automatically published after Verify passed. Signed OTA; hardware remains unverified.'
           fi
           gh release upload "$tag" tunebox-release.tar.gz ota-manifest.json ota-manifest.sig --clobber
           gh release edit "$tag" --draft=false

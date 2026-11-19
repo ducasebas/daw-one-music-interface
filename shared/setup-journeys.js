@@ -2,6 +2,7 @@ export const setupJourneys=Object.freeze([
   {id:'network',title:'Wi-Fi & network',icon:'wifi',group:'connections'},
   {id:'bluetooth',title:'Bluetooth',icon:'bluetooth',group:'connections'},
   {id:'music',title:'Music Assistant',icon:'rooms',group:'connections'},
+  {id:'remote',title:'Phone remote',icon:'playing',group:'connections'},
   {id:'sound',title:'Sound & DSP',icon:'speaker',group:'audio'},
   {id:'sync',title:'Picture & meter sync',icon:'clock',group:'audio'},
 ]);
@@ -16,5 +17,6 @@ export function setupConnectionStatus(snapshot={},network={}){
     music:snapshot.mode==='music-assistant'&&snapshot.musicAssistant?.connected===true&&snapshot.playback?.connected===true,
     automaticSound:snapshot.automaticDsp?.settings?.enabled===true,
     sync:snapshot.sync?.active?.valid===true,
+    remote:Number(snapshot.remoteControl?.phones)>0,
   };
 }

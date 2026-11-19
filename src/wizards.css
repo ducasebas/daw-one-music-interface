@@ -9,3 +9,7 @@
 @media(max-width:650px){.first-start.setup-journey{padding:12px;grid-template-rows:76px 60px minmax(0,1fr) auto}.setup-journey>header h2{font-size:26px}.journey-steps li{font-size:14px;padding:8px}.journey-steps b{display:none}.setup-journey footer{flex-wrap:wrap}.setup-journey footer>span{flex-basis:100%;font-size:16px}.setup-cards{grid-template-columns:1fr}.setup-cards button{min-height:130px}}
 
 .dsp-auto-guard{border:0;padding:0;margin:0;min-width:0}
+.remote-wizard ol{display:grid;gap:8px;padding-left:28px}.remote-pair{display:grid;grid-template-columns:auto minmax(0,1fr);gap:28px;align-items:center}.remote-pair .setup-qr{width:290px;margin:0}.remote-pair p{margin:0 0 12px}.remote-countdown{font-variant-numeric:tabular-nums;color:var(--accent,#c8a56c)}.remote-pair code{overflow-wrap:anywhere}
+.remote-phones{list-style:none;margin:12px 0;padding:0;display:grid;gap:10px}.remote-phones li{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 16px;border:2px solid var(--divider,#2c363b);border-radius:14px}.remote-phones li>span{display:flex;flex-direction:column;min-width:0}.remote-phones small{opacity:.8}
+@media(max-height:500px){.remote-pair .setup-qr{width:200px}}
+@media(max-width:700px){.remote-pair{grid-template-columns:1fr;justify-items:center}}

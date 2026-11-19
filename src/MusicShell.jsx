@@ -700,7 +700,33 @@ export function MusicShell({
         )}
       </section>
       <BluetoothPairing state={snapshot.bluetooth}/>
+      {wall&&page==='playing'&&<aside className="m2-volume-rail" aria-label={tr('Volume')}>
+        <button
+          aria-label={tr(muted ? "Geluid aan" : "Dempen")}
+          aria-pressed={!!muted}
+          disabled={
+            !control ||
+            pending ||
+            (!simulated && !playback.capabilities?.includes("volume_mute"))
+          }
+          onClick={() => command({ type: "mute", value: !muted })}
+        >
+          <Icon name={muted ? "mute" : "volume"} />
+        </button>
+        <TouchVolume
+          value={volume}
+          muted={muted}
+          target={volumeRequests.target}
+          onValue={volumeRequests.request}
+          disabled={!canVolume}
+          limit={bluetoothActive?Math.min(bluetooth.limit,controlVolumeLimit(snapshot)):controlVolumeLimit(snapshot)}
+          mode="vertical"
+          step={5}
+          sensitivity={snapshot.preferences?.speakers?.sensitivity}
+        />
+      </aside>}
       <footer className="m2-player">
+        {!(wall&&page==='playing')&&(
         <button
           className="m2-current"
           onClick={page==='playing'?undefined:() => go("playing")}
@@ -720,6 +746,7 @@ export function MusicShell({
             <small>{current.artist}</small>
           </span>
         </button>
+        )}
         <div className="m2-transport">
           <button
             aria-label={tr("Vorig nummer")} aria-busy={pendingAction==='previous'}
@@ -767,6 +794,7 @@ export function MusicShell({
                     ? "SIMULATIE · GEEN AUDIO"
                     : ""))}
         </div>
+        {!(wall&&page==='playing')&&<>
         <button
           aria-label={tr(muted ? "Geluid aan" : "Dempen")}
           aria-pressed={!!muted}
@@ -789,6 +817,7 @@ export function MusicShell({
           mode={prefs.volumeControl}
           sensitivity={snapshot.preferences?.speakers?.sensitivity}
         />
+        </>}
       </footer>
     </main>
   );
