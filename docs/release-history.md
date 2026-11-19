@@ -2,6 +2,10 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
+## CI speed-up (no app change)
+
+On 19 November 2026 the owner approved pushing the CI restructure (preinstalled Playwright image, sharded browser tests, one run per pull request) and the 3.9.0 publication record with "jazeker moet je die pushen!". No application code or release ID changes. Merging it to `main` makes the publish workflow sign a new preview build with the same app and release ID (`2026.11.19-remote.1`); merging therefore needs the owner's go-ahead.
+
 ## GUI 3.9.0 REMOTE — published
 
 Merged via PR #6 as `6fb1406b3359f8523299f906fed16cabe7ee51e2` on 19 November 2026. The first Verify run on `main` was cancelled by the 25-minute job timeout while the browser install stalled on the Ubuntu mirror; one re-run passed, Publish signed preview passed including the public channel check, and release `ota-preview-6fb1406b3359f8523299f906fed16cabe7ee51e2` ("GUI 3.9.0 · REMOTE · preview") is public with archive, manifest (label and notes) and signature. Pi installation and physical acceptance were not observed.
