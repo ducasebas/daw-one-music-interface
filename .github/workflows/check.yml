@@ -1,11 +1,21 @@
 name: Verify
-on: [push, pull_request, workflow_dispatch]
+# Pull requests are verified once (no duplicate push run on review branches); main is
+# verified after merge because signed preview publication follows a successful main run.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: verify-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
-  check:
+  quick:
+    name: check (${{ matrix.node }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 10
     strategy:
       matrix:
         node: [22, 24]
@@ -21,21 +31,57 @@ jobs:
       - run: npm run check
       - run: python3 -m unittest discover -s tests -p '*_test.py'
       - run: npm audit --omit=dev --audit-level=high
-      - name: Install browsers from the primary Ubuntu package mirror
-        if: matrix.node == 24
-        run: |
-          # Regional runner mirrors can stall the full validation job.
-          # Keep Ubuntu signature verification and the complete test matrix.
-          if [ -f /etc/apt/apt-mirrors.txt ]; then
-            printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
-          fi
-          if [ -f /etc/apt/apt-mirrors-security.txt ]; then
-            printf '%s\n' 'https://security.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors-security.txt >/dev/null
-          fi
-          npx playwright install --with-deps chromium webkit
-      - run: npm run test:ui -- --max-failures=1
-        if: matrix.node == 24
+
+  # Browsers and their Ubuntu libraries are preinstalled in the official Playwright image
+  # matching package-lock.json, so no apt mirror is involved. Keep the tag in step with
+  # @playwright/test; the guard step fails fast when they drift apart.
+  chromium:
+    name: chromium (${{ matrix.shard }}/3)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --ipc=host
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+        timeout-minutes: 4
+      - name: Playwright image matches the locked version
+        run: test "$(node -p "require('@playwright/test/package.json').version")" = "1.64.1"
+      # Each shard has its own simulator; within a shard tests stay serial (workers: 1).
+      - run: npx playwright test --shard=${{ matrix.shard }}/3 --max-failures=1
+        timeout-minutes: 11
+
+  production:
+    name: offline + webkit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+        timeout-minutes: 4
+      - name: Playwright image matches the locked version
+        run: test "$(node -p "require('@playwright/test/package.json').version")" = "1.64.1"
       - run: npm run test:offline -- --max-failures=1
-        if: matrix.node == 24
+        timeout-minutes: 6
       - run: npx playwright test -c playwright.webkit.config.js wall.spec.js
-        if: matrix.node == 24
+        timeout-minutes: 5
