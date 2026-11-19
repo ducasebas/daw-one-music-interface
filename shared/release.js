@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.19-lively.1",
-  label: "GUI 3.11.0 · LIVELY",
+  id: "2026.11.19-lively.2",
+  label: "GUI 3.11.1 · HOTFIX",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Lively: Now Playing shows the album art as a soft, blurred background that changes with each track, with widgets you choose in Display (clock, up next, quality, rooms, temperature, Wi-Fi, power, party). The phone remote now matches your TuneBox style. Includes the 3.10.1 scrubbing fix.",
+  notes: "Hotfix: Mute now works on players without a built-in mute (such as Squeezelite). TuneBox lowers the volume to 0 and restores exactly the previous level, never louder and never above your volume limit.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

@@ -1990,5 +1990,5 @@
   "{used} W in use": "{used} W in gebruik",
   "{count} phone": "{count} telefoon",
   "{count} phones": "{count} telefoons",
-  "Lively: Now Playing shows the album art as a soft, blurred background that changes with each track, with widgets you choose in Display (clock, up next, quality, rooms, temperature, Wi-Fi, power, party). The phone remote now matches your TuneBox style. Includes the 3.10.1 scrubbing fix.": "Lively: Nu spelen toont de albumhoes als zachte, vervaagde achtergrond die per nummer meeverandert, met widgets die je kiest onder Weergave (klok, hierna, kwaliteit, ruimtes, temperatuur, wifi, vermogen, feest). De telefoon-remote volgt nu de stijl van je TuneBox. Inclusief de scrubfix uit 3.10.1."
+  "Hotfix: Mute now works on players without a built-in mute (such as Squeezelite). TuneBox lowers the volume to 0 and restores exactly the previous level, never louder and never above your volume limit.": "Hotfix: Dempen werkt nu ook op spelers zonder eigen dempfunctie (zoals Squeezelite). TuneBox zet het volume op 0 en herstelt daarna precies het vorige niveau, nooit harder en nooit boven je volumelimiet."
 }

@@ -780,7 +780,7 @@ export function MusicShell({
           disabled={
             !control ||
             pending ||
-            (!simulated && !playback.capabilities?.includes("volume_mute"))
+            (!simulated && !["volume_mute","volume_mute_soft"].some(c=>playback.capabilities?.includes(c)))
           }
           onClick={() => command({ type: "mute", value: !muted })}
         >

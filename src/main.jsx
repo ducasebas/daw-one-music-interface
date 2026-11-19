@@ -442,7 +442,7 @@ function App() {
                 }
                 disabled={!volumeEnabled}
                 muteDisabled={
-                  liveMusic && !playback.capabilities?.includes("volume_mute")
+                  liveMusic && !["volume_mute","volume_mute_soft"].some((c) => playback.capabilities?.includes(c))
                 }
                 onValue={(value) => {
                   if (liveMusic) send({ type: "volume", value });
