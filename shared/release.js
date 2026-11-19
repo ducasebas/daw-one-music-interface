@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.19-lively.2",
-  label: "GUI 3.11.1 · STYLE",
+  id: "2026.11.19-lively.3",
+  label: "GUI 3.11.2 · ENDLESS",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume.",
+  notes: "Endless: "Keep the music playing" is on by default. When your queue ends, Music Assistant adds similar tracks from sources such as Tidal, Spotify or YouTube Music. Switching it on first checks with Music Assistant whether it can work. It applies to this TuneBox only, never to other rooms.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

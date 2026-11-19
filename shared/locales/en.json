@@ -1997,7 +1997,6 @@
   "Clear and neutral, made for screens": "Clear and neutral, made for screens",
   "Bold and characterful": "Bold and characterful",
   "Each skin keeps its own typeface": "Each skin keeps its own typeface",
-  "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume.": "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume.",
   "Keep the music playing": "Keep the music playing",
   "When the queue ends, Music Assistant adds similar tracks so the music continues. Applies to this TuneBox only, never to other rooms.": "When the queue ends, Music Assistant adds similar tracks so the music continues. Applies to this TuneBox only, never to other rooms.",
   "Needs a Music Assistant connection.": "Needs a Music Assistant connection.",
@@ -2015,5 +2014,6 @@
   "Not possible: playback control is off for TuneBox in Music Assistant.": "Not possible: playback control is off for TuneBox in Music Assistant.",
   "Not possible while TuneBox plays as part of another room or group.": "Not possible while TuneBox plays as part of another room or group.",
   "Music Assistant is not connected right now. Saved for when it reconnects.": "Music Assistant is not connected right now. Saved for when it reconnects.",
-  "The check did not complete. Saved; TuneBox will try again.": "The check did not complete. Saved; TuneBox will try again."
+  "The check did not complete. Saved; TuneBox will try again.": "The check did not complete. Saved; TuneBox will try again.",
+  "Endless: \"Keep the music playing\" is on by default. When your queue ends, Music Assistant adds similar tracks from sources such as Tidal, Spotify or YouTube Music. Switching it on first checks with Music Assistant whether it can work. It applies to this TuneBox only, never to other rooms.": "Endless: \"Keep the music playing\" is on by default. When your queue ends, Music Assistant adds similar tracks from sources such as Tidal, Spotify or YouTube Music. Switching it on first checks with Music Assistant whether it can work. It applies to this TuneBox only, never to other rooms."
 }
