@@ -570,7 +570,8 @@ function stopRemoteServerWhenUnused(){
  clearTimeout(remoteStop);remoteStop=setTimeout(()=>{if(remote.phones.length||remote.pairing()||!remoteServer)return;for(const c of remoteClients)c.end();remoteClients.clear();remoteServer.close();remoteServer=null;},Number(process.env.DAW_REMOTE_IDLE_MS||30000));remoteStop.unref();
 }
 const remoteStatus=()=>({phones:remote.list(),pairing:remote.pairing(),listening:!!remoteServer,address:remoteAddress(),port:remotePort,limit:8,pinRequired:remotePinRequired()});
-const remotePinRequired=()=>security.status({headers:{}}).enabled===true;
+// Hoisted: snapshot() may run during startup, before the security store is defined below.
+function remotePinRequired(){try{return security.status({headers:{}}).enabled===true;}catch{return false;}}
 app.get('/api/remote/phones',(q,r)=>{try{security.requireAdmin(q);r.set('Cache-Control','no-store').json(remoteStatus());}catch(e){r.status(e.status||423).json({error:e.message});}});
 // The Party sheet shows the pairing code without unlocking settings: when a settings PIN
 // exists the phone must enter that PIN, so the code alone never grants control.
