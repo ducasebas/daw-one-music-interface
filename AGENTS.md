@@ -4,8 +4,8 @@ Standing rules for every agent (Claude, Codex) working in this repository. Past 
 
 ## Current state
 
-- Published preview OTA: GUI 3.11.2 · ENDLESS, release `2026.11.19-lively.3`, service-worker cache 56, commit `393b82a3b2dc9b99ef221394ee07d2a46636e6fe` (19 November 2026).
-- Candidate GUI 3.14.0 · SOUND (`2026.11.19-sound.1`, cache 60; includes 3.11.3 QUEUE, 3.12.0 PARTY, 3.13.0 OFFLINE): approved 19 November 2026 ("Ja push alles"), in review. The next candidate uses cache 61 and must update `notes` in `shared/release.js`. Restart controls (3.10) and local volume (3.13) need `sudo bash deploy/update-appliance.sh --apply` once on the Pi.
+- Published preview OTA: GUI 3.14.0 · SOUND (includes 3.11.3 QUEUE, 3.12.0 PARTY, 3.13.0 OFFLINE), release `2026.11.19-sound.1`, service-worker cache 60, commit `7a4caf513bf2d8d26a2a92f9d09c6532190973bd` (19 November 2026).
+- Next candidate: bump `shared/release.js` (including its user-facing `notes`) and the cache in `public/sw.js` (next is 61). Restart controls (3.10) and local volume (3.13) need `sudo bash deploy/update-appliance.sh --apply` once on the Pi. Roadmap 3.10–3.14 is published; the cold-boot console item stays separate and needs the owner.
 - 3.10.0 is installed on the owner's Pi (reported 19 November 2026, "looks beautiful"); its individual touch/notification points are not separately confirmed. The last PD request (on 3.9.x) failed with an I²C I/O error; the startup PD policy was disabled on the device.
 - Physical acceptance still open: cursor hidden on cold start, real PD source query and 20 V contract/stability, INA228 VBUS wiring; for 3.9.0, phone pairing and control over the real home Wi-Fi.
 
