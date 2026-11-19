@@ -2057,5 +2057,12 @@
   "Restore local volume": "Lokaal volume herstellen",
   "{level}%": "{level}%",
   "Local control failed": "Lokale bediening mislukt",
-  "Music Assistant is connected: use the normal controls.": "Music Assistant is verbonden: gebruik de normale bediening."
+  "Music Assistant is connected: use the normal controls.": "Music Assistant is verbonden: gebruik de normale bediening.",
+  "Install the server": "Server installeren",
+  "Finish Music Assistant setup": "Music Assistant-setup afronden",
+  "Connect TuneBox": "TuneBox koppelen",
+  "Open on your phone or computer": "Open op je telefoon of computer",
+  "The server runs on this TuneBox. Finish its setup on a phone or computer on the same Wi-Fi: create the account and add your music services (Tidal, Spotify, YouTube Music).": "De server draait op deze TuneBox. Rond de setup af op een telefoon of computer op hetzelfde wifi: maak het account aan en voeg je muziekdiensten toe (Tidal, Spotify, YouTube Music).",
+  "Then connect TuneBox to it. Your old server stays as it is until you save the new one.": "Koppel TuneBox er daarna aan. Je oude server blijft zoals hij is tot je de nieuwe opslaat.",
+  "Connect TuneBox to this server": "TuneBox aan deze server koppelen"
 }

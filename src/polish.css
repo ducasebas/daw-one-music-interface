@@ -174,3 +174,12 @@
 .music2 .local-control-actions button{min-height:60px;min-width:64px;padding:8px 16px;font-size:18px;display:flex;align-items:center;gap:8px;border:2px solid var(--divider,var(--border-color));border-radius:14px;background:transparent;color:inherit}
 .local-control-actions output{min-width:64px;text-align:center;font-size:22px;font-variant-numeric:tabular-nums}
 .local-control p[role=alert]{margin:0;color:#e0716d}
+
+/* 3.13 · Local Music Assistant: a guided path from capacity check to a connected TuneBox. */
+.local-ma-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;list-style:none;margin:14px 0;padding:0}
+.local-ma-steps li{display:flex;align-items:center;gap:10px;padding:12px;border:2px solid var(--divider,var(--border-color));border-radius:14px;font-size:17px;font-weight:500}
+.local-ma-steps li b{display:grid;place-items:center;flex:none;width:30px;height:30px;border:2px solid currentColor;border-radius:50%;font-size:15px}
+.local-ma-steps li[data-state=current]{border-color:var(--accent);color:var(--accent)}
+.local-ma-steps li[data-state=done]{opacity:.7}
+.local-ma-ready{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;align-items:start;margin:10px 0 18px}
+.local-ma-ready svg{width:200px!important;height:200px!important;background:#fff;padding:10px;border-radius:14px}

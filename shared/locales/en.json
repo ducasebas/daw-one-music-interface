@@ -2057,5 +2057,12 @@
   "Restore local volume": "Restore local volume",
   "{level}%": "{level}%",
   "Local control failed": "Local control failed",
-  "Music Assistant is connected: use the normal controls.": "Music Assistant is connected: use the normal controls."
+  "Music Assistant is connected: use the normal controls.": "Music Assistant is connected: use the normal controls.",
+  "Install the server": "Install the server",
+  "Finish Music Assistant setup": "Finish Music Assistant setup",
+  "Connect TuneBox": "Connect TuneBox",
+  "Open on your phone or computer": "Open on your phone or computer",
+  "The server runs on this TuneBox. Finish its setup on a phone or computer on the same Wi-Fi: create the account and add your music services (Tidal, Spotify, YouTube Music).": "The server runs on this TuneBox. Finish its setup on a phone or computer on the same Wi-Fi: create the account and add your music services (Tidal, Spotify, YouTube Music).",
+  "Then connect TuneBox to it. Your old server stays as it is until you save the new one.": "Then connect TuneBox to it. Your old server stays as it is until you save the new one.",
+  "Connect TuneBox to this server": "Connect TuneBox to this server"
 }

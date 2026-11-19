@@ -30,3 +30,14 @@ test('with Music Assistant away, Now Playing offers local pause and volume that 
  await page.screenshot({path:'test-results/local-control.png'});
  await bar.getByRole('button',{name:'Pause locally',exact:true}).click();await expect.poll(()=>sent.at(-1)).toBe('pause');
 });
+test('a ready local Music Assistant shows a setup QR and connects TuneBox with the local address prefilled',async({page})=>{
+ await page.route('**/api/device',async r=>{const b=r.request().postDataJSON();if(b.command==='local-ma-status')return r.fulfill({json:{simulated:false,capacity:{eligible:true,reasons:[]},dockerAvailable:true,installing:false,job:{phase:'ready'}}});return r.continue();});
+ await page.route('**/api/local-ma/address',r=>r.fulfill({json:{url:'http://192.168.1.20:8095'}}));
+ const {chooseDeveloperTopic}=await import('./settings-helpers.js');
+ await page.goto(url);await chooseDeveloperTopic(page,'Services',{open:true});
+ const steps=page.locator('.local-ma-steps li');await expect(steps).toHaveCount(4);await expect(steps.nth(2)).toHaveAttribute('data-state','current');
+ await expect(page.getByRole('img',{name:'Open on your phone or computer'})).toBeVisible();await expect(page.locator('.local-ma-ready code')).toHaveText('http://192.168.1.20:8095');
+ await page.getByRole('button',{name:'Connect TuneBox to this server',exact:true}).click();
+ const wizard=page.getByRole('dialog',{name:'Music Assistant setup',exact:true});
+ await expect(wizard.getByLabel('Music Assistant server address',{exact:true})).toHaveValue('http://127.0.0.1:8095');
+});

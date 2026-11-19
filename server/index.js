@@ -601,6 +601,8 @@ async function remotePairing(q,r,{party=false}={}){
   r.set('Cache-Control','no-store').json({...status(),url:`http://${address}:${remotePort}/remote.html#pair=${pair.token}`,expiresAt:pair.expiresAt});
  }catch(e){r.status(e.status||409).json({error:e.code==='EADDRINUSE'?'The remote port is in use':e.message});}
 }
+// Where a person on the home network finishes onboarding of a Music Assistant server on this Pi.
+app.get('/api/local-ma/address',(_q,r)=>{const address=process.env.DAW_REMOTE_ADDRESS||remoteAddress();r.set('Cache-Control','no-store').json({url:address?`http://${address}:8095`:null});});
 app.post('/api/remote/pairing',async(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before pairing a remote'});return remotePairing(q,r);});
 app.post('/api/remote/party',async(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before showing the party code'});return remotePairing(q,r,{party:true});});
 app.post('/api/remote/forget',(q,r)=>{
