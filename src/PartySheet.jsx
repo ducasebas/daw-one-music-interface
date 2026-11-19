@@ -19,7 +19,8 @@ export function PartySheet({snapshot,onClose,onRooms}){
  const left=pair?Math.max(0,Math.ceil((pair.expiresAt-now)/1000)):0;
  const ma=snapshot.musicAssistant,keep=ma?.keepPlaying,room=snapshot.playback?.playerName||'TuneBox';
  // Multiroom awareness: grouped rooms play along with whatever the phones choose.
- const grouped=snapshot.activity?.localIndependent===false;
+ // localIndependent is also false while Music Assistant is away, so only trust it when connected.
+ const grouped=snapshot.mode==='music-assistant'&&snapshot.musicAssistant?.connected===true&&snapshot.activity?.localIndependent===false;
  return <Modal label="Party" onCancel={onClose} className="party-sheet">
   <header><h3>{tr('Party')}</h3><button onClick={onClose}>{tr('Close')}</button></header>
   <div className="party-body">
