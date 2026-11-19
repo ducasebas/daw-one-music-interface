@@ -1,4 +1,4 @@
-import {chooseSettingsSection} from './settings-helpers.js';
+import {chooseSettingsSection,chooseDeveloperTopic} from './settings-helpers.js';
 import {test,expect} from '@playwright/test';
 import {presets} from '../../shared/themes.js';
 const url='/?gui=2&screen=1&display=dsi-production&panel=wall-16-10';
@@ -123,7 +123,7 @@ test('explicit WebP animation plays even with reduced motion and records honest 
  const source='/media/startup.webp';
  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('tunebox-startup-status')).time)).toBeGreaterThan(.4);
  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('tunebox-startup-status')).frames)).toBeNull();
- await splash.click();await page.getByText('Splash diagnostics',{exact:true}).click();await expect(page.locator('.startup-diagnostics')).toContainText(source);
+ await splash.click();await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('[data-saved=true]')).toBeVisible();await chooseDeveloperTopic(page,'Startup');await page.getByText('Splash diagnostics',{exact:true}).click();await expect(page.locator('.startup-diagnostics')).toContainText(source);
 });
 test('manual moon wake stays available in live read-only mode with Music Assistant disconnected',async({page})=>{
  const live=s=>({...s,mode:'music-assistant',musicAssistant:{connected:false,controlEnabled:false,volumeLimit:40}});

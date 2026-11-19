@@ -64,6 +64,8 @@ class OfferedProfileWorkerTests(unittest.TestCase):
                 owner.assertEqual(address,8);owner.assertEqual(count,1)
                 current=reader.CURRENTS.index(owner.offered)
                 return bytes([{0:0x60|current if self.ready else 0x63,1:0x4f,2:0x8a,3:0x8a,4:0,5:0x8a,6:0,7:0x80|current,8:0xa0}[register]])
+            def query_source(self):
+                owner.assertEqual(pd.read_json(owner.state/'qualification.json')['phase'],'querying')
             def request_20v(self):
                 owner.assertEqual(pd.read_json(owner.state/'qualification.json')['phase'],'requesting');owner.sent.append(True);self.ready=True
             def close(self):pass

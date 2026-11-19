@@ -15,7 +15,8 @@ test('power cards distinguish consumption, negotiated capacity, profiles, unavai
   const power={observedAt:Date.now(),watts:12.4,volts:20,amps:.62,contractWatts:60,
    ina228:{status:'ok'},pd:{status:'active',volts:20,amps:3,profiles:[{volts:5,amps:3,watts:15},{volts:20,amps:5,watts:100}]}};
   const render=props=>renderToStaticMarkup(React.createElement(PowerReadouts,{power,requiredWatts:100,...props}));
-  const connecting=renderToStaticMarkup(React.createElement(PowerMonitoring));assert.match(connecting,/Connecting to the device manager…/);assert.equal((connecting.match(/type="checkbox"[^>]*disabled/g)||[]).length,2);
+  const connecting=renderToStaticMarkup(React.createElement(PowerMonitoring,{advanced:true}));assert.match(connecting,/Connecting to the device manager…/);assert.equal((connecting.match(/type="checkbox"[^>]*disabled/g)||[]).length,2);
+  const basic=renderToStaticMarkup(React.createElement(PowerMonitoring));assert.doesNotMatch(basic,/Read INA228 consumption|VBUS senses|Read HUSB238 PD contract/);
   const live=render();
   for(const text of ['12.4 W','60 W','100 W','20.00 V','0.620 A','Power supply below requirement','Profiles offered by the power supply'])assert.ok(live.includes(text),text);
   assert.doesNotMatch(live,/<(?:button|select)\b/); // Offered voltage profiles are informational.

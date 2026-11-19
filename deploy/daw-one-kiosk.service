@@ -8,7 +8,7 @@ User=dawone
 PAMName=login
 TTYPath=/dev/tty1
 StandardInput=tty
-TTYReset=yes
+TTYReset=no
 TTYVHangup=yes
 UtmpIdentifier=tty1
 Environment=DAW_DISPLAY_MODE=hdmi-development

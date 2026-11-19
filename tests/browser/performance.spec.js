@@ -55,7 +55,7 @@ test('paused local meters release analysis while another room cannot pause local
  await expect(page.getByRole('status',{name:'Startup animation',exact:true})).toHaveCount(0,{timeout:10000});
  await page.getByRole('button',{name:'Switch visualizer',exact:true}).click();await expect(page.locator('.audio-spectrum')).toBeVisible();
  await page.waitForTimeout(400);const pausedWatches=watches;await page.waitForTimeout(4300);expect(watches).toBe(pausedWatches);
- await page.request.post('/api/event',{data:{type:'play'}});await expect.poll(()=>watches,{timeout:1500}).toBeGreaterThan(pausedWatches+2);
+ await page.request.post('/api/event',{data:{type:'play'}});await expect(page.locator('.m2-transport').getByRole('button',{name:'Pause',exact:true})).toBeVisible();await expect.poll(()=>watches,{timeout:1500}).toBeGreaterThan(pausedWatches+2);
  matchesSelected=false;await page.request.post('/api/event',{data:{type:'pause'}});await page.waitForTimeout(300);const remoteWatches=watches;
  await expect.poll(()=>watches,{timeout:1500}).toBeGreaterThan(remoteWatches+2);
 });

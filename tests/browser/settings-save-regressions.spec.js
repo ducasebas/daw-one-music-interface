@@ -22,10 +22,10 @@ test('the update-window checkbox uses the common Save/Cancel bar and survives re
  await checkbox.uncheck();await expect(save).toBeEnabled();await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(checkbox).toBeChecked();await expect(save).toBeDisabled();
  await page.reload();await open(page,'Updates');await expect(checkbox).toBeChecked();
 });
-test('developer update edits also use Save and cannot disappear when changing developer topic',async({page})=>{
+test('the Developer update shortcut shares Save and protects edits when returning to Developer',async({page})=>{
  await open(page,'Developer');const topics=page.getByRole('navigation',{name:'Developer topics'});await topics.getByRole('button',{name:'Updates',exact:true}).click();
  await page.getByLabel('Only within a time window',{exact:false}).check();await expect(page.getByRole('button',{name:'Save',exact:true})).toBeEnabled();
- await topics.getByRole('button',{name:'Status',exact:true}).click();const dialog=page.getByRole('dialog',{name:'Unsaved changes'});await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:'Save and continue',exact:true}).click();await expect(dialog).not.toBeVisible();await expect(page.locator('[data-section=sensors] .system-dashboard')).toBeVisible();
+ await page.getByRole('navigation',{name:'In this section',exact:true}).getByRole('button',{name:'Developer',exact:true}).click();const dialog=page.getByRole('dialog',{name:'Unsaved changes'});await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:'Save and continue',exact:true}).click();await expect(dialog).not.toBeVisible();await topics.getByRole('button',{name:'Status',exact:true}).click();await expect(page.locator('[data-section=developer] .system-dashboard')).toBeVisible();
  expect((await(await page.request.get('/api/updates')).json()).manager.policy.windowEnabled).toBe(true);
 });
 test('each date and time checkbox enables Save on its own without changing an unrelated clock value',async({page})=>{

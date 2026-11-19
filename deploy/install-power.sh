@@ -14,7 +14,7 @@ install -d -m 755 -o dawpower -g dawsensors /run/daw-one-pd
 install -d -m 755 /etc/tmpfiles.d
 printf 'd /run/daw-one-pd 0755 dawpower dawsensors -\n' > /etc/tmpfiles.d/daw-one-power.conf
 if [[ ! -e /etc/daw-one-power/settings.json ]]; then
-  printf '{"ina228":false,"husb238":false,"currentPathVerified":false,"voltageSenseVerified":false,"startup100W":false,"startup20V":false}\n' > /etc/daw-one-power/settings.json
+  printf '{"ina228":false,"husb238":false,"currentPathVerified":false,"voltageSenseVerified":false,"startup100W":false,"startup20V":false,"startupMaximum20V":false}\n' > /etc/daw-one-power/settings.json
 fi
 chmod 644 /etc/daw-one-power/settings.json
 cat > /etc/systemd/system/daw-one-power.service <<'UNIT'
@@ -61,7 +61,7 @@ User=dawpower
 Group=dawsensors
 SupplementaryGroups=i2c
 ExecStart=/usr/bin/python3 /usr/local/lib/daw-one-control/deploy/power/pd_request.py --$argument
-TimeoutStartSec=10
+TimeoutStartSec=12
 UMask=0027
 NoNewPrivileges=yes
 ProtectSystem=strict
@@ -106,7 +106,7 @@ if python3 - <<'PY'
 import json
 from pathlib import Path
 value=json.loads(Path('/etc/daw-one-power/settings.json').read_text())
-raise SystemExit(0 if value.get('startup100W') is True or value.get('startup20V') is True else 1)
+raise SystemExit(0 if value.get('startup100W') is True or value.get('startup20V') is True or value.get('startupMaximum20V') is True else 1)
 PY
 then
   systemctl enable daw-one-pd-startup.service

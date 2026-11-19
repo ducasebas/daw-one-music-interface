@@ -97,7 +97,7 @@ class PdNegotiationTests(unittest.TestCase):
                 self.request([frame(), frame(), frame(response=response)], lambda: sent.append(1))
             self.assertEqual(sent, [1])
 
-    def test_only_fixed_20v_selection_and_go_writes_are_possible(self):
+    def test_only_source_query_fixed_20v_selection_and_go_writes_are_possible(self):
         writes, commands = [], []
 
         def ioctl(fd, command, value):
@@ -113,11 +113,12 @@ class PdNegotiationTests(unittest.TestCase):
 
         with patch.object(pd.os, 'open', return_value=7), patch.object(pd.os, 'close'), patch.object(pd.fcntl, 'ioctl', side_effect=ioctl):
             bus = pd.RequestBus()
+            bus.query_source()
             bus.request_20v()
-            for register, value in [(9, 0x10), (9, 4), (8, 0x10), (0, 0), (8, 0xa1)]:
+            for register, value in [(9, 0x10), (9, 2), (8, 0x10), (0, 0), (8, 0xa1)]:
                 with self.assertRaises(ValueError): bus._fixed_write(register, value)
             bus.close()
-        self.assertEqual(writes, [b'\x08\xa0', b'\x09\x01'])
+        self.assertEqual(writes, [b'\x09\x04', b'\x08\xa0', b'\x09\x01'])
         self.assertNotIn(0x0706, commands)  # I2C_SLAVE_FORCE is forbidden.
 
     def test_partial_write_stops_before_go(self):
@@ -144,11 +145,14 @@ class PdWorkerTests(unittest.TestCase):
         owner = self
 
         class Bus:
-            def __init__(self): self.ready = False
+            def __init__(self): self.ready = False; self.queried = False
             def read(self, address, register, count):
                 owner.assertEqual(address, 8)
-                return {0: b'\x6f' if self.ready else b'\x63', 1: b'\x48' if self.ready else b'\x40',
+                return {0: b'\x6f' if self.ready else b'\x63', 1: b'\x48' if self.ready or self.queried else b'\x40',
                         2:b'\x8a', 3:b'\0', 4:b'\0', 5:b'\0', 6:b'\0', 7:b'\x8f', 8:b'\xa0'}[register]
+            def query_source(self):
+                owner.assertEqual(pd.read_json(owner.state/'qualification.json')['phase'], 'querying')
+                self.queried = True
             def request_20v(self):
                 owner.assertEqual(pd.read_json(owner.state/'qualification.json')['phase'], 'requesting')
                 owner.sent.append(1)

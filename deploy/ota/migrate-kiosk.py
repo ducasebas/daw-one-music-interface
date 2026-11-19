@@ -6,7 +6,7 @@ import shutil
 import tempfile
 
 def independent_kiosk(text):
-    lines, section, changed = [], '', False
+    lines, section, changed, needs_wants = [], '', False, False
     for line in text.splitlines():
         stripped = line.strip()
         if stripped.startswith('[') and stripped.endswith(']'):
@@ -16,13 +16,21 @@ def independent_kiosk(text):
             if 'daw-one.service' in units:
                 units = [unit for unit in units if unit != 'daw-one.service']
                 changed = True
+                needs_wants = True
                 if units:
                     lines.append('Requires=' + ' '.join(units))
                 continue
+        if section == '[Service]' and stripped.startswith('TTYReset=') and stripped != 'TTYReset=no':
+            # A dedicated kiosk VT must not re-enable the caret hidden by quiet boot.
+            line = 'TTYReset=no'
+            changed = True
         lines.append(line)
     if not changed:
         return text
-    return '\n'.join(lines).rstrip() + '\n\n[Unit]\n# Keep the independent OTA progress screen alive during backend restart.\nWants=daw-one.service\n'
+    result = '\n'.join(lines).rstrip() + '\n'
+    if needs_wants:
+        result += '\n[Unit]\n# Keep the independent OTA progress screen alive during backend restart.\nWants=daw-one.service\n'
+    return result
 
 if __name__ == '__main__':
     if os.geteuid() != 0:
@@ -40,6 +48,6 @@ if __name__ == '__main__':
             temporary = file.name
         os.chmod(temporary, 0o644)
         os.replace(temporary, path)
-        print('Kiosk dependency updated; backup:', backup)
+        print('Kiosk startup and dependencies updated; backup:', backup)
     else:
         print('Kiosk unit already independent of backend stops')

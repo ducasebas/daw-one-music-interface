@@ -10,6 +10,14 @@ case "$mode" in
   hdmi-development|dsi-production) ;;
   *) echo "Unsupported DAW_DISPLAY_MODE: $mode" >&2; exit 2 ;;
 esac
+# Keep the virtual-console caret hidden while the compositor starts. The kernel
+# quiet-boot option handles initial boot; do not reset its console state here.
+if [[ $mode == dsi-production ]]; then
+  if [[ -t 0 && $(tty 2>/dev/null) == /dev/tty1 ]]; then
+    { printf '\033[?25l' > /dev/tty; } 2>/dev/null || true
+  fi
+  export XCURSOR_THEME=tunebox-invisible XCURSOR_PATH=/usr/local/share/icons XCURSOR_SIZE=24
+fi
 if [[ $(id -u) == 0 ]]; then echo 'Run kiosk as the dawone service user, not root.' >&2; exit 1; fi
 for binary in /usr/bin/cage /usr/bin/chromium /usr/bin/dbus-run-session; do
   if [[ ! -x $binary ]]; then echo "Required kiosk executable missing: $binary" >&2; exit 1; fi
@@ -38,9 +46,6 @@ for attempt in {1..30}; do
   if [[ $attempt == 30 ]]; then echo 'TuneBox display services unavailable; retrying startup' >&2; exit 1; fi
   sleep 1
 done
-if [[ $mode == dsi-production && -f /usr/local/share/icons/tunebox-invisible/index.theme ]]; then
-  export XCURSOR_THEME=tunebox-invisible XCURSOR_PATH=/usr/local/share/icons
-fi
 viewport=1280x400
 [[ $panel != wall-16-10 ]] || viewport=1280x800
 printf 'DAW ONE kiosk: %s, panel %s, logical viewport %s\n' "$mode" "$panel" "$viewport"

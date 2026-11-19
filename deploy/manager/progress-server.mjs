@@ -12,7 +12,7 @@ export function createProgressServer({getStatus,isAppReady,frameReady=()=>{}}){
   if(path==='/frame-ready'&&request.method==='POST'){if(request.headers['x-tunebox-frame']!==frameToken){response.writeHead(403).end();return;}try{await frameReady();response.writeHead(204).end();}catch{response.writeHead(503).end();}return;}
   if(request.method==='GET'&&assets.has(path)){response.setHeader('Content-Type',path.endsWith('.js')?'text/javascript':'text/css');response.end(assets.get(path));return;}
   if(request.method!=='GET'||!['/','/status'].includes(path)){response.writeHead(404).end();return;}
-  if(path==='/'){response.setHeader('Content-Type','text/html; charset=utf-8');response.end(html);return;}
+  if(path==='/'){const kiosk=new URL(request.url,'http://localhost').searchParams.get('display')==='dsi-production';response.setHeader('Content-Type','text/html; charset=utf-8');response.end(html.replace('__TUNEBOX_DISPLAY_ATTRIBUTE__',kiosk?'data-tunebox-kiosk="true"':''));return;}
   try{response.setHeader('Content-Type','application/json');response.end(JSON.stringify({...await getStatus(),appReady:await isAppReady()}));}catch{response.writeHead(503).end();}
  });
 }

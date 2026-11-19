@@ -43,7 +43,7 @@ class SetupHardwareTests(unittest.TestCase):
         self.assertIsNone(frames.push(frame[:-1] + b'\0'))
         self.assertTrue(frames.push(frame)['present'])
 
-    def test_original_cursor_file_is_valid_transparent_one_pixel_image(self):
+    def test_original_cursor_file_is_valid_transparent_normal_size_image(self):
         with tempfile.TemporaryDirectory() as directory:
             cursor.create_theme(directory)
             blob = (Path(directory) / 'cursors' / 'left_ptr').read_bytes()
@@ -52,8 +52,8 @@ class SetupHardwareTests(unittest.TestCase):
             kind, subtype, offset = struct.unpack_from('<3I', blob, 16)
             self.assertEqual((kind, subtype, offset), (0xfffd0002, 24, 28))
             fields = struct.unpack_from('<9I', blob, offset)
-            self.assertEqual(fields[4:8], (1, 1, 0, 0))
-            self.assertEqual(struct.unpack_from('<I', blob, offset + 36)[0], 0)
+            self.assertEqual(fields[4:8], (24, 24, 0, 0))
+            self.assertEqual(blob[offset+36:], bytes(24*24*4))
             self.assertEqual(blob, (Path(directory) / 'cursors' / 'pointer').read_bytes())
 
 

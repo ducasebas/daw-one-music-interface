@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 import {readFileSync} from 'node:fs';
-import {chooseSettingsSection} from './settings-helpers.js';
+import {chooseSettingsSection,chooseDeveloperTopic} from './settings-helpers.js';
 const url='/?gui=2&screen=1&display=dsi-production&panel=wall-16-10';
 test.use({viewport:{width:1280,height:800}});
 const settings=async(page,name)=>chooseSettingsSection(page,name,{open:true});
@@ -13,7 +13,7 @@ test.beforeEach(async({page})=>{
  await page.goto(url);
 });
 test('shared timing saves, cancels and persists; per-video timing cannot change another track',async({page})=>{
- await settings(page,'Audio');await page.getByRole('slider',{name:'Screen delay',exact:true}).fill('250');await page.getByRole('slider',{name:'Visualizer fine adjustment',exact:true}).fill('-50');
+ await chooseDeveloperTopic(page,'Audio',{open:true});await page.getByRole('slider',{name:'Screen delay',exact:true}).fill('250');await page.getByRole('slider',{name:'Visualizer fine adjustment',exact:true}).fill('-50');
  await expect(page.locator('.timing-result')).toContainText('Video: 250 ms · meters: 200 ms');await page.getByRole('button',{name:'Save',exact:true}).click();
  const screenSlider=await page.getByRole('slider',{name:'Screen delay',exact:true}).boundingBox(),meterSlider=await page.getByRole('slider',{name:'Visualizer fine adjustment',exact:true}).boundingBox();expect(Math.abs(screenSlider.y-meterSlider.y)).toBeLessThan(2);expect(meterSlider.x).toBeGreaterThan(screenSlider.x+screenSlider.width);
  await page.locator('.timing-controls').scrollIntoViewIfNeeded();await page.screenshot({path:'test-results/touch-timing-settings.png'});
@@ -23,7 +23,7 @@ test('shared timing saves, cancels and persists; per-video timing cannot change 
  const correction=page.getByLabel('Video start correction',{exact:true});await expect(correction).toBeVisible();await correction.fill('1.2');await expect(page.getByRole('button',{name:'Save',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Save',exact:true}).click();
  const link=await(await page.request.get('/api/video')).json();expect(link.sync).toEqual({mode:'starts',offsetSeconds:1.2});
  await correction.fill('2');await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(correction).toHaveValue('1.2');
- await page.reload();await settings(page,'Audio');await expect(page.getByRole('slider',{name:'Screen delay',exact:true})).toHaveValue('250');
+ await page.reload();await chooseDeveloperTopic(page,'Audio',{open:true});await expect(page.getByRole('slider',{name:'Screen delay',exact:true})).toHaveValue('250');
  const token=(await(await page.request.get('/api/updates')).json()).controlToken;
  await page.request.post('/api/event',{data:{type:'next'}});
  const r=await page.request.post('/api/video/timing',{headers:{'X-TuneBox-Control':token},data:{trackKey:link.trackKey,id:link.id,revision:link.revision,sync:{mode:'starts',offsetSeconds:3}}});expect(r.status()).toBe(409);
@@ -42,8 +42,8 @@ test('visualizer presents buffered PCM at the chosen delay and clears immediatel
  });
  await page.route('**/api/audio?watch=1',r=>r.fulfill({json:{enabled:true,configured:true,playerId:'local',matchesSelected:true,status,measurement:status==='pcm'?{capturedAt:++stamp,sampleRate:44100,channels:[{rmsDb:-12,peakDb:-6},{rmsDb:-18,peakDb:-9}],bandsDb:Array(32).fill(-18)}:null}}));
  await page.reload();await page.request.post('/api/event',{data:{type:'play'}});
- await settings(page,'Audio');await page.getByRole('slider',{name:'Screen delay',exact:true}).fill('500');await page.getByRole('slider',{name:'Visualizer fine adjustment',exact:true}).fill('100');
- const plot=page.locator('.hub-audio .real-audio');await expect(plot).toHaveAttribute('data-delay-ms','600');
+ await chooseDeveloperTopic(page,'Audio',{open:true});await page.getByRole('slider',{name:'Screen delay',exact:true}).fill('500');await page.getByRole('slider',{name:'Visualizer fine adjustment',exact:true}).fill('100');
+ const plot=page.locator('[data-section="developer"] .real-audio');await expect(plot).toHaveAttribute('data-delay-ms','600');
  await page.evaluate(()=>window.pcmPresentations=[]);await expect.poll(()=>page.evaluate(()=>window.pcmPresentations.filter(v=>v>=550).length)).toBeGreaterThanOrEqual(5);
  const delays=await page.evaluate(()=>window.pcmPresentations.slice(-5));expect(Math.min(...delays)).toBeGreaterThanOrEqual(550);expect(Math.max(...delays)).toBeLessThan(900);
  await page.request.post('/api/event',{data:{type:'pause'}});await expect(plot).toHaveAttribute('data-captured-at','');await expect(plot).toHaveAttribute('data-resting','true');await expect(plot.locator('.audio-readouts')).toHaveCount(0);
