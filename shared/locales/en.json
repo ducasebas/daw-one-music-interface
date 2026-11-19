@@ -1930,5 +1930,6 @@
   "louder than the default": "louder than the default",
   "{db} dB short of the {minimum} dB needed.": "{db} dB short of the {minimum} dB needed.",
   "Measure again 6 dB louder ({level} dBFS)…": "Measure again 6 dB louder ({level} dBFS)…",
-  "The sweep is already at its maximum level. Raise the amplifier volume a little, keep the room quiet and move the microphone closer, then measure again.": "The sweep is already at its maximum level. Raise the amplifier volume a little, keep the room quiet and move the microphone closer, then measure again."
+  "The sweep is already at its maximum level. Raise the amplifier volume a little, keep the room quiet and move the microphone closer, then measure again.": "The sweep is already at its maximum level. Raise the amplifier volume a little, keep the room quiet and move the microphone closer, then measure again.",
+  "Type at least 3 characters": "Type at least 3 characters"
 }

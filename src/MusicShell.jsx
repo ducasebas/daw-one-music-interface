@@ -701,31 +701,6 @@ export function MusicShell({
       </section>
       <BluetoothPairing state={snapshot.bluetooth}/>
       {snapshot.playerBlocked&&page!=='settings'&&<div className="player-blocked" role="alert"><div><strong>{tr('Local player stopped: automatic power setup is blocked')}</strong><span>{tr('Last attempt')}: {tr(snapshot.playerBlocked.reason)}</span><span>{tr('Repair power setup, or turn off “Keep these settings after restart”, in Sensors.')}</span></div><button onClick={()=>{setSettingsPage(17);go('settings');}}>{tr('Open Sensors')}</button></div>}
-      {wall&&page==='playing'&&<aside className="m2-volume-rail" aria-label={tr('Volume')}>
-        <button
-          aria-label={tr(muted ? "Geluid aan" : "Dempen")}
-          aria-pressed={!!muted}
-          disabled={
-            !control ||
-            pending ||
-            (!simulated && !playback.capabilities?.includes("volume_mute"))
-          }
-          onClick={() => command({ type: "mute", value: !muted })}
-        >
-          <Icon name={muted ? "mute" : "volume"} />
-        </button>
-        <TouchVolume
-          value={volume}
-          muted={muted}
-          target={volumeRequests.target}
-          onValue={volumeRequests.request}
-          disabled={!canVolume}
-          limit={bluetoothActive?Math.min(bluetooth.limit,controlVolumeLimit(snapshot)):controlVolumeLimit(snapshot)}
-          mode="vertical"
-          step={5}
-          sensitivity={snapshot.preferences?.speakers?.sensitivity}
-        />
-      </aside>}
       <footer className="m2-player">
         {!(wall&&page==='playing')&&(
         <button
@@ -795,8 +770,8 @@ export function MusicShell({
                     ? "SIMULATIE · GEEN AUDIO"
                     : ""))}
         </div>
-        {!(wall&&page==='playing')&&<>
         <button
+          className="m2-mute"
           aria-label={tr(muted ? "Geluid aan" : "Dempen")}
           aria-pressed={!!muted}
           disabled={
@@ -815,10 +790,10 @@ export function MusicShell({
           onValue={volumeRequests.request}
           disabled={!canVolume}
           limit={bluetoothActive?Math.min(bluetooth.limit,controlVolumeLimit(snapshot)):controlVolumeLimit(snapshot)}
-          mode={prefs.volumeControl}
+          mode={wall&&page==='playing'?'linear':prefs.volumeControl}
+          step={wall&&page==='playing'?5:1}
           sensitivity={snapshot.preferences?.speakers?.sensitivity}
         />
-        </>}
       </footer>
     </main>
   );

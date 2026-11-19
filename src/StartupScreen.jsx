@@ -2,6 +2,7 @@ import {tr} from "../shared/i18n.js";
 import { useStartupPreparation } from "./useStartupPreparation.js";
 import React, { useEffect, useRef, useState } from "react";
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
+import {release,releaseTitle} from '../shared/release.js';
 const startupSources=['/media/startup.mp4','/media/startup.webm'];
 const stillPolicy=(staticOnly,animationMode,motion)=>animationMode==='still'||animationMode==='off'||animationMode!=='video'&&(staticOnly||motion);
 /** Branding is independent from hardware readiness and never enables audio. */
@@ -224,6 +225,7 @@ export function StartupScreen({
             aria-label={tr("TuneBox cold start video")}
           />
         )}
+      <strong className="startup-release" data-release={release.id}>{releaseTitle()}</strong>
       <small className="startup-check-caption">
         {tr(offline
           ? "Offline · lokale instellingen beschikbaar"

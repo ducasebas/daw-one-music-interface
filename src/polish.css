@@ -1,0 +1,34 @@
+/* GUI 3.10 · POLISH. Loaded last so these refinements win over the earlier layers. */
+
+/* 2 · Startup names the update and its version over the (unchanged) splash artwork. */
+.startup-screen>.startup-release{position:absolute;left:0;right:0;bottom:44px;z-index:2;text-align:center;font:500 20px/1.2 var(--font-body,var(--font,sans-serif));letter-spacing:.04em;color:var(--muted,#c9c3b6);pointer-events:none}
+.music2[data-panel="wall-16-10"] .startup-screen>.startup-release{font-size:24px;bottom:56px}
+
+/* 4 · Now Playing: the 3.9.0 volume rail is gone. The footer volume returns, larger and
+   more prominent; transport sits on the left because the footer track summary would only
+   repeat the track shown above it. */
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player{grid-template-columns:304px 80px minmax(0,1fr);gap:22px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player>.m2-mute{width:80px;min-width:80px;height:80px;border-radius:16px;border-color:var(--divider,var(--skin-line));background:transparent}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player>.m2-mute[aria-pressed=true]{border-color:var(--accent)}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player>.m2-mute .tb-icon{width:34px;height:34px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player>.touch-volume{gap:14px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-readout{width:104px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-readout strong{font-size:44px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-readout strong small{font-size:18px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-slider{height:96px;min-width:200px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-track{left:28px;right:28px;height:14px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-track>i{width:52px;height:52px;border-width:7px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-step{width:88px;min-width:88px;height:80px;min-height:80px;font-size:40px;border-radius:16px}
+
+/* Thicker outlines (≥ 3 px) on Now Playing: 1–2 px edges look grainy on the DSI panel. */
+.music2[data-panel="wall-16-10"][data-page="playing"] button,
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player .touch-volume-step{border-width:3px;border-style:solid}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-header button,
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-transport>button:not(.m2-play){border-width:0}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-play{border:3px solid var(--accent)}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player{border-top-width:3px}
+
+/* No scrollbar on Now Playing: the layout fits the screen; overflow is clipped, not scrolled. */
+.music2[data-page="playing"]>.m2-content{overflow:hidden;scrollbar-width:none}
+.music2[data-page="playing"]>.m2-content::-webkit-scrollbar,.music2[data-page="playing"] .m2-playing *::-webkit-scrollbar{display:none}
+.music2[data-page="playing"] .m2-playing,.music2[data-page="playing"] .m2-playing>aside{scrollbar-width:none}

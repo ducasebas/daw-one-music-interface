@@ -1,4 +1,5 @@
 import {tr,getLanguage,translateFormat} from "../shared/i18n.js";
+import {searchTerm,searchTooShort,searchMinimum,searchDebounceMs,createSearchCache,searchCacheKey} from "../shared/search-suggest.js";
 import React, { useState, useEffect, useRef } from "react";
 import { Artwork } from "./Artwork.jsx";
 import { Icon } from "./Icon.jsx";
@@ -41,26 +42,43 @@ export function LiveLibrary({
   const mounted = useRef(true);
   useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
   const generation = useRef(0),
-    lock = useRef(false);
+    lock = useRef(false),
+    searchCache = useRef(null),
+    seenRefresh = useRef(state.refresh);
+  if (!searchCache.current) searchCache.current = createSearchCache();
   const change = (patch) => onState({ ...state, ...patch });
   const available = !offline && snapshot.musicAssistant?.connected;
   const controls =
     available &&
     snapshot.musicAssistant?.controlEnabled &&
     snapshot.playback.connected;
+  const searching = view === "search" && !parent;
+  const term = view === "search" ? searchTerm(q) : "";
   useEffect(() => {
     const id = ++generation.current,
       abort = new AbortController();
-    setLoading(true);
     setError("");
-    setResult({ items: [], hasMore: false });
     if (!available) {
+      setResult({ items: [], hasMore: false });
       setLoading(false);
       setError(
         "Music Assistant niet verbonden · probeer opnieuw zodra de verbinding terug is",
       );
       return () => abort.abort();
     }
+    const key = parent ? null : searchCacheKey({ term, kind, offset, source, favorite });
+    const retry = state.refresh !== seenRefresh.current;
+    seenRefresh.current = state.refresh;
+    const cached = key && !retry ? searchCache.current.get(key) : undefined;
+    if (cached) {
+      // A prefix seen moments ago answers at once, without another request.
+      setResult(cached);
+      setLoading(false);
+      return () => abort.abort();
+    }
+    setLoading(true);
+    // While typing, keep the previous suggestions until the new ones arrive.
+    if (!searching) setResult({ items: [], hasMore: false });
     const timer = setTimeout(
       async () => {
         try {
@@ -68,7 +86,7 @@ export function LiveLibrary({
             type: kind,
             offset: String(offset),
           });
-          if (view === "search") params.set("q", q);
+          if (term) params.set("q", term);
           if (parent) params.set("parent", parent.id);
           if (favorite) params.set("favorite", "true");
           if(source!=="all")params.set("source",source);
@@ -79,23 +97,27 @@ export function LiveLibrary({
           const data = await r.json();
           if (!Array.isArray(data.items) || typeof data.hasMore !== "boolean")
             throw Error();
+          if (key) searchCache.current.set(key, data);
           if (id === generation.current) setResult(data);
         } catch (e) {
-          if (e.name !== "AbortError" && id === generation.current)
+          if (e.name !== "AbortError" && id === generation.current) {
+            setResult({ items: [], hasMore: false });
             setError(
               "Muziek laden mislukt · controleer server, bron of rechten",
             );
+          }
         } finally {
           if (id === generation.current) setLoading(false);
         }
       },
-      view === "search" ? 220 : 0,
+      searching ? searchDebounceMs : 0,
     );
     return () => {
+      // A newer keystroke cancels the pending timer and any request still in flight.
       clearTimeout(timer);
       abort.abort();
     };
-  }, [view, kind, q, offset, parent?.id, favorite, source, available, state.refresh]);
+  }, [view, kind, term, offset, parent?.id, favorite, source, available, state.refresh]);
   async function play(item, option) {
     if (lock.current) return;
     lock.current = true;
@@ -155,7 +177,7 @@ export function LiveLibrary({
             ← {parent.name}
           </button>
         ) : view === "search" ? (
-          touch ? <div className="live-search-field"><KeyboardField key={keyboardCycle} label="Search music" value={q} onChange={value=>change({q:value,offset:0})} maxLength={120} autoOpen suggestions={q.trim()?result.items:[]} suggestionsLoading={loading&&!!q.trim()} onSuggestion={item=>["artist","album","playlist"].includes(item.type)?open(item):play(item,"replace")}/><button onClick={()=>{change({q:'',offset:0});setKeyboardCycle(v=>v+1);}}>{tr('New search')}</button></div> : <label className="live-search-input">
+          touch ? <div className="live-search-field"><KeyboardField key={keyboardCycle} label="Search music" value={q} onChange={value=>change({q:value,offset:0})} maxLength={120} autoOpen suggestions={term?result.items:[]} suggestionsLoading={loading&&!!term} suggestionsMinimum={searchMinimum} onSuggestion={item=>["artist","album","playlist"].includes(item.type)?open(item):play(item,"replace")}/><button onClick={()=>{change({q:'',offset:0});setKeyboardCycle(v=>v+1);}}>{tr('New search')}</button></div> : <label className="live-search-input">
             <Icon name="search" />
             <input
               aria-label={tr("Zoek echte muziek")}
@@ -189,7 +211,8 @@ export function LiveLibrary({
         )}
       </div>
       <div className="live-library-results" aria-busy={loading}>
-        {loading ? (
+        {searching && searchTooShort(q) && <p className="live-search-hint" role="status">{tr("Type at least 3 characters")}</p>}
+        {loading && !result.items.length ? (
           <p role="status">{tr("Muziek laden…")}</p>
         ) : error ? (
           <div role="alert">

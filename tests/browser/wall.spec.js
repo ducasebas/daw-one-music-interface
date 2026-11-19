@@ -14,11 +14,11 @@ test('English default, larger transport and all top-level routes fit the physica
  }
  await page.getByRole('navigation',{name:'Music navigation'}).getByRole('button',{name:'Now Playing',exact:true}).click();
  const play=await page.locator('.m2-play').boundingBox();expect(play.width).toBeGreaterThanOrEqual(100);expect(play.height).toBeGreaterThanOrEqual(100);
- // Layout B: a lower transport footer and a full-height volume rail on Now Playing.
+ // GUI 3.10: the footer carries transport and a large volume again; no side rail.
  const footer=await page.locator('.m2-player').boundingBox();expect(footer.height).toBeGreaterThanOrEqual(120);
- const rail=await page.locator('.m2-volume-rail').boundingBox();expect(rail.height).toBeGreaterThanOrEqual(600);expect(rail.x+rail.width).toBeLessThanOrEqual(1280);
+ const slider=await page.locator('.m2-player').getByRole('slider',{name:'Volume',exact:true}).boundingBox();expect(slider.width).toBeGreaterThanOrEqual(300);expect(slider.x+slider.width).toBeLessThanOrEqual(1280);await expect(page.locator('.m2-volume-rail')).toHaveCount(0);
  for(const name of ['Previous track','Next track']){const b=await page.getByRole('button',{name,exact:true}).boundingBox();expect(b.width).toBeGreaterThanOrEqual(64);expect(b.height).toBeGreaterThanOrEqual(64);}
- expect(await page.evaluate(()=>getComputedStyle(document.querySelector('.m2-play')).borderTopWidth)).toBe('2px');
+ expect(await page.evaluate(()=>getComputedStyle(document.querySelector('.m2-play')).borderTopWidth)).toBe('3px');
  expect(await page.evaluate(()=>getComputedStyle(document.querySelector('.m2-play')).cursor)).toBe('none');
  await expect(page.locator('.m2-brand')).not.toContainText('MUSIC FIRST');
  await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-now-playing.png'});
