@@ -2042,5 +2042,20 @@
   "Keep the music playing is on.": "Blijf muziek spelen staat aan.",
   "Phones control the group that {room} plays in. Other rooms in that group play along.": "Telefoons bedienen de groep waarin {room} speelt. Andere ruimtes in die groep spelen mee.",
   "Phones control {room} only. Other rooms are not affected.": "Telefoons bedienen alleen {room}. Andere ruimtes merken er niets van.",
-  "Party: tap the Party widget on Now Playing to show the phone code to your guests. With a settings PIN, guests also enter that PIN on their phone. The sheet shows how many phones are paired, whether the music keeps playing, and which rooms the phones control.": "Feest: tik op de Feest-widget op Nu spelen om de telefooncode aan je gasten te tonen. Met een pincode voor instellingen voeren gasten die pincode ook in op hun telefoon. Het scherm toont hoeveel telefoons gekoppeld zijn, of de muziek blijft spelen en welke ruimtes de telefoons bedienen."
+  "Party: tap the Party widget on Now Playing to show the phone code to your guests. With a settings PIN, guests also enter that PIN on their phone. The sheet shows how many phones are paired, whether the music keeps playing, and which rooms the phones control.": "Feest: tik op de Feest-widget op Nu spelen om de telefooncode aan je gasten te tonen. Met een pincode voor instellingen voeren gasten die pincode ook in op hun telefoon. Het scherm toont hoeveel telefoons gekoppeld zijn, of de muziek blijft spelen en welke ruimtes de telefoons bedienen.",
+  "Local control": "Lokale bediening",
+  "Music Assistant is unavailable": "Music Assistant is niet bereikbaar",
+  "Local amplifier settings are active": "Lokale versterkerinstellingen zijn actief",
+  "Pause and volume still work on this TuneBox. Other rooms and the queue are not changed.": "Pauze en volume werken nog op deze TuneBox. Andere ruimtes en de wachtrij veranderen niet.",
+  "The amplifier is paused locally.": "De versterker is lokaal gepauzeerd.",
+  "The local volume is lower than before. Restore it when you are ready.": "Het lokale volume is lager dan eerst. Herstel het wanneer je wilt.",
+  "Resume locally": "Lokaal hervatten",
+  "Pause locally": "Lokaal pauzeren",
+  "Quieter": "Zachter",
+  "Local volume": "Lokaal volume",
+  "Louder, up to the previous level": "Harder, tot het vorige niveau",
+  "Restore local volume": "Lokaal volume herstellen",
+  "{level}%": "{level}%",
+  "Local control failed": "Lokale bediening mislukt",
+  "Music Assistant is connected: use the normal controls.": "Music Assistant is verbonden: gebruik de normale bediening."
 }

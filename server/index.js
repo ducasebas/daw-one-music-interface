@@ -83,6 +83,7 @@ function syncContext(){
  const rooms=multiroom.status(),audio=audioAnalysis.get({selectedId:music?.playerId});
  return synchronizationContext({rooms,playback:music?.playback,audio,route:routeCache.value,connected:music?.status==='connected',bluetooth:bluetoothState().active,busy:multiroom.busy||music?.controlBusy===true});
 }
+let localStandby=false,localVolume={level:100,active:false};
 const snapshot = () => {
   const bluetooth=bluetoothState();
   const profileCount=syncProfiles.profiles.length,context=profileCount?syncContext():null;
@@ -97,6 +98,7 @@ const snapshot = () => {
     youtube:youtube.get(),
     bluetooth,
     remoteControl:{phones:remote.phones.length,pairing:remote.pairing(),pinRequired:remotePinRequired()},
+    localControl:{standby:localStandby,level:localVolume.level,lowered:localVolume.active,needed:!!music&&music.status!=='connected'},
     playerBlocked:music?readPlayerStartupBlock(music.status==='connected'?(music.players||[]).some(p=>p.player_id===multiroom.localId):music.errorCode==='player-missing'?false:null):null,
     videoRevision,
     hardwareTelemetry: readSensorTelemetry(process.env.DAW_SENSOR_FILE),
@@ -190,7 +192,20 @@ app.use('/api',(q,r,next)=>{
   next();
  }catch(e){r.status(e.status||423).json({error:e.message});}
 });
-let localStandby=false;
+// GUI 3.13 OFFLINE: when Music Assistant is unreachable, pause (local amplifier standby) and
+// volume (amplifier gains, never above the level when local control began) still work here.
+app.post('/api/local',async(q,r)=>{
+ if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before using local controls.'});
+ const action=q.body?.action;
+ try{
+  if(!['pause','resume','quieter','louder','restore'].includes(action)||Object.keys(q.body).length!==1)throw Error('Choose pause, resume, quieter, louder or restore');
+  const away=!!music&&music.status!=='connected';
+  if(['pause','quieter','louder'].includes(action)&&!away)throw Error('Music Assistant is connected: use the normal controls.');
+  if(action==='pause'||action==='resume'){const state=await manage({command:'local-standby',args:{enabled:action==='pause'}});localStandby=state.muted===true;}
+  else{const state=await manage({command:'local-volume',args:{step:action==='quieter'?-1:action==='louder'?1:0}});localVolume={level:Number.isInteger(state.level)?state.level:100,active:state.active===true};}
+  broadcast();r.set('Cache-Control','no-store').json(snapshot());
+ }catch(e){r.status(409).json({error:e.message});}
+});
 app.post('/api/button',async(q,r)=>{
  try{let token;try{token=readFileSync(process.env.DAW_BUTTON_TOKEN_FILE||'/run/daw-one-button/token','utf8').trim();}catch{return r.sendStatus(403);}const given=q.get('X-TuneBox-Button')||'';if(!/^[a-f0-9]{64}$/.test(token)||Buffer.byteLength(token)!==Buffer.byteLength(given)||!timingSafeEqual(Buffer.from(token),Buffer.from(given)))return r.sendStatus(403);
  if(q.body.type==='long'){await manage({command:'power-off',args:{confirmed:true}});return r.json({queued:true});}

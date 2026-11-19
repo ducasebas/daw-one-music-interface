@@ -164,3 +164,13 @@
 .party-info ul{margin:0 0 14px;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:18px;line-height:1.45}
 .party-lead{font-size:20px;margin-top:0}
 .party-countdown{color:var(--accent);font-weight:600}
+
+/* 3.13 · OFFLINE: local amplifier control while Music Assistant is away. */
+.local-control{position:absolute;left:28px;right:28px;bottom:180px;z-index:25;display:flex;align-items:center;gap:18px;padding:14px 18px;border:3px solid var(--accent);border-radius:16px;background:color-mix(in srgb,var(--panel,var(--surface)) 92%,transparent);box-shadow:0 12px 30px #0007}
+.local-control-text{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.local-control-text strong{font-size:20px}
+.local-control-text span{font-size:16px;color:var(--muted)}
+.local-control-actions{display:flex;align-items:center;gap:10px}
+.music2 .local-control-actions button{min-height:60px;min-width:64px;padding:8px 16px;font-size:18px;display:flex;align-items:center;gap:8px;border:2px solid var(--divider,var(--border-color));border-radius:14px;background:transparent;color:inherit}
+.local-control-actions output{min-width:64px;text-align:center;font-size:22px;font-variant-numeric:tabular-nums}
+.local-control p[role=alert]{margin:0;color:#e0716d}

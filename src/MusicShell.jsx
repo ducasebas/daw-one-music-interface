@@ -29,6 +29,7 @@ import {Rooms} from './Rooms.jsx';
 import {BluetoothPairing} from './BluetoothReceiver.jsx';
 import {NowPlayingBackdrop,NowPlayingWidgets} from './NowPlayingExtras.jsx';
 import {PartySheet} from './PartySheet.jsx';
+import {LocalControl} from './LocalControl.jsx';
 
 const duration = (n) =>
   Number.isFinite(n)
@@ -708,6 +709,7 @@ export function MusicShell({
       {party&&<PartySheet snapshot={snapshot} onClose={()=>setParty(false)} onRooms={()=>go('rooms')}/>}
       <BluetoothPairing state={snapshot.bluetooth}/>
       {snapshot.playerBlocked&&page!=='settings'&&<div className="player-blocked" role="alert"><div><strong>{tr('Local player stopped: automatic power setup is blocked')}</strong><span>{tr('Last attempt')}: {tr(snapshot.playerBlocked.reason)}</span><span>{tr('Repair power setup, or turn off “Keep these settings after restart”, in Sensors.')}</span></div><button onClick={()=>{setSettingsPage(17);go('settings');}}>{tr('Open Sensors')}</button></div>}
+      {page!=='settings'&&<LocalControl snapshot={snapshot} token={deviceUpdates?.info?.controlToken}/>}
       <footer className="m2-player">
         {!(wall&&page==='playing')&&(
         <button

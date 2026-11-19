@@ -65,7 +65,7 @@ export function rootAdapter(){const powerReader=powerMonitoring({run,context:()=
   if(command==='dsp-auto-update'){if((await sync.status()).running||(await measurement.status()).running)return {...automatic.publicStatus(),deferred:true};return automatic.update();}
   if(['dsp-set','measurement-start','measurement-apply','measurement-undo'].includes(command)&&automatic.state.settings.enabled)throw Error('Switch automatic sound to Manual before changing the baseline or measuring the room');
   if(['dsp-set','measurement-start','measurement-apply','measurement-undo','bluetooth-start','save-music','erase-setup'].includes(command)&&(await sync.status()).running)throw Error('Finish synchronization before changing the audio path');
-  if(bluetooth.active()&&['dsp-set','local-standby','measurement-start','measurement-apply','measurement-undo','save-music','erase-setup'].includes(command))throw Error('Switch back to Music Assistant before changing this audio setup');
+  if(bluetooth.active()&&['dsp-set','local-standby','local-volume','measurement-start','measurement-apply','measurement-undo','save-music','erase-setup'].includes(command))throw Error('Switch back to Music Assistant before changing this audio setup');
   if(['dsp-set','local-standby','measurement-apply','measurement-undo','local-ma-install'].includes(command)&&(await measurement.status()).running)throw Error('Stop the room measurement before changing audio hardware or installing a server');
   if(command==='reboot'){if(!await idle())throw Error('Stop playback before restarting TuneBox');if((await sync.status()).running||(await measurement.status()).running)throw Error('Finish the running measurement before restarting');if(bluetooth.active())await bluetooth.stop({restartPlayers:false});return power.reboot();}
   if(command==='restart-service')return power.restartService();
@@ -103,6 +103,7 @@ export function rootAdapter(){const powerReader=powerMonitoring({run,context:()=
   if(command==='clock-set')return clock.set(args);
   if(command==='dsp')return dsp.get();
   if(command==='local-standby')return dsp.standby(args.enabled);
+  if(command==='local-volume')return dsp.localVolume(args.step);
   if(command==='dsp-set')return dsp.set(args.controls);
   if(command==='erase-setup'){
    if(!await idle())throw Error('Stop playback before erasing setup');if((await measurement.status()).running)throw Error('Stop the room measurement before erasing setup');if(automatic.state.settings.enabled)await automatic.configure({...automatic.state.settings,enabled:false});for(const path of ['/var/lib/daw-one-measurement/status.json','/var/lib/daw-one-measurement/request.json','/var/lib/daw-one-measurement/baseline.json'])rmSync(path,{force:true});

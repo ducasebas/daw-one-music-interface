@@ -52,3 +52,17 @@ test('a failed band write restores the previous equalizer and channel gains',asy
  try{const dsp=dspController({run,statePath:join(dir,'standby.json')});await assert.rejects(()=>dsp.set([{id:22,value:0},{id:1,value:6}]),/previous ALSA values/);assert.deepEqual(values,original);}
  finally{rmSync(dir,{recursive:true,force:true});}
 });
+test('local volume while Music Assistant is away moves the gains between silent and the saved level, never louder',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'tb-local-')),values={1:0,2:-10,3:-20,22:1};
+ const run=async(_p,args)=>{if(args.includes('contents'))return raw(values);const i=args.indexOf('cset');if(i>=0){values[Number(args[i+1].split('=')[1])]=Number(args[i+2]);}return '';};
+ try{const dsp=dspController({run,statePath:join(dir,'standby.json'),volumePath:join(dir,'local-volume.json')});
+  let r=await dsp.localVolume(1);assert.deepEqual(r,{level:100,active:false,supported:true});assert.equal(values[2],-10,'louder than saved is impossible');
+  r=await dsp.localVolume(-1);assert.equal(r.level,90);assert.equal(values[2],-20);assert.equal(values[3],-29);
+  for(let i=0;i<12;i++)r=await dsp.localVolume(-1);assert.equal(r.level,0);assert.equal(values[2],-110);assert.equal(values[3],-110);
+  r=await dsp.localVolume(1);assert.equal(r.level,10);
+  r=await dsp.localVolume(0);assert.deepEqual(r,{level:100,active:false,supported:true});assert.equal(values[2],-10);assert.equal(values[3],-20);
+  // Standby (local pause) and local volume never fight over the same gains.
+  await dsp.standby(true);await assert.rejects(dsp.localVolume(-1),/Resume local playback/);await dsp.standby(false);
+  await assert.rejects(dsp.localVolume(5),/quieter or louder/);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
