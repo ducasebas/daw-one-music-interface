@@ -3,7 +3,7 @@ export const release = Object.freeze({
   id: "2026.11.19-sound.1",
   label: "GUI 3.14.0 · SOUND",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Sound: Audio & DSP now starts with simple controls (a preset, bass, treble and loudness) with a one-line explanation each, and shows your room correction. All amplifier controls stay available under Advanced. Changes still apply on Save with automatic headroom.",
+  notes: "Four updates in one: Play now asks before replacing a queue with music waiting. A Party sheet shows the phone code on Now Playing (with your settings PIN). When Music Assistant is away you can still pause and change volume locally, never louder. Audio & DSP starts with simple controls (preset, bass, treble, loudness); all amplifier controls stay under Advanced.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

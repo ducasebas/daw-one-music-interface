@@ -2,6 +2,10 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
+## GUI 3.14.0 SOUND (includes 3.11.3 QUEUE, 3.12.0 PARTY, 3.13.0 OFFLINE) — approved, in review
+
+On 19 November 2026 the owner approved publishing all four local candidates with "Ja push alles". The owner had been told the scope, the local results (full Chromium on the final state 225/226 with the one test-isolation failure fixed and re-run 9/9, offline 16/16, unit 420/420; 3.11.3 alone 222/222 and 16/16), the host-helper refresh needed for local volume, and that the cold-boot item stays separate. They build on each other and a device installs the newest, so they are published as one OTA, `2026.11.19-sound.1` (cache 60), with combined release notes. Scope: `docs/queue-3-11-3.md`, `docs/party-3-12.md`, `docs/offline-3-13.md`, `docs/sound-3-14.md`. The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full configured CI passes. It does not cover live hardware experiments or physical confirmations.
+
 ## GUI 3.11.2 ENDLESS — published
 
 Merged via PR #13 as `393b82a3b2dc9b99ef221394ee07d2a46636e6fe` on 19 November 2026 after all six PR CI jobs passed. Verify on `main` and Publish signed preview (run 44628902804) passed on the first attempt, including the public channel check. Release `ota-preview-393b82a3b2dc9b99ef221394ee07d2a46636e6fe` is public. Verified independently: the signature verifies with the unchanged project key; the manifest names commit `393b82a`, release `2026.11.19-lively.3` and label "GUI 3.11.2 · ENDLESS"; the archive hash matches; the inventory is complete (366 files, cache v56); `checkChannel` selects it. The final local run passed Chromium 220/220 and offline 16/16. Not observed on the Pi: the readiness check against the owner's Music Assistant (Tidal/Spotify/YouTube Music) and the queue filling itself.
