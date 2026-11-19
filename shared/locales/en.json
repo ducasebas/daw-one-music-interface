@@ -1997,5 +1997,14 @@
   "Clear and neutral, made for screens": "Clear and neutral, made for screens",
   "Bold and characterful": "Bold and characterful",
   "Each skin keeps its own typeface": "Each skin keeps its own typeface",
-  "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume.": "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume."
+  "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume.": "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume.",
+  "Keep the music playing": "Keep the music playing",
+  "When the queue ends, Music Assistant adds similar tracks so the music continues. Applies to this TuneBox only, never to other rooms.": "When the queue ends, Music Assistant adds similar tracks so the music continues. Applies to this TuneBox only, never to other rooms.",
+  "Needs a Music Assistant connection.": "Needs a Music Assistant connection.",
+  "Music Assistant is not connected right now.": "Music Assistant is not connected right now.",
+  "Playback control is off, so TuneBox does not change the queue.": "Playback control is off, so TuneBox does not change the queue.",
+  "Not available: your music sources cannot suggest similar tracks, or this Music Assistant version does not support it.": "Not available: your music sources cannot suggest similar tracks, or this Music Assistant version does not support it.",
+  "This Music Assistant version does not report this setting.": "This Music Assistant version does not report this setting.",
+  "On in Music Assistant for this TuneBox.": "On in Music Assistant for this TuneBox.",
+  "Off in Music Assistant for this TuneBox.": "Off in Music Assistant for this TuneBox."
 }

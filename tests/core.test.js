@@ -175,6 +175,7 @@ test("settings whitelist, clamp and safe defaults", () => {
       backdrop: "art",
       widgets: ["clock", "upnext", "source"],
       font: "inter",
+      keepPlaying: true,
       startupAnimation: "auto",
       visualizer: "off",
       visualizerBands: 32,

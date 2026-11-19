@@ -387,3 +387,24 @@ test('a player without native mute gets a soft mute that restores exactly the pr
  native.playback={...normalizeMusic({player,queue},Date.now()),connected:true};native.applySoftMute('pi');
  assert.ok(!native.playback.capabilities.includes('volume_mute_soft'));await native.control({type:'mute',value:true});assert.deepEqual(sent.at(-1),['mute',true]);
 });
+test('"keep the music playing" is applied to TuneBox\'s own queue only, once per change, and never loops',async()=>{
+ const sent=[];let enabled=false,fail=false;
+ const fake={subscribe:()=>()=>{},close(){},setKeepPlaying:async(id,v)=>{sent.push([id,v]);if(fail)throw Error('unsupported');enabled=v;}};
+ const s=new LiveMusicService({...configuration,playerId:'pi',controlEnabled:true},{transport:fake});s.status='connected';s.queueId='pi';
+ s.refresh=async()=>{s.playback={...normalizeMusic({player,queue:{...queue,dont_stop_the_music_enabled:enabled}},Date.now())};s.syncKeepPlaying();};
+ await s.refresh();assert.equal(s.playback.keepPlaying,false);
+ s.wantKeepPlaying(true);await new Promise(r=>setTimeout(r,5));
+ assert.deepEqual(sent,[['pi',true]]);assert.equal(s.playback.keepPlaying,true);
+ await s.refresh();await s.refresh();assert.equal(sent.length,1,'no repeated commands once it matches');
+ // Another room's queue (e.g. synced to a group leader) is never changed.
+ s.queueId='kitchen';s.wantKeepPlaying(false);assert.equal(sent.length,1);
+ // Read-only Music Assistant: no changes.
+ s.queueId='pi';s.config.controlEnabled=false;s.syncKeepPlaying();assert.equal(sent.length,1);s.config.controlEnabled=true;
+ // A server that refuses (no source with similar tracks) is reported once, not retried in a loop.
+ fail=true;s.syncKeepPlaying();await new Promise(r=>setTimeout(r,5));assert.equal(s.keepPlayingError,'unsupported');
+ await s.refresh();await s.refresh();assert.equal(sent.filter(([,v])=>v===false).length,1);
+ // Versions without the field report null and nothing is sent.
+ assert.equal(normalizeMusic({player,queue},Date.now()).keepPlaying,null);
+ FixtureSocket.calls=[];const t=transport();await t.connect();await t.setKeepPlaying('pi',true);
+ assert.deepEqual([FixtureSocket.calls.at(-1).command,FixtureSocket.calls.at(-1).args],['player_queues/dont_stop_the_music',{queue_id:'pi',dont_stop_the_music_enabled:true}]);t.close();
+});

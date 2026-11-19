@@ -1997,5 +1997,14 @@
   "Clear and neutral, made for screens": "Helder en neutraal, gemaakt voor schermen",
   "Bold and characterful": "Stevig en met karakter",
   "Each skin keeps its own typeface": "Elke skin houdt een eigen lettertype",
-  "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume.": "Stijl: Inter is het nieuwe, goed leesbare lettertype van de hele interface, met Manrope Heavy of het lettertype van je skin als alternatief onder Uiterlijk. Instellingen toont nu dezelfde zachte albumhoes-achtergrond als Nu spelen. Dempen werkt ook op spelers zonder eigen dempfunctie en zet daarna precies je vorige volume terug."
+  "Style: Inter is the new, easy-to-read interface font everywhere, with Manrope Heavy or your skin font as alternatives under Appearance. Settings now shows the same soft album-art background as Now Playing. Mute also works on players without a built-in mute, and restores exactly your previous volume.": "Stijl: Inter is het nieuwe, goed leesbare lettertype van de hele interface, met Manrope Heavy of het lettertype van je skin als alternatief onder Uiterlijk. Instellingen toont nu dezelfde zachte albumhoes-achtergrond als Nu spelen. Dempen werkt ook op spelers zonder eigen dempfunctie en zet daarna precies je vorige volume terug.",
+  "Keep the music playing": "Blijf muziek spelen",
+  "When the queue ends, Music Assistant adds similar tracks so the music continues. Applies to this TuneBox only, never to other rooms.": "Als de wachtrij op is, voegt Music Assistant vergelijkbare nummers toe zodat de muziek doorgaat. Geldt alleen voor deze TuneBox, nooit voor andere ruimtes.",
+  "Needs a Music Assistant connection.": "Vereist een verbinding met Music Assistant.",
+  "Music Assistant is not connected right now.": "Music Assistant is nu niet verbonden.",
+  "Playback control is off, so TuneBox does not change the queue.": "Afspeelbediening staat uit, dus TuneBox wijzigt de wachtrij niet.",
+  "Not available: your music sources cannot suggest similar tracks, or this Music Assistant version does not support it.": "Niet beschikbaar: je muziekbronnen kunnen geen vergelijkbare nummers voorstellen, of deze Music Assistant-versie ondersteunt het niet.",
+  "This Music Assistant version does not report this setting.": "Deze Music Assistant-versie meldt deze instelling niet.",
+  "On in Music Assistant for this TuneBox.": "Aan in Music Assistant voor deze TuneBox.",
+  "Off in Music Assistant for this TuneBox.": "Uit in Music Assistant voor deze TuneBox."
 }

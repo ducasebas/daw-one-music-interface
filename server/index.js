@@ -65,6 +65,7 @@ runtime.displayTimeoutMs = displayConfiguration.timeoutSeconds === 0 ? Infinity 
 const music =
   config.mode === "music-assistant" ? new LiveMusicService(config) : null;
 if(music)music.setVolumeLimit(savedVolumeLimit(preferences.get(),music.defaultVolumeLimit));
+music?.wantKeepPlaying(preferences.get().prefs?.keepPlaying!==false);
 const audioAnalysis=new AudioAnalysis({onStatus:status=>{runtime.record(Date.now(),"audio-analysis",runtime.device.mode,"Local PCM measurement: "+status);broadcast();}});
 const multiroom = new MultiroomService(music,{localId:audioAnalysis.playerId||config.playerId});
 const library = music ? new MusicLibrary(music) : null;
@@ -214,7 +215,7 @@ app.post('/api/setup/defer',(q,r)=>{
  broadcast();r.json({deferred:true});
 });
 app.post('/api/setup/pair',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload setup'});try{r.json(security.pair(q.body.token,r));}catch(e){r.status(403).json({error:e.message});}});
-function applyPreferences(value){if(value.audioEnabled!==audioAnalysis.enabled)audioAnalysis.setEnabled(value.audioEnabled);if(music)music.setVolumeLimit(savedVolumeLimit(value,music.defaultVolumeLimit));displayConfiguration=value.display;runtime.displayTimeoutMs=value.display.timeoutSeconds===0?Infinity:value.display.timeoutSeconds*1000;broadcast();}
+function applyPreferences(value){if(value.audioEnabled!==audioAnalysis.enabled)audioAnalysis.setEnabled(value.audioEnabled);if(music)music.setVolumeLimit(savedVolumeLimit(value,music.defaultVolumeLimit));music?.wantKeepPlaying?.(value.prefs?.keepPlaying!==false);displayConfiguration=value.display;runtime.displayTimeoutMs=value.display.timeoutSeconds===0?Infinity:value.display.timeoutSeconds*1000;broadcast();}
 app.get('/api/preferences',(_q,r)=>r.set('Cache-Control','no-store').json(preferences.get()));
 app.post('/api/preferences',(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before saving settings'});
