@@ -408,3 +408,17 @@ test('"keep the music playing" is applied to TuneBox\'s own queue only, once per
  FixtureSocket.calls=[];const t=transport();await t.connect();await t.setKeepPlaying('pi',true);
  assert.deepEqual([FixtureSocket.calls.at(-1).command,FixtureSocket.calls.at(-1).args],['player_queues/dont_stop_the_music',{queue_id:'pi',dont_stop_the_music_enabled:true}]);t.close();
 });
+test('switching keep-playing on asks Music Assistant which sources suggest similar tracks, without changing anything',async()=>{
+ const calls=[];let providers=[{name:'Tidal',supported_features:['search','similar_tracks']},{name:'Spotify',supported_features:['similar_tracks']},{name:'YouTube Music',supported_features:['similar_tracks']},{name:'Local files',supported_features:['search']}];
+ const fake={subscribe:()=>()=>{},close(){},command:async(c)=>{calls.push(c);if(c==='providers'){if(providers==='fail')throw Error('unknown command');return providers;}},setKeepPlaying:async()=>{calls.push('SET');}};
+ const s=new LiveMusicService({...configuration,playerId:'pi',controlEnabled:true},{transport:fake});s.status='connected';s.queueId='pi';
+ s.playback={...normalizeMusic({player,queue:{...queue,dont_stop_the_music_enabled:false}},Date.now())};
+ assert.deepEqual(await s.checkKeepPlaying(),{ok:true,reason:'ready',providers:['Tidal','Spotify','YouTube Music'],active:false});
+ assert.equal(calls.includes('SET'),false,'the check never changes the queue');
+ providers=[{name:'Local files',supported_features:['search']}];assert.equal((await s.checkKeepPlaying()).reason,'no-similar-sources');
+ providers='fail';assert.equal((await s.checkKeepPlaying()).reason,'sources-unknown');
+ s.config.controlEnabled=false;assert.equal((await s.checkKeepPlaying()).reason,'read-only');s.config.controlEnabled=true;
+ s.queueId='group-leader';assert.equal((await s.checkKeepPlaying()).reason,'not-own-queue');s.queueId='pi';
+ s.playback.keepPlaying=null;assert.equal((await s.checkKeepPlaying()).reason,'unsupported-version');
+ s.status='disconnected';assert.equal((await s.checkKeepPlaying()).reason,'disconnected');
+});

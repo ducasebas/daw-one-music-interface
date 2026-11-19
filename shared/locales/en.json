@@ -2006,5 +2006,14 @@
   "Not available: your music sources cannot suggest similar tracks, or this Music Assistant version does not support it.": "Not available: your music sources cannot suggest similar tracks, or this Music Assistant version does not support it.",
   "This Music Assistant version does not report this setting.": "This Music Assistant version does not report this setting.",
   "On in Music Assistant for this TuneBox.": "On in Music Assistant for this TuneBox.",
-  "Off in Music Assistant for this TuneBox.": "Off in Music Assistant for this TuneBox."
+  "Off in Music Assistant for this TuneBox.": "Off in Music Assistant for this TuneBox.",
+  "Checking with Music Assistant…": "Checking with Music Assistant…",
+  "Ready: Music Assistant can add similar tracks from {sources}. Save to switch it on.": "Ready: Music Assistant can add similar tracks from {sources}. Save to switch it on.",
+  "Music Assistant did not list its sources. TuneBox will try when you save.": "Music Assistant did not list its sources. TuneBox will try when you save.",
+  "Not possible: none of your Music Assistant sources can suggest similar tracks.": "Not possible: none of your Music Assistant sources can suggest similar tracks.",
+  "Not possible: this Music Assistant version does not support it.": "Not possible: this Music Assistant version does not support it.",
+  "Not possible: playback control is off for TuneBox in Music Assistant.": "Not possible: playback control is off for TuneBox in Music Assistant.",
+  "Not possible while TuneBox plays as part of another room or group.": "Not possible while TuneBox plays as part of another room or group.",
+  "Music Assistant is not connected right now. Saved for when it reconnects.": "Music Assistant is not connected right now. Saved for when it reconnects.",
+  "The check did not complete. Saved; TuneBox will try again.": "The check did not complete. Saved; TuneBox will try again."
 }

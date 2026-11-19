@@ -378,6 +378,25 @@ export class LiveMusicService extends EventEmitter {
       throw Error("Music Assistant command failed; command was not retried");
     }
   }
+  /** Read-only readiness check when someone switches "Keep the music playing" on.
+   * Changes nothing: it asks Music Assistant which sources can suggest similar tracks. */
+  async checkKeepPlaying() {
+    const own = this.config.playerId;
+    if (this.status !== "connected") return {ok: false, reason: "disconnected"};
+    if (!this.config.controlEnabled) return {ok: false, reason: "read-only"};
+    if (!own || this.playerId !== own || this.queueId !== own) return {ok: false, reason: "not-own-queue"};
+    if (this.playback.keepPlaying === null || this.playback.keepPlaying === undefined) return {ok: false, reason: "unsupported-version"};
+    let providers = null;
+    try {
+      const list = await this.transport.command("providers", {}, {maxItems: 128});
+      if (Array.isArray(list)) providers = list
+        .filter((p) => p && p.available !== false && Array.isArray(p.supported_features) && p.supported_features.includes("similar_tracks"))
+        .map((p) => String(p.name || p.domain || p.instance_id || "").slice(0, 40)).filter(Boolean);
+    } catch {}
+    if (providers === null) return {ok: true, reason: "sources-unknown", providers: [], active: this.playback.keepPlaying};
+    if (!providers.length) return {ok: false, reason: "no-similar-sources", providers: []};
+    return {ok: true, reason: "ready", providers: [...new Set(providers)].slice(0, 8), active: this.playback.keepPlaying};
+  }
   /** Set by the server from the saved preference. Applied to TuneBox's own queue only. */
   wantKeepPlaying(enabled) {
     if (typeof enabled !== "boolean" || enabled === this.keepPlayingWanted) return;

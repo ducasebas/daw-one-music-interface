@@ -2006,5 +2006,14 @@
   "Not available: your music sources cannot suggest similar tracks, or this Music Assistant version does not support it.": "Niet beschikbaar: je muziekbronnen kunnen geen vergelijkbare nummers voorstellen, of deze Music Assistant-versie ondersteunt het niet.",
   "This Music Assistant version does not report this setting.": "Deze Music Assistant-versie meldt deze instelling niet.",
   "On in Music Assistant for this TuneBox.": "Aan in Music Assistant voor deze TuneBox.",
-  "Off in Music Assistant for this TuneBox.": "Uit in Music Assistant voor deze TuneBox."
+  "Off in Music Assistant for this TuneBox.": "Uit in Music Assistant voor deze TuneBox.",
+  "Checking with Music Assistant…": "Controleren bij Music Assistant…",
+  "Ready: Music Assistant can add similar tracks from {sources}. Save to switch it on.": "Klaar: Music Assistant kan vergelijkbare nummers toevoegen uit {sources}. Sla op om het aan te zetten.",
+  "Music Assistant did not list its sources. TuneBox will try when you save.": "Music Assistant gaf zijn bronnen niet door. TuneBox probeert het bij opslaan.",
+  "Not possible: none of your Music Assistant sources can suggest similar tracks.": "Niet mogelijk: geen van je Music Assistant-bronnen kan vergelijkbare nummers voorstellen.",
+  "Not possible: this Music Assistant version does not support it.": "Niet mogelijk: deze Music Assistant-versie ondersteunt het niet.",
+  "Not possible: playback control is off for TuneBox in Music Assistant.": "Niet mogelijk: afspeelbediening staat uit voor TuneBox in Music Assistant.",
+  "Not possible while TuneBox plays as part of another room or group.": "Niet mogelijk zolang TuneBox meespeelt in een andere ruimte of groep.",
+  "Music Assistant is not connected right now. Saved for when it reconnects.": "Music Assistant is nu niet verbonden. Opgeslagen voor als de verbinding terug is.",
+  "The check did not complete. Saved; TuneBox will try again.": "De controle is niet afgerond. Opgeslagen; TuneBox probeert het opnieuw."
 }
