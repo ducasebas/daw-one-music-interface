@@ -55,6 +55,19 @@ test('a notification opens the matching settings section with its category highl
  await expect(page.locator('[data-section=updates]')).toHaveAttribute('data-current','true');await expect(page.locator('[data-section=updates]')).toBeInViewport();
  await expect(page.getByRole('navigation',{name:'Settings categories'}).getByRole('button',{name:'System',exact:true})).toHaveAttribute('aria-current','page');
 });
+test('a tap on the progress bar seeks once to that spot and the bar does not snap back',async({page})=>{
+ const seeks=[];await page.route('**/api/event',async r=>{const e=r.request().postDataJSON();if(e.type==='seek')seeks.push(e);return r.continue();});
+ await page.goto(url);const seek=page.locator('.seek-control input');await expect(seek).toBeEnabled();
+ const box=await seek.boundingBox(),max=Number(await seek.getAttribute('max'));
+ await page.touchscreen.tap(box.x+10+(box.width-20)*.5,box.y+box.height/2);
+ await expect.poll(()=>seeks.length).toBe(1);expect(Math.abs(seeks[0].position-max/2)).toBeLessThanOrEqual(max*.03);
+ await page.waitForTimeout(600);expect(seeks).toHaveLength(1);
+ expect(Math.abs(Number(await seek.inputValue())-max/2)).toBeLessThanOrEqual(max*.03+2);
+ // Drag shows the preview time in the clock while the finger moves, and only the release seeks.
+ await page.mouse.move(box.x+box.width*.2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width*.3,box.y+box.height/2,{steps:3});
+ await expect(page.locator('.seek-control')).toHaveAttribute('data-dragging','true');expect(seeks).toHaveLength(1);
+ await page.mouse.up();await expect.poll(()=>seeks.length).toBe(2);await expect(page.locator('.seek-control')).not.toHaveAttribute('data-dragging','true');
+});
 test('seeking previews during drag, sends one final request and can be disabled in Playback',async({page})=>{
  const seeks=[];await page.route('**/api/event',async r=>{const e=r.request().postDataJSON();if(e.type==='seek')seeks.push(e);return r.continue();});
  await page.goto(url);const seek=page.locator('.seek-control input');await expect(seek).toBeEnabled();

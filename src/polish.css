@@ -32,3 +32,8 @@
 .music2[data-page="playing"]>.m2-content{overflow:hidden;scrollbar-width:none}
 .music2[data-page="playing"]>.m2-content::-webkit-scrollbar,.music2[data-page="playing"] .m2-playing *::-webkit-scrollbar{display:none}
 .music2[data-page="playing"] .m2-playing,.music2[data-page="playing"] .m2-playing>aside{scrollbar-width:none}
+
+/* 17 · Progress bar: a tall touch target, drag preview and one seek on release. */
+.seek-control input[type=range]{touch-action:none;cursor:pointer}
+.seek-control[data-dragging] input[type=range]{accent-color:var(--accent)}
+.seek-control[data-dragging] .m2-times>span:first-child{color:var(--accent);font-weight:600}
