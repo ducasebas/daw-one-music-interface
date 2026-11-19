@@ -2015,5 +2015,19 @@
   "Not possible while TuneBox plays as part of another room or group.": "Not possible while TuneBox plays as part of another room or group.",
   "Music Assistant is not connected right now. Saved for when it reconnects.": "Music Assistant is not connected right now. Saved for when it reconnects.",
   "The check did not complete. Saved; TuneBox will try again.": "The check did not complete. Saved; TuneBox will try again.",
-  "Endless: “Keep the music playing” is on by default. When your queue ends, Music Assistant adds similar tracks from sources such as Tidal, Spotify or YouTube Music. Switching it on first checks with Music Assistant whether it can work. It applies to this TuneBox only, never to other rooms.": "Endless: \"Keep the music playing\" is on by default. When your queue ends, Music Assistant adds similar tracks from sources such as Tidal, Spotify or YouTube Music. Switching it on first checks with Music Assistant whether it can work. It applies to this TuneBox only, never to other rooms."
+  "Music is waiting in the queue": "Music is waiting in the queue",
+  "{count} track is queued after the current one. Someone may have added it.": "{count} track is queued after the current one. Someone may have added it.",
+  "{count} tracks are queued after the current one. Someone may have added them.": "{count} tracks are queued after the current one. Someone may have added them.",
+  "After the current track; the queue stays": "After the current track; the queue stays",
+  "Add to the end": "Add to the end",
+  "The queue stays as it is": "The queue stays as it is",
+  "Save queue as playlist, then play": "Save queue as playlist, then play",
+  "Saving playlist…": "Saving playlist…",
+  "Keeps the current queue in Music Assistant": "Keeps the current queue in Music Assistant",
+  "Replace the queue": "Replace the queue",
+  "The waiting tracks are removed": "The waiting tracks are removed",
+  "Saved the queue as “{name}” ({count} tracks)": "Saved the queue as “{name}” ({count} tracks)",
+  "The queue has music waiting. Choose play next, add to the end, save it first, or replace it.": "The queue has music waiting. Choose play next, add to the end, save it first, or replace it.",
+  "Music Assistant could not save the queue as a playlist. Nothing was replaced.": "Music Assistant could not save the queue as a playlist. Nothing was replaced.",
+  "Queue: when music is already waiting in the queue, Play now first asks what you want: play next, add to the end, save the queue as a playlist and then play, or replace it. The phone remote asks too.": "Queue: when music is already waiting in the queue, Play now first asks what you want: play next, add to the end, save the queue as a playlist and then play, or replace it. The phone remote asks too."
 }

@@ -90,3 +90,20 @@ test('a player without native mute can still be muted from Now Playing',async({p
  state.playback.capabilities=['volume_set'];await page.reload();await page.getByRole('button',{name:'Now Playing',exact:true}).first().click();
  await expect(page.locator('.m2-player').getByRole('button',{name:/^(Mute|Unmute)$/})).toBeDisabled();
 });
+test('Play now asks before replacing a queue with music waiting, and can save it as a playlist first',async({page})=>{
+ const state=await live(page);const plays=[],saves=[];let waiting=2;
+ await page.route('**/api/library?*',r=>r.fulfill({json:{items:[{id:'t-1',type:'track',name:'New song',artist:'Artist',available:true}],hasMore:false}}));
+ await page.route('**/api/library/play',r=>{const b=r.request().postDataJSON();plays.push(b);if(b.option==='replace'&&!b.confirmReplace&&waiting)return r.fulfill({status:409,json:{error:'waiting',code:'queue-not-empty',upcoming:waiting}});return r.fulfill({json:state});});
+ await page.route('**/api/library/save-queue',r=>{saves.push(1);return r.fulfill({json:{saved:2,name:'TuneBox queue 2026-11-19 22:40'}});});
+ await page.goto(url);await page.locator('.m2-header').getByRole('button',{name:'Search',exact:true}).click();
+ const keyboard=page.getByRole('dialog',{name:'Touch keyboard',exact:true});await keyboard.getByLabel('Keyboard entry',{exact:true}).fill('new');
+ await keyboard.getByRole('region',{name:'Music suggestions',exact:true}).getByRole('button',{name:'New song Artist',exact:true}).click();
+ const ask=page.getByRole('dialog',{name:'Music is waiting in the queue',exact:true});await expect(ask).toBeVisible();await expect(ask).toContainText('2 tracks are queued');
+ await page.screenshot({path:'test-results/queue-choice.png'});
+ await ask.getByRole('button',{name:/^Play next/}).click();await expect(ask).not.toBeVisible();
+ expect(plays.map(p=>p.option+(p.confirmReplace?'!':''))).toEqual(['replace','next']);
+ await page.getByRole('button',{name:'Play New song',exact:true}).click();
+ await expect(ask).toBeVisible();await ask.getByRole('button',{name:/^Save queue as playlist/}).click();
+ await expect.poll(()=>plays.at(-1)).toEqual({id:'t-1',option:'replace',confirmReplace:true});expect(saves).toHaveLength(1);
+ await expect(page.getByText('Saved the queue as “TuneBox queue 2026-11-19 22:40” (2 tracks)')).toBeVisible();
+});

@@ -185,6 +185,7 @@ export function MusicShell({
       setMessage("");
     });
   };
+  useEffect(()=>{const show=e=>{if(typeof e.detail==='string')setMessage(e.detail.slice(0,200));};window.addEventListener('tunebox-notice',show);return()=>window.removeEventListener('tunebox-notice',show);},[]);
   const lastButtonWake=useRef(null);
   useEffect(()=>{
     const id=snapshot.navigation?.buttonWakeId;

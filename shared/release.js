@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.19-lively.3",
-  label: "GUI 3.11.2 · ENDLESS",
+  id: "2026.11.19-lively.4",
+  label: "GUI 3.11.3 · QUEUE",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Endless: “Keep the music playing” is on by default. When your queue ends, Music Assistant adds similar tracks from sources such as Tidal, Spotify or YouTube Music. Switching it on first checks with Music Assistant whether it can work. It applies to this TuneBox only, never to other rooms.",
+  notes: "Queue: when music is already waiting in the queue, Play now first asks what you want: play next, add to the end, save the queue as a playlist and then play, or replace it. The phone remote asks too.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

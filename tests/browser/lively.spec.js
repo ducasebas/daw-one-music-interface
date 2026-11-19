@@ -84,3 +84,18 @@ test('Inter is the interface font everywhere, Manrope Heavy is one tap away, and
  await fonts.getByRole('radio',{name:/^Manrope Heavy/}).click();await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('[data-saved=true]')).toBeVisible();
  expect((await(await page.request.get('/api/preferences')).json()).prefs.font).toBe('manrope-heavy');
 });
+test('the phone remote also asks before replacing a queue with music waiting',async({browser})=>{
+ const ctx=await browser.newContext({...devices['iPhone 13'],browserName:undefined,defaultBrowserType:undefined,baseURL:'http://127.0.0.1:5173'});const page=await ctx.newPage();
+ const view=remoteView({mode:'music-assistant',musicAssistant:{status:'connected',volumeLimit:40},preferences:{},playback:{connected:true,volume:20,index:0,queue:[{title:'Now'},{title:'Theirs'}]}});
+ const plays=[];
+ await page.route('**/api/remote/session',r=>r.fulfill({json:{paired:true}}));
+ await page.route('**/api/remote/events',r=>r.fulfill({contentType:'text/event-stream',body:'data: '+JSON.stringify(view)+'\n\n'}));
+ await page.route('**/api/remote/search*',r=>r.fulfill({json:{items:[{id:'t1',type:'track',name:'Mine',artist:'Me',available:true}],hasMore:false}}));
+ await page.route('**/api/remote/play',r=>{const b=r.request().postDataJSON();plays.push(b);if(b.option==='replace'&&!b.confirmReplace)return r.fulfill({status:409,json:{error:'waiting',code:'queue-not-empty',upcoming:1}});return r.fulfill({json:view});});
+ await page.goto('/remote.html');await page.getByRole('searchbox',{name:'Search music'}).fill('mine');await page.getByRole('button',{name:'Search',exact:true}).click();
+ await page.getByRole('button',{name:'Play now',exact:true}).click();
+ const sheet=page.getByRole('dialog',{name:'Music is waiting in the queue',exact:true});await expect(sheet).toContainText('1 track is queued');
+ await sheet.getByRole('button',{name:'Add to the end',exact:true}).click();await expect(sheet).toHaveCount(0);
+ expect(plays.map(p=>p.option+(p.confirmReplace?'!':''))).toEqual(['replace','add']);
+ await expect(page.locator('.remote-error')).toHaveCount(0);await ctx.close();
+});

@@ -425,9 +425,10 @@ app.post("/api/library/play", async (q, r) => {
   if (!library)
     return r.status(409).json({ error: "Live bibliotheek niet actief" });
   try {
-    await musicControl(()=>library.enqueue(q.body.id, q.body.option));
+    await musicControl(()=>library.enqueue(q.body.id, q.body.option, {confirmReplace:q.body.confirmReplace===true}));
     r.json(snapshot());
   } catch (e) {
+    if(e.code==='queue-not-empty')return r.status(409).json({error:e.message,code:e.code,upcoming:e.upcoming});
     runtime.record(Date.now(),'library-play-rejected',runtime.device.mode,e.message);
     debug.record('music','library-play-rejected',{code:Number.isFinite(e.code)?e.code:0});
     r.status(409).json({
@@ -436,6 +437,12 @@ app.post("/api/library/play", async (q, r) => {
         : e.message,
     });
   }
+});
+app.post('/api/library/save-queue',async(q,r)=>{
+  if(!library)return r.status(409).json({error:'Live library not active'});
+  if(!q.body||Object.keys(q.body).some(k=>k!=='name')||q.body.name!==undefined&&typeof q.body.name!=='string')return r.status(400).json({error:'Invalid playlist request'});
+  try{r.set('Cache-Control','no-store').json(await musicControl(()=>library.saveQueue(q.body.name)));}
+  catch(e){debug.record('music','save-queue-rejected',{});r.status(409).json({error:String(e.message).startsWith('Music Assistant')||/command|unknown/i.test(e.message)?'Music Assistant could not save the queue as a playlist. Nothing was replaced.':String(e.message).slice(0,160)});}
 });
 app.post('/api/library/favorite',async(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before changing favorites'});
@@ -610,9 +617,9 @@ app.get('/api/remote/search',async(q,r)=>{
 });
 app.post('/api/remote/play',async(q,r)=>{
  if(!remoteOnly(q,r))return;
- try{if(!library)throw Error('Search needs Music Assistant');if(!q.body||Object.keys(q.body).some(k=>!['id','option'].includes(k))||typeof q.body.id!=='string'||!remoteQueueOptions.includes(q.body.option))throw Error('Choose play now or add to queue');
-  await musicControl(()=>library.enqueue(q.body.id,q.body.option));debug.record('remote','library-'+q.body.option,{accepted:true});broadcast();r.json(remoteView(snapshot()));}
- catch(e){r.status(409).json({error:String(e.message).startsWith('Music Assistant')?'Music Assistant refused the request; it was not retried':String(e.message).slice(0,180)});}
+ try{if(!library)throw Error('Search needs Music Assistant');if(!q.body||Object.keys(q.body).some(k=>!['id','option','confirmReplace'].includes(k))||typeof q.body.id!=='string'||!remoteQueueOptions.includes(q.body.option)||q.body.confirmReplace!==undefined&&typeof q.body.confirmReplace!=='boolean')throw Error('Choose play now or add to queue');
+  await musicControl(()=>library.enqueue(q.body.id,q.body.option,{confirmReplace:q.body.confirmReplace===true}));debug.record('remote','library-'+q.body.option,{accepted:true});broadcast();r.json(remoteView(snapshot()));}
+ catch(e){if(e.code==='queue-not-empty')return r.status(409).json({error:e.message,code:e.code,upcoming:e.upcoming});r.status(409).json({error:String(e.message).startsWith('Music Assistant')?'Music Assistant refused the request; it was not retried':String(e.message).slice(0,180)});}
 });
 if(remote.phones.length)startRemoteServer().catch(e=>console.error('Remote control listener unavailable:',e.code||e.message));
 // Public documentation only; never expose the repository root or configuration.

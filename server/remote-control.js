@@ -14,7 +14,7 @@ import {sourceQuality} from '../shared/now-playing.js';
 const hash=value=>createHash('sha256').update(value).digest('hex');
 export const remoteLimits=Object.freeze({phones:8,pairMs:600000,volumeStep:10,nameLength:40});
 export const remoteEvents=Object.freeze(['play','pause','next','previous','volume','mute']);
-export const remoteQueueOptions=Object.freeze(['replace','add']);
+export const remoteQueueOptions=Object.freeze(['replace','next','add']);
 const cleanName=value=>typeof value==='string'?value.replace(/[\x00-\x1f\x7f<>]/g,'').trim().slice(0,remoteLimits.nameLength):'';
 
 export class RemoteAccess{
