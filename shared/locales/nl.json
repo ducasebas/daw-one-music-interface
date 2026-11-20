@@ -2218,5 +2218,12 @@
   "Measured": "Gemeten",
   "Failed": "Mislukt",
   "Stopped": "Gestopt",
-  "Picture & meter sync is more precise: it aligns on beats and transients, ignores the microphone’s start-up, and measures the screen delay without letting one slow frame widen the margin. Failed attempts now show why, also later. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.": "Beeld- en metersynchronisatie is nauwkeuriger: hij lijnt uit op beats en transiënten, negeert het opstarten van de microfoon en meet de schermvertraging zonder dat één trage frame de marge vergroot. Mislukte pogingen laten nu zien waarom, ook later. Vereist één keer “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” op de Pi."
+  "Picture & meter sync is more precise: it aligns on beats and transients, ignores the microphone’s start-up, and measures the screen delay without letting one slow frame widen the margin. Failed attempts now show why, also later. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.": "Beeld- en metersynchronisatie is nauwkeuriger: hij lijnt uit op beats en transiënten, negeert het opstarten van de microfoon en meet de schermvertraging zonder dat één trage frame de marge vergroot. Mislukte pogingen laten nu zien waarom, ook later. Vereist één keer “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” op de Pi.",
+  "Clock": "Klok",
+  "Power": "Vermogen",
+  "Play it now": "Nu afspelen",
+  "Keep the queue": "Wachtrij behouden",
+  "Save the queue as a playlist, then play": "Wachtrij opslaan als afspeellijst en daarna afspelen",
+  "Recommended · the waiting tracks stay in Music Assistant": "Aanbevolen · de wachtende nummers blijven bewaard in Music Assistant",
+  "Replace the queue and play": "Wachtrij vervangen en afspelen"
 }

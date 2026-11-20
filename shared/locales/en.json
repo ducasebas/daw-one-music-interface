@@ -2218,5 +2218,12 @@
   "Measured": "Measured",
   "Failed": "Failed",
   "Stopped": "Stopped",
-  "Picture & meter sync is more precise: it aligns on beats and transients, ignores the microphone’s start-up, and measures the screen delay without letting one slow frame widen the margin. Failed attempts now show why, also later. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.": "Picture & meter sync is more precise: it aligns on beats and transients, ignores the microphone’s start-up, and measures the screen delay without letting one slow frame widen the margin. Failed attempts now show why, also later. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi."
+  "Picture & meter sync is more precise: it aligns on beats and transients, ignores the microphone’s start-up, and measures the screen delay without letting one slow frame widen the margin. Failed attempts now show why, also later. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.": "Picture & meter sync is more precise: it aligns on beats and transients, ignores the microphone’s start-up, and measures the screen delay without letting one slow frame widen the margin. Failed attempts now show why, also later. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.",
+  "Clock": "Clock",
+  "Power": "Power",
+  "Play it now": "Play it now",
+  "Keep the queue": "Keep the queue",
+  "Save the queue as a playlist, then play": "Save the queue as a playlist, then play",
+  "Recommended · the waiting tracks stay in Music Assistant": "Recommended · the waiting tracks stay in Music Assistant",
+  "Replace the queue and play": "Replace the queue and play"
 }

@@ -91,6 +91,8 @@ export function AudioPlot({audio,mode='spectrum',bands=32,offline=false,referenc
  const levels=mode==='spectrum'?values.map(db=>db===null?0:Math.max(0,Math.min(1,(db+72)/72))):channels.map(c=>mode==='vu'?meterFraction(c.rmsDb-reference,'vu'):mode==='bars'?Math.max(0,Math.min(1,(c.peakDb+60)/60)):meterFraction(c.peakDb,'meters'));
  const motion=useMeterMotion(levels);
  const visible=!!measurement||resting;
+ // The owner switched analysis off on purpose: no reminder in their face, just no meters.
+ if(!visible&&!offline&&audio?.status==='disabled')return null;
  return <section className="real-audio" data-style={mode} data-delay-ms={visualizerDelay(timing)} data-captured-at={measurement?.capturedAt??''} data-resting={resting&&!measurement} aria-label={tr('Real audio measurement')}>
  {visible?<>
   {mode==='spectrum'?<><svg className="audio-spectrum" viewBox="0 0 640 244" role="img" aria-label={tr('Audio spectrum')+' · '+bands+' '+tr('bands')} preserveAspectRatio="none">{values.map((db,i)=><rect ref={node=>motion.current[i]=node} key={i} className={db===null?'audio-band unresolved':'audio-band'} x={i*640/values.length+2} y="0" width={640/values.length-5} height="244" style={{transformOrigin:`${i*640/values.length}px 244px`,transform:'scaleY(max(.006, var(--level, 0)))'}}/>)}</svg><div className="audio-frequencies" aria-hidden="true"><span>20 Hz</span><span>1 kHz</span><span>20 kHz</span></div></>
