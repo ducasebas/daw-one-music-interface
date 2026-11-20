@@ -27,8 +27,10 @@ show_holes  = true;
 // One 58 x 49 M2.5 pattern carries the stack. Plate coordinates (seen from outside):
 // the Pi's USB/Ethernet end points to +X, the GPIO edge points DOWN (toward the I/O cap), so
 // the HAT's power/output edge faces the top wall and the Pi's top edge stays clear of the button.
-// Depth from the plate's inner face: 10 mm standoff, HAT 1.6, 11 mm header spacing, Pi 1.4,
-// Pi underside 2 = 26 mm (Louder lists the HAT as 20 mm high on the Pi).
+// The HAT's component side (SMD GPIO socket, inductors, DC jack body) faces the Pi; its flat,
+// labelled back faces the plate. Depth from the plate's inner face: 4 mm standoff (room for a
+// thermal pad under the amplifier's via field) + 20 mm HAT (Louder's listed height) + Pi 1.4
+// + Pi underside 2 = 27.4 mm.
 stack_x0    = 73.68;    // hole column on the Pi SD-card end
 stack_y0    = 28.09;    // hole row on the GPIO edge (HAT 1.0 mm above the I/O cap)
 stack_dx    = 58.0;
@@ -67,14 +69,17 @@ module backplate() {
 // Reference envelopes on the inner face (Z < 0), measured from the hole pattern
 module stack_envelopes() {
     // Pi 3B+ PCB 85 x 56; holes 3.5 from the SD end and both long edges. +3 mm USB/Ethernet
-    // overhang on the +X end, +2.5 mm SD card on the -X end. Z: underside -26, ports reach -7.
-    color("green", 0.5) translate([stack_x0 - 3.5 - 2.5, stack_y0 - 3.5, -26])
-        cube([85 + 3 + 2.5, 56, 19]);
+    // overhang on the +X end, +2.5 mm SD card on the -X end. Z: underside -27.4, PCB top -24,
+    // USB/Ethernet (not under the HAT) up to -8.4.
+    color("green", 0.5) translate([stack_x0 - 3.5 - 2.5, stack_y0 - 3.5, -27.4])
+        cube([85 + 3 + 2.5, 56, 3.4]);
+    color("green", 0.5) translate([stack_x0 - 3.5 + 65, stack_y0 - 3.5, -24])
+        cube([20 + 3, 56, 15.6]);
     // Louder HAT Plus 1X PCB 65 x 61.38; holes 3.5 from the ends, 4.09 from the GPIO edge (down),
-    // 8.29 from the connector edge (up) plus 0.64 connector overhang. Z: PCB -11.6..-10,
-    // inductors toward the plate up to -2.3.
-    color("royalblue", 0.5) translate([stack_x0 - 3.5, stack_y0 - 4.09, -11.6])
-        cube([65, 61.38 + 0.64, 9.3]);
+    // 8.29 from the connector edge (up: DC jack + 4-pole 5.0 mm speaker terminal) plus 0.64
+    // overhang. Listed 20 mm high from the Pi's PCB top to its back face at Z = -4.
+    color("royalblue", 0.5) translate([stack_x0 - 3.5, stack_y0 - 4.09, -24])
+        cube([65, 61.38 + 0.64, 20]);
 }
 
 // 2D profile for DXF: outline plus through-hole circles (countersinks go on the drawing/STEP)
