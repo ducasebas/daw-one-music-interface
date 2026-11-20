@@ -276,6 +276,9 @@ for(const height of [800,400])test(`explicit source discovery refreshes cached 6
 test('failed source discovery stays actionable without sending a power request or saving any setting',async({page})=>{
  const f=await fixture(page,{sourceQuery:true,discoveryError:'Source capabilities were not confirmed; no power request was sent'});await open(page);
  await page.getByRole('button',{name:'Set up offered power',exact:true}).click();
+ // The reason stays on screen in its own window until closed (owner: "a very short popup, but no negotiation").
+ const failed=page.getByRole('dialog',{name:'Power setup could not start',exact:true});await expect(failed.getByRole('alert')).toContainText('Source capabilities were not confirmed');await expect(failed).toContainText('No power request was sent');
+ await failed.getByRole('button',{name:'OK',exact:true}).click();await expect(failed).toHaveCount(0);
  await expect(page.locator('.power-configuration').getByRole('alert')).toContainText('Source capabilities were not confirmed');await expect(page.getByRole('dialog',{name:'20 V power setup',exact:true})).toHaveCount(0);
  await expect(page.getByRole('button',{name:'Set up offered power',exact:true})).toBeEnabled();expect(f.discoveries).toHaveLength(1);expect(f.requests).toHaveLength(0);expect(f.writes).toHaveLength(0);
 });
@@ -335,4 +338,10 @@ test('owner Pi 20 Nov: power setup installed while the page was open is found ag
  installed=true;await page.getByRole('region',{name:'Power supply status'}).getByRole('button',{name:'Check again',exact:true}).click();
  await expect(button).toBeEnabled();await button.click();
  await expect.poll(()=>f.discoveries.length).toBe(1);expect(f.requests).toHaveLength(0);
+});
+test('a refused source query while music plays says so in a window and sends nothing',async({page})=>{
+ const f=await fixture(page,{sourceQuery:true,discoveryError:'Pause playback and finish audio tests before power setup'});await open(page);
+ await page.getByRole('button',{name:'Set up offered power',exact:true}).click();
+ const failed=page.getByRole('dialog',{name:'Power setup could not start',exact:true});await expect(failed.getByRole('alert')).toHaveText('Pause playback and finish audio tests before power setup');
+ expect(f.requests).toHaveLength(0);expect(f.writes).toHaveLength(0);
 });

@@ -51,7 +51,7 @@ export function PowerReadouts({power,requiredWatts=100,offline=false,advanced=tr
 
 export function PowerMonitoring({power,offline=false,onDirty,actionsRef,pending=false,onVerifiedWatts,advanced=false,onOpenAdvanced}){
  const device=useDeviceUpdates(),[info,setInfo]=useState(null),[base,setBase]=useState(null),[draft,setDraft]=useState(null),[loading,setLoading]=useState(false),[saving,setSaving]=useState(false),[error,setError]=useState(''),[retry,setRetry]=useState(0);
- const [setup,setSetup]=useState(null),[cable,setCable]=useState(false),[cable5A,setCable5A]=useState(false),[startup,setStartup]=useState(false),[threshold,setThreshold]=useState(true),[requesting,setRequesting]=useState(false),[discovering,setDiscovering]=useState(false),[discovered,setDiscovered]=useState(null),[success,setSuccess]=useState(null);
+ const [setup,setSetup]=useState(null),[cable,setCable]=useState(false),[cable5A,setCable5A]=useState(false),[startup,setStartup]=useState(false),[threshold,setThreshold]=useState(true),[requesting,setRequesting]=useState(false),[discovering,setDiscovering]=useState(false),[discovered,setDiscovered]=useState(null),[failure,setFailure]=useState(''),[success,setSuccess]=useState(null);
  const generation=useRef(0),savingRef=useRef(false);
  const dirty=!!base&&!!draft&&JSON.stringify(base)!==JSON.stringify(draft);
  const token=device?.info?.controlToken,live=usePowerReadings(power,offline),queried=usePowerReadings(discovered,offline);
@@ -104,7 +104,7 @@ export function PowerMonitoring({power,offline=false,onDirty,actionsRef,pending=
    const value=await device.action('power-discover-20v'),target=offeredPdProfile(value.discoveredPd);
    if(value.sourceCapabilitiesQueried!==true||!target||!powerIsFresh(value.discoveredPd))throw Error('Source capabilities were not confirmed; no power request was sent');
    setDiscovered(value.discoveredPd);setInfo(value);setSetup(target);
-  }catch(e){setError(e.message);await readFailureInfo();}
+  }catch(e){setError(e.message);setFailure(e.message);await readFailureInfo();}
   finally{savingRef.current=false;setDiscovering(false);}
  }
  async function requestPower(){
@@ -147,6 +147,7 @@ export function PowerMonitoring({power,offline=false,onDirty,actionsRef,pending=
    {success&&<p className="power-pd-success" role="status"><Icon name="check" size={24}/>{translateFormat('Verified {watts} W at 20 V / {amps} A. This is capacity, not consumption.',success)}</p>}
   </div>
   {error&&!setup&&<p className="power-error" role="alert">{tr(error)}</p>}
+  {failure&&!discovering&&!setup&&<Modal label="Power setup could not start" onCancel={()=>setFailure('')} className="power-pd-dialog"><header><h3>{tr('Power setup could not start')}</h3></header><div className="power-pd-body"><p role="alert">{tr(failure)}</p><p>{tr('No power request was sent. The supply keeps its current contract.')}</p></div><footer><button onClick={()=>setFailure('')}>{tr('OK')}</button></footer></Modal>}
   {discovering&&<Modal label="20 V power setup" className="power-pd-dialog"><header><h3>{tr('20 V power setup')}</h3></header><div className="power-pd-body"><p role="status" aria-live="polite"><span className="ui-spinner"/>{tr('Querying the connected power supply…')}</p><p>{tr('No power profile is selected during discovery.')}</p></div></Modal>}
   {setup&&<Modal label="20 V power setup" onCancel={closeSetup} className="power-pd-dialog">
    <header><h3>{tr('20 V power setup')}</h3><p className="power-pd-target">{translateFormat('Verify {watts} W at 20 V / {amps} A',setup)}</p></header>

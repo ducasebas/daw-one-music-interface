@@ -102,3 +102,11 @@ test("the player's PCM export survives the end of a login session (logind Remove
   // Only where analysis was installed, and the player restarts only when its export is already gone.
   assert.match(refresh, /90-tunebox-analysis\.conf \]\]; then[\s\S]*RemoveIPC=no[\s\S]*compgen -G '\/dev\/shm\/squeezelite-\*'[\s\S]*systemctl restart tunebox-player\.service/);
 });
+test("the device manager journals refused actions with their reason, not only accepted ones", async () => {
+  const { readFileSync } = await import("node:fs");
+  const s = readFileSync("deploy/manager/service.mjs", "utf8");
+  assert.match(s, /result:'accepted'/);
+  assert.match(s, /result:'rejected',error:message/);
+  // Only the command name and the bounded message: never the request arguments.
+  assert.doesNotMatch(s, /result:'rejected'[^}]*args/);
+});

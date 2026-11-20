@@ -10,7 +10,10 @@ netServer(connection=>{
  let raw='',handled=false;connection.setTimeout(30000,()=>connection.destroy());
  connection.on('error',()=>{});
  connection.on('data',async chunk=>{if(handled)return;raw+=chunk;if(raw.length>8192)return connection.destroy();if(!raw.includes('\n'))return;handled=true;
-  try{const request=JSON.parse(raw.split('\n')[0]);const result=await manager.request(request);if(request.command!=='status')console.log(JSON.stringify({component:'tunebox-manager',action:request.command,result:'accepted'}));connection.end(JSON.stringify({ok:true,result})+'\n');}catch(error){connection.end(JSON.stringify({ok:false,error:String(error.message).slice(0,180)})+'\n');}
+  try{const request=JSON.parse(raw.split('\n')[0]);const result=await manager.request(request);if(request.command!=='status')console.log(JSON.stringify({component:'tunebox-manager',action:request.command,result:'accepted'}));connection.end(JSON.stringify({ok:true,result})+'\n');}catch(error){const message=String(error.message).slice(0,180);let command=null;try{command=JSON.parse(raw.split('\n')[0]).command;}catch{}
+   // Refusals are logged too (fixed messages, no arguments), so 'nothing happened' can be diagnosed from the journal.
+   if(typeof command==='string'&&/^[a-z0-9-]{1,40}$/.test(command)&&command!=='status')console.log(JSON.stringify({component:'tunebox-manager',action:command,result:'rejected',error:message}));
+   connection.end(JSON.stringify({ok:false,error:message})+'\n');}
  });
 }).listen(socket,()=>chmodSync(socket,0o660));
 createProgressServer({frameReady:()=>{const p='/run/daw-one-display/ready.json';if(!existsSync('/run/daw-one-display'))return;writeFileSync(p+'.frame.tmp',JSON.stringify({ready:true,observedAt:Date.now()})+'\n',{mode:0o660});renameSync(p+'.frame.tmp',p);},getStatus:()=>updateStatus(),isAppReady:async()=>{try{const response=await fetch('http://127.0.0.1:3001/api/health',{signal:AbortSignal.timeout(1000)});return response.ok&&(await response.json()).ok===true;}catch{return false;}}}).listen(3002,'127.0.0.1');
