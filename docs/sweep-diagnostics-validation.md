@@ -43,7 +43,7 @@ Earlier hypothesis (ruled out by the owner's output): the Pi still running the 3
 | Start-up burst | See above: level check above 150 Hz against the quietest reference, windowed DC-free SNR, 0.4 s microphone settle time before the sweep, `startBurstDbfs` and `settling` in the diagnostics. |
 | Late output | The lag search was −0.3…+1.0 s; it is now −0.3…+2.5 s. A DAC/ALSA start-up delay above 1 s used to be reported as "not detected". |
 | Capture length | 5 s → 7 s, so a late sweep is not cut off. The progress estimates were raised to match (+2 s per channel). |
-| Older analyser | `measurementAnalyserVersion` (in `shared/room-measurement.js`) is written into every result. Results show a notice when the result has no diagnostics or comes from a different analyser version: "run `sudo bash deploy/update-appliance.sh --apply` once on the Pi". |
+| Older analyser | `measurementAnalyserVersion` (in `shared/room-measurement.js`) is written into every result. Results show a notice when the result has no diagnostics or comes from a different analyser version: "run `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply` once on the Pi". |
 | Results screen | Per channel: plain-language reasons (late/cut off, no clear peak, middle/high part too quiet, clipping) and a "Technical details" section with every check. No audio is stored; the raw recording is still deleted after analysis. |
 
 The detection thresholds (prominence ≥ 12, middle/high thirds > 2× lead-in power, SNR ≥ 15 dB, clipping < 0.1 %) are unchanged.
@@ -61,8 +61,21 @@ Screenshot: [images/sweep-diagnostics/results-diagnosis.png](images/sweep-diagno
 
 ## Not observed on the Pi
 
-- A new sweep on the Pi with this analyser (after `sudo bash deploy/update-appliance.sh --apply`), and its real SNR.
+- A new sweep on the Pi with this analyser (after `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply`), and its real SNR.
 - Whether the start-up burst is the real cause; the 3.9.2 result has no per-check values, so this is inferred from prominence, delay and the negative fallback SNR.
 - The real output latency on the Louder HAT.
 
-These changes reach the Pi only through `sudo bash deploy/update-appliance.sh --apply`, not through OTA alone. The GUI part (reasons, notice) does come through OTA.
+These changes reach the Pi only through `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply`, not through OTA alone. The GUI part (reasons, notice) does come through OTA.
+
+## 3.14.2: idle clock fault blocked the sweep (owner's Pi, 20 November 2026)
+
+After the 3.14.1 host refresh, the sweep showed a countdown but played nothing. The owner sent read-only output:
+- `journalctl -u daw-one-measurement`: since 20 November the `ExecStartPre` preparation fails within a second ("Audio restoration or preparation failed"). The sweeps on 19 November ran normally.
+- `amixer -c LouderRaspberry contents`: exit 0, gains 0 dB, Digital Volume 103, and **`Fault Clock` = on** with every other fault off.
+- `dmesg`: as soon as a stream starts, the tas58xx driver reports "Clock fault", clears it and plays. Normal music works.
+
+Cause: the TAS5825 latches a clock fault whenever no I²S clock runs, which means whenever nothing plays. `prepareMeasurement` refused to start on any active fault. On 19 November the clock had probably still been running; on 20 November music was paused for the refresh. The same check silently skipped the startup sound and blocked Bluetooth volume increases and automatic DSP while the amplifier was idle.
+
+Fix: `blockingFaults()` in `deploy/manager/dsp.mjs` ignores only `Fault Clock`. Overcurrent, DC, temperature, supply and memory faults still block. It is used by the measurement, Bluetooth, the startup sound and automatic DSP; the Louder DSP screen no longer shows the idle clock notice as an alert. The preparation step now logs its actual reason. Commands in the GUI and docs use the full path `/opt/daw-one/deploy/update-appliance.sh`, because the short path did not work on the Pi.
+
+Test: `measurement-quality.test.js` parses the owner's amixer fault lines. A sweep with only the idle clock fault prepares; one with `Fault PVDD Undervoltage` is still refused.

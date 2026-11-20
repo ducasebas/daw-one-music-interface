@@ -22,7 +22,7 @@ New or changed tests: `release.test.js` (startup title), `search-suggest.test.js
 
 - Footer volume, 3 px outlines and the absence of a scrollbar on the real DSI panel; touch scrubbing on the real panel.
 - Startup title readability over the splash on the panel.
-- Reboot and service restart on real hardware. These need a one-time host-helper refresh (`sudo bash deploy/update-appliance.sh --apply`); until then the buttons stay disabled with an explanation. No reboot or restart was performed here.
+- Reboot and service restart on real hardware. These need a one-time host-helper refresh (`sudo bash /opt/daw-one/deploy/update-appliance.sh --apply`); until then the buttons stay disabled with an explanation. No reboot or restart was performed here.
 - The "Update installed" notice after a real OTA restart.
 - Search debounce and cache against a real Music Assistant server.
 

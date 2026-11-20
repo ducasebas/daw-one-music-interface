@@ -117,3 +117,14 @@ test('owner Pi 19 Nov: a real sweep after a slow USB-microphone start-up burst i
  // Quiet here (rumble), so the honest outcome is "too quiet by N dB", not "not detected".
  assert.deepEqual(pi.diagnostics.failed,['snr']);assert.ok(pi.neededDb>0);assert.ok(!pi.warnings.some(w=>w.startsWith('A complete reference sweep')));
 });
+test('owner Pi 20 Nov: an idle "Fault Clock" does not block a sweep; real amplifier faults still do',async()=>{
+ const {blockingFaults,parseDsp}=await import('../deploy/manager/dsp.mjs');
+ // Real amixer output shape from the owner's Pi while nothing played: the clock fault is latched until a stream starts.
+ const amixer=["numid=9,iface=MIXER,name='Fault Clock'\n  ; type=BOOLEAN,access=r--v----,values=1\n  : values=on","numid=4,iface=MIXER,name='Fault Left Channel OC'\n  ; type=BOOLEAN,access=r--v----,values=1\n  : values=off"].join('\n');
+ const idle=parseDsp(amixer).faults;assert.deepEqual(idle.filter(f=>f.active).map(f=>f.name),['Fault Clock']);assert.deepEqual(blockingFaults(idle),[]);
+ assert.equal(blockingFaults([{name:'Fault Left Channel OC',active:true},{name:'Fault Clock',active:true}]).length,1);
+ const make=faults=>{let journal=null;const controls=Array.from({length:15},(_,i)=>({id:i+1,name:String(30+i*100).padStart(5,'0'),value:0,min:-15,max:15}));
+  return {run:async()=>'',dsp:{get:async()=>({supported:true,faults,controls}),set:async()=>{}},read:()=>journal,write:v=>{journal=v;},clear:()=>{journal=null;},output:'plughw:CARD=LouderRaspberry,DEV=0'};};
+ await prepareMeasurement(make(idle));
+ await assert.rejects(prepareMeasurement(make([{name:'Fault PVDD Undervoltage',active:true},...idle])),/Resolve amplifier faults/);
+});

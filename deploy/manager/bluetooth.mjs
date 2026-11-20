@@ -2,7 +2,7 @@ import {existsSync,rmSync} from 'node:fs';
 import {uptime} from 'node:os';
 import {randomUUID} from 'node:crypto';
 import {atomicJson,readJson} from './io.mjs';
-import {dspController} from './dsp.mjs';
+import {dspController,blockingFaults} from './dsp.mjs';
 import {bluetoothGainChanges} from '../../shared/bluetooth.js';
 const units=['tunebox-player.service','squeezelite.service'];
 export function bluetoothController({run,directory='/run/daw-one-bluetooth',journal='/var/lib/daw-one-manager/bluetooth-restore.json',configuration='/etc/daw-one/bluetooth.json',dsp=dspController({run}),write=atomicJson,read=readJson,remove=path=>rmSync(path,{force:true}),exists=existsSync}={}){
@@ -16,7 +16,7 @@ export function bluetoothController({run,directory='/run/daw-one-bluetooth',jour
   async start(limit){
    const config=read(configuration,{});if(!config.verified||config.output!=='plughw:CARD=LouderRaspberry,DEV=0')throw Error('Install and verify the local Bluetooth receiver first');
    if(session())throw Error('Bluetooth is active or needs restoration; switch back to Music Assistant first');
-   const current=await dsp.get(),controls=current.controls;if(!current.supported||current.faults.some(f=>f.active))throw Error('Resolve amplifier faults first');
+   const current=await dsp.get(),controls=current.controls;if(!current.supported||blockingFaults(current.faults).length)throw Error('Resolve amplifier faults first');
    const safe=bluetoothGainChanges(controls,controls,0,limit),saved={schema:1,sessionId:randomUUID(),units:[],controls:controls.filter(c=>/^Channel (Left|Right) Gain$/.test(c.name)),volume:0,limit};
    for(const unit of units)if((await service('is-active',unit).catch(()=>'')).trim()==='active')saved.units.push(unit);
    write(journal,saved);source({active:true,sessionId:saved.sessionId,phase:'starting',volume:0,limit});
@@ -42,7 +42,7 @@ export function bluetoothController({run,directory='/run/daw-one-bluetooth',jour
   },
   async volume(value,limit,sessionId){
    const saved=session();if(!saved||saved.sessionId!==sessionId)throw Error('Bluetooth source changed; adjust the current volume again');
-   const ceiling=Math.min(saved.limit,limit),current=await dsp.get();if(current.faults.some(f=>f.active))throw Error('Resolve amplifier faults before increasing volume');
+   const ceiling=Math.min(saved.limit,limit),current=await dsp.get();if(blockingFaults(current.faults).length)throw Error('Resolve amplifier faults before increasing volume');
    await dsp.set(bluetoothGainChanges(current.controls,saved.controls,value,ceiling));
    write(journal,{...saved,volume:value,limit:ceiling});source({active:true,sessionId:saved.sessionId,phase:'active',volume:value,limit:ceiling});return {saved:true,volume:value};
   },

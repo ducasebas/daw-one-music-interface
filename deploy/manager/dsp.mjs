@@ -9,6 +9,11 @@ export function equalizerOnValue(control){
  }
  throw Error('Equalizer labels are unavailable; check the Louder device update before applying room correction');
 }
+/** "Fault Clock" is latched whenever no I²S clock runs, i.e. whenever nothing plays; the driver clears it
+ * when a stream starts (owner's Pi, 20 Nov 2026). Only real faults (overcurrent, DC, temperature, supply,
+ * memory) block audio actions. */
+export const idleFaults=Object.freeze(['Fault Clock']);
+export function blockingFaults(faults){return (Array.isArray(faults)?faults:[]).filter(f=>f?.active&&!idleFaults.includes(f.name));}
 export function parseDsp(text){
  const controls=[],faults=[];
  for(const block of String(text).split(/(?=^numid=)/m)){
