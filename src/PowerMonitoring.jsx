@@ -89,10 +89,16 @@ export function PowerMonitoring({power,offline=false,onDirty,actionsRef,pending=
  function closeSetup(){if(!savingRef.current){setSetup(null);if(error)setRetry(value=>value+1);}}
  async function readFailureInfo(){try{setInfo(await device.action('power-status'));}catch{/* Keep the original actionable failure. */}}
  async function openSetup(){
-  if(disabled||dirty||savingRef.current||!token)return;
+  // Never refuse silently: say why the setup cannot start.
+  if(dirty){setError('Save or cancel your changes before starting power setup.');return;}
+  if(!token){setError('Reload TuneBox before power setup.');return;}
+  if(disabled||savingRef.current){setError('Power setup is busy or unavailable right now. Wait a moment and try again.');return;}
   setCable(false);setCable5A(false);setStartup(false);setThreshold(true);setError('');
-  if(!info.sourceDiscoverySupported){if(supportedProfile)setSetup({...profile});return;}
-  if(!canDiscover)return;
+  // The helper may have been installed after this page opened: read its capabilities again first.
+  let current=info;try{current=await device.action('power-status');setInfo(current);}catch{}
+  if(!current?.supported){setError('Power monitoring needs the complete device update.');return;}
+  if(!current.sourceDiscoverySupported){if(supportedProfile)setSetup({...profile});else setError(current.negotiationSupported?'This helper supports 100 W only. Complete the device update to set up a lower offered profile.':'Complete the device update to install power setup.');return;}
+  if(!canDiscover){setError(pd?.status!=='active'?'The power contract is not readable right now. Check that HUSB238 reading is on and the adapter is connected.':'The adapter is not delivering 20 V at the moment, so the offers cannot be checked.');return;}
   savingRef.current=true;setDiscovering(true);
   try{
    const value=await device.action('power-discover-20v'),target=offeredPdProfile(value.discoveredPd);
@@ -131,6 +137,7 @@ export function PowerMonitoring({power,offline=false,onDirty,actionsRef,pending=
   <div className="power-pd-setup">
    <div><h4>{tr('20 V power setup')}</h4><p>{tr('Request the offered 20 V profile once, then verify the active voltage and current. A 60 W profile does not require a 100 W offer.')}</p>{profile&&<p className="power-pd-target">{translateFormat('{watts} W offered at 20 V / {amps} A',profile)}</p>}</div>
    <button type="button" disabled={disabled||dirty||!token||!(canDiscover||supportedProfile)} onClick={openSetup}>{tr('Set up offered power')}</button>
+   {!loading&&!dirty&&info?.supported&&!(canDiscover||supportedProfile)&&<p className="power-setup-blocked" role="status">{tr(!token?'Reload TuneBox before power setup.':!info.negotiationSupported?'Complete the device update to install power setup.':pd?.status!=='active'?'The power contract is not readable right now. Check that HUSB238 reading is on and the adapter is connected.':pd.volts!==20?'The adapter is not delivering 20 V at the moment, so the offers cannot be checked.':'Waiting for a fresh active 20 V rail with an offered profile of at least 60 W.')} <button type="button" disabled={offline||loading} onClick={()=>setRetry(v=>v+1)}>{tr('Check again')}</button></p>}
    {info?.sourceDiscoverySupported&&<p>{tr('Power setup queries the connected source again before choosing its highest offered 20 V current.')}</p>}
    {dirty&&<p>{tr('Save or cancel your changes before starting power setup.')}</p>}
    {!loading&&info?.supported&&!info.profileRequestSupported&&<p>{tr(info.negotiationSupported?'This helper supports 100 W only. Complete the device update to set up a lower offered profile.':'Complete the device update to install power setup.')}</p>}

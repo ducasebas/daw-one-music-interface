@@ -2,6 +2,17 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
+## GUI 3.15.2 HOTFIX — approved
+
+On 20 November 2026 the owner approved this update with "ja en dan pushen als alles klaar is" (yes, then push when everything is ready). It came after the owner asked to fix the 100 W issue first and had been told about the other changes. Scope: release `2026.11.20-hotfix.3`, cache 65:
+- the power setup explains why it cannot start and can re-read the helper capabilities;
+- logind `RemoveIPC=no` keeps the player's PCM export;
+- no "analysis off" reminder when the owner switched analysis off;
+- no duplicate Now Playing heading;
+- a clearer queue choice.
+
+See [hotfix-3-15-2.md](hotfix-3-15-2.md). The audio analysis fix needs `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply` and a restart on the Pi. The approval does not cover live power experiments; the 100 W request remains the owner's own confirmed action.
+
 ## GUI 3.15.1 SYNC — published
 
 Merged via PR #18 as `9c5620d5dbe5e71c638c8d4b9539be284c3e7428` on 20 November 2026 after all six PR CI jobs passed. Verify on `main` (run 44747531138) passed. Publish signed preview (run 44748600414) signed and published release `ota-preview-9c5620d5dbe5e71c638c8d4b9539be284c3e7428`. Its public channel check got HTTP 403 from the unauthenticated GitHub API on the shared runner, so the failed job was re-run once.

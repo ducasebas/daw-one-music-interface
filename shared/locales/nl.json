@@ -2218,7 +2218,6 @@
   "Measured": "Gemeten",
   "Failed": "Mislukt",
   "Stopped": "Gestopt",
-  "Picture & meter sync is more precise: it aligns on beats and transients, ignores the microphone’s start-up, and measures the screen delay without letting one slow frame widen the margin. Failed attempts now show why, also later. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.": "Beeld- en metersynchronisatie is nauwkeuriger: hij lijnt uit op beats en transiënten, negeert het opstarten van de microfoon en meet de schermvertraging zonder dat één trage frame de marge vergroot. Mislukte pogingen laten nu zien waarom, ook later. Vereist één keer “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” op de Pi.",
   "Clock": "Klok",
   "Power": "Vermogen",
   "Play it now": "Nu afspelen",
@@ -2226,5 +2225,10 @@
   "Save the queue as a playlist, then play": "Wachtrij opslaan als afspeellijst en daarna afspelen",
   "Recommended · the waiting tracks stay in Music Assistant": "Aanbevolen · de wachtende nummers blijven bewaard in Music Assistant",
   "Replace the queue and play": "Wachtrij vervangen en afspelen",
-  "No Squeezelite PCM export · restart the player or TuneBox; a closed login session may have removed it": "Geen Squeezelite PCM-export · herstart de speler of TuneBox; een afgesloten inlogsessie kan de export hebben verwijderd"
+  "No Squeezelite PCM export · restart the player or TuneBox; a closed login session may have removed it": "Geen Squeezelite PCM-export · herstart de speler of TuneBox; een afgesloten inlogsessie kan de export hebben verwijderd",
+  "Reload TuneBox before power setup.": "Herlaad TuneBox voordat je het vermogen instelt.",
+  "Power setup is busy or unavailable right now. Wait a moment and try again.": "Vermogen instellen is nu bezig of niet beschikbaar. Wacht even en probeer opnieuw.",
+  "The power contract is not readable right now. Check that HUSB238 reading is on and the adapter is connected.": "Het vermogenscontract is nu niet leesbaar. Controleer of het uitlezen van de HUSB238 aanstaat en de adapter is aangesloten.",
+  "The adapter is not delivering 20 V at the moment, so the offers cannot be checked.": "De adapter levert nu geen 20 V, dus de aanbiedingen kunnen niet worden gecontroleerd.",
+  "Power setup explains why it cannot start and can check again without reopening Settings. Audio analysis keeps working after an SSH session ends. Now Playing loses its duplicate heading, meters stay empty when you switched analysis off, and the queue choice is clearer. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” and a restart once on the Pi for the audio analysis fix.": "Vermogen instellen legt uit waarom het niet kan starten en kan opnieuw controleren zonder Instellingen te heropenen. Audiometing blijft werken nadat een SSH-sessie eindigt. Speelt nu verliest de dubbele kop, meters blijven leeg als je de meting zelf hebt uitgezet, en de wachtrijkeuze is duidelijker. Vereist één keer “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” en een herstart op de Pi voor de audiometing."
 }
