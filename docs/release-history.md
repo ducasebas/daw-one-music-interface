@@ -2,7 +2,28 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.15.0 GUIDE — approved
+## GUI 3.15.1 SYNC — approved
+
+On 20 November 2026 the owner approved this update with "ja push maar". Scope: release `2026.11.20-sync.1`, cache 64: onset refinement of the sync lag, a robust screen-path margin, a skip of the first second of the recording, and logging plus history of failed sync attempts. See [sync-3-15-1.md](sync-3-15-1.md).
+
+Local results:
+- unit 432/432, Python 111, offline 16/16, sync and automatic-setup browser tests passed;
+- the full Chromium run was interrupted by a session restart. On a clean re-run of the affected specs, `lively.spec.js:38` (widgets after Save → Open Now Playing) failed intermittently. It fails the same way on the published 3.15.0 code (`c01f533`) when repeated, so it is a pre-existing timing race, recorded as an open point. GitHub CI decides.
+
+ — published
+
+Merged via PR #17 as `c01f53352aeef1d4a86aa5cae61b429e1575d263` on 20 November 2026.
+- **First PR CI run:** failed in `chromium (2/3)`, `remote-share.spec.js`. "Copy link" gave up when `navigator.clipboard` was refused on a secure origin. That was a real flaw, which phones on the LAN could also hit. Fixed in `9f63650`: the code falls back to the classic copy before showing the hand-copy hint, and the test simulates both cases. The new test failed on the old code with the same error and passed with the fix.
+- **After the fix:** all six PR jobs passed. Verify on `main` (run 44730736586) and Publish signed preview (run 44731735551) passed on the first attempt, including the public channel check.
+
+Release `ota-preview-c01f53352aeef1d4a86aa5cae61b429e1575d263` is public. Verified independently from this session:
+- the signature verifies with the unchanged project key;
+- the manifest names commit `c01f533`, release `2026.11.20-guide.1` and label "GUI 3.15.0 · GUIDE", and the archive hash matches;
+- `release-bundle verify` confirms the full inventory (398 files) with cache v63;
+- the archive contains the wizard bundle, the new update page and the Bluetooth transport reporting, and no outreach draft;
+- `checkChannel` selects this release.
+
+Pi installation, the host refresh and physical checks were not observed: the wizard with a real microphone, Bluetooth with a real phone, the update duration and the phone invite.
 
 On 20 November 2026 the owner approved this update with "Ja push maar", after being shown the local candidate and its results. Results at approval: unit 429/429, build OK, Python 111, full Chromium 235/235, offline 16/16; WebKit was not run locally.
 

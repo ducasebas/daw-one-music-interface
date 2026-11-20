@@ -29,7 +29,7 @@ export class CaptureEnergy {
         // analysis delivery times, so correlation includes analysis delay.
         const t=at-1000*(frames-i-1)/this.rate-500*this.window/this.rate-this.inputLatencyMs;
         if(!this.points.length||t>this.points.at(-1).t)this.points.push({t,db:Math.max(-100,10*Math.log10(Math.max(1e-10,this.sum/this.window)))});
-        if(this.points.length>1024)this.points.shift();
+        if(this.points.length>2048)this.points.shift();
       }
     }
   }
@@ -48,16 +48,22 @@ function at(points,time){
   const a=points[lo],b=points[hi];if(b.t-a.t>180)return null;
   return a.db+(b.db-a.db)*(time-a.t)/(b.t-a.t);
 }
+function pearson(pairs){let n=0,x=0,y=0,xx=0,yy=0,xy=0;for(const [a,b] of pairs){n++;x+=a;y+=b;xx+=a*a;yy+=b*b;xy+=a*b;}if(n<80)return -1;const vx=xx-x*x/n,vy=yy-y*y/n;return vx>1e-6&&vy>1e-6?(xy-x*y/n)/Math.sqrt(vx*vy):-1;}
 function correlation(ref,mic,lag,start,end){
-  let n=0,x=0,y=0,xx=0,yy=0,xy=0;
-  for(let t=start;t<=end;t+=20){const a=at(ref,t),b=at(mic,t+lag);if(a===null||b===null)continue;n++;x+=a;y+=b;xx+=a*a;yy+=b*b;xy+=a*b;}
-  if(n<80)return -1;const vx=xx-x*x/n,vy=yy-y*y/n;return vx>1&&vy>1?(xy-x*y/n)/Math.sqrt(vx*vy):-1;
+  const pairs=[];for(let t=start;t<=end;t+=10){const a=at(ref,t),b=at(mic,t+lag);if(a!==null&&b!==null)pairs.push([a,b]);}
+  const r=pearson(pairs);return r;
+}
+/** Onsets: how fast the energy rises (beats, transients). Sharper than the level itself, so it pins the lag down more precisely. */
+function onsetCorrelation(ref,mic,lag,start,end,step=30){
+  const pairs=[];for(let t=start;t<=end;t+=10){const a=at(ref,t),a0=at(ref,t-step),b=at(mic,t+lag),b0=at(mic,t+lag-step);if(a!==null&&a0!==null&&b!==null&&b0!==null)pairs.push([Math.max(0,a-a0),Math.max(0,b-b0)]);}
+  return pearson(pairs);
 }
 export function estimateSync(reference,capture,{windowMs=85.333,...input}={}){
   const settings=syncCaptureSettings(input),ref=series(reference),mic=series(capture.points);
   if(!Number.isFinite(capture.clipPercent)||capture.clipPercent>=.1||!Number.isFinite(capture.maxChunkMs)||capture.maxChunkMs>150)throw Error('Microphone clipping or capture buffering is too high; repeat with a stable USB input');
   if(!Number.isFinite(windowMs)||windowMs<1||windowMs>1000)throw Error('Unknown PCM analysis window');
-  const start=Math.max(ref[0].t,mic[0].t+500),end=Math.min(ref.at(-1).t,mic.at(-1).t-2000);
+  // Skip the first second of the recording: a USB microphone's start-up burst and settling distort the envelope.
+  const start=Math.max(ref[0].t,mic[0].t+1000),end=Math.min(ref.at(-1).t,mic.at(-1).t-2000);
   if(end-start<4000)throw Error('The capture is too short to align reliably');
   const ranked=[];for(let lag=-500;lag<=2000;lag+=5)ranked.push({lag,score:correlation(ref,mic,lag,start,end)});
   ranked.sort((a,b)=>b.score-a.score);const best=ranked[0],other=ranked.find(p=>Math.abs(p.lag-best.lag)>=150);
@@ -65,11 +71,21 @@ export function estimateSync(reference,capture,{windowMs=85.333,...input}={}){
   const middle=(start+end)/2;
   const halves=[[start,middle],[middle,end]].map(([a,b])=>ranked.filter(p=>Math.abs(p.lag-best.lag)<=100).map(p=>({lag:p.lag,score:correlation(ref,mic,p.lag,a,b)})).sort((a,b)=>b.score-a.score)[0]);
   if(halves.some(h=>h.score<.5)||Math.abs(halves[0].lag-halves[1].lag)>40)throw Error('Timing drifted during capture. Keep the same output and track, then repeat');
-  const uncertaintyMs=Math.ceil(15+capture.maxChunkMs/2+settings.displayUncertaintyMs+Math.abs(halves[0].lag-halves[1].lag)/2);
-  const effective=Math.round((best.lag-settings.displayDelayMs)/10)*10;
+  // Refine around the energy match with onsets in 2 ms steps; the peak width becomes the audio part of the margin.
+  const fine=[];for(let lag=best.lag-60;lag<=best.lag+60;lag+=2)fine.push({lag,score:onsetCorrelation(ref,mic,lag,start,end)});
+  const top=fine.reduce((a,b)=>b.score>a.score?b:a,fine[0]),onsetsUsable=top.score>=.5;
+  const lag=onsetsUsable?top.lag:best.lag,near=onsetsUsable?fine.filter(p=>p.score>=top.score-.02).map(p=>p.lag):[best.lag-10,best.lag+10];
+  const peakHalfWidthMs=Math.max(2,(Math.max(...near)-Math.min(...near))/2);
+  const uncertaintyMs=Math.ceil(5+peakHalfWidthMs+capture.maxChunkMs/2+settings.displayUncertaintyMs+Math.abs(halves[0].lag-halves[1].lag)/2);
+  const effective=Math.round((lag-settings.displayDelayMs)/10)*10;
   if(effective< -uncertaintyMs)throw Error('The visualizer is already behind the sound. Adding screen delay cannot correct this path');
-  const delay=Math.max(0,effective),screen=Math.round(Math.max(0,Math.min(2000,best.lag+windowMs/2))/10)*10;
+  const delay=Math.max(0,effective),screen=Math.round(Math.max(0,Math.min(2000,lag+windowMs/2))/10)*10;
   const timing=presentationTiming({screenDelayMs:screen,visualizerTrimMs:delay-screen});
   if(Math.abs(Math.max(0,timing.screenDelayMs+timing.visualizerTrimMs)-delay)>10||uncertaintyMs>120)throw Error('The measured delay is outside the reliable adjustment range');
-  return {valid:true,method:'pcm-microphone-energy',relativeLagMs:best.lag,delayMs:delay,timing,correlation:Math.round(best.score*1000)/1000,uncertaintyMs,inputLatencyMs:settings.inputLatencyMs,inputLatencyCalibrated:settings.inputLatencyMs>0,referenceWindowMs:Math.round(windowMs*10)/10,displayDelayMs:settings.displayDelayMs,rawAudioRetained:false};
+  return {valid:true,method:onsetsUsable?'pcm-microphone-onsets':'pcm-microphone-energy',relativeLagMs:lag,peakWidthMs:Math.round(peakHalfWidthMs*2),onsetCorrelation:Math.round(top.score*1000)/1000,delayMs:delay,timing,correlation:Math.round(best.score*1000)/1000,uncertaintyMs,inputLatencyMs:settings.inputLatencyMs,inputLatencyCalibrated:settings.inputLatencyMs>0,referenceWindowMs:Math.round(windowMs*10)/10,displayDelayMs:settings.displayDelayMs,rawAudioRetained:false};
+}
+/** Screen-path delay from repeated samples: median, and half the interquartile range plus half a frame as margin, so one slow frame cannot inflate it. */
+export function displayTimingFromAges(values){
+ const ages=[...values].sort((a,b)=>a-b),q=p=>ages[Math.min(ages.length-1,Math.max(0,Math.round(p*(ages.length-1))))];
+ return {displayDelayMs:Math.round(q(.5)),displayUncertaintyMs:Math.min(200,Math.max(10,Math.ceil((q(.75)-q(.25))/2+8)))};
 }

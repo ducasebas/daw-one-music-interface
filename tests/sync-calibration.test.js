@@ -37,3 +37,32 @@ test('capture keeps bounded energy only and centres sample windows with the conf
   assert.throws(()=>syncCaptureSettings({device:'/etc/passwd'}));assert.throws(()=>syncCaptureSettings({inputLatencyMs:-2}));
   assert.ok(Math.abs(pcmEnergy({channels:[{rmsDb:-20},{rmsDb:-20}]})+20)<.001);assert.equal(pcmEnergy({channels:[]}),null);
 });
+
+// GUI 3.15.1: onset refinement, start-burst skip and a screen-path margin that one slow frame cannot inflate.
+function musicFixture({delay=137,burst=true,seed=5}={}){
+ let s=seed;const rand=()=>((s=Math.imul(s,1664525)+1013904223|0)>>>0)/4294967296;
+ const hits=[];for(let t=0;t<14000;t+=180+rand()*260)hits.push({t,a:6+rand()*14});
+ const env=t=>{let e=1e-6;for(const h of hits){const d=t-h.t;if(d>=0&&d<600)e+=h.a*Math.exp(-d/90);}return -55+10*Math.log10(1+e*30)+3*Math.sin(t/1700);};
+ const smooth=t=>{let v=0;for(let k=-46;k<=46;k+=4)v+=env(t+k);return v/24;};
+ const reference=[];for(let t=0;t<13000;t+=23.2)reference.push({t:Math.round(t*10)/10,db:smooth(t)});
+ const points=[];for(let t=0;t<13000;t+=10){let db=smooth(t-delay)-14+(rand()-.5)*1.2;if(burst&&t<900)db+=25*Math.exp(-t/300)+(rand()-.5)*6;points.push({t,db});}
+ return {reference,capture:{points,clipPercent:0,maxChunkMs:5}};
+}
+test('music with transients: onsets pin the lag within a few ms, also after a microphone start-up burst',()=>{
+ for(const delay of [0,37,137,412]){const {reference,capture}=musicFixture({delay});const r=estimateSync(reference,capture,{displayDelayMs:0,displayUncertaintyMs:12});
+  assert.equal(r.method,'pcm-microphone-onsets');assert.ok(Math.abs(r.relativeLagMs-delay)<=5,`lag ${r.relativeLagMs} for ${delay}`);assert.ok(r.uncertaintyMs<=30,`±${r.uncertaintyMs}`);assert.ok(r.peakWidthMs<=20);}
+});
+test('the screen-path margin uses the interquartile range, so a few slow frames do not inflate it',async()=>{
+ const {displayTimingFromAges}=await import('../shared/sync-calibration.js');
+ const ages=[62,64,63,65,66,61,64,63,62,65,64,63,66,62,63,64,65,63,64,62,150,170,58,180];
+ const t=displayTimingFromAges(ages);assert.equal(t.displayDelayMs,64);assert.ok(t.displayUncertaintyMs<=12,`±${t.displayUncertaintyMs}`);
+ // The previous formula (2nd-highest minus 2nd-lowest of 12 samples) gave tens of ms here.
+ const old=[...ages.slice(12)].sort((a,b)=>a-b);assert.ok((old.at(-2)-old[1])/2+16>50);
+ assert.equal(displayTimingFromAges([60,60,60,60]).displayUncertaintyMs,10);
+});
+test('sync history keeps the last five attempts, including the failure reason',async()=>{
+ const {nextHistory}=await import('../deploy/sync/capture.mjs');
+ let h=[];for(let i=0;i<7;i++)h=nextHistory(h,{at:'2026-11-20T10:0'+i+':00Z',outcome:i%2?'failed':'complete',...(i%2?{error:'The timing match is ambiguous'}:{})});
+ assert.equal(h.length,5);assert.equal(h[0].at,'2026-11-20T10:02:00Z');assert.equal(h.at(-1).outcome,'complete');assert.equal(h.find(e=>e.outcome==='failed').error,'The timing match is ambiguous');
+ assert.deepEqual(nextHistory('corrupt',{at:'x',outcome:'cancelled'}),[{at:'x',outcome:'cancelled'}]);
+});

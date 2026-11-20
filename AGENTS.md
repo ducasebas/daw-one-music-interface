@@ -4,8 +4,8 @@ Standing rules for every agent (Claude, Codex) working in this repository. Past 
 
 ## Current state
 
-- Published preview OTA: GUI 3.14.2 · HOTFIX (idle amplifier clock fault no longer blocks the sweep; includes 3.14.1 sweep diagnostics and privacy clean-up), release `2026.11.20-hotfix.2`, service-worker cache 62, commit `1d45d5c0771390457a90848d3d6719870a5cf251` (20 November 2026).
-- Next candidate: bump `shared/release.js` (including its user-facing `notes`) and the cache in `public/sw.js` (next is 63). Restart controls (3.10), local volume (3.13) and the sweep analyser and amplifier-fault rule (3.14.1/3.14.2) need `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply` once on the Pi. Roadmap 3.10–3.14 is published; the cold-boot console item stays separate and needs the owner.
+- Published preview OTA: GUI 3.15.0 · GUIDE (room correction wizard, Bluetooth quality, full-screen updates, search, phone notifications and invites), release `2026.11.20-guide.1`, service-worker cache 63, commit `c01f53352aeef1d4a86aa5cae61b429e1575d263` (20 November 2026).
+- Next candidate: bump `shared/release.js` (including its user-facing `notes`) and the cache in `public/sw.js` (next is 64). The following need `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply` once on the Pi: restart controls (3.10), local volume (3.13), the sweep analyser and amplifier-fault rule (3.14.1/3.14.2), and the Bluetooth agent, updater duration history and update page (3.15). Popups follow `docs/popup-style.md`. The cold-boot console item stays separate and needs the owner.
 - 3.10.0 is installed on the owner's Pi (reported 19 November 2026, "looks beautiful"); its individual touch/notification points are not separately confirmed. The last PD request (on 3.9.x) failed with an I²C I/O error; the startup PD policy was disabled on the device.
 - Physical acceptance still open: cursor hidden on cold start, real PD source query and 20 V contract/stability, INA228 VBUS wiring; for 3.9.0, phone pairing and control over the real home Wi-Fi.
 

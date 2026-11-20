@@ -5,7 +5,7 @@ export async function measureSynchronization({job,getContext,getAudio,openCaptur
  const settings=syncCaptureSettings(job.settings),initial=await getContext();
  if(cancelled())throw Error('Cancelled');
  if(!initial.ready||!initial.playing||!initial.pcmReady||initial.key!==job.context.key||initial.trackKey!==job.context.trackKey)throw Error('The audio path changed before capture');
- const energy=new CaptureEnergy({inputLatencyMs:settings.inputLatencyMs,window:Math.round(48*initial.windowMs)}),reference=[];
+ const energy=new CaptureEnergy({inputLatencyMs:settings.inputLatencyMs,window:Math.round(48*initial.windowMs),hop:480}),reference=[];
  let carry=Buffer.alloc(0),parseFailed=false,lastStatus=0,lastContext=0,previousPosition=initial.position,previousTime=initial.observedAt;
  const input=openCapture(job.microphone);
  input.onData(chunk=>{try{const bytes=carry.length?Buffer.concat([carry,chunk]):chunk,end=bytes.length-bytes.length%2;carry=bytes.subarray(end);if(end)energy.push(bytes.subarray(0,end),clock());}catch{parseFailed=true;input.stop();}});

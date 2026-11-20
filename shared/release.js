@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.20-guide.1",
-  label: "GUI 3.15.0 · GUIDE",
+  id: "2026.11.20-sync.1",
+  label: "GUI 3.15.1 · SYNC",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Room correction is now a step-by-step wizard with a check measurement. Bluetooth explains pairing and shows the real codec, bitrate and connection stability. Updates open full screen with what’s new, how long it usually takes and what you will see. Search suggestions are readable above a smaller keyboard. Your phone receives TuneBox notifications and can invite another phone. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi for Bluetooth details and the update page.",
+  notes: "Picture & meter sync is more precise: it aligns on beats and transients, ignores the microphone’s start-up, and measures the screen delay without letting one slow frame widen the margin. Failed attempts now show why, also later. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

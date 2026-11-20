@@ -68,3 +68,10 @@ test('a rejected timing capture cannot be saved and this wizard cannot cancel an
  // A separate capture is reported, so this wizard must not cancel someone else's work.
  await wizard.getByRole('button',{name:'Finish later',exact:true}).click();expect(stops).toBe(0);
 });
+test('earlier sync attempts stay visible with their failure reasons after a later measurement',async({page})=>{
+ const history=[{at:'2026-11-20T10:07:28Z',outcome:'failed',error:'The timing match is ambiguous. Use a track with distinct, irregular transients'},{at:'2026-11-20T10:09:17Z',outcome:'failed',error:'Timing drifted during capture. Keep the same output and track, then repeat'},{at:'2026-11-20T10:33:10Z',outcome:'complete',delayMs:0,uncertaintyMs:24}];
+ await page.route('**/api/device',route=>{const {command}=route.request().postDataJSON();if(command==='sync-status')return route.fulfill({json:{supported:true,running:false,microphones:[],phase:'failed',error:'The PCM reference is unavailable or stale',history}});return route.continue();});
+ await open(page,'Open synchronization wizard');const wizard=page.getByRole('dialog',{name:'Picture & meter sync',exact:true});await wizard.getByRole('button',{name:'Continue',exact:true}).click();
+ await wizard.getByText('Earlier attempts').click();const list=wizard.locator('.sync-history li');await expect(list).toHaveCount(3);
+ await expect(list.first()).toContainText('Measured · 0 ms ± 24 ms');await expect(list.nth(1)).toContainText('Failed · Timing drifted during capture');await expect(list.nth(2)).toContainText('ambiguous');
+});
