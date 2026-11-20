@@ -14,7 +14,7 @@ test('setup renders additive choices, owned controls, finish/skip routes and acc
   const render=element=>renderToStaticMarkup(React.createElement(m.DeviceUpdatesProvider,null,element));
   const welcome=render(React.createElement(m.FirstStartWizard,{snapshot:{mode:'simulation',preferences:{maxVolume:40}},offline:true,onComplete(){}}));
   assert.match(welcome,/First start setup/);assert.match(welcome,/Finish later/);assert.match(welcome,/Skip for now/);assert.match(welcome,/combine Wi-Fi, Ethernet, Bluetooth and Music Assistant/);assert.doesNotMatch(welcome,/<input[^>]+type="password"/);
-  const cards=render(React.createElement(m.SetupCards,{snapshot:{bluetooth:{supported:true}},onOpen(){}}));for(const label of ['Wi-Fi &amp; network','Bluetooth','Music Assistant','Sound &amp; DSP','Picture &amp; meter sync','Phone remote'])assert.ok(cards.includes(label),label);assert.equal((cards.match(/<button/g)||[]).length,6);assert.doesNotMatch(cards,/type="radio"/);
+  const cards=render(React.createElement(m.SetupCards,{snapshot:{bluetooth:{supported:true}},onOpen(){}}));for(const label of ['Wi-Fi &amp; network','Bluetooth','Music Assistant','Sound &amp; DSP','Room correction','Picture &amp; meter sync','Phone remote'])assert.ok(cards.includes(label),label);assert.equal((cards.match(/<button/g)||[]).length,7);assert.doesNotMatch(cards,/type="radio"/);
   const shell=render(React.createElement(m.WizardShell,{title:'Sound & DSP setup',steps:['Speakers','Baseline','Ready'],step:1,onClose(){},onNext(){},onSkip(){},onBack(){}},'Content'));
   assert.match(shell,/aria-current="step"/);assert.match(shell,/Baseline/);assert.match(shell,/Back/);assert.match(shell,/Continue/);
   m.setLanguage('nl');
