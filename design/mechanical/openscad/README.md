@@ -20,7 +20,7 @@ Outline input: the owner-supplied case STEP of 20 November 2026 (SHA-256 `4312a1
 | Speaker terminals (owner: round, drilled by the owner) | Not machined by default (`post_mode = "none"`); `"mark"` adds centre dimples, `"hole"` the 2 × 2 grid of Ø6.5 holes. Free ceiling zone for them: X 13–34, Y 1.5–20.5 in cap coordinates. Use insulating shoulder bushes (BTL outputs must not touch the aluminium), deburr the bare drilled edges and drill before fitting the HUSB238 so no chips reach it. Above the ceiling ≤ 8 mm high, below ≤ 16 mm |
 | USB-C (owner: the HUSB238 board itself in the cap) | Adafruit 5991 stands upright on a fin milled onto the cap (3 mm standoffs, 4 × M2.5 tapped), receptacle down into a 4.6 × 9.4 mm slot with a 7.0 × 12.8 × 1.8 mm pocket for the plug overmold. Upright because only ≈ 33 mm of ceiling is free beside the Pi/HAT stack |
 
-Files: `pcbway.scad` (shared rules), `backplate.scad`, `io-plate.scad`.
+Files: `pcbway.scad` (shared rules), `backplate.scad`, `io-plate.scad`, and `assembly.scad` — the whole case for viewing (F5), with switches in the Customizer to open the top, hide the glass or the boards. The wood is re-modelled from the STEP dimensions; Pi 4, HAT, HUSB238 and button are simplified blocks.
 
 ```sh
 openscad -o backplate.stl backplate.scad
