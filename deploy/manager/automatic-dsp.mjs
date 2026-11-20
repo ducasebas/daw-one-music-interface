@@ -1,3 +1,4 @@
+import {blockingFaults} from './dsp.mjs';
 import {existsSync} from 'node:fs';
 import {atomicJson,readJson} from './io.mjs';
 import {automaticDspSettings,automaticDspDefaults,automaticDspProposal,dspEqSnapshot,effectiveDspBaseline,sameDspEq,dspRamp} from '../../shared/automatic-dsp.js';
@@ -33,7 +34,7 @@ export class AutomaticDsp {
       this.state={...this.state,settings,activeProfile:null,error:null,reason:'Manual sound'};this.save();return {...this.publicStatus(),saved:true};
     }
     const context=await this.context();
-    if(!context.ready||actual.faults?.some(f=>f.active))throw Error('Wake TuneBox and resolve audio hardware activity or faults before configuring automatic sound');
+    if(!context.ready||blockingFaults(actual.faults).length)throw Error('Wake TuneBox and resolve audio hardware activity or faults before configuring automatic sound');
     dspEqSnapshot(actual.controls);
     if(this.state.settings.enabled&&!sameDspEq(actual.controls,this.state.lastApplied)){
       this.state={...this.state,settings:{...this.state.settings,enabled:false},reason:'External DSP change preserved',error:'The equalizer changed outside automatic sound. Review it before enabling again.'};this.save();throw Error(this.state.error);
@@ -58,7 +59,7 @@ export class AutomaticDsp {
     // Late/changed metadata is used on the next track, not halfway through a song.
     if(!force&&trackKey===this.state.trackKey&&source===this.state.source)return this.publicStatus();
     const actual=await this.dsp.get();this.supported=actual.supported===true;
-    if(!actual.supported||actual.faults?.some(f=>f.active))return {...this.publicStatus(),deferred:true};
+    if(!actual.supported||blockingFaults(actual.faults).length)return {...this.publicStatus(),deferred:true};
     if(!sameDspEq(actual.controls,this.state.lastApplied)){
       this.state={...this.state,settings:{...this.state.settings,enabled:false},reason:'External DSP change preserved',error:'Automatic sound stopped because the equalizer changed.'};this.save();return this.publicStatus();
     }

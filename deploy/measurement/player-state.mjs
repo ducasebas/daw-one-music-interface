@@ -14,4 +14,4 @@ try{
   for(const file of ['sweep.wav','capture.raw'])rmSync('/var/lib/daw-one-measurement/'+file,{force:true});
   await restoreMeasurement(options);
  }else throw Error('Unknown measurement action');
-}catch{console.error('Audio restoration or preparation failed; review the local measurement service and restore journal before playing.');process.exitCode=1;}
+}catch(error){console.error('Audio restoration or preparation failed; review the local measurement service and restore journal before playing. Reason: '+String(error?.message||error).slice(0,200));process.exitCode=1;}

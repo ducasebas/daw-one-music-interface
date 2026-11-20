@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.20-hotfix.1",
-  label: "GUI 3.14.1 · HOTFIX",
+  id: "2026.11.20-hotfix.2",
+  label: "GUI 3.14.2 · HOTFIX",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Room measurement explains why a sweep was not accepted, with every check and its value. A microphone that is still settling no longer hides a real sweep, and slow sound output is found up to 2.5 s late. The measurement part needs “sudo bash deploy/update-appliance.sh --apply” once on the Pi.",
+  notes: "Room measurement starts again when nothing is playing: the amplifier’s idle “clock” notice no longer blocks the sweep, the startup sound or Bluetooth volume. Real amplifier faults still stop them. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

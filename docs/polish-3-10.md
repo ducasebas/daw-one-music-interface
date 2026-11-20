@@ -19,7 +19,7 @@ Release `2026.11.19-polish.1`, service-worker cache 52. Source: [roadmap](roadma
 
 ## Host-helper refresh
 
-Restart controls need the new device manager (`validateRequest`, `power.mjs`, `root-adapter.mjs`, `reboot.sh`). OTA updates the application slot only, so the Pi needs `sudo bash deploy/update-appliance.sh --apply` once. Until then both buttons stay disabled, with an explanation. Everything else works through OTA alone.
+Restart controls need the new device manager (`validateRequest`, `power.mjs`, `root-adapter.mjs`, `reboot.sh`). OTA updates the application slot only, so the Pi needs `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply` once. Until then both buttons stay disabled, with an explanation. Everything else works through OTA alone.
 
 ## Out of scope
 

@@ -3,9 +3,9 @@ import {targetDefaults,targetSettings} from './room-targets.js';
 export const measurementAnalyserVersion='2026.11.20-sweep-diagnostics.2';
 /** Plain-language reasons for a failed sweep check, as [locale key, values] pairs. */
 export function sweepDiagnosis(channel){
- const d=channel?.diagnostics;if(!d||!Array.isArray(d.checks))return [['This result comes from older measurement software on the device. Run sudo bash deploy/update-appliance.sh --apply once on the Pi, then measure again.',{}]];
+ const d=channel?.diagnostics;if(!d||!Array.isArray(d.checks))return [['This result comes from older measurement software on the device. Run sudo bash /opt/daw-one/deploy/update-appliance.sh --apply once on the Pi, then measure again.',{}]];
  const out=[],check=id=>d.checks.find(c=>c.id===id);
- if(d.analyser!==measurementAnalyserVersion)out.push(['This result comes from older measurement software on the device. Run sudo bash deploy/update-appliance.sh --apply once on the Pi, then measure again.',{}]);
+ if(d.analyser!==measurementAnalyserVersion)out.push(['This result comes from older measurement software on the device. Run sudo bash /opt/daw-one/deploy/update-appliance.sh --apply once on the Pi, then measure again.',{}]);
  for(const id of d.failed||[]){const c=check(id);if(!c)continue;
   if(id==='complete')out.push(['The sweep arrived {lag} ms late and ran past the end of the recording.',{lag:c.value.lagMs}]);
   if(id==='edge')out.push(['The best match lies at the edge of the search window ({lag} ms). The speaker may not have played the sweep.',{lag:c.value.lagMs}]);

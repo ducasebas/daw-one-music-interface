@@ -1,10 +1,11 @@
+import {blockingFaults} from '../manager/dsp.mjs';
 const units=['tunebox-player.service','squeezelite.service'];
 /** Journal before touching audio; restore EQ before reopening the previous player. */
 export async function prepareMeasurement({run,dsp,read,write,output,verifyCorrection=false}){
  const pending=read();if(pending)throw Error('Previous audio restoration is pending');
  const saved={schema:1,units:[],controls:[],output};
  if(output==='plughw:CARD=LouderRaspberry,DEV=0'){
-  const state=await dsp.get();if(!state.supported||state.faults.some(f=>f.active))throw Error('Resolve amplifier faults before measuring');
+  const state=await dsp.get();if(!state.supported||blockingFaults(state.faults).length)throw Error('Resolve amplifier faults before measuring');
   saved.controls=state.controls.map(({id,name,value})=>({id,name,value}));
  }
  for(const unit of units)if((await run('/usr/bin/systemctl',['is-active',unit]).catch(()=>'')).trim()==='active')saved.units.push(unit);

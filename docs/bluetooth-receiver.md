@@ -20,7 +20,7 @@ An application-only OTA cannot install Bluetooth packages or prove the physical 
 ```sh
 cd /opt/daw-one
 sudo bash deploy/install-bluetooth.sh --output plughw:CARD=LouderRaspberry,DEV=0 --verified-output
-sudo bash deploy/update-appliance.sh --apply
+sudo bash /opt/daw-one/deploy/update-appliance.sh --apply
 ```
 
 The installer uses Debian's `bluez`, `bluez-alsa-utils`, `libasound2-plugin-bluez`, `python3-dbus` and `python3-gi`. It checks the named Louder gain contract and BlueALSA software-volume support, refuses an active/enabled conflicting BlueALSA installation and prevents package scripts from starting an unmanaged receiver. It does not alter ALSA defaults, the Louder overlay or GPIO assignments. The receiver remains off until selected.
