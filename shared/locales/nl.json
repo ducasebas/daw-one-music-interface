@@ -2082,5 +2082,18 @@
   "Off. Measure your room once to correct its strongest resonances.": "Uit. Meet je ruimte één keer om de sterkste resonanties te corrigeren.",
   "Changes apply when you save. Positive boosts automatically reserve headroom, and every change can be undone with Cancel or Restore defaults.": "Wijzigingen gaan in bij Opslaan. Bij versterking wordt automatisch ruimte vrijgehouden, en elke wijziging kun je terugdraaien met Annuleren of Standaardwaarden herstellen.",
   "Advanced: all amplifier controls": "Geavanceerd: alle versterkerinstellingen",
-  "Four updates in one: Play now asks before replacing a queue with music waiting. A Party sheet shows the phone code on Now Playing (with your settings PIN). When Music Assistant is away you can still pause and change volume locally, never louder. Audio & DSP starts with simple controls (preset, bass, treble, loudness); all amplifier controls stay under Advanced.": "Vier updates in één: Nu afspelen vraagt eerst voordat een wachtrij met muziek wordt vervangen. Een Feest-scherm toont de telefooncode op Nu spelen (met je instellingen-pincode). Als Music Assistant weg is, kun je lokaal pauzeren en het volume regelen, nooit harder. Audio & DSP begint met eenvoudige regelaars (voorkeur, bas, hoog, loudness); alle versterkerinstellingen staan onder Geavanceerd."
+  "Four updates in one: Play now asks before replacing a queue with music waiting. A Party sheet shows the phone code on Now Playing (with your settings PIN). When Music Assistant is away you can still pause and change volume locally, never louder. Audio & DSP starts with simple controls (preset, bass, treble, loudness); all amplifier controls stay under Advanced.": "Vier updates in één: Nu afspelen vraagt eerst voordat een wachtrij met muziek wordt vervangen. Een Feest-scherm toont de telefooncode op Nu spelen (met je instellingen-pincode). Als Music Assistant weg is, kun je lokaal pauzeren en het volume regelen, nooit harder. Audio & DSP begint met eenvoudige regelaars (voorkeur, bas, hoog, loudness); alle versterkerinstellingen staan onder Geavanceerd.",
+  "This result comes from older measurement software on the device. Run sudo bash deploy/update-appliance.sh --apply once on the Pi, then measure again.": "Deze uitslag komt van oudere meetsoftware op het apparaat. Voer één keer sudo bash deploy/update-appliance.sh --apply uit op de Pi en meet daarna opnieuw.",
+  "The sweep arrived {lag} ms late and ran past the end of the recording.": "De sweep kwam {lag} ms te laat binnen en liep voorbij het einde van de opname.",
+  "The best match lies at the edge of the search window ({lag} ms). The speaker may not have played the sweep.": "De beste overeenkomst ligt aan de rand van het zoekvenster ({lag} ms). Mogelijk heeft de luidspreker de sweep niet afgespeeld.",
+  "The sweep stands out {value}× above the background; {need}× is needed. The microphone mostly heard noise or another sound.": "De sweep steekt {value}× boven de achtergrond uit; {need}× is nodig. De microfoon hoorde vooral ruis of een ander geluid.",
+  "The middle and high part of the sweep is only {db} dB above the quiet lead-in; 3 dB is needed. Check that the tweeter plays and the chosen output is connected.": "Het midden en hoge deel van de sweep ligt maar {db} dB boven de stille aanloop; 3 dB is nodig. Controleer of de tweeter speelt en de gekozen uitgang is aangesloten.",
+  "Clipping {value}% (at most 0.1%). Lower the amplifier volume a little.": "Oversturing {value}% (maximaal 0,1%). Zet de versterker iets zachter.",
+  "Technical details": "Technische details",
+  "Delay": "Vertraging",
+  "Noise": "Ruis",
+  "Peak": "Piek",
+  "Player started after the microphone": "Speler gestart na de microfoon",
+  "Recording": "Opname",
+  "Analyser": "Analyse"
 }

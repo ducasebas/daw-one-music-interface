@@ -77,3 +77,31 @@ test('a reverberant room with bass roll-off and rumble is detected (old correlat
  for(let k=1;k<=6;k++){let s2=k*7919,l2=0;const r2=()=>{s2=(s2*16807)%2147483647;return s2/2147483647-.5;};const noise=new Float32Array(rate*5);for(let i=0;i<noise.length;i++){l2=.999*l2+r2()*.02;noise[i]=l2+r2()*.03;}
   const n=analyse(input,noise);assert.equal(n.sweepDetected,false,JSON.stringify({p:n.prominence}));assert.equal(n.valid,false);}
 });
+test('sweep diagnostics: late output up to 2.5 s is found, and each failure names the check that failed',async()=>{
+ const {captureSeconds,analyserVersion}=await import('../deploy/measurement/signal.mjs');
+ const input=sweep(-30),noise=(len,amp,seed=11)=>{const a=new Float32Array(len);for(let i=0;i<len;i++){seed=(seed*16807)%2147483647;a[i]=(seed/2147483647-.5)*amp;}return a;};
+ const place=(delay,gain=1,amp=.0005,len=rate*captureSeconds)=>{const r=noise(len,amp);for(let i=0;i<input.length&&i+delay<len;i++)r[i+delay]+=input[i]*gain;return r;};
+ // 1.4 s output latency: the 3.9.x analyser only searched up to 1 s and called this "not detected".
+ const late=analyse(input,place(Math.round(rate*1.4)));assert.equal(late.sweepDetected,true);assert.equal(late.valid,true);assert.ok(Math.abs(late.captureDelayMs-1400)<2);
+ assert.equal(late.diagnostics.analyser,analyserVersion);assert.deepEqual(late.diagnostics.failed,[]);assert.ok(late.diagnostics.peaks[0].ratio>=12);
+ // The old 5 s capture cut that same sweep off at the end; the analyser now says so instead of only "not detected".
+ const cut=analyse(input,place(Math.round(rate*1.4),1,.0005,rate*5));assert.equal(cut.sweepDetected,false);assert.ok(cut.diagnostics.failed.includes('complete'));
+ const complete=cut.diagnostics.checks.find(c=>c.id==='complete');assert.ok(complete.value.sweepEndMs>=complete.value.recordingMs-100);
+ // A sweep buried in room noise: prominence or level fails, and the values are reported.
+ const buried=analyse(input,place(rate*.2,.002,.05));assert.equal(buried.sweepDetected,false);assert.ok(buried.diagnostics.failed.some(id=>['prominence','level'].includes(id)));
+ for(const c of buried.diagnostics.checks)assert.ok('value' in c&&'need' in c&&typeof c.ok==='boolean');
+ // Silence from the speaker (wrong output): no peak, every relevant check explains itself.
+ const silent=analyse(input,noise(rate*captureSeconds,.001));assert.equal(silent.sweepDetected,false);assert.ok(silent.diagnostics.failed.length>0);
+ assert.ok(Number.isFinite(silent.diagnostics.noiseDbfs)||silent.diagnostics.noiseDbfs===null);
+ assert.doesNotThrow(()=>JSON.stringify(late));
+});
+test('the GUI explains a failed sweep and flags results from an older analyser on the device',async()=>{
+ const {sweepDiagnosis,measurementAnalyserVersion}=await import('../shared/room-measurement.js');
+ // A 3.9.x result has no diagnostics: the GUI asks for the one-time host-helper refresh.
+ const old=sweepDiagnosis({valid:false,sweepDetected:false,snrDb:30,correlation:.04});assert.equal(old.length,1);assert.match(old[0][0],/update-appliance\.sh --apply/);
+ // A sweep arriving 1.4 s late in a 5 s recording runs past the end.
+ const input=sweep(-30),late=Math.round(rate*1.4),r=new Float32Array(rate*5);r.set(input.subarray(0,r.length-late),late);
+ const cut=analyse(input,r),reasons=sweepDiagnosis(cut);
+ assert.ok(reasons.some(([k])=>k.startsWith('The sweep arrived')));assert.ok(!reasons.some(([k])=>k.includes('older')));assert.equal(cut.diagnostics.analyser,measurementAnalyserVersion);
+ assert.match(sweepDiagnosis({diagnostics:{...cut.diagnostics,analyser:'2026.11.19'}})[0][0],/older measurement software/);
+});

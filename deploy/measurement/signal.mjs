@@ -2,12 +2,16 @@
 export const rate=48000,sweepSeconds=3,leadSeconds=.5,tailSeconds=1;
 /** Allowed sweep levels. Louder levels are offered one 6 dB step at a time with consent. */
 export const sweepLevels=Object.freeze([-36,-30,-24]);export const minimumSnrDb=15;
+// Bumped whenever detection changes, so a result shows which analyser ran on the device (OTA does not refresh it).
+export {measurementAnalyserVersion as analyserVersion} from '../../shared/room-measurement.js';
+import {measurementAnalyserVersion} from '../../shared/room-measurement.js';
+export const searchBeforeSeconds=.3,searchAfterSeconds=2.5,minimumProminence=12,minimumThirdsRatio=2,captureSeconds=7;
 export function sweep(levelDbfs=-36){if(!sweepLevels.includes(levelDbfs))throw Error('Unsupported sweep level');const signal=new Float32Array(rate*(leadSeconds+sweepSeconds+tailSeconds)),f0=30,f1=18000,k=Math.log(f1/f0)/sweepSeconds,amplitude=10**(levelDbfs/20);for(let n=0;n<rate*sweepSeconds;n++){const t=n/rate,fade=Math.min(1,t/.04,(sweepSeconds-t)/.04);signal[Math.floor(rate*leadSeconds)+n]=amplitude*fade*Math.sin(2*Math.PI*f0/k*(Math.exp(k*t)-1));}return signal;}
 export function wav(signal,channel=0){const b=Buffer.alloc(44+signal.length*4);b.write('RIFF');b.writeUInt32LE(b.length-8,4);b.write('WAVEfmt ',8);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(2,22);b.writeUInt32LE(rate,24);b.writeUInt32LE(rate*4,28);b.writeUInt16LE(4,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(signal.length*4,40);for(let i=0;i<signal.length;i++)b.writeInt16LE(Math.round(Math.max(-1,Math.min(1,signal[i]))*32767),44+i*4+channel*2);return b;}
 function fft(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]];}}for(let len=2;len<=n;len*=2){const a=-2*Math.PI/len,wr=Math.cos(a),wi=Math.sin(a);for(let i=0;i<n;i+=len){let ur=1,ui=0;for(let j=0;j<len/2;j++){const p=i+j,q=p+len/2,tr=re[q]*ur-im[q]*ui,ti=re[q]*ui+im[q]*ur;re[q]=re[p]-tr;im[q]=im[p]-ti;re[p]+=tr;im[p]+=ti;const v=ur*wr-ui*wi;ui=ur*wi+ui*wr;ur=v;}}}}
 const median=a=>{const v=[...a].sort((a,b)=>a-b);return v[Math.floor(v.length/2)]||0;};
 export function analyse(signal,recording,calibration=[]){
- if(!(recording instanceof Float32Array)||recording.length<rate*4||recording.length>rate*8)throw Error('Recording length is invalid');
+ if(!(recording instanceof Float32Array)||recording.length<rate*4||recording.length>rate*8.5)throw Error('Recording length is invalid');
  let n=1;while(n<signal.length+recording.length)n*=2;
  const xr=new Float32Array(n),xi=new Float32Array(n),yr=new Float32Array(n),yi=new Float32Array(n);
  xr.set(signal);yr.set(recording);fft(xr,xi);fft(yr,yi);
@@ -25,8 +29,9 @@ export function analyse(signal,recording,calibration=[]){
  const reference=median(points.filter(p=>p.hz>=500&&p.hz<=2000).map(p=>p.db));for(const p of points)p.db=Math.round((p.db-reference)*10)/10;
  // IFFT(Y * conj(X)): distinguish the actual sweep from unrelated sound with a high SNR.
  for(let k=0;k<n;k++){const real=yr[k]*xr[k]+yi[k]*xi[k],imag=yi[k]*xr[k]-yr[k]*xi[k];yr[k]=real;yi[k]=-imag;}
- fft(yr,yi);let peak=0,lag=0;const search=new Float32Array(Math.floor(rate*.3)+rate+1);
- for(let k=-Math.floor(rate*.3),j=0;k<=rate;k++,j++){const value=Math.abs(yr[(k+n)%n]/n);search[j]=value;if(value>peak){peak=value;lag=k;}}
+ fft(yr,yi);let peak=0,lag=0;const before=Math.floor(rate*searchBeforeSeconds),after=Math.floor(rate*searchAfterSeconds),search=new Float32Array(before+after+1);
+ // Output latency (opening the DAC, ALSA buffers) can exceed a second on the Pi: search up to 2.5 s.
+ for(let k=-before,j=0;k<=after;k++,j++){const value=Math.abs(yr[(k+n)%n]/n);search[j]=value;if(value>peak){peak=value;lag=k;}}
  // A real sweep compresses into one sharp impulse-response peak; unrelated sound does not.
  // Prominence is robust to room reverberation and speaker/microphone coloration.
  const floor=Float32Array.from(search).sort()[search.length>>1]||1e-30,prominence=peak/Math.max(1e-30,floor);
@@ -42,7 +47,7 @@ export function analyse(signal,recording,calibration=[]){
  // The middle and last thirds must be clearly louder than the quiet lead-in: catches truncated captures.
  const thirds=[0,1,2].map(part=>power0((leadSeconds+part*sweepSeconds/3+.04)*rate+lag,(leadSeconds+(part+1)*sweepSeconds/3-.04)*rate+lag));
  // The bass third is left out: small speakers and room rumble legitimately mask it.
- const sweepDetected=complete&&prominence>=12&&thirds.slice(1).every(p=>p>Math.max(2*leadQuiet,1e-12));
+ const sweepDetected=complete&&prominence>=minimumProminence&&thirds.slice(1).every(p=>p>Math.max(minimumThirdsRatio*leadQuiet,1e-12));
  // Signal power only while the sweep plays; noise from the quiet lead-in after the
  // microphone settles (its first 150 ms can hold a start-up click) and from the late tail.
  const power=(a,b)=>{a=Math.max(0,Math.floor(a));b=Math.min(recording.length,Math.floor(b));if(b-a<rate*.08)return null;let e=0;for(let i=a;i<b;i++)e+=recording[i]*recording[i];return e/(b-a);};
@@ -51,6 +56,19 @@ export function analyse(signal,recording,calibration=[]){
  const signalPower=sweepDetected?power(sweepStart,sweepEnd):null;
  const snrDb=signalPower!==null&&quiet.length?10*Math.log10(Math.max(1e-15,signalPower)/Math.max(1e-15,Math.min(...quiet))):legacySnrDb;
  const neededDb=snrDb<minimumSnrDb?Math.ceil(minimumSnrDb-snrDb):0;
- return {valid:snrDb>=minimumSnrDb&&clipPercent<.1&&sweepDetected,snrDb:Math.round(snrDb*10)/10,neededDb,clipPercent:Math.round(clipPercent*100)/100,sweepDetected,correlation:Math.round(correlation*1000)/1000,prominence:Math.round(prominence*10)/10,captureDelayMs:Math.round(lag/rate*10000)/10,points,calibrated:calibration.length>0,absoluteSpl:false,reference:'Relative to median 500–2000 Hz; 1/6-octave bands',warnings:[...(snrDb<minimumSnrDb?['Measurement signal is too close to the noise floor.']:[]),...(clipPercent>=.1?['Microphone clipping detected; lower the level and measure again.']:[]),...(!sweepDetected?['A complete reference sweep was not detected. Check the microphone, output and room noise, then repeat.']:[]),...(!calibration.length?['No microphone calibration: response includes microphone coloration.']:[])]};
+ // Diagnosis: every check with its measured value and threshold, in plain language.
+ const db=v=>v>0?Math.round(10*Math.log10(v)*10)/10:null,ms=v=>Math.round(v/rate*1000);
+ const peaks=[];{const used=new Uint8Array(search.length);for(let t=0;t<3;t++){let best=-1,v=0;for(let j=0;j<search.length;j++)if(!used[j]&&search[j]>v){v=search[j];best=j;}if(best<0)break;peaks.push({lagMs:ms(best-before),ratio:Math.round(v/Math.max(1e-30,floor)*10)/10});for(let j=Math.max(0,best-rate*.02);j<Math.min(search.length,best+rate*.02);j++)used[j]=1;}}
+ const thirdsMargin=thirds.map(p=>leadQuiet>0&&p>0?Math.round(10*Math.log10(p/leadQuiet)*10)/10:null);
+ const checks=[
+  {id:'complete',ok:Boolean(complete),value:{sweepEndMs:ms(sweepEnd),recordingMs:ms(recording.length),lagMs:ms(lag)},need:'the whole sweep, plus 100 ms, inside the recording'},
+  {id:'edge',ok:lag>-before+rate*.01&&lag<after-rate*.01,value:{lagMs:ms(lag),searchMs:[-ms(before),ms(after)]},need:'the sweep start inside the search window'},
+  {id:'prominence',ok:prominence>=minimumProminence,value:Math.round(prominence*10)/10,need:minimumProminence},
+  {id:'level',ok:thirds.slice(1).every(p=>p>Math.max(minimumThirdsRatio*leadQuiet,1e-12)),value:{marginsDb:thirdsMargin,leadQuietDbfs:db(leadQuiet),thirdsDbfs:thirds.map(db)},need:'middle and high thirds at least 3 dB above the quiet lead-in'},
+  {id:'snr',ok:snrDb>=minimumSnrDb,value:Math.round(snrDb*10)/10,need:minimumSnrDb},
+  {id:'clipping',ok:clipPercent<.1,value:Math.round(clipPercent*100)/100,need:'< 0.1 %'},
+ ];
+ const diagnostics={analyser:measurementAnalyserVersion,checks,failed:checks.filter(c=>!c.ok).map(c=>c.id),peaks,recordingPeakDbfs:db(recording.reduce((m,v)=>Math.max(m,v*v),0)),noiseDbfs:quiet.length?db(quiet.reduce((m,v)=>Math.min(m,v),Infinity)):null,sweepDbfs:signalPower!==null?db(signalPower):null};
+ return {valid:snrDb>=minimumSnrDb&&clipPercent<.1&&sweepDetected,diagnostics,snrDb:Math.round(snrDb*10)/10,neededDb,clipPercent:Math.round(clipPercent*100)/100,sweepDetected,correlation:Math.round(correlation*1000)/1000,prominence:Math.round(prominence*10)/10,captureDelayMs:Math.round(lag/rate*10000)/10,points,calibrated:calibration.length>0,absoluteSpl:false,reference:'Relative to median 500–2000 Hz; 1/6-octave bands',warnings:[...(snrDb<minimumSnrDb?['Measurement signal is too close to the noise floor.']:[]),...(clipPercent>=.1?['Microphone clipping detected; lower the level and measure again.']:[]),...(!sweepDetected?['A complete reference sweep was not detected. Check the microphone, output and room noise, then repeat.']:[]),...(!calibration.length?['No microphone calibration: response includes microphone coloration.']:[])]};
 }
 export function cutProposal(channels){if(!channels.length||channels.some(c=>!c.valid))return [];return channels[0].points.filter(p=>p.hz<=8000).map((p,i)=>({hz:p.hz,db:-Math.min(6,Math.max(0,Math.round(channels.reduce((n,c)=>n+c.points[i].db,0)/channels.length)))}));}
