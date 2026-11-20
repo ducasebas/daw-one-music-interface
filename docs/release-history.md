@@ -2,7 +2,17 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.15.1 SYNC — approved
+## GUI 3.15.1 SYNC — published
+
+Merged via PR #18 as `9c5620d5dbe5e71c638c8d4b9539be284c3e7428` on 20 November 2026 after all six PR CI jobs passed. Verify on `main` (run 44747531138) passed. Publish signed preview (run 44748600414) signed and published release `ota-preview-9c5620d5dbe5e71c638c8d4b9539be284c3e7428`. Its public channel check got HTTP 403 from the unauthenticated GitHub API on the shared runner, so the failed job was re-run once.
+
+Verified independently from this session:
+- the signature verifies with the unchanged project key;
+- the manifest names commit `9c5620d`, release `2026.11.20-sync.1` and label "GUI 3.15.1 · SYNC", and the archive hash matches;
+- `release-bundle verify` confirms 399 files with cache v64;
+- `checkChannel` selects this release.
+
+Pi installation, the host refresh and a sync on the Pi were not observed.
 
 On 20 November 2026 the owner approved this update with "ja push maar". Scope: release `2026.11.20-sync.1`, cache 64: onset refinement of the sync lag, a robust screen-path margin, a skip of the first second of the recording, and logging plus history of failed sync attempts. See [sync-3-15-1.md](sync-3-15-1.md).
 
