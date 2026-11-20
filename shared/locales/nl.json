@@ -2209,5 +2209,10 @@
   "This driver reports no fault flags.": "Deze driver meldt geen foutvlaggen.",
   "A real fault blocks measurements, Bluetooth volume increases and automatic sound until it clears. Turn the volume down, check the speaker wiring and the power supply.": "Een echte fout blokkeert metingen, Bluetooth-volumeverhoging en automatisch geluid totdat hij weg is. Zet het volume lager en controleer de luidsprekerbekabeling en de voeding.",
   "Measurements, Bluetooth and automatic sound may use the amplifier.": "Metingen, Bluetooth en automatisch geluid mogen de versterker gebruiken.",
-  "Check again": "Opnieuw controleren"
+  "Check again": "Opnieuw controleren",
+  "Song": "Nummer",
+  "Album": "Album",
+  "Artist": "Artiest",
+  "Playlist": "Afspeellijst",
+  "Radio": "Radio"
 }

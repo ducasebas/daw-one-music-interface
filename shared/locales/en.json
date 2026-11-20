@@ -2209,5 +2209,10 @@
   "This driver reports no fault flags.": "This driver reports no fault flags.",
   "A real fault blocks measurements, Bluetooth volume increases and automatic sound until it clears. Turn the volume down, check the speaker wiring and the power supply.": "A real fault blocks measurements, Bluetooth volume increases and automatic sound until it clears. Turn the volume down, check the speaker wiring and the power supply.",
   "Measurements, Bluetooth and automatic sound may use the amplifier.": "Measurements, Bluetooth and automatic sound may use the amplifier.",
-  "Check again": "Check again"
+  "Check again": "Check again",
+  "Song": "Song",
+  "Album": "Album",
+  "Artist": "Artist",
+  "Playlist": "Playlist",
+  "Radio": "Radio"
 }

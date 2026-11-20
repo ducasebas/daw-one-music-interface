@@ -1,0 +1,12 @@
+/* Search keyboard: readable suggestions above a compact keyboard (other keyboards unchanged). */
+.fullscreen-keyboard.search-keyboard.hub-confirm{gap:12px;padding:16px 32px 18px}
+.search-keyboard>header{height:52px}.search-keyboard h2{font-size:24px}.search-keyboard>header button{min-height:52px}
+.search-keyboard .keyboard-entry{height:62px}.search-keyboard .keyboard-entry input{font-size:26px;padding:8px 18px}.search-keyboard .keyboard-entry button{min-width:110px}
+.search-keyboard .keyboard-suggestions{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:64px;align-content:start;gap:8px 12px;margin:0;overflow:hidden}
+.search-keyboard .keyboard-suggestions button{display:grid;grid-template-columns:minmax(0,1fr);align-content:center;gap:2px;height:64px;padding:0 18px;text-align:left;border:1px solid var(--divider,#3b464d);border-radius:12px;background:var(--surface,#1c252b)}
+.search-keyboard .keyboard-suggestions strong{font-size:21px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-keyboard .keyboard-suggestions span{font-size:16px;line-height:1.2;color:var(--muted,#aeb5ba);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-keyboard .keyboard-suggestions button:active{border-color:var(--accent,#c5a466)}
+.search-keyboard .keyboard-suggestions p{grid-column:1/-1;font-size:19px;color:var(--muted,#aeb5ba);margin:12px 4px}
+.search-keyboard .keyboard-keys{flex:0 0 auto;gap:7px;justify-content:flex-end}.search-keyboard .keyboard-row{flex:0 0 62px;max-height:62px;gap:7px}
+.search-keyboard .keyboard-keys button{font-size:23px;border-radius:10px}
