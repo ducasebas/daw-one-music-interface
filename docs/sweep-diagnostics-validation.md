@@ -26,7 +26,7 @@ The detection thresholds (prominence ≥ 12, middle/high thirds > 2× lead-in po
 | `npm run check` (unit tests + build) | 422/422, build OK |
 | `measurement-quality` / `measurement-status` | 12/12. New: a sweep 1.4 s late is detected; the same sweep in a 5 s recording fails with `complete`; a sweep buried in noise fails with `prominence`/`level`/`snr`; a 3.9.x result without diagnostics or with another analyser version gets the refresh notice. |
 | `room-measurement.spec.js` (Chromium) | 5/5. New: Results show the late/cut-off reason, the older-analyser notice and the technical details. |
-| Full Chromium suite | see below |
+| Full Chromium suite (`playwright test`) | 227/227 passed |
 
 Screenshot: [images/sweep-diagnostics/results-diagnosis.png](images/sweep-diagnostics/results-diagnosis.png) (simulator, synthetic recording).
 
