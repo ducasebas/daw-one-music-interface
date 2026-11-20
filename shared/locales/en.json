@@ -2082,7 +2082,6 @@
   "Off. Measure your room once to correct its strongest resonances.": "Off. Measure your room once to correct its strongest resonances.",
   "Changes apply when you save. Positive boosts automatically reserve headroom, and every change can be undone with Cancel or Restore defaults.": "Changes apply when you save. Positive boosts automatically reserve headroom, and every change can be undone with Cancel or Restore defaults.",
   "Advanced: all amplifier controls": "Advanced: all amplifier controls",
-  "Four updates in one: Play now asks before replacing a queue with music waiting. A Party sheet shows the phone code on Now Playing (with your settings PIN). When Music Assistant is away you can still pause and change volume locally, never louder. Audio & DSP starts with simple controls (preset, bass, treble, loudness); all amplifier controls stay under Advanced.": "Four updates in one: Play now asks before replacing a queue with music waiting. A Party sheet shows the phone code on Now Playing (with your settings PIN). When Music Assistant is away you can still pause and change volume locally, never louder. Audio & DSP starts with simple controls (preset, bass, treble, loudness); all amplifier controls stay under Advanced.",
   "This result comes from older measurement software on the device. Run sudo bash deploy/update-appliance.sh --apply once on the Pi, then measure again.": "This result comes from older measurement software on the device. Run sudo bash deploy/update-appliance.sh --apply once on the Pi, then measure again.",
   "The sweep arrived {lag} ms late and ran past the end of the recording.": "The sweep arrived {lag} ms late and ran past the end of the recording.",
   "The best match lies at the edge of the search window ({lag} ms). The speaker may not have played the sweep.": "The best match lies at the edge of the search window ({lag} ms). The speaker may not have played the sweep.",
@@ -2096,5 +2095,6 @@
   "Player started after the microphone": "Player started after the microphone",
   "Recording": "Recording",
   "Analyser": "Analyser",
-  "The microphone was still settling during the lead-in. Wait a moment after plugging it in, then measure again.": "The microphone was still settling during the lead-in. Wait a moment after plugging it in, then measure again."
+  "The microphone was still settling during the lead-in. Wait a moment after plugging it in, then measure again.": "The microphone was still settling during the lead-in. Wait a moment after plugging it in, then measure again.",
+  "Room measurement explains why a sweep was not accepted, with every check and its value. A microphone that is still settling no longer hides a real sweep, and slow sound output is found up to 2.5 s late. The measurement part needs “sudo bash deploy/update-appliance.sh --apply” once on the Pi.": "Room measurement explains why a sweep was not accepted, with every check and its value. A microphone that is still settling no longer hides a real sweep, and slow sound output is found up to 2.5 s late. The measurement part needs “sudo bash deploy/update-appliance.sh --apply” once on the Pi."
 }

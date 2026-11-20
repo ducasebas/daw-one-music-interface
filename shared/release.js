@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.19-sound.1",
-  label: "GUI 3.14.0 · SOUND",
+  id: "2026.11.20-hotfix.1",
+  label: "GUI 3.14.1 · HOTFIX",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Four updates in one: Play now asks before replacing a queue with music waiting. A Party sheet shows the phone code on Now Playing (with your settings PIN). When Music Assistant is away you can still pause and change volume locally, never louder. Audio & DSP starts with simple controls (preset, bass, treble, loudness); all amplifier controls stay under Advanced.",
+  notes: "Room measurement explains why a sweep was not accepted, with every check and its value. A microphone that is still settling no longer hides a real sweep, and slow sound output is found up to 2.5 s late. The measurement part needs “sudo bash deploy/update-appliance.sh --apply” once on the Pi.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {
