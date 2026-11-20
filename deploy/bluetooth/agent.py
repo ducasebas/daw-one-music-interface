@@ -25,12 +25,40 @@ def write(name, value):
         json.dump(value, output)
     path.replace(ROOT / name)
 
+def transport_info(objects, device_path):
+    """The phone's active A2DP link as BlueZ reports it: codec id and its configuration bytes (no estimate)."""
+    for key, value in objects.items():
+        data = value.get('org.bluez.MediaTransport1')
+        if data and str(key).startswith(str(device_path) + '/'):
+            return {'codec': int(data.get('Codec', -1)), 'configuration': [int(b) for b in list(data.get('Configuration', []))[:16]], 'state': str(data.get('State', ''))[:16]}
+    return None
+
+
+class LinkHistory:
+    """Connection stability per phone: how long the current link has held and how often it dropped in the last hour."""
+    def __init__(self):
+        self.since = {}
+        self.drops = {}
+
+    def update(self, address, connected, now):
+        if connected:
+            self.since.setdefault(address, now)
+        elif address in self.since:
+            del self.since[address]
+            self.drops.setdefault(address, []).append(now)
+        self.drops[address] = [t for t in self.drops.get(address, []) if now - t < 3600][-20:]
+        return {'connectedSeconds': int(now - self.since[address]) if address in self.since else 0, 'dropsLastHour': len(self.drops[address])}
+
+
 def pairing_open(window, boot_id, seconds):
     expiry = window.get('expiresBootSeconds')
     return window.get('bootId') == boot_id and isinstance(expiry, (float, int)) and 0 < expiry - seconds <= 120
 
 def clean(value):
     return ''.join(c for c in str(value) if ord(c) >= 32 and ord(c) != 127)[:160]
+
+HISTORY = LinkHistory()
+
 
 def main():
     import dbus
@@ -137,13 +165,14 @@ def main():
                     approved = [v for v in approved if v != forget]
                     approved_save(approved)
                 (ROOT / 'forget.json').unlink(missing_ok=True)
+                now = seconds()
                 for path, value in list(objects.items())[:256]:
                     data = value.get('org.bluez.Device1')
                     if not data or str(data.get('Address')) not in approved or not data.get('Paired'):
                         continue
                     players = [p['org.bluez.MediaPlayer1'] for key, p in objects.items() if str(key).startswith(str(path) + '/') and 'org.bluez.MediaPlayer1' in p]
                     track = players[0].get('Track', {}) if players else {}
-                    devices.append({'address': str(data.get('Address', '')), 'name': clean(data.get('Alias', 'Phone')), 'connected': bool(data.get('Connected')), 'paired': bool(data.get('Paired')), 'title': clean(track.get('Title', '')), 'artist': clean(track.get('Artist', ''))})
+                    devices.append({'address': str(data.get('Address', '')), 'name': clean(data.get('Alias', 'Phone')), 'connected': bool(data.get('Connected')), 'paired': bool(data.get('Paired')), 'title': clean(track.get('Title', '')), 'artist': clean(track.get('Artist', '')), 'link': HISTORY.update(str(data.get('Address', '')), bool(data.get('Connected')), now), 'transport': transport_info(objects, path)})
                 write('audio-phones.json', [d['address'] for d in devices])
                 write('telemetry.json', {'available': any(a.get('Powered') for a in adapters), 'discoverable': any(a.get('Discoverable') for a in adapters), 'devices': devices[:16], 'observedAt': int(time.time() * 1000)})
             except Exception:

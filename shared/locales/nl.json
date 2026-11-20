@@ -2162,5 +2162,22 @@
   "Step by step: room, speakers, microphone, measurement, correction and check.": "Stap voor stap: ruimte, speakers, microfoon, meting, correctie en controle.",
   "Advanced measurement tools": "Geavanceerde meethulpmiddelen",
   "Left speaker": "Linker speaker",
-  "Right speaker": "Rechter speaker"
+  "Right speaker": "Rechter speaker",
+  "How to connect a phone": "Zo verbind je een telefoon",
+  "Tap “Use Bluetooth” below. Music Assistant pauses on this TuneBox only.": "Tik hieronder op “Bluetooth gebruiken”. Music Assistant pauzeert alleen op deze TuneBox.",
+  "Tap “Pair a phone for 2 minutes”.": "Tik op “Telefoon koppelen gedurende 2 minuten”.",
+  "On your phone, open Settings → Bluetooth and choose TuneBox.": "Open op je telefoon Instellingen → Bluetooth en kies TuneBox.",
+  "Check that the 6-digit code on the phone matches the one on TuneBox, then tap “Codes match”.": "Controleer of de 6-cijferige code op je telefoon gelijk is aan die op TuneBox en tik dan op “Codes komen overeen”.",
+  "Play music on your phone. Use the TuneBox volume; it never goes above its saved ceiling.": "Speel muziek af op je telefoon. Gebruik het volume van TuneBox; dat gaat nooit boven het ingestelde maximum.",
+  "Codec": "Codec",
+  "up to {kbps} kbit/s": "tot {kbps} kbit/s",
+  "{kbps} kbit/s": "{kbps} kbit/s",
+  "Not reported yet": "Nog niet gemeld",
+  "Stable": "Stabiel",
+  "Just connected": "Net verbonden",
+  "Dropped out recently": "Viel recent weg",
+  "Unstable": "Instabiel",
+  "{minutes} min connected · {drops} drop-outs in the last hour": "{minutes} min verbonden · {drops} keer weggevallen in het afgelopen uur",
+  "Move the phone closer to TuneBox or away from Wi-Fi routers and microwaves; walls and bodies weaken Bluetooth.": "Leg de telefoon dichter bij TuneBox of verder van wifi-routers en magnetrons; muren en lichamen verzwakken Bluetooth.",
+  "Bluetooth always compresses audio. Your phone re-encodes everything, also lossless or hi-res streams, to this codec. For full quality, play through Music Assistant instead.": "Bluetooth comprimeert audio altijd. Je telefoon codeert alles opnieuw naar deze codec, ook lossless- of hi-res-streams. Voor volledige kwaliteit speel je via Music Assistant af."
 }

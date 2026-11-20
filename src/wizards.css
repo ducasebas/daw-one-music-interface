@@ -29,3 +29,7 @@
 .journey-steps[data-steps="7"] li,.journey-steps[data-steps="8"] li{flex:0 0 auto}.journey-steps[data-steps="7"] li:not([aria-current=step]) span,.journey-steps[data-steps="8"] li:not([aria-current=step]) span{display:none}.journey-steps[data-steps="7"] [aria-current=step],.journey-steps[data-steps="8"] [aria-current=step]{flex:1 1 auto}
 .rc-entry{margin:8px 0 18px}.rc-start{display:flex;flex-direction:column;align-items:flex-start;gap:8px;width:100%;min-height:120px;padding:20px 24px;text-align:left}.rc-start strong{font-size:26px}.rc-start span{font-size:18px;color:var(--muted,#b4b7b9)}
 .rc-advanced>summary{cursor:pointer;font-size:20px;min-height:56px;display:flex;align-items:center}
+/* Bluetooth: setup steps and honest link details. */
+.bluetooth-steps{font-size:19px;line-height:1.55;padding-left:28px;max-width:960px}.bluetooth-steps li{margin:6px 0}.bluetooth-steps li.done{opacity:.6;text-decoration:line-through}
+.bluetooth-link{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:10px 0 0;font-size:17px}.bluetooth-link dt{color:var(--muted,#b4b7b9)}.bluetooth-link dd{margin:0}
+.bluetooth-link [data-stability=unstable],.bluetooth-link [data-stability=drops]{color:var(--warning,#e0a458)}.bluetooth-link .bluetooth-honest{grid-column:1/-1;color:var(--muted,#b4b7b9);line-height:1.45;max-width:760px}

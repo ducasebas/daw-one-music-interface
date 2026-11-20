@@ -2162,5 +2162,22 @@
   "Step by step: room, speakers, microphone, measurement, correction and check.": "Step by step: room, speakers, microphone, measurement, correction and check.",
   "Advanced measurement tools": "Advanced measurement tools",
   "Left speaker": "Left speaker",
-  "Right speaker": "Right speaker"
+  "Right speaker": "Right speaker",
+  "How to connect a phone": "How to connect a phone",
+  "Tap “Use Bluetooth” below. Music Assistant pauses on this TuneBox only.": "Tap “Use Bluetooth” below. Music Assistant pauses on this TuneBox only.",
+  "Tap “Pair a phone for 2 minutes”.": "Tap “Pair a phone for 2 minutes”.",
+  "On your phone, open Settings → Bluetooth and choose TuneBox.": "On your phone, open Settings → Bluetooth and choose TuneBox.",
+  "Check that the 6-digit code on the phone matches the one on TuneBox, then tap “Codes match”.": "Check that the 6-digit code on the phone matches the one on TuneBox, then tap “Codes match”.",
+  "Play music on your phone. Use the TuneBox volume; it never goes above its saved ceiling.": "Play music on your phone. Use the TuneBox volume; it never goes above its saved ceiling.",
+  "Codec": "Codec",
+  "up to {kbps} kbit/s": "up to {kbps} kbit/s",
+  "{kbps} kbit/s": "{kbps} kbit/s",
+  "Not reported yet": "Not reported yet",
+  "Stable": "Stable",
+  "Just connected": "Just connected",
+  "Dropped out recently": "Dropped out recently",
+  "Unstable": "Unstable",
+  "{minutes} min connected · {drops} drop-outs in the last hour": "{minutes} min connected · {drops} drop-outs in the last hour",
+  "Move the phone closer to TuneBox or away from Wi-Fi routers and microwaves; walls and bodies weaken Bluetooth.": "Move the phone closer to TuneBox or away from Wi-Fi routers and microwaves; walls and bodies weaken Bluetooth.",
+  "Bluetooth always compresses audio. Your phone re-encodes everything, also lossless or hi-res streams, to this codec. For full quality, play through Music Assistant instead.": "Bluetooth always compresses audio. Your phone re-encodes everything, also lossless or hi-res streams, to this codec. For full quality, play through Music Assistant instead."
 }
