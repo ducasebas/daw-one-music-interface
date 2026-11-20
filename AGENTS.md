@@ -4,10 +4,11 @@ Standing rules for every agent (Claude, Codex) working in this repository. Past 
 
 ## Current state
 
-- Published preview OTA: GUI 3.15.1 · SYNC (more precise picture and meter sync, sync failure history; on top of 3.15.0 GUIDE), release `2026.11.20-sync.1`, service-worker cache 64, commit `9c5620d5dbe5e71c638c8d4b9539be284c3e7428` (20 November 2026).
-- Next candidate: bump `shared/release.js` (including its user-facing `notes`) and the cache in `public/sw.js` (next is 65). The following need `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply` once on the Pi: restart controls (3.10), local volume (3.13), the sweep analyser and amplifier-fault rule (3.14.1/3.14.2), the Bluetooth agent, updater duration history and update page (3.15), and the sync capture and history (3.15.1). Popups follow `docs/popup-style.md`. The cold-boot console item stays separate and needs the owner.
+- Published preview OTA: GUI 3.15.2 · HOTFIX (power setup explains itself, audio analysis survives logout; includes 3.15.0 GUIDE and 3.15.1 SYNC), release `2026.11.20-hotfix.3`, service-worker cache 65, commit `232475e95425de30adcd3c268afd3b882cc01766` (20 November 2026).
+- Next candidate: bump `shared/release.js` (including its user-facing `notes`) and the cache in `public/sw.js` (next is 66). The following need `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply` once on the Pi: restart controls (3.10), local volume (3.13), the sweep analyser and amplifier-fault rule (3.14.1/3.14.2), the Bluetooth agent, updater duration history and update page (3.15), the sync capture and history (3.15.1), and logind `RemoveIPC=no` for the player's PCM export (3.15.2; needs a restart). Popups follow `docs/popup-style.md`. The cold-boot console item stays separate and needs the owner.
 - 3.10.0 is installed on the owner's Pi (reported 19 November 2026, "looks beautiful"); its individual touch/notification points are not separately confirmed. The last PD request (on 3.9.x) failed with an I²C I/O error; the startup PD policy was disabled on the device.
-- Physical acceptance still open: cursor hidden on cold start, real PD source query and 20 V contract/stability, INA228 VBUS wiring; for 3.9.0, phone pairing and control over the real home Wi-Fi.
+- INA228 VBUS voltage-sense wiring was confirmed by the owner on 20 November 2026 (20.13 V on a 20 V contract).
+- Physical acceptance still open: cursor hidden on cold start, real PD source query and 20 V contract/stability; for 3.9.0, phone pairing and control over the real home Wi-Fi.
 
 ## Approval per update
 
@@ -31,7 +32,7 @@ Follow [docs/development-workflow.md](docs/development-workflow.md). Preserve be
 
 ## Hardware and safety constraints
 
-- Never invent hardware confirmations. INA228 VBUS voltage-sense wiring is unverified (ADC runs, VBUS reads near 0 V); keep its confirmation false in software until the owner physically verifies it.
+- Never invent hardware confirmations. The INA228 VBUS voltage-sense wiring was physically confirmed by the owner on 20 November 2026; any other wiring or hardware confirmation still comes only from the owner.
 - PD: no live PD experiments, arbitrary voltages, 5 V selection, hard resets or forced 5 A. Requests stay fixed 20 V at documented current targets, each separately confirmed on the device; above 3 A requires 5 A cable confirmation. A stored 3 A offer does not prove a 5 A offer exists.
 - Preserve legacy strict-100 W and exact-profile policies, cable confirmations, idle/audio/update gates, the interruption journal and opt-in startup policies.
 - Keep the HUSB238 ISET startup profile (closed = original 1.25 A) distinct from the verified I2C request.

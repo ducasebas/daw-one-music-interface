@@ -2,7 +2,20 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.15.2 HOTFIX — approved
+## GUI 3.15.2 HOTFIX — published
+
+Merged via PR #19 as `232475e95425de30adcd3c268afd3b882cc01766` on 20 November 2026 after all six PR CI jobs passed. Verify on `main` (run 44754439705) and Publish signed preview (run 44755610081) passed on the first attempt, including the public channel check. Release `ota-preview-232475e95425de30adcd3c268afd3b882cc01766` is public.
+
+Verified independently from this session:
+- the signature verifies with the unchanged project key;
+- the manifest names commit `232475e`, release `2026.11.20-hotfix.3` and label "GUI 3.15.2 · HOTFIX", and the archive hash matches;
+- `release-bundle verify` confirms 401 files with cache v65;
+- `update-appliance.sh` in the archive sets `RemoveIPC=no`;
+- `checkChannel` selects this release.
+
+Pi installation, the host refresh plus restart, and the power wizard on the Pi were not observed. The 3.15.1 publish re-run (attempt 2 of run 44748600414) also passed.
+
+**Owner hardware confirmation, 20 November 2026:** the owner confirmed the INA228 VBUS voltage-sense wiring ("Yes confirmed") when asked about `voltageSenseVerified` being on. The reading at that time was 20.13 V on a 20 V contract. This is the first physical confirmation of VBUS; the current path had already been confirmed.
 
 On 20 November 2026 the owner approved this update with "ja en dan pushen als alles klaar is" (yes, then push when everything is ready). It came after the owner asked to fix the 100 W issue first and had been told about the other changes. Scope: release `2026.11.20-hotfix.3`, cache 65:
 - the power setup explains why it cannot start and can re-read the helper capabilities;
