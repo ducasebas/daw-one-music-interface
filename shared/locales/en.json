@@ -2233,5 +2233,9 @@
   "Power setup explains why it cannot start and can check again without reopening Settings. Audio analysis keeps working after an SSH session ends. Now Playing loses its duplicate heading, meters stay empty when you switched analysis off, and the queue choice is clearer. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” and a restart once on the Pi for the audio analysis fix.": "Power setup explains why it cannot start and can check again without reopening Settings. Audio analysis keeps working after an SSH session ends. Now Playing loses its duplicate heading, meters stay empty when you switched analysis off, and the queue choice is clearer. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” and a restart once on the Pi for the audio analysis fix.",
   "Power setup could not start": "Power setup could not start",
   "No power request was sent. The supply keeps its current contract.": "No power request was sent. The supply keeps its current contract.",
-  "Finish other audio activity before power setup": "Finish other audio activity before power setup"
+  "Finish other audio activity before power setup": "Finish other audio activity before power setup",
+  "Pausing music on this TuneBox, then querying the connected power supply…": "Pausing music on this TuneBox, then querying the connected power supply…",
+  "Before power setup": "Before power setup",
+  "Connect Music Assistant, or pause music on this TuneBox, before power setup": "Connect Music Assistant, or pause music on this TuneBox, before power setup",
+  "Pause music on this TuneBox before power setup": "Pause music on this TuneBox before power setup"
 }

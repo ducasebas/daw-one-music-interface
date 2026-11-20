@@ -293,6 +293,11 @@ app.post("/api/device",async(q,r)=>{
     const stopped=await prepareMeasurement({bluetooth:bluetoothState,syncRunning:synchronizationRunning,manage,music,multiroom,runtime});
     if(stopped.length){localAudio.refresh(publicAutomaticDsp().settings?.enabled===true);broadcast();}
     value={...await manage({command:'measurement-start',args}),stopped};
+   }else if(q.body.command==='power-discover-20v'&&q.body.args?.stopOthers===true){
+    // Owner 20 Nov 2026: tapping power setup pauses this TuneBox (and leaves its group) itself; the contract only changes while silent.
+    const stopped=await prepareMeasurement({bluetooth:bluetoothState,syncRunning:synchronizationRunning,manage,music,multiroom,runtime,purpose:'power'});
+    if(stopped.length){localAudio.refresh(publicAutomaticDsp().settings?.enabled===true);broadcast();await new Promise(r=>setTimeout(r,stopped.includes('playback')?800:0));}
+    value={...await manage({command:'power-discover-20v',args:{}}),stopped};
    }else value=await manage(q.body);if(q.body.command==='hotspot-start'){
    if(!value.simulated&&!phoneServer){phoneServer=createServer((request,response)=>{request.provisioning=true;app(request,response);});await new Promise((resolve,reject)=>{phoneServer.once('error',reject);phoneServer.listen(3003,'10.42.0.1',resolve);});}
    value.pairingToken=security.createPair();value.setupUrl=(value.url||'http://10.42.0.1:3003/?setup=phone')+'#pair='+value.pairingToken;

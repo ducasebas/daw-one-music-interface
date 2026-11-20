@@ -2233,5 +2233,9 @@
   "Power setup explains why it cannot start and can check again without reopening Settings. Audio analysis keeps working after an SSH session ends. Now Playing loses its duplicate heading, meters stay empty when you switched analysis off, and the queue choice is clearer. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” and a restart once on the Pi for the audio analysis fix.": "Vermogen instellen legt uit waarom het niet kan starten en kan opnieuw controleren zonder Instellingen te heropenen. Audiometing blijft werken nadat een SSH-sessie eindigt. Speelt nu verliest de dubbele kop, meters blijven leeg als je de meting zelf hebt uitgezet, en de wachtrijkeuze is duidelijker. Vereist één keer “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” en een herstart op de Pi voor de audiometing.",
   "Power setup could not start": "Vermogen instellen kon niet starten",
   "No power request was sent. The supply keeps its current contract.": "Er is geen vermogensaanvraag verstuurd. De voeding houdt het huidige contract.",
-  "Finish other audio activity before power setup": "Rond andere audio-activiteit af voordat je het vermogen instelt"
+  "Finish other audio activity before power setup": "Rond andere audio-activiteit af voordat je het vermogen instelt",
+  "Pausing music on this TuneBox, then querying the connected power supply…": "Muziek op deze TuneBox pauzeren en daarna de aangesloten voeding uitvragen…",
+  "Before power setup": "Voor het instellen van vermogen",
+  "Connect Music Assistant, or pause music on this TuneBox, before power setup": "Verbind Music Assistant, of pauzeer de muziek op deze TuneBox, voordat je het vermogen instelt",
+  "Pause music on this TuneBox before power setup": "Pauzeer de muziek op deze TuneBox voordat je het vermogen instelt"
 }
