@@ -32,6 +32,11 @@ flange_t     = 3.0;
 flange_holes = [6.0, niche_w - 6.0]; // X of the countersunk M3 holes (into inserts in the wood)
 
 /* [Speaker terminals — round, through the ceiling] */
+// The owner drills these holes after anodising (20 Nov 2026), so by default nothing is
+// machined. "mark" adds 1 mm centre dimples on the inner face; "hole" machines them.
+post_mode    = "none";      // "none", "mark" or "hole"
+// Keep the terminals inside the free ceiling zone: X 13..34, Y 1.5..20.5 (clear of the
+// USB-C pocket and of the Pi/HAT stack above the ceiling).
 // Hole for the terminal's insulating shoulder bush: the outputs are BTL, so neither pole may
 // touch the aluminium (anodising does not insulate reliably at a cut edge). 2 x 2 grid.
 // Fits terminals with: part above the ceiling (nut, lug) <= 8 mm dia and <= 8 mm high,
@@ -69,7 +74,10 @@ module cap() {
         // the niche itself, open at the rear (Y = 0) and at the bottom
         translate([-gap, -1, bottom_wall - 1]) cube([inner_w, inner_d + 1 + gap, inner_h + 1]);
         // speaker terminal holes
-        for (p = post_xy) translate([p[0], p[1], top_z - wall_t - 1]) cylinder(d = post_hole_d, h = wall_t + 2);
+        if (post_mode == "hole")
+            for (p = post_xy) translate([p[0], p[1], top_z - wall_t - 1]) cylinder(d = post_hole_d, h = wall_t + 2);
+        if (post_mode == "mark")
+            for (p = post_xy) translate([p[0], p[1], top_z - 0.5]) cylinder(d1 = 0, d2 = 1.0, h = 0.501);
         // USB-C: through slot plus overmold pocket from below
         translate([usb_xy[0] - usb_slot[0] / 2, usb_xy[1] - usb_slot[1] / 2, top_z - wall_t - 1])
             linear_extrude(wall_t + 2) rrect(usb_slot[0], usb_slot[1], 1.0);

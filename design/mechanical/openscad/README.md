@@ -17,7 +17,7 @@ Outline input: the owner-supplied case STEP of 20 November 2026 (SHA-256 `4312a1
 | Notch inside corners | R1.5 (a milling cutter cannot make the sharp corners in the STEP) |
 | Fastening (owner: OK) | 6 × countersunk M3 into threaded inserts: 4 in the side walls, 2 in the top wall, on the wall centreline |
 | I/O cap (owner's choice) | Milled aluminium cap standing on the bottom wall, screwed down from above (2 × countersunk M3 into inserts). It forms the niche ceiling, front wall and side cheeks above the wood, so the plugs are hidden in the recess. Connectors in the **ceiling**, plugs inserted upward |
-| Speaker terminals (owner: round) | 2 × 2 grid, Ø6.5 holes for insulating shoulder bushes (BTL outputs must not touch the aluminium). Fits round terminals ≤ Ø8 mm and ≤ 8 mm high above the ceiling, cap ≤ Ø8 × 16 mm below. Change `post_hole_d`/`post_xy` once the part is chosen |
+| Speaker terminals (owner: round, drilled by the owner) | Not machined by default (`post_mode = "none"`); `"mark"` adds centre dimples, `"hole"` the 2 × 2 grid of Ø6.5 holes. Free ceiling zone for them: X 13–34, Y 1.5–20.5 in cap coordinates. Use insulating shoulder bushes (BTL outputs must not touch the aluminium), deburr the bare drilled edges and drill before fitting the HUSB238 so no chips reach it. Above the ceiling ≤ 8 mm high, below ≤ 16 mm |
 | USB-C (owner: the HUSB238 board itself in the cap) | Adafruit 5991 stands upright on a fin milled onto the cap (3 mm standoffs, 4 × M2.5 tapped), receptacle down into a 4.6 × 9.4 mm slot with a 7.0 × 12.8 × 1.8 mm pocket for the plug overmold. Upright because only ≈ 33 mm of ceiling is free beside the Pi/HAT stack |
 
 Files: `pcbway.scad` (shared rules), `backplate.scad`, `io-plate.scad`.
