@@ -9,7 +9,9 @@ export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,o
  let saved={};try{saved=JSON.parse(readFileSync(join(directory,'device.json'),'utf8'));}catch{}
  let localLevel=100,policy=updateSettings(saved.policy),current={release:release.id,commit:null},previous=null,progress={status:'up-to-date'},available=null,running=false;
  const save=()=>{mkdirSync(directory,{recursive:true});writeFileSync(join(directory,'device.json.tmp'),JSON.stringify({policy,setupComplete:saved.setupComplete})+'\n',{mode:0o600});renameSync(join(directory,'device.json.tmp'),join(directory,'device.json'));};
- const report=status=>{progress={status,checkedAt:new Date().toISOString(),percent:null};onEvent(status);};
+ // Same timing contract as the real updater: start time while installing, typical duration from earlier installs.
+ let startedAt=null;const durations=[];
+ const report=status=>{if(status==='downloading')startedAt=new Date().toISOString();if(status==='installed'&&startedAt)durations.push(Math.max(1,Math.round((Date.now()-Date.parse(startedAt))/1000)));if(!['downloading','verifying','preparing','installing','restarting','checking-health','rolling-back'].includes(status))startedAt=null;const typical=durations.length?[...durations].sort((a,b)=>a-b)[durations.length>>1]:null;progress={status,checkedAt:new Date().toISOString(),percent:null,...(startedAt?{startedAt}:{}),...(typical?{typicalSeconds:typical}:{})};onEvent(status);};
  const phase=async status=>{report(status);await new Promise(r=>setTimeout(r,delay));};
  const manager=new DeviceManager({
   status:async()=>({managed:true,simulated:true,configured:true,channel:'preview',policy,current:current.commit,previousAvailable:!!previous,setupComplete:saved.setupComplete!==false,networkSupported:true,audioTestSupported:true,progressDisplay:false,powerOffSupported:true,rebootSupported:true,restartServiceSupported:true}),

@@ -9,7 +9,7 @@ test('simulation checks, installs with progress and rolls back using the shared 
  await page.request.post('/api/scenario',{data:{name:'Cold boot'}});await openUpdates(page);
  await page.getByRole('button',{name:"Check for updates",exact:true}).click();await expect(page.getByText("Available:",{exact:false})).toContainText('-preview');
  await page.getByLabel('Updates page',{exact:true}).selectOption('1');await page.getByLabel("Update policy",{exact:true}).selectOption('notify');await page.getByRole('button',{name:"Save update policy"}).click();await expect(page.getByRole('status').filter({hasText:"Saved"})).toBeVisible();
- await page.getByLabel('Updates page',{exact:true}).selectOption('0');await page.getByRole('button',{name:"Install update",exact:true}).click();
+ await page.getByLabel('Updates page',{exact:true}).selectOption('0');await page.getByRole('button',{name:"Install update",exact:true}).click();await page.getByRole('button',{name:"Install now",exact:true}).click();
  await expect(page.getByRole('progressbar',{name:"Update progress"}).first()).toBeVisible();await expect(page.getByRole('heading',{name:"Update complete",exact:true})).toBeVisible({timeout:15000});
  await page.getByRole('button',{name:"Previous version…",exact:true}).click();await page.getByRole('button',{name:"Confirm rollback",exact:true}).click();await expect(page.getByRole('heading',{name:"Previous version restored",exact:true})).toBeVisible({timeout:15000});
  const info=await(await page.request.get('/api/updates')).json();expect(info.manager.policy.mode).toBe('paused');expect(info.manager.simulated).toBe(true);expect((await(await page.request.get('/api/state')).json()).device.amplifierEnabled).toBe(false);

@@ -17,7 +17,7 @@ test('manual update offers cancel before pausing a group and shows pending feedb
     await new Promise(resolve=>setTimeout(resolve,400));
     return r.fulfill({status:409,json:{code:'update-group-confirmation',error:'Installing will pause these rooms. Confirm before continuing.',rooms:[{id:'rivo',name:'Rivo'},{id:'tb',name:'TuneBox'}],roomsRevision:'a'.repeat(64)}});
   });
-  await openUpdates(page);await page.getByRole('button',{name:'Install update',exact:true}).click();
+  await openUpdates(page);await page.getByRole('button',{name:'Install update',exact:true}).click();await page.getByRole('button',{name:'Install now',exact:true}).click();
   await expect(page.getByRole('button',{name:'Preparing update…',exact:true})).toBeDisabled();await expect(page.getByText('Pausing playback and checking the device…',{exact:true})).toBeVisible();
   const dialog=page.getByRole('alertdialog',{name:'Pause rooms for update'});await expect(dialog).toBeVisible();await expect(dialog.getByRole('listitem')).toHaveText(['Rivo','TuneBox']);
   await dialog.getByRole('button',{name:'Cancel',exact:true}).click();await expect(dialog).not.toBeVisible();expect(requests).toEqual([{command:'install',args:{}}]);
@@ -33,7 +33,7 @@ test('changed groups require a new confirmation and forward only the latest revi
     const changed=requests.length===2;
     return r.fulfill({status:409,json:{code:'update-group-confirmation',error:'Installing will pause these rooms. Confirm before continuing.',rooms:[{id:'rivo',name:'Rivo'},{id:'tb',name:'TuneBox'},...(changed?[{id:'hall',name:'Hall'}]:[])],roomsRevision:(changed?'b':'a').repeat(64)}});
   });
-  await openUpdates(page);await page.getByRole('button',{name:'Install update',exact:true}).click();
+  await openUpdates(page);await page.getByRole('button',{name:'Install update',exact:true}).click();await page.getByRole('button',{name:'Install now',exact:true}).click();
   const dialog=page.getByRole('alertdialog',{name:'Pause rooms for update'});await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:'Pause rooms and install',exact:true}).click();
   await expect(dialog.getByRole('listitem')).toHaveText(['Rivo','TuneBox','Hall']);await dialog.getByRole('button',{name:'Pause rooms and install',exact:true}).click();
   await expect(dialog).not.toBeVisible();expect(requests).toEqual([{command:'install',args:{}},{command:'install',args:{pauseGroup:true,roomsRevision:'a'.repeat(64)}},{command:'install',args:{pauseGroup:true,roomsRevision:'b'.repeat(64)}}]);
@@ -50,10 +50,10 @@ test('Install shows a readable version, and its error or started result stays vi
   await openUpdates(page);
   await expect(page.getByText('GUI 9.9.9 · TEST')).toBeVisible();
   const install=page.getByRole('button',{name:'Install update',exact:true});
-  await expect(install).toBeEnabled();await install.click();
+  await expect(install).toBeEnabled();await install.click();await page.getByRole('button',{name:'Install now',exact:true}).click();
   const alert=page.locator('.install-update-error');await expect(alert).toContainText('could not confirm that its audio output is silent');
   await page.waitForTimeout(1500);await expect(alert).toBeVisible();
-  answer='queued';await install.click();
+  answer='queued';await install.click();await page.getByRole('button',{name:'Install now',exact:true}).click();
   await expect(page.getByText('Installing without Music Assistant: the audio output is silent.',{exact:false})).toBeVisible();
   expect(installs).toHaveLength(2);
 });

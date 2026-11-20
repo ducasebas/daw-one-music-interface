@@ -1,3 +1,4 @@
+import {AmplifierHealth} from './AmplifierHealth.jsx';
 import React,{useEffect,useRef,useState} from 'react';
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
 import {SystemDashboard} from './SystemDashboard.jsx';
@@ -32,7 +33,7 @@ export function DeveloperSettings({snapshot,offline,onDirty,actionsRef,onBeforeN
   <nav className="hub-tabs developer-topics" aria-label={tr('Developer topics')}>{['Status','History','Hardware','Audio','Startup','Services','Updates','Debug'].map(value=><button key={value} disabled={pending} aria-pressed={value===tab} onClick={()=>choose(value)}>{tr(value)}</button>)}</nav>
   {tab==='Status'&&<SystemDashboard snapshot={snapshot} offline={offline} advanced/>}
   {tab==='History'&&<ol className="system-history">{[...(snapshot.log||[])].reverse().slice(0,100).map(row=><li key={row.id}><time>{new Date(row.at).toLocaleTimeString()}</time><strong>{row.type}</strong><span>{row.state}</span><small>{row.reason}</small></li>)}</ol>}
-  {tab==='Hardware'&&<><p>{tr('Only confirm wiring after checking the physical connections. Changing a checkbox does not connect a sensor.')}</p>{powerSettings||<p>{tr('Hardware setup is available in the main Settings menu on TuneBox.')}</p>}<dl className="system-facts"><dt>{tr('Physical power button')}</dt><dd>{tr('Requires an explicitly assigned free GPIO. GPIO3 wake shares the sensor I²C clock; confirm wiring before installation.')}</dd></dl></>}
+  {tab==='Hardware'&&<><AmplifierHealth offline={offline}/><p>{tr('Only confirm wiring after checking the physical connections. Changing a checkbox does not connect a sensor.')}</p>{powerSettings||<p>{tr('Hardware setup is available in the main Settings menu on TuneBox.')}</p>}<dl className="system-facts"><dt>{tr('Physical power button')}</dt><dd>{tr('Requires an explicitly assigned free GPIO. GPIO3 wake shares the sensor I²C clock; confirm wiring before installation.')}</dd></dl></>}
   {tab==='Audio'&&soundSettings}
   {tab==='Startup'&&startupSettings}
   {tab==='Services'&&<>{serverSettings}<RestartControls snapshot={snapshot} offline={offline}/></>}

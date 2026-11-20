@@ -128,3 +128,10 @@ test('owner Pi 20 Nov: an idle "Fault Clock" does not block a sweep; real amplif
  await prepareMeasurement(make(idle));
  await assert.rejects(prepareMeasurement(make([{name:'Fault PVDD Undervoltage',active:true},...idle])),/Resolve amplifier faults/);
 });
+test('Louder HAT health groups the real fault flags; the idle clock is a notice, not a fault',async()=>{
+ const {amplifierHealth}=await import('../shared/amplifier-health.js');
+ const flags=['Fault BQ Write Failed','Fault Clock','Fault EEPROM Boot Load','Fault Left Channel CBC OC','Fault Left Channel DC','Fault Left Channel OC','Fault OTP CRC Error','Fault Over Temperature Shutdown','Fault PVDD Overvoltage','Fault PVDD Undervoltage'].map(name=>({name,active:name==='Fault Clock'}));
+ const idle=amplifierHealth(flags);assert.equal(idle.blocking,0);assert.deepEqual(Object.fromEntries(idle.checks.map(c=>[c.id,c.state])),{overcurrent:'ok',dc:'ok',temperature:'ok',supply:'ok',clock:'idle',memory:'ok'});
+ const hot=amplifierHealth(flags.map(f=>f.name==='Fault Over Temperature Shutdown'?{...f,active:true}:f));assert.equal(hot.blocking,1);assert.equal(hot.checks.find(c=>c.id==='temperature').state,'fault');
+ assert.deepEqual(amplifierHealth(null),{known:false,checks:[],blocking:0});
+});

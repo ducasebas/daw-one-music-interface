@@ -14,10 +14,15 @@ const json=(path,fallback={})=>{try{return JSON.parse(readFileSync(path,'utf8'))
 const atomic=(path,value)=>{writeFileSync(path+'.tmp',JSON.stringify(value)+'\n',{mode:0o600});renameSync(path+'.tmp',path);};
 const configPath='/etc/daw-one-updater/config.json';
 let config=json(configPath),channel=config.channel||null,current=json(base+'/installed.json'),available=null,kiosk=false,lastPhase='startup';
+// Real install durations from this device: the GUI shows elapsed time and an estimate from the last installs, never a fixed guess.
+const historyPath='/var/lib/daw-one-update-status/history.json';let startedAt=null;
+const typicalSeconds=(()=>{try{const v=JSON.parse(readFileSync(historyPath,'utf8')).filter(n=>Number.isInteger(n)&&n>0&&n<7200).slice(-5).sort((a,b)=>a-b);return v.length?v[v.length>>1]:null;}catch{return null;}})();
+function recordDuration(){if(!startedAt)return;try{let v=[];try{v=JSON.parse(readFileSync(historyPath,'utf8'));}catch{}v=[...(Array.isArray(v)?v:[]),Math.round((Date.now()-Date.parse(startedAt))/1000)].slice(-5);atomic(historyPath,v);run('chmod',['644',historyPath]);}catch{}}
 function report(status,extra={}){
  if(status!=='error')lastPhase=status;
+ if(status==='downloading'&&!startedAt)startedAt=new Date().toISOString();
  const path='/var/lib/daw-one-update-status/status.json';
- atomic(path,{status,channel,checkedAt:new Date().toISOString(),current:{release:current.release,commit:current.commit},available,percent:null,...extra});run('chmod',['644',path]);
+ atomic(path,{status,channel,checkedAt:new Date().toISOString(),current:{release:current.release,commit:current.commit},available,percent:null,...(startedAt?{startedAt}:{}),...(typicalSeconds?{typicalSeconds}:{}),...extra});run('chmod',['644',path]);
  console.log(JSON.stringify({component:'tunebox-update',status,commit:available?.commit||current.commit||null,percent:extra.percent??null,...(extra.error?{error:extra.error,failedPhase:extra.failedPhase}:{})}));
 }
 async function download(url,max,onProgress){
@@ -108,7 +113,7 @@ try{
  const applianceChanged=maintainAppliance(dest,run,config.applianceUpdates===true);
  await activate(host,manifest,report);
  if(applianceChanged&&kiosk)run('systemctl',['restart','daw-one-kiosk.service']);
- report('installed');
+ recordDuration();report('installed');
  const previous=current.previous?.split('/').pop();const entries=readdirSync(slots).filter(name=>lstatSync(slots+'/'+name).isDirectory()&&!lstatSync(slots+'/'+name).isSymbolicLink()).map(name=>({name,modified:lstatSync(slots+'/'+name).mtimeMs}));
  for(const name of prunableSlots(entries,manifest.commit,previous))rmSync(slots+'/'+name,{recursive:true});
 }catch(error){const code=error.cause?.code||error.code;const detail=String(error.message)+(typeof code==='string'&&!String(error.message).includes(code)?` (${code})`:'');report('error',{error:detail.slice(0,180),failedPhase:lastPhase});process.exitCode=1;}
