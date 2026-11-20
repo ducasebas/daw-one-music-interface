@@ -2087,7 +2087,7 @@
   "The sweep arrived {lag} ms late and ran past the end of the recording.": "De sweep kwam {lag} ms te laat binnen en liep voorbij het einde van de opname.",
   "The best match lies at the edge of the search window ({lag} ms). The speaker may not have played the sweep.": "De beste overeenkomst ligt aan de rand van het zoekvenster ({lag} ms). Mogelijk heeft de luidspreker de sweep niet afgespeeld.",
   "The sweep stands out {value}× above the background; {need}× is needed. The microphone mostly heard noise or another sound.": "De sweep steekt {value}× boven de achtergrond uit; {need}× is nodig. De microfoon hoorde vooral ruis of een ander geluid.",
-  "The middle and high part of the sweep is only {db} dB above the quiet lead-in; 3 dB is needed. Check that the tweeter plays and the chosen output is connected.": "Het midden en hoge deel van de sweep ligt maar {db} dB boven de stille aanloop; 3 dB is nodig. Controleer of de tweeter speelt en de gekozen uitgang is aangesloten.",
+  "The middle and high part of the sweep is only {db} dB above the quietest part of the recording; 3 dB is needed. Check that the tweeter plays and the chosen output is connected.": "Het midden en hoge deel van de sweep ligt maar {db} dB boven het stilste deel van de opname; 3 dB is nodig. Controleer of de tweeter speelt en de gekozen uitgang is aangesloten.",
   "Clipping {value}% (at most 0.1%). Lower the amplifier volume a little.": "Oversturing {value}% (maximaal 0,1%). Zet de versterker iets zachter.",
   "Technical details": "Technische details",
   "Delay": "Vertraging",
@@ -2095,5 +2095,6 @@
   "Peak": "Piek",
   "Player started after the microphone": "Speler gestart na de microfoon",
   "Recording": "Opname",
-  "Analyser": "Analyse"
+  "Analyser": "Analyse",
+  "The microphone was still settling during the lead-in. Wait a moment after plugging it in, then measure again.": "De microfoon kwam tijdens de aanloop nog tot rust. Wacht even na het aansluiten en meet daarna opnieuw."
 }

@@ -6,7 +6,7 @@ import {usbMicrophones} from './devices.mjs';
 import {sweep,sweepLevels,wav,analyse,cutProposal,rate,captureSeconds} from './signal.mjs';
 const dir='/var/lib/daw-one-measurement';
 const status=v=>{writeFileSync(dir+'/status.tmp',JSON.stringify({...v,observedAt:Date.now()})+'\n',{mode:0o640});renameSync(dir+'/status.tmp',dir+'/status.json');};
-const children=new Set();let cancelled=false;
+const settleSeconds=.4,children=new Set();let cancelled=false;
 const kill=()=>{for(const p of children)p.kill('SIGTERM');};
 process.on('SIGTERM',()=>{cancelled=true;kill();});process.on('SIGINT',()=>{cancelled=true;kill();});
 function run(program,args){
@@ -15,10 +15,11 @@ function run(program,args){
  done.catch(()=>{});return {p,done};
 }
 async function captureReady(capture){
- // Wait for real samples, not a fixed sleep that can play before a slow USB device opens.
+ // Wait for real samples, not a fixed sleep that can play before a slow USB device opens. A USB
+ // microphone also needs a moment to settle after opening (DC offset, gain), so wait for 0.4 s of audio.
  for(let i=0;i<60;i++){
   if(cancelled)throw Error('Cancelled');if(capture.p.exitCode!==null)throw Error('Microphone failed to start');
-  try{if(statSync(dir+'/capture.raw').size>=rate*.06*2)return;}catch{}
+  try{if(statSync(dir+'/capture.raw').size>=rate*settleSeconds*2)return;}catch{}
   await delay(50);
  }
  throw Error('Microphone did not start in time');

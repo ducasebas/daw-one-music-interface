@@ -105,3 +105,15 @@ test('the GUI explains a failed sweep and flags results from an older analyser o
  assert.ok(reasons.some(([k])=>k.startsWith('The sweep arrived')));assert.ok(!reasons.some(([k])=>k.includes('older')));assert.equal(cut.diagnostics.analyser,measurementAnalyserVersion);
  assert.match(sweepDiagnosis({diagnostics:{...cut.diagnostics,analyser:'2026.11.19'}})[0][0],/older measurement software/);
 });
+test('owner Pi 19 Nov: a real sweep after a slow USB-microphone start-up burst is detected, and SNR ignores the burst',()=>{
+ // Pi result: prominence 232/113, delays 177/207 ms, yet "not detected" with SNR -0.6/-13.7 dB. The level check compared
+ // against a lead-in still holding the microphone's settling offset, and the fallback SNR used the first 100 ms.
+ const input=sweep(-36),make=(burst,settleMs,len=7)=>{const r=new Float32Array(rate*len);let seed=3;
+  for(let i=0;i<r.length;i++){seed=(seed*16807)%2147483647;const t=i/rate;r[i]=(seed/2147483647-.5)*.004+burst*Math.exp(-t/(settleMs/1000))*(t<.05?Math.sin(2*Math.PI*900*t):1)+.01*Math.sin(2*Math.PI*35*t);}
+  const d=Math.round(.177*rate);for(let i=0;i<input.length&&i+d<r.length;i++)r[i+d]+=input[i]*.25/10**(-36/20)*.05;return r;};
+ const clean=analyse(input,make(0,600)),pi=analyse(input,make(.3,600)),strong=analyse(input,make(.6,900)),short=analyse(input,make(.3,600,5));
+ for(const a of [clean,pi,strong,short]){assert.equal(a.sweepDetected,true);assert.ok(Math.abs(a.captureDelayMs-177)<1);assert.ok(Math.abs(a.snrDb-clean.snrDb)<1,`SNR ${a.snrDb} vs ${clean.snrDb}`);}
+ assert.equal(pi.diagnostics.settling,true);assert.equal(clean.diagnostics.settling,false);assert.ok(pi.diagnostics.startBurstDbfs>clean.diagnostics.startBurstDbfs+20);
+ // Quiet here (rumble), so the honest outcome is "too quiet by N dB", not "not detected".
+ assert.deepEqual(pi.diagnostics.failed,['snr']);assert.ok(pi.neededDb>0);assert.ok(!pi.warnings.some(w=>w.startsWith('A complete reference sweep')));
+});

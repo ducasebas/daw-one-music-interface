@@ -2087,7 +2087,7 @@
   "The sweep arrived {lag} ms late and ran past the end of the recording.": "The sweep arrived {lag} ms late and ran past the end of the recording.",
   "The best match lies at the edge of the search window ({lag} ms). The speaker may not have played the sweep.": "The best match lies at the edge of the search window ({lag} ms). The speaker may not have played the sweep.",
   "The sweep stands out {value}× above the background; {need}× is needed. The microphone mostly heard noise or another sound.": "The sweep stands out {value}× above the background; {need}× is needed. The microphone mostly heard noise or another sound.",
-  "The middle and high part of the sweep is only {db} dB above the quiet lead-in; 3 dB is needed. Check that the tweeter plays and the chosen output is connected.": "The middle and high part of the sweep is only {db} dB above the quiet lead-in; 3 dB is needed. Check that the tweeter plays and the chosen output is connected.",
+  "The middle and high part of the sweep is only {db} dB above the quietest part of the recording; 3 dB is needed. Check that the tweeter plays and the chosen output is connected.": "The middle and high part of the sweep is only {db} dB above the quietest part of the recording; 3 dB is needed. Check that the tweeter plays and the chosen output is connected.",
   "Clipping {value}% (at most 0.1%). Lower the amplifier volume a little.": "Clipping {value}% (at most 0.1%). Lower the amplifier volume a little.",
   "Technical details": "Technical details",
   "Delay": "Delay",
@@ -2095,5 +2095,6 @@
   "Peak": "Peak",
   "Player started after the microphone": "Player started after the microphone",
   "Recording": "Recording",
-  "Analyser": "Analyser"
+  "Analyser": "Analyser",
+  "The microphone was still settling during the lead-in. Wait a moment after plugging it in, then measure again.": "The microphone was still settling during the lead-in. Wait a moment after plugging it in, then measure again."
 }

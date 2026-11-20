@@ -1,6 +1,6 @@
 import {targetDefaults,targetSettings} from './room-targets.js';
 /** Sweep analyser version. The analyser runs from the host helper (not the OTA slot), so results carry it and the GUI can tell when the Pi still runs an older copy. */
-export const measurementAnalyserVersion='2026.11.20-sweep-diagnostics';
+export const measurementAnalyserVersion='2026.11.20-sweep-diagnostics.2';
 /** Plain-language reasons for a failed sweep check, as [locale key, values] pairs. */
 export function sweepDiagnosis(channel){
  const d=channel?.diagnostics;if(!d||!Array.isArray(d.checks))return [['This result comes from older measurement software on the device. Run sudo bash deploy/update-appliance.sh --apply once on the Pi, then measure again.',{}]];
@@ -10,7 +10,7 @@ export function sweepDiagnosis(channel){
   if(id==='complete')out.push(['The sweep arrived {lag} ms late and ran past the end of the recording.',{lag:c.value.lagMs}]);
   if(id==='edge')out.push(['The best match lies at the edge of the search window ({lag} ms). The speaker may not have played the sweep.',{lag:c.value.lagMs}]);
   if(id==='prominence')out.push(['The sweep stands out {value}× above the background; {need}× is needed. The microphone mostly heard noise or another sound.',{value:c.value,need:c.need}]);
-  if(id==='level'){const m=(c.value.marginsDb||[]).slice(1).filter(v=>v!==null);out.push(['The middle and high part of the sweep is only {db} dB above the quiet lead-in; 3 dB is needed. Check that the tweeter plays and the chosen output is connected.',{db:m.length?Math.min(...m):0}]);}
+  if(id==='level'){const m=(c.value.marginsDb||[]).slice(1).filter(v=>v!==null);out.push(['The middle and high part of the sweep is only {db} dB above the quietest part of the recording; 3 dB is needed. Check that the tweeter plays and the chosen output is connected.',{db:m.length?Math.min(...m):0}]);if(d.settling)out.push(['The microphone was still settling during the lead-in. Wait a moment after plugging it in, then measure again.',{}]);}
   if(id==='clipping')out.push(['Clipping {value}% (at most 0.1%). Lower the amplifier volume a little.',{value:c.value}]);
  }
  return out;
