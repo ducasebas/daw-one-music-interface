@@ -44,6 +44,8 @@ The owner left the internal layout to the design. **Pi and HAT side by side does
 | Free for PD module + speaker terminals | 38.8 mm of the cap ceiling beside the stack |
 | Free for INA228, TSR/ULN carrier, fuse, WAGOs | 58.7 mm wide side zone beside the stack |
 | Airflow | stack between the left bottom opening and the top vent slot |
+| Ethernet / USB-A (owner: service only) | The Pi's USB/Ethernet end faces the side wall with 2 mm to spare: no plug fits with the case closed. Normal use is Wi-Fi; with the rear plate removed the ports are free, because the stack comes out with the plate |
+| Wi-Fi | Pi 3B+ antenna sits at the SD-card end, under the HAT, between the HAT's copper and the LCD. Radiation leaves through the wooden walls. Not verified: measure the signal with plate, HAT and screen fitted (`docs/design/wall-mechanical-c1.md`). Keep metal parts away from the stack's SD-card end |
 
 Why the GPIO edge points down: with it up, the HAT's DC jack faced the I/O cap with 0.8 mm to spare (no plug or soldered lead fits) and the Pi's top edge overlapped the button pins in height, leaving only ≈ 0.3 mm in depth. With it down, the button keeps 2.6 mm and the jack edge has 8.2 mm. That is still too little for a barrel plug: **the 20 V lead to the HAT is soldered to the jack** (owner agreed). The speaker leads go from the HAT's screw terminal to the terminals in the I/O cap; use flexible silicone wire bent right at the terminal, as 8.2 mm leaves no room for long ferrules.
 
