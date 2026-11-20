@@ -12,6 +12,10 @@ m3_clear_d     = 3.4;
 m3_csk_d       = 6.5;
 m3_csk_angle   = 90;
 
+// M2.5 tapped through hole for M/F standoffs (tap drill 2.05 mm; tap after anodising,
+// or mask the holes, so the threads stay clean)
+m25_tap_d      = 2.05;
+
 $fn = 64;
 
 // 2D rounded rectangle with origin at the lower-left corner
