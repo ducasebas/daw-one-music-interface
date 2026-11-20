@@ -88,6 +88,15 @@ RuntimeMaxUse=16M
 JOURNAL
 systemctl restart systemd-journald.service
 journalctl --flush
+# The local player runs as a login user (Squeezelite -v writes /dev/shm/squeezelite-<mac>). logind's RemoveIPC
+# deletes that user's shared memory when their last session ends (e.g. closing SSH), which silently breaks PCM
+# analysis until the player restarts. Keep the export; restart the player once if it is already gone.
+if [[ -f /etc/systemd/system/tunebox-player.service.d/90-tunebox-analysis.conf ]]; then
+  install -d -m 755 /etc/systemd/logind.conf.d
+  printf '[Login]\nRemoveIPC=no\n' > /etc/systemd/logind.conf.d/tunebox-player-ipc.conf
+  chmod 644 /etc/systemd/logind.conf.d/tunebox-player-ipc.conf
+  if systemctl is-active --quiet tunebox-player.service && ! compgen -G '/dev/shm/squeezelite-*' >/dev/null; then systemctl restart tunebox-player.service; fi
+fi
 if [[ -f /etc/daw-one-updater/public.pem && -f /etc/daw-one-updater/config.json ]]; then
   read -r channel mode < <(node --input-type=module <<'JS'
 import {readFileSync} from 'node:fs';

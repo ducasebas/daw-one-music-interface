@@ -198,3 +198,19 @@
 .simple-sound-safety{color:var(--muted)}
 .dsp-advanced{margin-top:6px;border-top:2px solid var(--divider,var(--border-color));padding-top:12px}
 .dsp-advanced>summary{cursor:pointer;min-height:56px;display:flex;align-items:center;font-size:19px;font-weight:600}
+/* GUI 3.15.2: the Now Playing tab already names the page; no second heading on the wall. */
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-heading:not([data-detail]){display:none}
+.music2[data-panel="wall-16-10"][data-page="playing"]:not(:has(.m2-heading[data-detail]))>.m2-content{grid-row:2 / span 2}
+
+/* GUI 3.15.2: queue choice as clearly tappable rows, in decision order. */
+.hub-confirm.queue-choice{width:min(820px,94vw)}
+.queue-choice .queue-choice-actions{display:grid;grid-template-columns:1fr;gap:8px;margin:6px 0 10px}
+.queue-choice .queue-choice-actions h4{margin:6px 2px 0;font-size:15px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.queue-choice .queue-choice-actions button{display:grid;grid-template-columns:44px minmax(0,1fr) 24px;align-items:center;gap:14px;min-height:70px;padding:8px 18px;text-align:left;border:2px solid var(--divider,var(--border-color));border-radius:16px;background:var(--panel,var(--surface));color:inherit;cursor:pointer;transition:border-color .15s,transform .1s,background .15s}
+.queue-choice .queue-choice-actions button>span{display:grid;gap:3px;min-width:0}.queue-choice .queue-choice-actions button strong{font-size:21px;color:var(--text,#f3f0e9)}.queue-choice .queue-choice-actions button small{font-size:16px;color:var(--muted)}
+.queue-choice .queue-choice-actions button>b{font-size:34px;font-weight:300;color:var(--muted);line-height:1}
+.queue-choice .queue-choice-actions button:active{transform:scale(.99);border-color:var(--accent)}
+.queue-choice .queue-choice-actions .queue-choice-recommended{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--panel,var(--surface)))}.queue-choice .queue-choice-actions .queue-choice-recommended>b,.queue-choice .queue-choice-actions .queue-choice-recommended .tb-icon{color:var(--accent)}
+.queue-choice .queue-choice-actions .queue-choice-replace{border-color:color-mix(in srgb,#d9534f 70%,transparent)}.queue-choice .queue-choice-actions .queue-choice-replace .tb-icon{color:#e07a74}
+.queue-choice .queue-choice-cancel{width:100%;min-height:56px}
+.hub-confirm.queue-choice>h3{margin-top:0}.hub-confirm.queue-choice>p{margin:6px 0}

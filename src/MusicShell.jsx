@@ -332,7 +332,7 @@ export function MusicShell({
           <Icon name="settings" />{(deviceUpdates?.info?.available||security?.enabled&&!security.unlocked)&&<i className="attention-dot"/>}
         </button>
       </header>
-      <div className="m2-heading">
+      <div className="m2-heading" data-detail={detail?"true":undefined}>
         <div>
           {detail && (
             <button

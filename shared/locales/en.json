@@ -2218,5 +2218,17 @@
   "Measured": "Measured",
   "Failed": "Failed",
   "Stopped": "Stopped",
-  "Picture & meter sync is more precise: it aligns on beats and transients, ignores the microphone’s start-up, and measures the screen delay without letting one slow frame widen the margin. Failed attempts now show why, also later. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.": "Picture & meter sync is more precise: it aligns on beats and transients, ignores the microphone’s start-up, and measures the screen delay without letting one slow frame widen the margin. Failed attempts now show why, also later. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi."
+  "Clock": "Clock",
+  "Power": "Power",
+  "Play it now": "Play it now",
+  "Keep the queue": "Keep the queue",
+  "Save the queue as a playlist, then play": "Save the queue as a playlist, then play",
+  "Recommended · the waiting tracks stay in Music Assistant": "Recommended · the waiting tracks stay in Music Assistant",
+  "Replace the queue and play": "Replace the queue and play",
+  "No Squeezelite PCM export · restart the player or TuneBox; a closed login session may have removed it": "No Squeezelite PCM export · restart the player or TuneBox; a closed login session may have removed it",
+  "Reload TuneBox before power setup.": "Reload TuneBox before power setup.",
+  "Power setup is busy or unavailable right now. Wait a moment and try again.": "Power setup is busy or unavailable right now. Wait a moment and try again.",
+  "The power contract is not readable right now. Check that HUSB238 reading is on and the adapter is connected.": "The power contract is not readable right now. Check that HUSB238 reading is on and the adapter is connected.",
+  "The adapter is not delivering 20 V at the moment, so the offers cannot be checked.": "The adapter is not delivering 20 V at the moment, so the offers cannot be checked.",
+  "Power setup explains why it cannot start and can check again without reopening Settings. Audio analysis keeps working after an SSH session ends. Now Playing loses its duplicate heading, meters stay empty when you switched analysis off, and the queue choice is clearer. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” and a restart once on the Pi for the audio analysis fix.": "Power setup explains why it cannot start and can check again without reopening Settings. Audio analysis keeps working after an SSH session ends. Now Playing loses its duplicate heading, meters stay empty when you switched analysis off, and the queue choice is clearer. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” and a restart once on the Pi for the audio analysis fix."
 }

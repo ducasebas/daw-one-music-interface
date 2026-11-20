@@ -103,7 +103,7 @@ test('Play now asks before replacing a queue with music waiting, and can save it
  await ask.getByRole('button',{name:/^Play next/}).click();await expect(ask).not.toBeVisible();
  expect(plays.map(p=>p.option+(p.confirmReplace?'!':''))).toEqual(['replace','next']);
  await page.getByRole('button',{name:'Play New song',exact:true}).click();
- await expect(ask).toBeVisible();await ask.getByRole('button',{name:/^Save queue as playlist/}).click();
+ await expect(ask).toBeVisible();await ask.getByRole('button',{name:/^Save the queue as a playlist/}).click();
  await expect.poll(()=>plays.at(-1)).toEqual({id:'t-1',option:'replace',confirmReplace:true});expect(saves).toHaveLength(1);
  await expect(page.getByText('Saved the queue as “TuneBox queue 2026-11-19 22:40” (2 tracks)')).toBeVisible();
 });

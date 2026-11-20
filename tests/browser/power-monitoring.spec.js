@@ -326,3 +326,13 @@ for(const language of ['en','nl'])test(`guided power restart copy is clear and k
  await dialog.getByRole('button',{name:t('Request and verify power'),exact:true}).click();await expect(dialog).toHaveCount(0);
  expect(f.requests[0].command).toBe('power-request-max20v');expect(f.settings.startupMaximum20V).toBe(true);expect(f.settings.voltageSenseVerified).toBe(false);
 });
+test('owner Pi 20 Nov: power setup installed while the page was open is found again with Check again; a blocked button says why',async({page})=>{
+ const f=await fixture(page,{sourceQuery:true});let installed=false;
+ // An older status (helper without power setup) until the owner installs it; then the real fixture answers.
+ await page.route('**/api/device',async route=>{const body=route.request().postDataJSON();if(body.command==='power-status'&&!installed)return route.fulfill({json:{supported:true,settings:{ina228:true,husb238:true,currentPathVerified:true,voltageSenseVerified:false},readOnly:true}});return route.fallback();});
+ await open(page);const button=page.getByRole('button',{name:'Set up offered power',exact:true});
+ await expect(button).toBeDisabled();await expect(page.getByText('Complete the device update to install power setup.').first()).toBeVisible();
+ installed=true;await page.getByRole('region',{name:'Power supply status'}).getByRole('button',{name:'Check again',exact:true}).click();
+ await expect(button).toBeEnabled();await button.click();
+ await expect.poll(()=>f.discoveries.length).toBe(1);expect(f.requests).toHaveLength(0);
+});

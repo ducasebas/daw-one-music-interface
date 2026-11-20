@@ -3,7 +3,7 @@ import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
 import {meterFraction,meterMarks,meterScale,polar} from '../shared/meter-scale.js';
 import {MeasurementDelay,visualizerDelay,playbackDiscontinuity} from '../shared/presentation-timing.js';
-const labels={'not-configured':'PCM-reader nog niet geïnstalleerd',disabled:'Echte audiometing uitgeschakeld',inactive:'Meting niet actief',sleeping:'Meting gepauzeerd · scherm slaapt',starting:'PCM-reader starten…','source-missing':'Geen Squeezelite PCM-export · controleer -v',idle:'PCM-export inactief · geen meetwaarden',stale:'PCM-export verouderd · meetwaarden onbekend',busy:'PCM-buffer verandert · nieuwe meting afwachten',incompatible:'PCM-export heeft een niet-ondersteunde ABI','reader-error':'PCM-reader niet beschikbaar',offline:'Backend offline · meetwaarden onbekend',hidden:'Meting gepauzeerd'};
+const labels={'not-configured':'PCM-reader nog niet geïnstalleerd',disabled:'Echte audiometing uitgeschakeld',inactive:'Meting niet actief',sleeping:'Meting gepauzeerd · scherm slaapt',starting:'PCM-reader starten…','source-missing':'No Squeezelite PCM export · restart the player or TuneBox; a closed login session may have removed it',idle:'PCM-export inactief · geen meetwaarden',stale:'PCM-export verouderd · meetwaarden onbekend',busy:'PCM-buffer verandert · nieuwe meting afwachten',incompatible:'PCM-export heeft een niet-ondersteunde ABI','reader-error':'PCM-reader niet beschikbaar',offline:'Backend offline · meetwaarden onbekend',hidden:'Meting gepauzeerd'};
 export function useAudioMeasurement(active=true,{paused=false}={}){
  const [audio,setAudio]=useState(null),refresh=useRef(()=>{});
  useEffect(()=>{let mounted=true,timer,controller,generation=0,watch=true;
@@ -91,6 +91,8 @@ export function AudioPlot({audio,mode='spectrum',bands=32,offline=false,referenc
  const levels=mode==='spectrum'?values.map(db=>db===null?0:Math.max(0,Math.min(1,(db+72)/72))):channels.map(c=>mode==='vu'?meterFraction(c.rmsDb-reference,'vu'):mode==='bars'?Math.max(0,Math.min(1,(c.peakDb+60)/60)):meterFraction(c.peakDb,'meters'));
  const motion=useMeterMotion(levels);
  const visible=!!measurement||resting;
+ // The owner switched analysis off on purpose: no reminder in their face, just no meters.
+ if(!visible&&!offline&&audio?.status==='disabled')return null;
  return <section className="real-audio" data-style={mode} data-delay-ms={visualizerDelay(timing)} data-captured-at={measurement?.capturedAt??''} data-resting={resting&&!measurement} aria-label={tr('Real audio measurement')}>
  {visible?<>
   {mode==='spectrum'?<><svg className="audio-spectrum" viewBox="0 0 640 244" role="img" aria-label={tr('Audio spectrum')+' · '+bands+' '+tr('bands')} preserveAspectRatio="none">{values.map((db,i)=><rect ref={node=>motion.current[i]=node} key={i} className={db===null?'audio-band unresolved':'audio-band'} x={i*640/values.length+2} y="0" width={640/values.length-5} height="244" style={{transformOrigin:`${i*640/values.length}px 244px`,transform:'scaleY(max(.006, var(--level, 0)))'}}/>)}</svg><div className="audio-frequencies" aria-hidden="true"><span>20 Hz</span><span>1 kHz</span><span>20 kHz</span></div></>

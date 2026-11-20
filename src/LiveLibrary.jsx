@@ -328,10 +328,12 @@ export function LiveLibrary({
         <p>{translateFormat(replaceChoice.upcoming===1?'{count} track is queued after the current one. Someone may have added it.':'{count} tracks are queued after the current one. Someone may have added them.',{count:replaceChoice.upcoming})}</p>
         <p className="queue-choice-item"><strong>{replaceChoice.item.name}</strong>{replaceChoice.item.artist?<span> · {replaceChoice.item.artist}</span>:null}</p>
         <div className="queue-choice-actions">
-          <button disabled={replaceChoice.saving} onClick={()=>choose('next')}><strong>{tr('Play next')}</strong><span>{tr('After the current track; the queue stays')}</span></button>
-          <button disabled={replaceChoice.saving} onClick={()=>choose('add')}><strong>{tr('Add to the end')}</strong><span>{tr('The queue stays as it is')}</span></button>
-          <button disabled={replaceChoice.saving} onClick={()=>choose('save')}><strong>{tr(replaceChoice.saving?'Saving playlist…':'Save queue as playlist, then play')}</strong><span>{tr('Keeps the current queue in Music Assistant')}</span></button>
-          <button disabled={replaceChoice.saving} className="queue-choice-replace" onClick={()=>choose('replace')}><strong>{tr('Replace the queue')}</strong><span>{tr('The waiting tracks are removed')}</span></button>
+          <h4>{tr('Play it now')}</h4>
+          <button disabled={replaceChoice.saving} className="queue-choice-recommended" onClick={()=>choose('save')}><Icon name="library" size={30}/><span><strong>{tr(replaceChoice.saving?'Saving playlist…':'Save the queue as a playlist, then play')}</strong><small>{tr('Recommended · the waiting tracks stay in Music Assistant')}</small></span><b aria-hidden="true">›</b></button>
+          <button disabled={replaceChoice.saving} className="queue-choice-replace" onClick={()=>choose('replace')}><Icon name="play" size={30}/><span><strong>{tr('Replace the queue and play')}</strong><small>{tr('The waiting tracks are removed')}</small></span><b aria-hidden="true">›</b></button>
+          <h4>{tr('Keep the queue')}</h4>
+          <button disabled={replaceChoice.saving} onClick={()=>choose('next')}><Icon name="next" size={30}/><span><strong>{tr('Play next')}</strong><small>{tr('After the current track; the queue stays')}</small></span><b aria-hidden="true">›</b></button>
+          <button disabled={replaceChoice.saving} onClick={()=>choose('add')}><Icon name="queue" size={30}/><span><strong>{tr('Add to the end')}</strong><small>{tr('The queue stays as it is')}</small></span><b aria-hidden="true">›</b></button>
         </div>
         {replaceChoice.error&&<p role="alert">{tr(replaceChoice.error)}</p>}
         <button className="queue-choice-cancel" disabled={replaceChoice.saving} onClick={()=>choose('cancel')}>{tr('Cancel')}</button>

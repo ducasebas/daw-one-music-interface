@@ -91,3 +91,14 @@ test("missing telemetry is denied and optional-server helper refuses Pi3 without
     2,
   );
 });
+test("the player's PCM export survives the end of a login session (logind RemoveIPC)", async () => {
+  const { readFileSync } = await import("node:fs");
+  for (const file of ["deploy/update-appliance.sh", "deploy/install-audio-analysis.sh"]) {
+    const s = readFileSync(file, "utf8");
+    assert.match(s, /RemoveIPC=no/, file);
+    assert.match(s, /\/etc\/systemd\/logind\.conf\.d\/tunebox-player-ipc\.conf/, file);
+  }
+  const refresh = readFileSync("deploy/update-appliance.sh", "utf8");
+  // Only where analysis was installed, and the player restarts only when its export is already gone.
+  assert.match(refresh, /90-tunebox-analysis\.conf \]\]; then[\s\S]*RemoveIPC=no[\s\S]*compgen -G '\/dev\/shm\/squeezelite-\*'[\s\S]*systemctl restart tunebox-player\.service/);
+});
