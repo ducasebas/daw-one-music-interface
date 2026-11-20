@@ -2,13 +2,14 @@
 // Open in OpenSCAD and press F5. Toggle the switches below in the Customizer
 // (Window → Customizer) to look inside.
 //
-// Self-contained: the wooden case is re-modelled from the dimensions of the owner-supplied
-// case STEP (20 Nov 2026); the Pi 4, Louder HAT, HUSB238 and button are simplified blocks at
-// their planned positions (vendor files are not redistributed). The two aluminium parts come
-// from backplate.scad and io-plate.scad, so changes there show up here.
+// Case variant B (owner, 20 Nov 2026): solid hardwood, no veneer. Outer 174.78 x 108.80 x 52.50 mm,
+// 11.8 mm walls, the screen sunk flush into a front rebate (glass pocket + panel pocket, panel
+// taped onto the shoulder). Interior, rear plate position and boards as in the supplied case
+// STEP. The Pi 4, Louder HAT, HUSB238 and button are simplified blocks (vendor files are not
+// redistributed). The aluminium parts come from backplate.scad and io-plate.scad.
 //
-// Coordinates (as in the case STEP): X to the right seen from the screen, Y from the front
-// (screen, Y = -19.44) to the back (rear plate inner face, Y = 27.56), Z up.
+// Coordinates: X to the right seen from the screen, Y from the front (glass, Y = -24.94) to the
+// back (rear plate inner face, Y = 27.56), Z up.
 
 use <backplate.scad>
 use <io-plate.scad>
@@ -17,12 +18,13 @@ use <bezel-ring.scad>
 /* [View] */
 show_top_wall = false;   // false = open top, to look inside
 ghost_top     = false;   // show the top wall transparent instead of hiding it
-show_glass    = true;    // screen module (glass + LCD panel), taped onto the wood
-show_ring     = true;    // aluminium bezel ring around the panel
+show_glass    = true;    // screen module (glass + LCD panel), sunk into the front rebate
+show_ring     = false;   // alternative A only: aluminium bezel ring (not used in variant B)
 show_plate    = true;
 show_cap      = true;
 show_boards   = true;
 show_button   = true;
+show_inserts  = true;    // M3 insert holes in the wood (rear plate and I/O cap)
 
 /* [Colours] */
 c_wood  = [0.45, 0.30, 0.18];
@@ -33,32 +35,54 @@ c_pd    = [0.45, 0.10, 0.55];
 
 $fn = 48;
 
-// ---------------------------------------------------------------- wooden case (from the STEP)
-x0 = -40.90; x1 = 128.28;   // outer width 169.18
-z0 = -21.71; z1 = 81.49;    // outer height 103.20
-yf = -19.44; yb = 27.56;    // depth 47.00
-wall = 9.0;  edge_r = 4.5;
+// ---------------------------------------------------------------- wooden case, variant B
+cx = 43.69; cz = 29.89;                 // case centre (as in the supplied STEP)
+case_w = 174.78; case_h = 108.80;
+x0 = cx - case_w / 2; x1 = cx + case_w / 2;   // -43.70 .. 131.08
+z0 = cz - case_h / 2; z1 = cz + case_h / 2;   // -24.51 .. 84.29
+yf = -24.94; yb = 27.56;                // depth 52.50
+wall = 11.8; edge_r = 4.5;
+
+// front rebate: glass 170.18 x 104.20 x 0.75, panel 161.83 x 99.80 (2.955 mm off-centre) + 0.5 tape
+gap = 0.3; glass_t = 0.75; panel_t = 4.25; tape_t = 0.5; panel_dx = -2.955; relief_r = 1.6;
+glass_pocket_d = 1.5;                   // glass + touch layer reach 1.45 mm at full size
+rebate_d = glass_t + panel_t + tape_t;  // 5.5 mm: panel shoulder at Y = -19.44
 
 module rounded_xz(xa, xb, za, zb, ya, yb_, r) {
     translate([0, ya, 0]) rotate([-90, 0, 0]) linear_extrude(yb_ - ya)
         translate([xa + r, -(zb - r)]) offset(r = r) square([xb - xa - 2 * r, zb - za - 2 * r]);
 }
-
 module slot_xy(xa, xb, ya, yb_, r) {
     translate([xa + r, ya + r]) offset(r = r) square([xb - xa - 2 * r, yb_ - ya - 2 * r]);
+}
+module relieved_rect(w, h) {            // rectangle with corner reliefs for square corners
+    translate([-w / 2, -h / 2]) square([w, h]);
+    for (sx = [-1, 1], sy = [-1, 1]) translate([sx * (w / 2 - relief_r * 0.4), sy * (h / 2 - relief_r * 0.4)]) circle(r = relief_r);
+}
+module front_rebate() {
+    // glass pocket from the front, then the panel pocket down to the shoulder
+    translate([cx, yf - 1, cz]) rotate([-90, 0, 0]) linear_extrude(glass_pocket_d + 1) mirror([0, 1]) relieved_rect(170.18 + 2 * gap, 104.20 + 2 * gap);
+    translate([cx + panel_dx, yf - 1, cz]) rotate([-90, 0, 0]) linear_extrude(rebate_d + 1) mirror([0, 1]) relieved_rect(161.83 + 2 * gap, 99.80 + 2 * gap);
+}
+// M3 insert holes: rear plate fastening (into the back face) and I/O cap flange (bottom wall top)
+function plate_holes() = [[wall / 2, 15], [wall / 2, case_h - 15], [case_w - wall / 2, 15],
+    [case_w - wall / 2, case_h - 15], [case_w / 2 - 45, case_h - wall / 2], [case_w / 2 + 45, case_h - wall / 2]];
+module insert_holes() {
+    for (p = plate_holes()) translate([x1 - p[0], yb - 8, z0 + p[1]]) rotate([-90, 0, 0]) cylinder(d = 4, h = 8.01);
+    for (x = [90.19, -2.81]) translate([x, -1.44, z0 + wall - 8]) cylinder(d = 4, h = 8.01);
 }
 
 module case_sides_bottom() {
     difference() {
         rounded_xz(x0, x1, z0, z1, yf, yb, edge_r);
-        // interior
-        translate([x0 + wall, yf - 1, z0 + wall]) cube([x1 - x0 - 2 * wall, yb - yf + 2, z1 - z0 - wall + 1]);
-        // the top wall is a separate module
-        translate([x0 - 1, yf - 1, z1 - wall]) cube([x1 - x0 + 2, yb - yf + 2, wall + 1]);
+        translate([x0 + wall, yf - 1, z0 + wall]) cube([x1 - x0 - 2 * wall, yb - yf + 2, z1 - z0 - wall + 1]); // interior
+        translate([x0 - 1, yf - 1, z1 - wall]) cube([x1 - x0 + 2, yb - yf + 2, wall + 1]);                  // top wall separate
         // bottom wall: two 18 x 24 openings and the I/O niche
         translate([-31.90, -4.50, z0 - 1]) cube([18, 24, wall + 2]);
         translate([101.28, -4.44, z0 - 1]) cube([18, 24, wall + 2]);
         translate([-8.81, 5.56, z0 - 1]) cube([105.00, 22.01, wall + 2]);
+        front_rebate();
+        if (show_inserts) insert_holes();
     }
 }
 
@@ -68,32 +92,32 @@ module case_top() {
             rounded_xz(x0, x1, z0, z1, yf, yb, edge_r);
             translate([x0 - 1, yf - 1, z1 - wall]) cube([x1 - x0 + 2, yb - yf + 2, wall]);
         }
-        // button: Ø16 through, Ø24 x 3 counterbore from inside
+        // button: Ø16 through, Ø24 counterbore from inside leaving 6 mm for the nut
         translate([43.69, -2.44, z1 - wall - 1]) cylinder(d = 16, h = wall + 2);
-        translate([43.69, -2.44, z1 - wall - 1]) cylinder(d = 24, h = 3 + 1);
+        translate([43.69, -2.44, z1 - wall - 1]) cylinder(d = 24, h = wall - 6 + 1);
         // light sensor Ø3
         translate([116.96, -2.44, z1 - wall - 1]) cylinder(d = 3, h = wall + 2);
-        // vent: 6 mm slot 8 deep from inside, 12 mm recess 1 deep on top
-        translate([0, 0, z1 - wall - 1]) linear_extrude(8 + 1.05) slot_xy(-20.90, 108.28, 11.56, 17.56, 2);
+        // vent: 6 mm slot from inside, 12 mm x 1 mm recess on top
+        translate([0, 0, z1 - wall - 1]) linear_extrude(wall - 1 + 1.05) slot_xy(-20.90, 108.28, 11.56, 17.56, 2);
         translate([0, 0, z1 - 1]) linear_extrude(1 + 1) slot_xy(-23.90, 111.28, 8.56, 20.56, 2);
+        front_rebate();
+        if (show_inserts) insert_holes();
     }
 }
 
 // ---------------------------------------------------------------- aluminium parts
 module plate_in_case() {   // plate coordinates seen from outside -> case coordinates
-    multmatrix([[-1, 0, 0, 128.28], [0, 0, 1, yb], [0, 1, 0, z0], [0, 0, 0, 1]]) backplate();
+    multmatrix([[-1, 0, 0, x1], [0, 0, 1, yb], [0, 1, 0, z0], [0, 0, 0, 1]]) backplate();
 }
 module cap_in_case() {     // niche coordinates -> case coordinates
     multmatrix([[-1, 0, 0, 96.19], [0, -1, 0, yb], [0, 0, 1, z0], [0, 0, 0, 1]]) cap();
 }
 
-// ---------------------------------------------------------------- screen (owner: panel taped on the wood)
-cx = 43.69; cz = 29.89;                 // case centre
-tape_t = 0.5;
+// ---------------------------------------------------------------- screen (sunk into the rebate)
 module screen_in_case() {
     // Waveshare 7inch DSI LCD (E), depth slices of the vendor STEP: glass, panel (off-centre),
-    // driver board and standoffs. Panel back taped onto the wood (0.5 mm tape).
-    gf = yf - tape_t - 5.0;              // glass front
+    // driver board and standoffs. Glass flush with the wood front; panel taped onto the shoulder.
+    gf = yf;
     color([0.05, 0.05, 0.08]) translate([cx - 85.09, gf + 0.02, cz - 52.10]) cube([170.18, 0.73, 104.20]);
     color([0.25, 0.35, 0.55]) translate([cx - 83.87, gf + 0.75, cz - 49.90]) cube([161.83, 4.25, 99.80]);
     color([0.35, 0.60, 0.35]) {
@@ -102,7 +126,7 @@ module screen_in_case() {
         translate([cx - 9.75,  gf + 8.6, cz - 27.25]) cube([73.25, 6.7, 60.55]);
     }
 }
-module ring_in_case() {    // ring coordinates: X right, Y up, Z out of the front face
+module ring_in_case() {    // alternative A only
     multmatrix([[1, 0, 0, cx], [0, 0, -1, yf], [0, 1, 0, cz], [0, 0, 0, 1]]) bezel_ring();
 }
 

@@ -1,23 +1,25 @@
 // DAW ONE rear plate — anodised 3 mm aluminium, PCBWay CNC.
-// Outline taken from the owner-supplied case STEP (20 Nov 2026, SHA-256 4312a155…87c4a81).
+// Case variant B (owner, 20 Nov 2026): solid hardwood, 174.78 x 108.80 x 52.50 mm, 11.8 mm walls,
+// screen sunk into a front rebate. Interior and board positions as in the supplied case STEP
+// (SHA-256 4312a155…87c4a81); the outer size grew 2.8 mm per side.
 // Coordinates: viewed from OUTSIDE (the wall side), origin at the lower-left corner, X right, Y up,
 // Z = 0 inner face (electronics side), Z = plate_t outer face (countersinks open here).
 // The plate is symmetric so far; once asymmetric features are added, remember that "left" seen from
 // the rear is "right" seen from the screen.
 include <pcbway.scad>
 
-/* [Outline — from the case STEP] */
-bp_w        = 169.18;   // = outer width of the case
-bp_h        = 103.20;   // = outer height of the case
+/* [Outline — case variant B] */
+bp_w        = 174.78;   // = outer width of the case
+bp_h        = 108.80;   // = outer height of the case
 bp_corner_r = 4.50;     // matches the R4.5 edges of the walnut sides
 
-/* [I/O notch — from the case STEP] */
+/* [I/O notch] */
 io_w        = 105.00;   // centred
-io_h        = 20.00;    // measured from the bottom edge
+io_h        = 22.80;    // from the bottom edge: 11.8 mm bottom wall + 11 mm I/O cap
 io_inner_r  = min_inner_r; // STEP has sharp corners; a milled notch cannot
 
 /* [Fastening to the wooden case — PROPOSAL, not from the STEP] */
-wall        = 9.0;      // wooden wall thickness in the STEP
+wall        = 11.8;     // wooden wall thickness (variant B)
 side_hole_y = 15.0;     // distance of side holes from top and bottom edge
 top_hole_dx = 45.0;     // top holes at centre ± this
 show_holes  = true;
@@ -31,8 +33,8 @@ show_holes  = true;
 // labelled back faces the plate. Depth from the plate's inner face: 4 mm standoff (room for a
 // thermal pad under the amplifier's via field) + 20 mm HAT (Louder's listed height) + Pi 1.4
 // + Pi underside 2 = 27.4 mm.
-stack_x0    = 73.68;    // hole column on the Pi SD-card end
-stack_y0    = 28.09;    // hole row on the GPIO edge (HAT 1.0 mm above the I/O cap)
+stack_x0    = 76.48;    // hole column on the Pi SD-card end
+stack_y0    = 30.89;    // hole row on the GPIO edge (HAT 1.0 mm above the I/O cap)
 stack_dx    = 58.0;
 stack_dy    = 49.0;
 show_stack  = false;    // draw the board envelopes (reference only, not machined)

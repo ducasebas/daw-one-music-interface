@@ -1,7 +1,7 @@
 // DAW ONE I/O cap — closes the recessed I/O niche from inside so the plugs disappear in the case.
 //
-// Niche from the owner-supplied case STEP: 105.00 wide, 20.00 high, 22.00 deep, open to the rear
-// and to the bottom. Its lower 9 mm is the wooden bottom wall; above that the niche is open to the
+// Niche: 105.00 wide, 22.80 high, 22.00 deep (case variant B), open to the rear and to the
+// bottom. Its lower 11.8 mm is the wooden bottom wall; above that the niche is open to the
 // inside of the case. This cap (owner's choices, 20 Nov 2026):
 //   - stands on the bottom wall and is screwed down into it from above (M3 into inserts);
 //   - forms the niche's ceiling, front wall and two side cheeks above the wood;
@@ -20,9 +20,9 @@ include <pcbway.scad>
 
 /* [Niche — from the case STEP] */
 niche_w      = 105.00;
-niche_h      = 20.00;
+niche_h      = 22.80;   // case variant B: 11.8 mm bottom wall + 11 mm above it
 niche_d      = 22.00;
-bottom_wall  = 9.00;
+bottom_wall  = 11.80;
 
 /* [Cap] */
 wall_t       = plate_t;   // ceiling, front wall and cheeks
@@ -51,7 +51,7 @@ usb_slot     = [4.6, 9.4];      // through slot around the receptacle (X x Y)
 usb_pocket   = [7.0, 12.8];     // from below, for the plug overmold (USB-C max 6.5 x 12.35)
 usb_pocket_d = 1.8;             // overmold reaches the receptacle face
 fin_h        = 29.0;            // above the ceiling top
-fin_holes    = [[18.63, 48.47], [3.39, 48.47], [18.76, 25.74], [3.52, 25.74]]; // [Y, Z], M2.5 tapped
+fin_holes    = [[18.63, 51.27], [3.39, 51.27], [18.76, 28.54], [3.52, 28.54]]; // [Y, Z], M2.5 tapped
 fin_standoff = 3.0;             // board back to fin; clears its 2 mm through-hole pins
 
 inner_w = niche_w + 2 * gap;              // inner faces flush with (just outside) the wood edges
@@ -59,7 +59,7 @@ inner_d = niche_d - gap;                  // front wall inner face at the wood's
 inner_h = niche_h - bottom_wall;          // 11 mm above the wood
 outer_w = inner_w + 2 * wall_t;
 outer_d = inner_d + wall_t;
-top_z   = bottom_wall + inner_h + wall_t; // ceiling top, 23 mm above the case underside
+top_z   = bottom_wall + inner_h + wall_t; // ceiling top, 25.8 mm above the case underside
 
 module cap() {
     difference() {
