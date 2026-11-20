@@ -76,7 +76,7 @@ export function remoteStyle(snapshot){
  }catch{return null;}
 }
 /** Only what a remote needs. No settings, network names, telemetry or tokens. */
-export function remoteView(snapshot){
+export function remoteView(snapshot,{notifications=[]}={}){
  const p=snapshot?.playback||{},track=Array.isArray(p.queue)?p.queue[p.index||0]:null,bluetooth=snapshot?.bluetooth?.active===true;
  const volume=bluetooth?(Number.isInteger(snapshot.bluetooth.volume)?snapshot.bluetooth.volume:null):Number.isFinite(p.volume)?p.volume:Number.isFinite(snapshot?.audio?.volume)?snapshot.audio.volume:null;
  const muted=bluetooth?volume===0:typeof p.muted==='boolean'?p.muted:snapshot?.audio?.muted===true;
@@ -91,6 +91,8 @@ export function remoteView(snapshot){
    // GUI 3.11: the same calm presentation as the wall: what plays next and the source quality.
    next:remoteNext(p,bluetooth),quality:bluetooth?null:sourceQuality(p.sourceFormat)},
   style:remoteStyle(snapshot),
+  // GUI 3.15: TuneBox notifications (update offer, Music Assistant offline, hardware) reach paired phones too.
+  notifications:(Array.isArray(notifications)?notifications:[]).slice(0,6).filter(n=>typeof n?.id==='string'&&typeof n.title==='string').map(n=>({id:n.id.slice(0,40),title:n.title.slice(0,80),detail:typeof n.detail==='string'?n.detail.slice(0,160):''})),
   volumeLimit:bluetooth&&Number.isInteger(snapshot.bluetooth.limit)?snapshot.bluetooth.limit:controlVolumeLimit(snapshot||{}),
  };
 }

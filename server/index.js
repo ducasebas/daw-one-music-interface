@@ -1,3 +1,4 @@
+import {settingsAttention} from '../shared/interface.js';
 import {LocalAudio} from './local-audio.js';
 import {SyncProfiles,synchronizationContext,playbackRoute} from './sync-profiles.js';
 import {AutomaticSound} from './automatic-sound.js';
@@ -153,7 +154,7 @@ const broadcast = () => {
   publishDisplay();
   const body = `data: ${JSON.stringify(snapshot())}\n\n`;
   for (const client of clients) streamWriter.write(client, body);
-  if(remoteClients.size){const view=JSON.stringify(remoteView(snapshot()));if(view!==lastRemoteView){lastRemoteView=view;for(const client of remoteClients)remoteWriter.write(client,`data: ${view}\n\n`);}}
+  if(remoteClients.size){const view=JSON.stringify(phoneView());if(view!==lastRemoteView){lastRemoteView=view;for(const client of remoteClients)remoteWriter.write(client,`data: ${view}\n\n`);}}
 };
 music?.on("change", broadcast);
 music?.start();
@@ -176,7 +177,7 @@ app.use('/api',(q,r,next)=>{
   const mutating=!['GET','HEAD','OPTIONS'].includes(q.method),path=q.path;
   if(q.remote){
    const open=q.method==='GET'&&path==='/remote/session'||q.method==='POST'&&path==='/remote/pair';
-   const paired=q.method==='GET'&&(['/remote/state','/remote/events','/remote/search'].includes(path)||/^\/artwork\/[^/]+$/.test(path))||q.method==='POST'&&['/remote/event','/remote/play','/remote/leave'].includes(path);
+   const paired=q.method==='GET'&&(['/remote/state','/remote/events','/remote/search'].includes(path)||/^\/artwork\/[^/]+$/.test(path))||q.method==='POST'&&['/remote/event','/remote/play','/remote/leave','/remote/invite'].includes(path);
    if(!open&&!paired)return r.status(403).json({error:'This remote can only control playback'});
    if(paired&&!remote.phone(q))return r.status(401).json({error:'Scan the remote code shown on TuneBox'});
    return next();
@@ -586,6 +587,8 @@ function stopRemoteServerWhenUnused(){
 }
 const remoteStatus=()=>({phones:remote.list(),pairing:remote.pairing(),listening:!!remoteServer,address:remoteAddress(),port:remotePort,limit:8,pinRequired:remotePinRequired()});
 // Hoisted: snapshot() may run during startup, before the security store is defined below.
+function remoteNotifications(){try{const updates=simulatedManager?simulatedManager.status():updateStatus();return settingsAttention(snapshot(),updates,{}).filter(n=>!['unlock','setup'].includes(n.id));}catch{return [];}}
+function phoneView(){return remoteView(snapshot(),{notifications:remoteNotifications()});}
 function remotePinRequired(){try{return security.status({headers:{}}).enabled===true;}catch{return false;}}
 app.get('/api/remote/phones',(q,r)=>{try{security.requireAdmin(q);r.set('Cache-Control','no-store').json(remoteStatus());}catch(e){r.status(e.status||423).json({error:e.message});}});
 // The Party sheet shows the pairing code without unlocking settings: when a settings PIN
@@ -625,20 +628,22 @@ app.post('/api/remote/pair',(q,r)=>{
   const result=remote.complete(q.body.token,q.body.name);r.setHeader('Set-Cookie',remote.cookie(result.credential));clearTimeout(remoteExpiry);broadcast();r.set('Cache-Control','no-store').json({paired:true});}
  catch(e){r.status(403).json({error:e.message});}
 });
+// A paired phone can invite another phone: a new single-use code (10 minutes). A settings PIN still applies when the new phone pairs.
+app.post('/api/remote/invite',(q,r)=>{if(!remoteOnly(q,r))return;try{if(q.body&&Object.keys(q.body).length)throw Error('Unexpected invite request');const address=process.env.DAW_REMOTE_ADDRESS||remoteAddress();if(!address)throw Error('TuneBox is not on the home network');const pair=remote.createPair();clearTimeout(remoteExpiry);remoteExpiry=setTimeout(stopRemoteServerWhenUnused,pair.expiresAt-Date.now()+1000);remoteExpiry.unref();debug.record('remote','invite',{accepted:true});broadcast();r.set('Cache-Control','no-store').json({url:`http://${address}:${remotePort}/remote.html#pair=${pair.token}`,expiresAt:pair.expiresAt,pinRequired:remotePinRequired()});}catch(e){r.status(409).json({error:e.message});}});
 app.post('/api/remote/leave',(q,r)=>{if(!remoteOnly(q,r))return;try{remote.forget(remote.phone(q).id);}catch{}r.setHeader('Set-Cookie','tunebox_remote=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');setTimeout(stopRemoteServerWhenUnused,250).unref();r.json({paired:false});});
-app.get('/api/remote/state',(q,r)=>{if(!remoteOnly(q,r))return;r.set('Cache-Control','no-store').json(remoteView(snapshot()));});
+app.get('/api/remote/state',(q,r)=>{if(!remoteOnly(q,r))return;r.set('Cache-Control','no-store').json(phoneView());});
 app.get('/api/remote/events',(q,r)=>{
  if(!remoteOnly(q,r))return;
  if(remoteClients.size>=16)return r.status(429).json({error:'Too many remote connections'});
  r.set({"Content-Type":"text/event-stream","Cache-Control":"no-cache",Connection:"keep-alive","X-Accel-Buffering":"no"});r.flushHeaders();
- r.req=q;remoteWriter.write(r,`data: ${JSON.stringify(remoteView(snapshot()))}\n\n`);remoteClients.add(r);
+ r.req=q;remoteWriter.write(r,`data: ${JSON.stringify(phoneView())}\n\n`);remoteClients.add(r);
  q.on('close',()=>{remoteClients.delete(r);remoteWriter.remove(r);});
 });
 app.post('/api/remote/event',async(q,r)=>{
  if(!remoteOnly(q,r))return;
- try{const view=remoteView(snapshot()),body=remoteEvent(q.body,view);if(view.bluetooth&&body.type==='mute')throw Error('Use volume to quiet Bluetooth audio');
-  await playbackEvent(view.bluetooth&&body.type==='volume'?{...body,sourceId:bluetoothState().sessionId}:body);debug.record('remote',body.type,{accepted:true});r.json(remoteView(snapshot()));}
- catch(e){debug.record('remote','rejected');r.status(409).json({error:String(e.message).slice(0,180),state:remoteView(snapshot())});}
+ try{const view=phoneView(),body=remoteEvent(q.body,view);if(view.bluetooth&&body.type==='mute')throw Error('Use volume to quiet Bluetooth audio');
+  await playbackEvent(view.bluetooth&&body.type==='volume'?{...body,sourceId:bluetoothState().sessionId}:body);debug.record('remote',body.type,{accepted:true});r.json(phoneView());}
+ catch(e){debug.record('remote','rejected');r.status(409).json({error:String(e.message).slice(0,180),state:phoneView()});}
 });
 app.get('/api/remote/search',async(q,r)=>{
  if(!remoteOnly(q,r))return;
@@ -648,7 +653,7 @@ app.get('/api/remote/search',async(q,r)=>{
 app.post('/api/remote/play',async(q,r)=>{
  if(!remoteOnly(q,r))return;
  try{if(!library)throw Error('Search needs Music Assistant');if(!q.body||Object.keys(q.body).some(k=>!['id','option','confirmReplace'].includes(k))||typeof q.body.id!=='string'||!remoteQueueOptions.includes(q.body.option)||q.body.confirmReplace!==undefined&&typeof q.body.confirmReplace!=='boolean')throw Error('Choose play now or add to queue');
-  await musicControl(()=>library.enqueue(q.body.id,q.body.option,{confirmReplace:q.body.confirmReplace===true}));debug.record('remote','library-'+q.body.option,{accepted:true});broadcast();r.json(remoteView(snapshot()));}
+  await musicControl(()=>library.enqueue(q.body.id,q.body.option,{confirmReplace:q.body.confirmReplace===true}));debug.record('remote','library-'+q.body.option,{accepted:true});broadcast();r.json(phoneView());}
  catch(e){if(e.code==='queue-not-empty')return r.status(409).json({error:e.message,code:e.code,upcoming:e.upcoming});r.status(409).json({error:String(e.message).startsWith('Music Assistant')?'Music Assistant refused the request; it was not retried':String(e.message).slice(0,180)});}
 });
 if(remote.phones.length)startRemoteServer().catch(e=>console.error('Remote control listener unavailable:',e.code||e.message));

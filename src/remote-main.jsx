@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Icon} from './Icon.jsx';
+import qrcode from 'qrcode-generator';
 import './remote.css';
 
 /*
@@ -8,7 +9,7 @@ import './remote.css';
  * it only plays, pauses, skips, searches and changes volume through /api/remote/*.
  */
 const words={
- nl:{'Enter the TuneBox PIN':'Voer de TuneBox-pincode in','This TuneBox uses a settings PIN. Ask the owner for it to control the music.':'Deze TuneBox gebruikt een pincode voor instellingen. Vraag die aan de eigenaar om de muziek te bedienen.','PIN':'Pincode','Pair':'Koppelen','Checking…':'Controleren…','That PIN is not correct.':'Die pincode klopt niet.','Enter the TuneBox settings PIN to pair this phone.':'Voer de pincode van TuneBox in om deze telefoon te koppelen.','Music is waiting in the queue':'Er staat muziek in de wachtrij','1 track is queued after the current one.':'Er staat 1 nummer na het huidige.','{count} tracks are queued after the current one.':'Er staan {count} nummers na het huidige.','Play next':'Als volgende','Add to the end':'Achteraan toevoegen','Replace the queue':'Wachtrij vervangen','Plays after the current track':'Speelt na het huidige nummer','Added to the queue':'Toegevoegd aan de wachtrij','Up next':'Hierna','Track position':'Positie in het nummer','Opening TuneBox remote…':'Afstandsbediening openen…','Pairing with TuneBox…':'Koppelen met TuneBox…','Scan the QR code on TuneBox':'Scan de QR-code op TuneBox','On TuneBox, open Settings → Connections → Phone remote and choose Pair a phone.':'Open op TuneBox Instellingen → Verbindingen → Telefoon-afstandsbediening en kies Telefoon koppelen.','Your phone must be on the same Wi-Fi network as TuneBox.':'Je telefoon moet op hetzelfde wifi-netwerk zitten als TuneBox.','Paired with TuneBox':'Gekoppeld met TuneBox','Reconnecting to TuneBox…':'Opnieuw verbinden met TuneBox…','Nothing is playing':'Er speelt niets','Play':'Afspelen','Pause':'Pauzeren','Previous':'Vorige','Next':'Volgende','Volume down':'Zachter','Volume up':'Harder','Mute':'Dempen','Unmute':'Dempen opheffen','Volume':'Volume','limit':'limiet','Search music':'Muziek zoeken','Song, artist, album or playlist':'Nummer, artiest, album of playlist','Search':'Zoeken','Searching…':'Zoeken…','No results':'Geen resultaten','More results':'Meer resultaten','Play now':'Nu afspelen','Add to queue':'Aan wachtrij','Added to the queue':'Toegevoegd aan de wachtrij','Playing now':'Speelt nu','Search needs a connected Music Assistant.':'Zoeken werkt met een verbonden Music Assistant.','Bluetooth is playing. Choose and skip music on the connected phone; volume works here.':'Bluetooth speelt af. Kies en sla muziek over op de verbonden telefoon; volume werkt hier.','Unpair this phone':'Deze telefoon ontkoppelen','Unpair this phone? You need a new QR code to pair again.':'Deze telefoon ontkoppelen? Je hebt een nieuwe QR-code nodig om opnieuw te koppelen.','Cancel':'Annuleren','Unpair':'Ontkoppelen','Working…':'Bezig…','TuneBox could not be reached. Check the Wi-Fi connection.':'TuneBox is niet bereikbaar. Controleer de wifi-verbinding.','track':'nummer','album':'album','playlist':'playlist','radio':'radio','artist':'artiest'},
+ nl:{'TuneBox notifications':'TuneBox-meldingen','Dismiss':'Verbergen','Update available':'Update beschikbaar','Check Music Assistant':'Controleer Music Assistant','Hardware alert':'Hardwaremelding','Update needs attention':'Update vraagt aandacht','Invite a phone':'Telefoon uitnodigen','Let the other phone scan this code. It works once and expires in 10 minutes.':'Laat de andere telefoon deze code scannen. Hij werkt één keer en verloopt na 10 minuten.','Invitation QR code':'QR-code voor de uitnodiging','The other phone also needs the TuneBox settings PIN.':'De andere telefoon heeft ook de pincode van TuneBox nodig.','Share link':'Link delen','Copy link':'Link kopiëren','Link copied':'Link gekopieerd','Copy the link by hand.':'Kopieer de link met de hand.','Control the music on TuneBox':'Bedien de muziek op TuneBox','Close':'Sluiten','Enter the TuneBox PIN':'Voer de TuneBox-pincode in','This TuneBox uses a settings PIN. Ask the owner for it to control the music.':'Deze TuneBox gebruikt een pincode voor instellingen. Vraag die aan de eigenaar om de muziek te bedienen.','PIN':'Pincode','Pair':'Koppelen','Checking…':'Controleren…','That PIN is not correct.':'Die pincode klopt niet.','Enter the TuneBox settings PIN to pair this phone.':'Voer de pincode van TuneBox in om deze telefoon te koppelen.','Music is waiting in the queue':'Er staat muziek in de wachtrij','1 track is queued after the current one.':'Er staat 1 nummer na het huidige.','{count} tracks are queued after the current one.':'Er staan {count} nummers na het huidige.','Play next':'Als volgende','Add to the end':'Achteraan toevoegen','Replace the queue':'Wachtrij vervangen','Plays after the current track':'Speelt na het huidige nummer','Added to the queue':'Toegevoegd aan de wachtrij','Up next':'Hierna','Track position':'Positie in het nummer','Opening TuneBox remote…':'Afstandsbediening openen…','Pairing with TuneBox…':'Koppelen met TuneBox…','Scan the QR code on TuneBox':'Scan de QR-code op TuneBox','On TuneBox, open Settings → Connections → Phone remote and choose Pair a phone.':'Open op TuneBox Instellingen → Verbindingen → Telefoon-afstandsbediening en kies Telefoon koppelen.','Your phone must be on the same Wi-Fi network as TuneBox.':'Je telefoon moet op hetzelfde wifi-netwerk zitten als TuneBox.','Paired with TuneBox':'Gekoppeld met TuneBox','Reconnecting to TuneBox…':'Opnieuw verbinden met TuneBox…','Nothing is playing':'Er speelt niets','Play':'Afspelen','Pause':'Pauzeren','Previous':'Vorige','Next':'Volgende','Volume down':'Zachter','Volume up':'Harder','Mute':'Dempen','Unmute':'Dempen opheffen','Volume':'Volume','limit':'limiet','Search music':'Muziek zoeken','Song, artist, album or playlist':'Nummer, artiest, album of playlist','Search':'Zoeken','Searching…':'Zoeken…','No results':'Geen resultaten','More results':'Meer resultaten','Play now':'Nu afspelen','Add to queue':'Aan wachtrij','Added to the queue':'Toegevoegd aan de wachtrij','Playing now':'Speelt nu','Search needs a connected Music Assistant.':'Zoeken werkt met een verbonden Music Assistant.','Bluetooth is playing. Choose and skip music on the connected phone; volume works here.':'Bluetooth speelt af. Kies en sla muziek over op de verbonden telefoon; volume werkt hier.','Unpair this phone':'Deze telefoon ontkoppelen','Unpair this phone? You need a new QR code to pair again.':'Deze telefoon ontkoppelen? Je hebt een nieuwe QR-code nodig om opnieuw te koppelen.','Cancel':'Annuleren','Unpair':'Ontkoppelen','Working…':'Bezig…','TuneBox could not be reached. Check the Wi-Fi connection.':'TuneBox is niet bereikbaar. Controleer de wifi-verbinding.','track':'nummer','album':'album','playlist':'playlist','radio':'radio','artist':'artiest'},
 };
 let lang='en';
 const t=key=>words[lang]?.[key]??key;
@@ -82,6 +83,35 @@ function PinEntry({error,onSubmit}){
    <button disabled={pin.length!==6||sending}>{t(sending?'Checking…':'Pair')}</button>
   </form>{error&&<p role="alert" className="remote-error">{t(error)}</p>}</main>;
 }
+/** TuneBox notifications on the phone; dismissed ones stay hidden on this phone until they change. */
+function Notifications({items=[]}){
+ const read=()=>{try{return JSON.parse(localStorage.getItem('tunebox-remote-dismissed')||'[]');}catch{return [];}};
+ const [dismissed,setDismissed]=useState(read),seen=useRef(new Set());
+ const key=n=>n.id+'|'+n.title+'|'+n.detail,visible=items.filter(n=>!dismissed.includes(key(n)));
+ useEffect(()=>{const fresh=visible.filter(n=>!seen.current.has(key(n)));if(fresh.length&&seen.current.size&&navigator.vibrate)navigator.vibrate(120);for(const n of items)seen.current.add(key(n));},[items]);
+ if(!visible.length)return null;
+ const dismiss=n=>{const next=[...dismissed,key(n)].slice(-30);setDismissed(next);try{localStorage.setItem('tunebox-remote-dismissed',JSON.stringify(next));}catch{}};
+ return <section className="remote-notifications" aria-label={t('TuneBox notifications')}>{visible.map(n=><article key={key(n)} role="status"><div><strong>{t(n.title)}</strong>{n.detail&&<span>{t(n.detail)}</span>}</div><button aria-label={t('Dismiss')} onClick={()=>dismiss(n)}>×</button></article>)}</section>;
+}
+/** Invite another phone: a single-use code with a QR to scan from this screen, or a link to send. */
+function Invite(){
+ const [invite,setInvite]=useState(null),[error,setError]=useState(''),[copied,setCopied]=useState(false);
+ async function open(){setError('');setCopied(false);try{setInvite(await api('/api/remote/invite',{}));}catch(e){setError(e.message);}}
+ const svg=invite?(()=>{const q=qrcode(0,'M');q.addData(invite.url);q.make();return q.createSvgTag({cellSize:6,margin:2,scalable:true});})():'';
+ async function copy(){try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(invite.url);else{const area=document.createElement('textarea');area.value=invite.url;document.body.append(area);area.select();document.execCommand('copy');area.remove();}setCopied(true);}catch{setError(t('Copy the link by hand.'));}}
+ return <>
+  <button onClick={open}>{t('Invite a phone')}</button>
+  {error&&!invite&&<p role="alert" className="remote-error">{t(error)}</p>}
+  {invite&&<div className="remote-sheet remote-invite" role="dialog" aria-modal="true" aria-label={t('Invite a phone')}>
+   <h2>{t('Invite a phone')}</h2><p>{t('Let the other phone scan this code. It works once and expires in 10 minutes.')}</p>
+   <div className="remote-qr" aria-label={t('Invitation QR code')} role="img" dangerouslySetInnerHTML={{__html:svg}}/>
+   {invite.pinRequired&&<p>{t('The other phone also needs the TuneBox settings PIN.')}</p>}
+   <code>{invite.url}</code>
+   <div className="remote-invite-actions">{navigator.share&&<button onClick={()=>navigator.share({title:'TuneBox',text:t('Control the music on TuneBox'),url:invite.url}).catch(()=>{})}>{t('Share link')}</button>}<button onClick={copy}>{t(copied?'Link copied':'Copy link')}</button><button onClick={()=>setInvite(null)}>{t('Close')}</button></div>
+   {error&&<p role="alert" className="remote-error">{t(error)}</p>}
+  </div>}
+ </>;
+}
 function Player({view,pending,error,online,act,onUnpaired}){
  const p=view.playback,bt=view.bluetooth,disabled=!!pending||!online,volumeKnown=Number.isFinite(p.volume);
  const [leave,setLeave]=useState(false);
@@ -89,6 +119,7 @@ function Player({view,pending,error,online,act,onUnpaired}){
  const step=delta=>act(delta>0?'Volume up':'Volume down','/api/remote/event',{type:'volume',value:Math.max(0,Math.min(view.volumeLimit,(p.volume||0)+delta))});
  return <main className="remote" aria-busy={!!pending}>
   <header className="remote-top"><strong>TuneBox</strong><span className={online?'remote-online':'remote-offline'} role="status">{online?(p.playerName||t('Paired with TuneBox')):t('Reconnecting to TuneBox…')}</span></header>
+  <Notifications items={view.notifications}/>
   {p.artwork&&<div className="remote-backdrop" aria-hidden="true"><div key={p.artwork} style={{backgroundImage:`url("${p.artwork.replace(/["\\]/g,'')}")`}}/></div>}
   <section className="remote-now" aria-label={p.title||t('Nothing is playing')}>
    <div className="remote-art">{p.artwork?<img src={p.artwork} alt=""/>:<Icon name="playing" size={64}/>}</div>
@@ -111,7 +142,7 @@ function Player({view,pending,error,online,act,onUnpaired}){
   {p.next&&<section className="remote-next" aria-label={t('Up next')}><small>{t('Up next')}</small><strong>{p.next.title}</strong>{p.next.artist&&<span>{p.next.artist}</span>}</section>}
   <p className="remote-status" role={error?'alert':'status'} aria-live="polite">{error||(pending?<><span className="remote-spinner" aria-hidden="true"/>{t('Working…')}</>:'')}</p>
   <Search view={view} disabled={disabled} act={act}/>
-  <footer className="remote-footer"><button onClick={()=>setLeave(true)}>{t('Unpair this phone')}</button></footer>
+  <footer className="remote-footer"><Invite/><button onClick={()=>setLeave(true)}>{t('Unpair this phone')}</button></footer>
   {leave&&<div className="remote-sheet" role="dialog" aria-modal="true" aria-label={t('Unpair this phone')}><p>{t('Unpair this phone? You need a new QR code to pair again.')}</p><button onClick={()=>setLeave(false)}>{t('Cancel')}</button><button onClick={async()=>{await api('/api/remote/leave',{}).catch(()=>{});onUnpaired();}}>{t('Unpair')}</button></div>}
  </main>;
 }

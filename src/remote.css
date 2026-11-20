@@ -85,3 +85,11 @@ body{font-family:var(--remote-font,Arial,sans-serif)}
 :root[data-weight=heavy] :is(h1,h2,strong,button){font-variation-settings:"wght" 800}
 .remote-pin{display:flex;gap:10px;margin-top:12px}
 .remote-pin input{flex:1;min-width:0;font:inherit;font-size:28px;letter-spacing:.4em;text-align:center;padding:10px;border-radius:14px;border:2px solid var(--remote-line);background:var(--remote-panel);color:var(--remote-text)}
+/* GUI 3.15: notifications and invitations on the phone */
+.remote-notifications{position:relative;z-index:2;display:grid;gap:8px;margin:0 0 12px}.remote-notifications article{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgb(30 36 40 / .86);border:1px solid var(--accent,#c5a466);backdrop-filter:blur(10px)}
+.remote-notifications article div{flex:1;display:grid;gap:2px}.remote-notifications strong{font-size:16px}.remote-notifications span{font-size:14px;opacity:.8}.remote-notifications button{min-width:40px;min-height:40px;font-size:22px;background:transparent;border:0;color:inherit}
+.remote-invite{display:grid;gap:12px;justify-items:center;text-align:center}.remote-qr{width:min(68vw,260px);aspect-ratio:1;background:#fff;border-radius:14px;padding:8px}.remote-qr svg{width:100%;height:100%;display:block}
+.remote-invite code{font-size:12px;word-break:break-all;opacity:.75;max-width:100%}.remote-invite-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.remote-footer .remote-sheet button{text-decoration:none;color:inherit;font-size:17px;min-height:50px;border-radius:25px;border:1px solid var(--remote-accent);background:transparent;padding:0 18px}
+.remote-footer .remote-invite-actions button:first-child{background:var(--remote-accent);color:var(--remote-ink,#15110b);border-color:var(--remote-accent);font-weight:600}
+.remote-invite{top:max(16px,env(safe-area-inset-top));overflow:auto;align-content:start}.remote-invite h2{margin:0;font-size:24px}
