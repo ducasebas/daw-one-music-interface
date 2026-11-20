@@ -12,7 +12,7 @@ Release `2026.11.20-hotfix.3`, service-worker cache 65. Owner feedback of 20 Nov
 
 ## Local results (container/simulator, not the Pi)
 
-- Unit tests and build, Python, full Chromium and offline: see below.
+- Unit tests 433/433 and build OK; Python 111; full Chromium 237/237; offline 16/16.
 - New and changed tests:
   - `power-monitoring.spec.js` 26/26, including a power helper installed while the page was open and found via "Check again";
   - `host-install.test.js` (RemoveIPC);
