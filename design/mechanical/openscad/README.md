@@ -13,6 +13,7 @@ Outline input: the owner-supplied case STEP of 20 November 2026 (SHA-256 `4312a1
 
 | Added here, still to confirm | Value |
 | --- | --- |
+| Finish (owner) | Slightly darker than natural aluminium: bead-blasted, grey (light gunmetal) anodise; request a colour sample |
 | Notch inside corners | R1.5 (a milling cutter cannot make the sharp corners in the STEP) |
 | Fastening | 6 × countersunk M3: 4 into the side walls, 2 into the top wall, on the wall centreline |
 | I/O cap (owner's choice) | Milled aluminium cap standing on the bottom wall, screwed down from above (2 × countersunk M3 in a front flange). It forms the niche ceiling, front wall and side cheeks above the wood, so the plugs are hidden in the recess. Connectors go in the **ceiling**, plugs inserted upward; cut-outs stay empty until the parts are chosen |

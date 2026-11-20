@@ -6,6 +6,10 @@ min_inner_r    = 1.5;    // smallest inside corner radius of a milled pocket/not
 min_web        = 2.0;    // minimum material between two features or a feature and an edge
 fit_gap        = 0.20;   // clearance per side between two mating aluminium parts
 anodise_build  = 0.02;   // anodising adds ~10-25 µm per surface; ignored for these clearances
+// Finish (owner, 20 Nov 2026): slightly darker than natural aluminium.
+// Order as: bead-blasted, anodised grey / light gunmetal; ask PCBWay for a colour sample first.
+finish_note    = "bead blast + grey anodise, slightly darker than natural aluminium";
+finish_rgb     = [0.55, 0.56, 0.58];
 
 // Countersunk M3 (ISO 10642 / DIN 7991 head Ø6 mm, 90°)
 m3_clear_d     = 3.4;
