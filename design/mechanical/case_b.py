@@ -125,13 +125,14 @@ def export_step(parts, path):
     asm = cq.Assembly(name="daw_one_case_b")
     for name, wp in parts.items():
         asm.add(wp, name=name, color=cq.Color(0.45, 0.30, 0.18))
-    asm.save(str(path))
+    asm.save(str(path), exportType="STEP")   # .stp extension needs the type spelled out
 
 
 def drawing(path):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_pdf import PdfPages
     from matplotlib.patches import Rectangle, FancyBboxPatch, Circle
 
     WOOD, LINE, DIM, NOTE = "#c9a57b", "#2a2a2a", "#1d4e89", "#555"
@@ -229,7 +230,116 @@ def drawing(path):
              "• Insertgaten Ø4 zijn een richtmaat: gebruik de boormaat van de gekozen M3-insert.\n"
              "• Pas-/ontwerpmodel, geen vrijgegeven productietekening.",
              fontsize=8.5, color=LINE)
-    fig.savefig(path)
+    fig.text(0.97, 0.965, "blad 1 van 2", ha="right", fontsize=10, color=NOTE)
+    with PdfPages(path) as pdf:
+        pdf.savefig(fig)
+        pdf.savefig(rebate_sheet())
+
+
+def rebate_sheet():
+    """Sheet 2: the screen rebate in detail (front view with edge distances, two sections)."""
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle, FancyBboxPatch, Polygon
+
+    WOOD, LINE, DIM, NOTE, GLASS_C, PANEL_C = "#c9a57b", "#2a2a2a", "#1d4e89", "#555", "#9fb7d9", "#5b78a8"
+    gw, gh = GLASS[0] + 2 * GAP, GLASS[1] + 2 * GAP
+    pw, ph = PANEL[0] + 2 * GAP, PANEL[1] + 2 * GAP
+    gr = GLASS_R + GAP
+    g_edge = (W - gw) / 2                       # 2.00 all round
+    p_left = W / 2 + PANEL_DX - pw / 2          # 3.22
+    p_right = W - (W / 2 + PANEL_DX + pw / 2)   # 9.13
+    p_tb = (H - ph) / 2                         # 4.20
+
+    fig = plt.figure(figsize=(16.54, 11.69))
+    fig.text(0.03, 0.965, "DAW ONE — schermsponning in de voorkant (detail)", fontsize=17, weight="bold")
+    fig.text(0.03, 0.94, "Twee treden in het hout: eerst de glaskamer, daarachter de paneelkamer. Daarachter de open binnenruimte. Maten in mm.",
+             fontsize=10, color=NOTE)
+    fig.text(0.97, 0.965, "blad 2 van 2", ha="right", fontsize=10, color=NOTE)
+
+    def dim(ax, p0, p1, text, off=(0, 0), rot=0, fs=9):
+        ax.annotate("", xy=p0, xytext=p1, arrowprops=dict(arrowstyle="<->", color=DIM, lw=0.9))
+        ax.text((p0[0] + p1[0]) / 2 + off[0], (p0[1] + p1[1]) / 2 + off[1], text, color=DIM, fontsize=fs,
+                ha="center", va="center", rotation=rot, bbox=dict(fc="white", ec="none", pad=0.8))
+
+    # ---- front view with edge distances
+    ax = fig.add_axes([0.02, 0.36, 0.56, 0.56]); ax.set_title("Vooraanzicht: afstanden vanaf de buitenkant", fontsize=12)
+    ax.add_patch(FancyBboxPatch((EDGE_R, EDGE_R), W - 2 * EDGE_R, H - 2 * EDGE_R, boxstyle=f"round,pad={EDGE_R}", fc=WOOD, ec=LINE))
+    ax.add_patch(FancyBboxPatch((g_edge + gr, g_edge + gr), gw - 2 * gr, gh - 2 * gr, boxstyle=f"round,pad={gr}", fc=GLASS_C, ec=LINE))
+    ax.add_patch(Rectangle((p_left, p_tb), pw, ph, fc=PANEL_C, ec=LINE))
+    ax.add_patch(Rectangle((WALL, WALL), W - 2 * WALL, H - 2 * WALL, fc="white", ec=LINE))
+    ax.text(W / 2, H / 2 + 6, "open binnenruimte 151,18 × 85,20", ha="center", fontsize=10)
+    ax.plot([-4, W + 4], [H / 2, H / 2], color="#b22", lw=1, ls="-.")
+    ax.text(-6, H / 2, "A", color="#b22", fontsize=12, weight="bold", ha="right", va="center")
+    ax.text(W + 6, H / 2, "A", color="#b22", fontsize=12, weight="bold", va="center")
+    ax.plot([W / 2 + 30, W / 2 + 30], [-4, H + 4], color="#b22", lw=1, ls="-.")
+    ax.text(W / 2 + 30, H + 6, "B", color="#b22", fontsize=12, weight="bold", ha="center")
+    ax.text(W / 2 + 30, -7, "B", color="#b22", fontsize=12, weight="bold", ha="center", va="top")
+    # edge distances
+    y0 = 20
+    dim(ax, (0, y0), (g_edge, y0), f"{g_edge:.2f}", off=(-6, 3))
+    dim(ax, (0, y0 + 8), (p_left, y0 + 8), f"{p_left:.2f}", off=(-6, 3))
+    dim(ax, (0, y0 + 16), (WALL, y0 + 16), f"{WALL:.2f}", off=(4, 3))
+    dim(ax, (W - g_edge, y0), (W, y0), f"{g_edge:.2f}", off=(6, 3))
+    dim(ax, (W - p_right, y0 + 8), (W, y0 + 8), f"{p_right:.2f}", off=(6, 3))
+    dim(ax, (W - WALL, y0 + 16), (W, y0 + 16), f"{WALL:.2f}", off=(-4, 3))
+    x0 = 40
+    dim(ax, (x0, H - g_edge), (x0, H), f"{g_edge:.2f}", off=(5, 0))
+    dim(ax, (x0 + 10, H - p_tb), (x0 + 10, H), f"{p_tb:.2f}", off=(5, 0))
+    dim(ax, (x0 + 20, H - WALL), (x0 + 20, H), f"{WALL:.2f}", off=(5, 0))
+    dim(ax, (x0, 0), (x0, g_edge), f"{g_edge:.2f}", off=(5, 0))
+    dim(ax, (x0 + 10, 0), (x0 + 10, p_tb), f"{p_tb:.2f}", off=(5, 0))
+    dim(ax, (x0 + 20, 0), (x0 + 20, WALL), f"{WALL:.2f}", off=(5, 0))
+    ax.set_xlim(-14, W + 14); ax.set_ylim(-12, H + 10); ax.set_aspect("equal"); ax.axis("off")
+
+    # legend
+    ax = fig.add_axes([0.60, 0.62, 0.38, 0.30]); ax.axis("off")
+    rows = [(GLASS_C, f"Glaskamer {gw:.2f} × {gh:.2f}, {GLASS_POCKET_D:.2f} diep, hoeken R{gr:.1f}",
+             f"glas {GLASS[0]} × {GLASS[1]} (R{GLASS_R}) met touchlaag, samen 1,45 dik — ligt gelijk met de voorkant"),
+            (PANEL_C, f"Paneelkamer {pw:.2f} × {ph:.2f}, tot {REBATE_D:.2f} diep",
+             f"LCD-paneel {PANEL[0]} × {PANEL[1]}, haakse hoeken → hoekuitsparing Ø{2 * RELIEF_R:.1f}; {abs(PANEL_DX):.2f} uit het midden"),
+            ("white", f"Schouder op {REBATE_D:.2f} diep, daarachter open",
+             f"paneel ligt hier op {TAPE} mm dubbelzijdige tape; binnenmaat {W - 2 * WALL:.2f} × {H - 2 * WALL:.2f}")]
+    for i, (c, t1, t2) in enumerate(rows):
+        y = 0.85 - i * 0.3
+        ax.add_patch(Rectangle((0.0, y - 0.06), 0.06, 0.12, fc=c, ec=LINE, transform=ax.transAxes))
+        ax.text(0.09, y + 0.03, t1, transform=ax.transAxes, fontsize=10.5, weight="bold", va="center")
+        ax.text(0.09, y - 0.06, t2, transform=ax.transAxes, fontsize=8.5, color=NOTE, va="center")
+
+    # ---- sections: wall profile (depth horizontal, distance from outer edge vertical), scale ~4:1
+    def section(axpos, title, e_glass, e_panel, label_side):
+        ax = fig.add_axes(axpos); ax.set_title(title, fontsize=11)
+        dmax = 14.0
+        wood = [(0, 0), (GLASS_POCKET_D, 0), (GLASS_POCKET_D, 0), (0, 0)]
+        poly = [(0, 0), (0, e_glass), (GLASS_POCKET_D, e_glass), (GLASS_POCKET_D, e_panel), (REBATE_D, e_panel),
+                (REBATE_D, WALL), (dmax, WALL), (dmax, 0)]
+        # wood: outer side is distance 0..value; draw as filled area between outer edge (0) and profile
+        ax.add_patch(Polygon([(0, -4)] + [(d, -e) for d, e in [(0, e_glass)]] , closed=True, fc="none", ec="none"))
+        prof = [(0, e_glass), (GLASS_POCKET_D, e_glass), (GLASS_POCKET_D, e_panel), (REBATE_D, e_panel), (REBATE_D, WALL), (dmax, WALL)]
+        ax.add_patch(Polygon([(0, 0)] + prof + [(dmax, 0)], closed=True, fc=WOOD, ec=LINE, hatch="///", lw=1))
+        # glass + panel (for reference)
+        top = WALL + 4
+        ax.add_patch(Rectangle((0, e_glass + GAP), 1.45, top - e_glass - GAP, fc=GLASS_C, ec=LINE, lw=0.6))
+        ax.add_patch(Rectangle((1.45, e_panel + GAP), 5.0 - 1.45, top - e_panel - GAP, fc=PANEL_C, ec=LINE, lw=0.6))
+        ax.add_patch(Rectangle((PANEL[2] + 0.75, e_panel + GAP), TAPE, WALL - e_panel - GAP, fc="#e0c040", ec=LINE, lw=0.4))
+        ax.annotate("glas + touchlaag", xy=(0.7, WALL + 2), xytext=(-8.5, WALL + 7), fontsize=8, arrowprops=dict(arrowstyle="-", lw=0.6))
+        ax.annotate("LCD-paneel", xy=(3.2, WALL + 2), xytext=(2.0, WALL + 7), fontsize=8, arrowprops=dict(arrowstyle="-", lw=0.6))
+        ax.annotate("tape 0,5", xy=(REBATE_D - 0.25, WALL - 1.0), xytext=(7.5, WALL + 7), fontsize=8, arrowprops=dict(arrowstyle="-", lw=0.6))
+        # dims
+        dim(ax, (0, -1.2), (GLASS_POCKET_D, -1.2), f"{GLASS_POCKET_D:.2f}", off=(0, -0.9), fs=8)
+        dim(ax, (0, -3.4), (REBATE_D, -3.4), f"{REBATE_D:.2f}", off=(0, -0.9), fs=8)
+        dim(ax, (-1.2, 0), (-1.2, e_glass), f"{e_glass:.2f}", off=(-1.4, 0), fs=8)
+        dim(ax, (-3.6, 0), (-3.6, e_panel), f"{e_panel:.2f}", off=(-1.4, 0), fs=8)
+        dim(ax, (-6.0, 0), (-6.0, WALL), f"{WALL:.2f}", off=(-1.4, 0), fs=8)
+        ax.text(dmax - 0.3, WALL / 2, f"hout\n(wand {label_side})", ha="right", va="center", fontsize=8.5,
+                bbox=dict(fc=WOOD, ec="none", pad=0.5))
+        ax.text((dmax - 9.5) / 2 + 2, -5.6, "onderrand = buitenkant kast · links = voorkant",
+                fontsize=7.5, color=NOTE, ha="center")
+        ax.set_xlim(-9.5, dmax + 0.5); ax.set_ylim(-6.5, WALL + 10); ax.set_aspect("equal"); ax.axis("off")
+
+    section([0.02, 0.03, 0.31, 0.32], "Doorsnede A–A links (schaal ±4:1)", g_edge, p_left, "links")
+    section([0.34, 0.03, 0.31, 0.32], "Doorsnede A–A rechts (schaal ±4:1)", g_edge, p_right, "rechts")
+    section([0.66, 0.03, 0.31, 0.32], "Doorsnede B–B boven en onder (schaal ±4:1)", g_edge, p_tb, "boven/onder")
+    return fig
 
 
 def main():
@@ -238,7 +348,7 @@ def main():
     a = ap.parse_args()
     out = pathlib.Path(a.out); out.mkdir(parents=True, exist_ok=True)
     parts = build()
-    export_step(parts, out / "case-b.step")
+    export_step(parts, out / "case-b.stp")
     for name, wp in parts.items():
         bb = wp.val().BoundingBox()
         print(f"{name:11s} {bb.xlen:7.2f} x {bb.zlen:7.2f} x {bb.ylen:6.2f}  vol {wp.val().Volume():9.0f}")
