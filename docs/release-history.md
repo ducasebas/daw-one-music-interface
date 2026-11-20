@@ -2,7 +2,16 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.14.1 HOTFIX (sweep diagnostics, privacy clean-up) — approved
+## GUI 3.14.1 HOTFIX (sweep diagnostics, privacy clean-up) — published
+
+Merged via PR #15 as `2fc164ef45c3577a5b486685c1a49c386cedef6a` on 20 November 2026 after all six PR CI jobs passed (check 22/24, Chromium 1–3/3, offline + WebKit). Verify on `main` (run 44705067629) and Publish signed preview (run 44705999034) passed on the first attempt, including the public channel check. Release `ota-preview-2fc164ef45c3577a5b486685c1a49c386cedef6a` is public. Verified independently from this session:
+- the signature verifies with the unchanged project key;
+- the manifest names commit `2fc164e`, release `2026.11.20-hotfix.1` and label "GUI 3.14.1 · HOTFIX", and the archive hash matches;
+- `release-bundle verify` confirms the full inventory (371 files) with cache v61;
+- the archive no longer contains the outreach draft;
+- the device selector (`checkChannel`) picks this release.
+
+Pi installation, the host-helper refresh and a new sweep on the real hardware were not observed.
 
 On 20 November 2026 the owner approved this update with "a, ik wil dit voorkomen voortaan, daarna mag je pushen". This was the answer to the choice about the outreach draft found in `docs/`: A meant remove the draft and the named reference, keep git history, and prevent it from now on, then push. Scope: release `2026.11.20-hotfix.1`, cache 61. It contains:
 - sweep-detection diagnostics, a wider lag search, a 7 s capture and robustness against a USB-microphone start-up burst (see [sweep-diagnostics-validation.md](sweep-diagnostics-validation.md); the cause was inferred from the owner's read-only `status.json`, with no audio);
