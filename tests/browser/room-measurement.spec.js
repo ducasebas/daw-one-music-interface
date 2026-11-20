@@ -83,3 +83,22 @@ test('a quiet result explains the missing dB and offers one 6 dB louder retry wi
  await dialog.getByRole('checkbox').check();await dialog.getByRole('button',{name:'Confirm audible measurement',exact:true}).click();
  await expect.poll(()=>fake.sent.find(r=>r.command==='measurement-start')?.args.levelDbfs).toBe(-30);
 });
+
+test('a sweep that was not detected explains which check failed, with technical details and an older-analyser notice',async({page})=>{
+ const {sweep,analyse,rate}=await import('../../deploy/measurement/signal.mjs');
+ // Real analyser output: the sweep arrived 1.4 s late in a 5 s recording and ran past its end.
+ const input=sweep(-30),late=Math.round(rate*1.4),recording=new Float32Array(rate*5);recording.set(input.subarray(0,recording.length-late),late);
+ const left={...analyse(input,recording),channel:'left'};left.diagnostics.timing={playerStartMs:180,captureMs:5200};
+ // A result written by the 3.9.x analyser on the Pi has no diagnostics at all.
+ const right={channel:'right',valid:false,snrDb:31,neededDb:0,clipPercent:0,sweepDetected:false,correlation:.04,warnings:[],points:[{hz:100,db:0}]};
+ const fake=await fakeMeasurement(page);fake.set({phase:'complete',result:{baseline:'flat-eq',levelDbfs:-30,channels:[left,right],profile:{}}});
+ await openMeasure(page);
+ await page.getByRole('navigation',{name:'Measurement topics'}).getByRole('button',{name:'Results',exact:true}).click();
+ const l=page.locator('.measurement-diagnosis[data-channel="left"]'),r=page.locator('.measurement-diagnosis[data-channel="right"]');
+ await expect(l.getByText('The sweep arrived 1400 ms late and ran past the end of the recording.')).toBeVisible();
+ await expect(r.getByText(/older measurement software on the device/)).toBeVisible();
+ await l.getByText('Technical details').click();
+ await expect(l.getByText(/✗ complete/)).toBeVisible();await expect(l.getByText(/✓ prominence/)).toBeVisible();
+ await expect(l.getByText(/Player started after the microphone: 180 ms/)).toBeVisible();
+ await page.screenshot({path:test.info().outputPath('results-diagnosis.png')});
+});

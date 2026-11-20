@@ -2,7 +2,18 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.14.0 SOUND (includes 3.11.3 QUEUE, 3.12.0 PARTY, 3.13.0 OFFLINE) — approved, in review
+## GUI 3.14.1 HOTFIX (sweep diagnostics, privacy clean-up) — approved
+
+On 20 November 2026 the owner approved this update with "a, ik wil dit voorkomen voortaan, daarna mag je pushen". This was the answer to the choice about the outreach draft found in `docs/`: A meant remove the draft and the named reference, keep git history, and prevent it from now on, then push. Scope: release `2026.11.20-hotfix.1`, cache 61. It contains:
+- sweep-detection diagnostics, a wider lag search, a 7 s capture and robustness against a USB-microphone start-up burst (see [sweep-diagnostics-validation.md](sweep-diagnostics-validation.md); the cause was inferred from the owner's read-only `status.json`, with no audio);
+- removal of `docs/sonocotta-follow-up.md` and the named reference in `docs/design/interaction-next-proposal.md`;
+- `tests/privacy.test.js` and the Privacy rule in `AGENTS.md`.
+
+The draft remains in git history (rewriting it was option B, which the owner did not choose). The measurement part reaches the Pi only through `sudo bash deploy/update-appliance.sh --apply`.
+
+## GUI 3.14.0 SOUND (includes 3.11.3 QUEUE, 3.12.0 PARTY, 3.13.0 OFFLINE) — published
+
+Merged via PR #14 as `7a4caf513bf2d8d26a2a92f9d09c6532190973bd` on 19 November 2026 after all six PR CI jobs passed. Verify on `main` passed. Publish signed preview (run 44641052284) signed and published release `ota-preview-7a4caf513bf2d8d26a2a92f9d09c6532190973bd`; its public channel check got HTTP 403 from the unauthenticated GitHub API on the shared runner, and the failed job was re-run once (attempt 2 passed in full, including the public channel check). Verified independently from this session: the signature verifies with the unchanged project key; the manifest names commit `7a4caf5`, release `2026.11.19-sound.1` and label "GUI 3.14.0 · SOUND"; the archive hash matches; the inventory is complete (370 files, cache v60, `deploy/manager/reboot.sh` included); `checkChannel` selects it. Not observed on the Pi: guest pairing with PIN over the home Wi-Fi, local pause and volume on the real Louder while Music Assistant is down (needs the host-helper refresh), a Docker install of Music Assistant, saving a queue as a playlist on the owner's server, and listening with the simple sound layer.
 
 On 19 November 2026 the owner approved publishing all four local candidates with "Ja push alles". The owner had been told the scope, the local results (full Chromium on the final state 225/226 with the one test-isolation failure fixed and re-run 9/9, offline 16/16, unit 420/420; 3.11.3 alone 222/222 and 16/16), the host-helper refresh needed for local volume, and that the cold-boot item stays separate. They build on each other and a device installs the newest, so they are published as one OTA, `2026.11.19-sound.1` (cache 60), with combined release notes. Scope: `docs/queue-3-11-3.md`, `docs/party-3-12.md`, `docs/offline-3-13.md`, `docs/sound-3-14.md`. The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full configured CI passes. It does not cover live hardware experiments or physical confirmations.
 

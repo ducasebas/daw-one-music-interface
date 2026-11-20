@@ -5,7 +5,7 @@ import {measurementStatus,sweepEstimateMs} from '../deploy/manager/measurement.m
 const base={supported:true,microphones:[{id:'hw:2,0',name:'UMIK-1'}],output:'plughw:CARD=LouderRaspberry,DEV=0'};
 test('a running sweep reports its remaining seconds without exposing the internal estimate',()=>{
  const now=1_000_000,value=measurementStatus({...base,running:true},{phase:'measuring-left',percent:5,observedAt:now,estimatedEndAt:now+sweepEstimateMs['measuring-left']},now+3000);
- assert.equal(value.remainingSeconds,12);assert.equal('estimatedEndAt' in value,false);assert.equal(value.phase,'measuring-left');
+ assert.equal(value.remainingSeconds,16);assert.equal('estimatedEndAt' in value,false);assert.equal(value.phase,'measuring-left');
  assert.equal(measurementStatus({...base,running:true},{phase:'analysing',observedAt:now,estimatedEndAt:now},now+5000).remainingSeconds,1);
 });
 test('a sweep that stopped without a final phase becomes a retryable failure instead of queued forever',()=>{

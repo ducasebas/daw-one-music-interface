@@ -62,7 +62,7 @@ A 60–90 second screen recording is a proposed next deliverable, not an existin
 
 Technical correspondence with the maker already occurred in October 2026. The owner now reports a development sample was agreed after outreach; no received board or validated revision is established. This is a follow-up, not a first introduction. The full private thread and personal contact addresses are deliberately excluded from the repository.
 
-See [the historical follow-up draft](sonocotta-follow-up.md); do not resend an initial sample request without checking the current conversation. Do not claim eligibility for a free-hardware programme until the owner supplies the actual published offer or the maker confirms it.
+Outreach messages and drafts are private and are not kept in this repository; do not resend an initial sample request without checking the current conversation. Do not claim eligibility for a free-hardware programme until the owner supplies the actual published offer or the maker confirms it.
 
 ## Before sending
 

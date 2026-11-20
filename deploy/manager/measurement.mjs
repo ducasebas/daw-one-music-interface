@@ -15,7 +15,7 @@ export function roomDspChanges(controls,points){
  return [...changes,{id:eq.id,value:equalizerOnValue(eq)}];
 }
 /** Expected remaining time per phase: two 5 s captures plus microphone start and analysis. */
-export const sweepEstimateMs=Object.freeze({queued:17000,'measuring-left':15000,'measuring-right':7500,analysing:1500});
+export const sweepEstimateMs=Object.freeze({queued:21000,'measuring-left':19000,'measuring-right':9500,analysing:1500});
 const activePhases=['queued','measuring-left','measuring-right','analysing'];
 /** A sweep that stopped without writing its final phase must not look queued forever. */
 export function measurementStatus(base,state={},now=Date.now()){
