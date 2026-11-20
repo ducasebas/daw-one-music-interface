@@ -8,6 +8,10 @@ Solid hardwood instead of veneer, so the case no longer needs to be smaller than
 
 What changed for the aluminium parts: the rear plate is 174.78 × 108.80 with the I/O notch 105 × 22.8 (11.8 mm bottom wall + 11 mm cap); its holes moved 2.8 mm with the outline (Pi/HAT pattern X 76.48 / 134.48, Y 30.89 / 79.89; fastening holes on the 11.8 mm wall centreline). The I/O cap is unchanged except that it now stands on an 11.8 mm bottom wall. Checked with the vendor STEP files of screen, HAT, HUSB238 and button: no overlaps between wood, plate, cap, screen and boards.
 
+**Wall mounting (owner: 15 mm air gap).** `wall-bracket.scad`: an anodised aluminium strip 120 × 26 × 6 mm, screwed to the wall with 2 countersunk screws (plugs to suit the wall), with two keyhole slots 100 mm apart that have a wall-side pocket for the screw heads. The rear plate gets 4 × M4 tapped holes: two hanging pins at X 37.39 / 137.39, Y 86 (M4 M-F standoff 9 mm + M4 pan-head screw, head ≤ Ø7 × 2.8) and two bumpers at X 17 / 157.78, Y 12 (M4 M-F standoff 12 mm + 3 mm rubber foot). Lower the unit so the heads enter the Ø8 holes and let it slide 10 mm down. Gap 9 + 6 = 15 mm; the bracket stays hidden below the top edge. Wall projection ≈ 70.5 mm from glass to wall. Male standoff threads into the plate must not exceed 3 mm. Lift the unit off the bracket for service.
+
+Parts for PCBWay (all 3 mm/6 mm aluminium, bead-blasted, grey anodised): rear plate (`backplate.scad`), I/O cap (`io-plate.scad`), wall bracket (`wall-bracket.scad`). The bezel ring is not needed in variant B.
+
 The sections below describe how the design got here; values in them refer to the earlier 169.18 × 103.20 case where they differ.
 
 Outline input: the owner-supplied case STEP of 20 November 2026 (SHA-256 `4312a155e711b58155aa25a251a5e4aa32df7e7f3de5cce7667c0bfeb87c4a81`). The STEP itself is not committed. It contains four 9 mm wooden walls (outer 169.18 × 103.20 mm, depth 47 mm) and a 3 mm rear plate.
@@ -28,7 +32,7 @@ Outline input: the owner-supplied case STEP of 20 November 2026 (SHA-256 `4312a1
 | Speaker terminals (owner: round, drilled by the owner) | Not machined by default (`post_mode = "none"`); `"mark"` adds centre dimples, `"hole"` the 2 × 2 grid of Ø6.5 holes. Free ceiling zone for them: X 13–34, Y 1.5–20.5 in cap coordinates. Use insulating shoulder bushes (BTL outputs must not touch the aluminium), deburr the bare drilled edges and drill before fitting the HUSB238 so no chips reach it. Above the ceiling ≤ 8 mm high, below ≤ 16 mm |
 | USB-C (owner: the HUSB238 board itself in the cap) | Adafruit 5991 stands upright on a fin milled onto the cap (3 mm standoffs, 4 × M2.5 tapped), receptacle down into a 4.6 × 9.4 mm slot with a 7.0 × 12.8 × 1.8 mm pocket for the plug overmold. Upright because only ≈ 33 mm of ceiling is free beside the Pi/HAT stack |
 
-Files: `pcbway.scad` (shared rules), `backplate.scad`, `io-plate.scad`, `bezel-ring.scad`, and `assembly.scad` — the whole case for viewing (F5), with switches in the Customizer to open the top, hide the glass or the boards. The wood is re-modelled from the STEP dimensions; Pi 4, HAT, HUSB238 and button are simplified blocks.
+Files: `pcbway.scad` (shared rules), `backplate.scad`, `io-plate.scad`, `wall-bracket.scad`, `bezel-ring.scad` (alternative A only), and `assembly.scad` — the whole case for viewing (F5), with switches in the Customizer to open the top, hide the glass or the boards. The wood is re-modelled from the STEP dimensions; Pi 4, HAT, HUSB238 and button are simplified blocks.
 
 ```sh
 openscad -o backplate.stl backplate.scad

@@ -14,6 +14,7 @@
 use <backplate.scad>
 use <io-plate.scad>
 use <bezel-ring.scad>
+use <wall-bracket.scad>
 
 /* [View] */
 show_top_wall = false;   // false = open top, to look inside
@@ -25,6 +26,8 @@ show_cap      = true;
 show_boards   = true;
 show_button   = true;
 show_inserts  = true;    // M3 insert holes in the wood (rear plate and I/O cap)
+show_mount    = true;    // wall bracket, hanging pins and bumpers (15 mm air gap)
+show_wall     = false;   // a slab of wall behind the unit
 
 /* [Colours] */
 c_wood  = [0.45, 0.30, 0.18];
@@ -113,6 +116,26 @@ module cap_in_case() {     // niche coordinates -> case coordinates
     multmatrix([[-1, 0, 0, 96.19], [0, -1, 0, yb], [0, 0, 1, z0], [0, 0, 0, 1]]) cap();
 }
 
+// ---------------------------------------------------------------- wall mounting (15 mm gap)
+y_out = yb + 3;                          // rear plate outer face
+y_wall = y_out + 15;
+function mount_case(p) = [x1 - p[0], z0 + p[1]];   // plate (X, Y) -> case (x, z)
+module mount_in_case() {
+    pins = [[37.39, 86.0], [137.39, 86.0]]; feet = [[17.0, 12.0], [157.78, 12.0]];
+    color("silver") for (p = pins) let(q = mount_case(p)) translate([q[0], y_out, q[1]]) rotate([-90, 0, 0]) {
+        cylinder(d = 7, h = 9, $fn = 6);                 // M4 M-F standoff 9 mm
+        translate([0, 0, 9]) cylinder(d = 4, h = 3);     // screw shank through the bracket web
+        translate([0, 0, 12]) cylinder(d = 7, h = 2.8);  // pan head in the wall-side pocket
+    }
+    for (p = feet) let(q = mount_case(p)) translate([q[0], y_out, q[1]]) rotate([-90, 0, 0]) {
+        color("silver") cylinder(d = 7, h = 12, $fn = 6);
+        color([0.1, 0.1, 0.1]) translate([0, 0, 12]) cylinder(d = 10, h = 3);
+    }
+    // bracket: hanging position, pins at its keyhole bottoms (Y = 8)
+    q = mount_case([87.39, 86.0]);
+    color(c_alu) translate([q[0], y_wall, q[1] - 8]) rotate([90, 0, 0]) wall_bracket();   // wall side (Z = 0) on the wall
+}
+
 // ---------------------------------------------------------------- screen (sunk into the rebate)
 module screen_in_case() {
     // Waveshare 7inch DSI LCD (E), depth slices of the vendor STEP: glass, panel (off-centre),
@@ -193,3 +216,5 @@ if (show_plate) color(c_alu) plate_in_case();
 if (show_cap)   color(c_alu) cap_in_case();
 if (show_boards) { pi4_in_case(); hat_in_case(); pd_in_case(); }
 if (show_button && (show_top_wall || ghost_top)) button_in_case();
+if (show_mount) mount_in_case();
+if (show_wall) color([0.85, 0.85, 0.82]) translate([x0 - 40, y_wall, z0 - 40]) cube([case_w + 80, 10, case_h + 80]);

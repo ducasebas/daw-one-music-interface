@@ -39,6 +39,14 @@ stack_dx    = 58.0;
 stack_dy    = 49.0;
 show_stack  = false;    // draw the board envelopes (reference only, not machined)
 
+/* [Wall mounting — see wall-bracket.scad] */
+// M4 tapped through holes for M-F standoffs on the outside (thread into the plate <= 3 mm):
+// two hanging pins (9 mm standoff + pan-head screw) and two bottom bumpers (12 mm standoff +
+// 3 mm rubber foot). Pins 100 mm apart, 22.8 mm below the top edge, so the bracket stays hidden.
+m4_tap_d    = 3.3;
+mount_holes = [[37.39, 86.0], [137.39, 86.0],    // hanging pins
+               [17.0, 12.0],  [157.78, 12.0]];   // bumpers
+
 module backplate_2d() {
     difference() {
         rrect(bp_w, bp_h, bp_corner_r);
@@ -65,6 +73,7 @@ module backplate() {
         linear_extrude(plate_t) backplate_2d();
         if (show_holes) for (p = fastening_holes()) translate([p[0], p[1], 0]) csk_hole();
         for (p = stack_holes()) translate([p[0], p[1], -1]) cylinder(d = m25_tap_d, h = plate_t + 2);
+        for (p = mount_holes) translate([p[0], p[1], -1]) cylinder(d = m4_tap_d, h = plate_t + 2);
     }
 }
 
@@ -90,6 +99,7 @@ module backplate_profile() {
         backplate_2d();
         if (show_holes) for (p = fastening_holes()) translate(p) circle(d = m3_clear_d);
         for (p = stack_holes()) translate(p) circle(d = m25_tap_d);
+        for (p = mount_holes) translate(p) circle(d = m4_tap_d);
     }
 }
 
