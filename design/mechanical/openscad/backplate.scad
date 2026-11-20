@@ -22,7 +22,7 @@ side_hole_y = 15.0;     // distance of side holes from top and bottom edge
 top_hole_dx = 45.0;     // top holes at centre ± this
 show_holes  = true;
 
-/* [Pi 3B+ with Louder HAT Plus 1X stacked — layout decided 20 Nov 2026, see README] */
+/* [Pi 4 Model B with Louder HAT Plus 1X stacked — layout decided 20 Nov 2026, see README] */
 // Side by side does not fit: inner width 151.18 < Pi with ports/SD (90.5) + HAT (61.38).
 // One 58 x 49 M2.5 pattern carries the stack. Plate coordinates (seen from outside):
 // the Pi's USB/Ethernet end points to +X, the GPIO edge points DOWN (toward the I/O cap), so
@@ -68,13 +68,13 @@ module backplate() {
 
 // Reference envelopes on the inner face (Z < 0), measured from the hole pattern
 module stack_envelopes() {
-    // Pi 3B+ PCB 85 x 56; holes 3.5 from the SD end and both long edges. +3 mm USB/Ethernet
+    // Pi 4 PCB 85 x 56; holes 3.5 from the SD end and both long edges. +3 mm USB/Ethernet
     // overhang on the +X end, +2.5 mm SD card on the -X end. Z: underside -27.4, PCB top -24,
-    // USB/Ethernet (not under the HAT) up to -8.4.
+    // USB 3/Ethernet (16 mm, not under the HAT) up to -8.
     color("green", 0.5) translate([stack_x0 - 3.5 - 2.5, stack_y0 - 3.5, -27.4])
         cube([85 + 3 + 2.5, 56, 3.4]);
     color("green", 0.5) translate([stack_x0 - 3.5 + 65, stack_y0 - 3.5, -24])
-        cube([20 + 3, 56, 15.6]);
+        cube([20 + 3, 56, 16]);
     // Louder HAT Plus 1X PCB 65 x 61.38; holes 3.5 from the ends, 4.09 from the GPIO edge (down),
     // 8.29 from the connector edge (up: DC jack + 4-pole 5.0 mm speaker terminal) plus 0.64
     // overhang. Listed 20 mm high from the Pi's PCB top to its back face at Z = -4.
