@@ -15,8 +15,10 @@ Outline input: the owner-supplied case STEP of 20 November 2026 (SHA-256 `4312a1
 | --- | --- |
 | Finish (owner) | Slightly darker than natural aluminium: bead-blasted, grey (light gunmetal) anodise; request a colour sample |
 | Notch inside corners | R1.5 (a milling cutter cannot make the sharp corners in the STEP) |
-| Fastening | 6 × countersunk M3: 4 into the side walls, 2 into the top wall, on the wall centreline |
-| I/O cap (owner's choice) | Milled aluminium cap standing on the bottom wall, screwed down from above (2 × countersunk M3 in a front flange). It forms the niche ceiling, front wall and side cheeks above the wood, so the plugs are hidden in the recess. Connectors go in the **ceiling**, plugs inserted upward; cut-outs stay empty until the parts are chosen |
+| Fastening (owner: OK) | 6 × countersunk M3 into threaded inserts: 4 in the side walls, 2 in the top wall, on the wall centreline |
+| I/O cap (owner's choice) | Milled aluminium cap standing on the bottom wall, screwed down from above (2 × countersunk M3 into inserts). It forms the niche ceiling, front wall and side cheeks above the wood, so the plugs are hidden in the recess. Connectors in the **ceiling**, plugs inserted upward |
+| Speaker terminals (owner: round) | 2 × 2 grid, Ø6.5 holes for insulating shoulder bushes (BTL outputs must not touch the aluminium). Fits round terminals ≤ Ø8 mm and ≤ 8 mm high above the ceiling, cap ≤ Ø8 × 16 mm below. Change `post_hole_d`/`post_xy` once the part is chosen |
+| USB-C (owner: the HUSB238 board itself in the cap) | Adafruit 5991 stands upright on a fin milled onto the cap (3 mm standoffs, 4 × M2.5 tapped), receptacle down into a 4.6 × 9.4 mm slot with a 7.0 × 12.8 × 1.8 mm pocket for the plug overmold. Upright because only ≈ 33 mm of ceiling is free beside the Pi/HAT stack |
 
 Files: `pcbway.scad` (shared rules), `backplate.scad`, `io-plate.scad`.
 
@@ -49,4 +51,4 @@ HAT facts from the Louder Rev F production files (same SHA-256 source): the GPIO
 
 Board data: Louder Rev F manufacturer STEP (65.00 × 61.38 mm PCB, holes 3.5 mm from the ends, 4.09 mm from the GPIO edge, tallest part 7.7 mm) and Adafruit 3350 button STEP, both matching the SHA-256 in `docs/design/fit-d1-sources.json`; Pi 3B+ 85 × 56 mm with the standard hole pattern. `show_stack = true` in `backplate.scad` shows the board envelopes.
 
-**Depth budget.** Case 47 mm deep, screen module 15.3 mm (Waveshare STEP envelope incl. its connectors, see `docs/design/fit-d1.md`) → 31.7 mm behind the screen if the glass sits at the front face; the stack takes ≈ 27.4 mm, leaving ≈ 4.3 mm for the DSI flex and air. The supplied case is 169.18 × 103.20 mm while the glass is 170.18 × 104.20 mm, so how the screen seats in the front is not yet modelled. Confirm on the real parts before ordering.
+**Depth budget.** Case 47 mm deep, screen module 15.3 mm (Waveshare STEP envelope incl. its connectors, see `docs/design/fit-d1.md`) → 31.7 mm behind the screen if the glass sits at the front face; the stack takes ≈ 27.4 mm, leaving ≈ 4.3 mm for the DSI flex and air. The supplied case is 169.18 × 103.20 mm while the glass is 170.18 × 104.20 mm, and the owner confirms the glass lies on the front face. The depth budget above therefore holds; confirm the module depth on the real screen before ordering.
