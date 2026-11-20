@@ -25,9 +25,12 @@ show_holes  = true;
 /* [Pi 3B+ with Louder HAT Plus 1X stacked — layout decided 20 Nov 2026, see README] */
 // Side by side does not fit: inner width 151.18 < Pi with ports/SD (90.5) + HAT (61.38).
 // One 58 x 49 M2.5 pattern carries the stack. Plate coordinates (seen from outside):
-// the Pi's USB/Ethernet end points to +X, the GPIO edge points up.
+// the Pi's USB/Ethernet end points to +X, the GPIO edge points DOWN (toward the I/O cap), so
+// the HAT's power/output edge faces the top wall and the Pi's top edge stays clear of the button.
+// Depth from the plate's inner face: 10 mm standoff, HAT 1.6, 11 mm header spacing, Pi 1.4,
+// Pi underside 2 = 26 mm (Louder lists the HAT as 20 mm high on the Pi).
 stack_x0    = 73.68;    // hole column on the Pi SD-card end
-stack_y0    = 32.71;    // hole row on the edge opposite GPIO (HAT 0.8 mm above the I/O cap)
+stack_y0    = 28.09;    // hole row on the GPIO edge (HAT 1.0 mm above the I/O cap)
 stack_dx    = 58.0;
 stack_dy    = 49.0;
 show_stack  = false;    // draw the board envelopes (reference only, not machined)
@@ -63,13 +66,14 @@ module backplate() {
 
 // Reference envelopes on the inner face (Z < 0), measured from the hole pattern
 module stack_envelopes() {
-    // Pi 3B+ PCB 85 x 56; holes 3.5 from the SD end and both long edges.
-    // +3 mm USB/Ethernet overhang on the +X end, +2.5 mm SD card on the -X end.
-    color("green", 0.5) translate([stack_x0 - 3.5 - 2.5, stack_y0 - 3.5, -24])
-        cube([85 + 3 + 2.5, 56, 6]);
-    // Louder HAT Plus 1X PCB 65 x 61.38; holes 3.5 from the ends, 4.09 from the GPIO edge,
-    // 8.29 from the opposite edge; edge connector overhang 0.64 mm.
-    color("royalblue", 0.5) translate([stack_x0 - 3.5, stack_y0 - 8.29 - 0.64, -12])
+    // Pi 3B+ PCB 85 x 56; holes 3.5 from the SD end and both long edges. +3 mm USB/Ethernet
+    // overhang on the +X end, +2.5 mm SD card on the -X end. Z: underside -26, ports reach -7.
+    color("green", 0.5) translate([stack_x0 - 3.5 - 2.5, stack_y0 - 3.5, -26])
+        cube([85 + 3 + 2.5, 56, 19]);
+    // Louder HAT Plus 1X PCB 65 x 61.38; holes 3.5 from the ends, 4.09 from the GPIO edge (down),
+    // 8.29 from the connector edge (up) plus 0.64 connector overhang. Z: PCB -11.6..-10,
+    // inductors toward the plate up to -2.3.
+    color("royalblue", 0.5) translate([stack_x0 - 3.5, stack_y0 - 4.09, -11.6])
         cube([65, 61.38 + 0.64, 9.3]);
 }
 
