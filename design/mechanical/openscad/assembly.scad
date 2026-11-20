@@ -64,7 +64,9 @@ module relieved_rect(w, h) {            // rectangle with corner reliefs for squ
 }
 module front_rebate() {
     // glass pocket from the front, then the panel pocket down to the shoulder
-    translate([cx, yf - 1, cz]) rotate([-90, 0, 0]) linear_extrude(glass_pocket_d + 1) mirror([0, 1]) relieved_rect(170.18 + 2 * gap, 104.20 + 2 * gap);
+    // glass corners are R4.5: rounded pocket (R4.8) keeps ~3 mm of wood at the case corners
+    translate([cx, yf - 1, cz]) rotate([-90, 0, 0]) linear_extrude(glass_pocket_d + 1)
+        offset(r = 4.5 + gap) square([170.18 + 2 * gap - 2 * (4.5 + gap), 104.20 + 2 * gap - 2 * (4.5 + gap)], center = true);
     translate([cx + panel_dx, yf - 1, cz]) rotate([-90, 0, 0]) linear_extrude(rebate_d + 1) mirror([0, 1]) relieved_rect(161.83 + 2 * gap, 99.80 + 2 * gap);
 }
 // M3 insert holes: rear plate fastening (into the back face) and I/O cap flange (bottom wall top)

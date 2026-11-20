@@ -22,6 +22,7 @@ RABBET = 4.0                        # top/bottom sit 4 mm into rabbets in the si
 
 GLASS = (170.18, 104.20, 0.75)      # Waveshare 7inch DSI LCD (E) cover glass
 GLASS_POCKET_D = 1.5                # glass + the touch layer behind it reach 1.45 mm at full size
+GLASS_R = 4.5                       # glass corners (touch layer R4.4); pocket radius = GLASS_R + GAP
 PANEL = (161.83, 99.80, 4.25)       # LCD panel behind it
 PANEL_DX = -2.955                   # panel centre relative to the glass centre
 TAPE = 0.5
@@ -62,8 +63,14 @@ def relieved_pocket(w, h, cx, ch, d0, d1):
     return body
 
 
+def rounded_pocket(w, h, r, cx, ch, d0, d1):
+    return (cq.Workplane("XZ").center(cx, ch).rect(w, h).extrude(-(d1 - d0))
+            .edges("|Y").fillet(r).translate((0, d0, 0)))
+
+
 def front_rebate():
-    g = relieved_pocket(GLASS[0] + 2 * GAP, GLASS[1] + 2 * GAP, W / 2, H / 2, -1, GLASS_POCKET_D)
+    # glass has R4.5 corners: a rounded pocket keeps ~3 mm of wood at the case corners
+    g = rounded_pocket(GLASS[0] + 2 * GAP, GLASS[1] + 2 * GAP, GLASS_R + GAP, W / 2, H / 2, -1, GLASS_POCKET_D)
     p = relieved_pocket(PANEL[0] + 2 * GAP, PANEL[1] + 2 * GAP, W / 2 + PANEL_DX, H / 2, -1, REBATE_D)
     return g.union(p)
 
@@ -148,16 +155,18 @@ def drawing(path):
     gw, gh = GLASS[0] + 2 * GAP, GLASS[1] + 2 * GAP
     pw, ph = PANEL[0] + 2 * GAP, PANEL[1] + 2 * GAP
     pcx = W / 2 + PANEL_DX
-    ax.add_patch(Rectangle(((W - gw) / 2, (H - gh) / 2), gw, gh, fc="#e8d6bf", ec=LINE, lw=0.8))
+    gr = GLASS_R + GAP
+    ax.add_patch(FancyBboxPatch(((W - gw) / 2 + gr, (H - gh) / 2 + gr), gw - 2 * gr, gh - 2 * gr,
+                                boxstyle=f"round,pad={gr}", fc="#e8d6bf", ec=LINE, lw=0.8))
     ax.add_patch(Rectangle((pcx - pw / 2, (H - ph) / 2), pw, ph, fc="#dcc4a6", ec=LINE, lw=0.8))
     ax.add_patch(Rectangle((WALL, WALL), W - 2 * WALL, H - 2 * WALL, fc="white", ec=LINE, lw=0.8, ls="--"))
     dim(ax, (0, -6), (W, -6), f"{W:.2f}")
     dim(ax, (-6, 0), (-6, H), f"{H:.2f}", rot=90)
-    dim(ax, ((W - gw) / 2, H + 5), ((W + gw) / 2, H + 5), f"glaskamer {gw:.2f} × {gh:.2f} × {GLASS_POCKET_D:.2f} diep")
+    dim(ax, ((W - gw) / 2, H + 5), ((W + gw) / 2, H + 5), f"glaskamer {gw:.2f} × {gh:.2f} × {GLASS_POCKET_D:.2f} diep, hoeken R{GLASS_R + GAP:.1f}")
     dim(ax, (pcx - pw / 2, H - 20), (pcx + pw / 2, H - 20), f"paneelkamer {pw:.2f} × {ph:.2f}, tot {REBATE_D:.2f} diep (incl. {TAPE} tape)")
     dim(ax, (WALL, 25), (W - WALL, 25), f"binnenmaat {W - 2 * WALL:.2f} × {H - 2 * WALL:.2f}")
     dim(ax, (0, 40), (WALL, 40), f"{WALL}", off=(0, 4))
-    ax.text(W / 2, 55, f"paneel {abs(PANEL_DX):.2f} uit het midden naar links\nhoeken: uitsparing Ø{2 * RELIEF_R:.1f} voor rechte glas-/paneelhoeken",
+    ax.text(W / 2, 55, f"paneel {abs(PANEL_DX):.2f} uit het midden naar links\npaneelkamer: hoekuitsparing Ø{2 * RELIEF_R:.1f} (paneel heeft haakse hoeken)\nfrezen na verlijmen, frees Ø3 voor de hoeken",
             ha="center", fontsize=8, color=NOTE)
     ax.set_xlim(-18, W + 12); ax.set_ylim(-16, H + 14); ax.set_aspect("equal"); ax.axis("off")
 
