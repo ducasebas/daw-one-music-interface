@@ -42,6 +42,8 @@ import "./appliance-layout.css";
 import "./sync.css";
 import "./polish.css";
 import "./typography.css";
+import "./sheets.css";
+import "./search.css";
 function load() {
   try {
     return normalize(JSON.parse(localStorage.getItem("daw-settings") || "{}"));

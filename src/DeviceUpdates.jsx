@@ -3,6 +3,8 @@ import React,{createContext,useContext,useEffect,useRef,useState,useCallback,use
 import {updatePhases} from '../shared/update-settings.js';
 import {deviceActionMessage} from '../shared/device-feedback.js';
 import {BusyStatus} from './BusyStatus.jsx';
+import {Sheet} from './Sheet.jsx';
+import {updateExpectations,updateTiming,formatDuration,changelogItems} from '../shared/update-expectation.js';
 const Context=createContext(null);
 export const phaseLabels={checking:'Updates controleren',available:'Update beschikbaar',paused:'Updates gepauzeerd','waiting-idle':'Wachten tot muziek gestopt is','waiting-window':'Wachten op het tijdvenster',downloading:'Downloaden',verifying:'Handtekening controleren',preparing:'Voorbereiden',installing:'Installeren',restarting:'Opnieuw starten','checking-health':'Opstartcontrole','rolling-back':'Vorige versie herstellen',installed:'Update voltooid','rolled-back':'Vorige versie hersteld','up-to-date':'Bijgewerkt','no-release':'Nog geen ondertekende release','not-configured':'Nog niet ingesteld',error:'Update niet voltooid'};
 export function DeviceUpdatesProvider({children}){
@@ -43,5 +45,21 @@ export function GlobalUpdateProgress(){
    wasBusy.current=false;if(!info.manager?.simulated)location.reload();
   }
  },[critical,info?.status,info?.offline,info?.manager?.simulated,info?.manager?.progressDisplay]);
- return critical?<div className="update-overlay"><UpdateProgress info={info}/></div>:null;
+ const active=['downloading','verifying','preparing','installing','restarting','checking-health','rolling-back'].includes(info?.status);
+ return active?<UpdateSheet info={info}/>:null;
+}
+/** Full-screen update sheet: progress, time, what's new and what to expect, over the blurred interface. */
+export function UpdateSheet({info}){
+ const [now,setNow]=useState(Date.now());useEffect(()=>{const t=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(t);},[]);
+ const timing=updateTiming(info,now),items=changelogItems(info?.available?.notes),percent=typeof info?.percent==='number'?info.percent:null;
+ return <Sheet className="update-sheet" label="Software update">
+  <header><small>{tr(info?.manager?.simulated?'SIMULATED UPDATE · NO SOFTWARE CHANGE':'DAW TUNEBOX · SOFTWARE UPDATE')}</small><h2>{info?.available?.label||tr('Software update')}</h2></header>
+  <div className="tb-sheet-body">
+   <section className="tb-sheet-status" aria-live="polite"><h3>{tr(phaseLabels[info?.status]||info?.status)}</h3><progress aria-label={tr('Update progress')} max="100" {...(percent!==null&&info?.status==='downloading'?{value:percent}:{})}/>
+    <div className="tb-sheet-time">{timing.elapsedSeconds!==null&&<span>{tr('Elapsed')}: <b>{formatDuration(timing.elapsedSeconds)}</b></span>}<span>{timing.typicalSeconds?<>{tr('Usually takes')}: <b>{formatDuration(timing.typicalSeconds)}</b> <small>{tr('(from earlier updates on this TuneBox)')}</small></>:tr('Usually a few minutes; the download depends on your internet connection.')}</span></div>
+    <ol className="update-steps" aria-label={tr('Update steps')}>{['downloading','verifying','preparing','installing','restarting','checking-health'].map((phase,i)=><li key={phase} aria-current={info.status===phase?'step':undefined}>{i+1}<span>{tr(phaseLabels[phase])}</span></li>)}</ol></section>
+   {items.length>0&&<section><h3>{tr('What’s new')}</h3><ul>{items.map(item=><li key={item}>{tr(item)}</li>)}</ul></section>}
+   <section><h3>{tr('What to expect')}</h3><ul>{updateExpectations.map(item=><li key={item}>{tr(item)}</li>)}</ul></section>
+  </div>
+ </Sheet>;
 }

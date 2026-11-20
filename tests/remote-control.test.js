@@ -78,6 +78,10 @@ test('the remote mirrors the TuneBox style and what plays next, without telemetr
  assert.equal(bt.playback.next,null);assert.equal(bt.playback.quality,null);
 });
 
+test('remote notifications carry only id, title and a short detail',()=>{
+ const view=remoteView({playback:{queue:[]}},{notifications:[{id:'update',title:'Update available',detail:'2026.11.20',section:'updates',icon:'update',secret:1},{id:'x'},{title:'no id'}]});
+ assert.deepEqual(view.notifications,[{id:'update',title:'Update available',detail:'2026.11.20'}]);assert.deepEqual(remoteView({playback:{queue:[]}}).notifications,[]);
+});
 test('remote commands are allowlisted and volume rises in bounded steps',()=>{
  const view={playback:{volume:20},volumeLimit:40};
  assert.deepEqual(remoteEvent({type:'pause'},view),{type:'pause'});
@@ -113,6 +117,12 @@ test('HTTP: the remote listener pairs from the wall QR code and only reaches pla
   assert.equal(paired.status,200);const cookie=paired.headers['set-cookie'][0].split(';')[0];
   assert.equal((await call(remotePort,'/api/remote/pair',{method:'POST',body:{token:pair,name:'Again'}})).status,403);
   const phone={Cookie:cookie};
+  // GUI 3.15: a paired phone can invite one more phone with a fresh single-use code; unpaired callers cannot.
+  assert.equal((await call(remotePort,'/api/remote/invite',{method:'POST',body:{}})).status,401);
+  const invite=await call(remotePort,'/api/remote/invite',{method:'POST',headers:phone,body:{}});assert.equal(invite.status,200);assert.match(invite.json.url,new RegExp(`^http://127\\.0\\.0\\.1:${remotePort}/remote\\.html#pair=[a-f0-9]{48}$`));assert.equal(invite.json.pinRequired,false);
+  assert.equal((await call(port,'/api/remote/invite',{method:'POST',headers:wall,body:{}})).status,404);
+  const second=await call(remotePort,'/api/remote/pair',{method:'POST',body:{token:invite.json.url.split('#pair=')[1],name:'Friend'}});assert.equal(second.status,200);
+  const friend=(await call(port,'/api/remote/phones')).json.phones.find(p=>p.name==='Friend');assert.ok(friend);assert.equal((await call(port,'/api/remote/forget',{method:'POST',headers:wall,body:{id:friend.id}})).status,200);
   const state=await call(remotePort,'/api/remote/state',{headers:phone});assert.equal(state.status,200);assert.equal(state.json.playback.volume,32);
   for(const path of ['/api/state','/api/updates','/api/preferences','/api/system','/api/network','/api/security/status','/api/remote/phones'])assert.equal((await call(remotePort,path,{headers:phone})).status,403,path);
   for(const [path,body] of [['/api/event',{type:'pause'}],['/api/preferences',{revision:0,patch:{}}],['/api/device',{command:'wifi'}],['/api/reset',{}],['/api/remote/forget',{all:true}]])assert.equal((await call(remotePort,path,{method:'POST',headers:phone,body})).status,403,path);

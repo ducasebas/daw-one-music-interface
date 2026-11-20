@@ -49,5 +49,5 @@ test('finishing setup later still permits an explicit startup join after reachin
  const f=await fixture(page,{deferred:true});await expect(prompt(page)).toBeVisible({timeout:10000});expect(f.calls).toHaveLength(0);await expect(prompt(page).getByRole('button',{name:'Join Rivo',exact:true})).toBeEnabled();
 });
 test('the startup question cannot cover an active software installation',async({page})=>{
- const f=await fixture(page,{updating:true});await page.locator('.startup-screen').waitFor({state:'hidden'});await expect(page.locator('.update-overlay')).toBeVisible();await expect(prompt(page)).toHaveCount(0);expect(f.calls).toHaveLength(0);
+ const f=await fixture(page,{updating:true});await page.locator('.startup-screen').waitFor({state:'hidden'});await expect(page.locator('.update-sheet')).toBeVisible();await expect(prompt(page)).toHaveCount(0);expect(f.calls).toHaveLength(0);
 });

@@ -1,0 +1,27 @@
+/* One popup language for TuneBox (see docs/popup-style.md).
+   1. Confirmation dialogs (.hub-confirm, power, notifications, rooms): centred card over a dimmed, blurred page.
+   2. Full-screen sheets (.tb-sheet): whole screen, blurred page behind, header / scrolling body / fixed actions.
+   Both use the same tokens so every popup feels like part of one interface. */
+:root{--sheet-dim:rgb(8 10 12 / .58);--sheet-blur:18px;--sheet-radius:var(--wizard-radius,18px);--sheet-line:var(--wizard-line,var(--divider,#3a4044))}
+:is(.hub-confirm,.power-dialog,.wall-notifications,.rooms-dialog)::backdrop{background:var(--sheet-dim);backdrop-filter:blur(var(--sheet-blur)) saturate(1.1)}
+dialog.tb-sheet{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;border:0;border-radius:0;outline:0}
+dialog.tb-sheet::backdrop{background:var(--sheet-dim);backdrop-filter:blur(calc(var(--sheet-blur) * 1.5)) saturate(1.15)}
+.tb-sheet{position:fixed;inset:0;z-index:1000;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:18px;padding:34px 44px 28px;box-sizing:border-box;color:var(--text,#f1eee6);background:transparent;animation:tb-sheet-in .22s ease-out both}
+.tb-sheet>header small{letter-spacing:.2em;color:var(--accent,#c5a466);font-size:15px}.tb-sheet>header h2{margin:6px 0 0;font-size:36px;font-weight:600;line-height:1.15}
+.tb-sheet-body{overflow:auto;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-content:start;scrollbar-width:none}.tb-sheet-body::-webkit-scrollbar{display:none}
+.tb-sheet-body>section{border:var(--wizard-border,2px solid var(--sheet-line));border-radius:var(--sheet-radius);background:color-mix(in srgb,var(--panel,#1b2022) 82%,transparent);padding:20px 24px}
+.tb-sheet-body h3{margin:0 0 12px;font-size:22px;font-weight:600}.tb-sheet-body p,.tb-sheet-body li{font-size:19px;line-height:1.5}.tb-sheet-body ul{margin:0;padding-left:22px}.tb-sheet-body li{margin:6px 0}
+.tb-sheet-status{grid-column:1/-1}.tb-sheet-status progress{width:100%;height:14px;accent-color:var(--accent,#c5a466)}.tb-sheet-time{display:flex;gap:28px;flex-wrap:wrap;font-size:20px;font-variant-numeric:tabular-nums}.tb-sheet-time b{color:var(--accent,#c5a466);font-weight:600}
+.tb-sheet>footer{display:flex;justify-content:flex-end;gap:14px}.tb-sheet>footer button{min-height:72px;min-width:200px;font-size:21px}
+@keyframes tb-sheet-in{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.tb-sheet{animation:none}}
+@media (max-width:900px){.tb-sheet-body{grid-template-columns:1fr}}
+.tb-sheet>footer .tb-sheet-primary{background:var(--accent,#c5a466);color:var(--accent-ink,#14110c);border-color:var(--accent,#c5a466);font-weight:600}
+/* Louder HAT health overview */
+.amp-health{border:var(--wizard-border,2px solid var(--sheet-line));border-radius:var(--sheet-radius);padding:16px 22px;margin:0 0 18px}.amp-health h3{margin:0 0 10px}
+.amp-checks{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:8px 18px}
+.amp-checks li{display:grid;grid-template-columns:22px 1fr;column-gap:10px;align-items:baseline;font-size:18px}.amp-checks li::before{content:'✓';grid-row:span 3;color:var(--accent,#c5a466);font-weight:700}
+.amp-checks li span,.amp-checks li small{grid-column:2;color:var(--muted,#b4b7b9)}.amp-checks li[data-state=fault]::before{content:'!';color:var(--danger,#e06c5a)}.amp-checks li[data-state=fault] span{color:var(--danger,#e06c5a)}
+.amp-checks li[data-state=idle]::before{content:'○';color:var(--muted,#b4b7b9)}.amp-checks li[data-state=unknown]::before{content:'–';color:var(--muted,#b4b7b9)}
+.amp-summary{font-size:18px}.amp-summary[data-state=fault]{color:var(--danger,#e06c5a)}
+.tb-sheet .update-steps{margin:14px 0 0}.tb-sheet .update-steps li{font-size:20px}.tb-sheet .update-steps li span{font-size:16px}.tb-sheet .update-steps [aria-current=step]{color:var(--accent,#c5a466);font-weight:600}

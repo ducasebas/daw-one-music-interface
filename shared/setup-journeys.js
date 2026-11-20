@@ -4,6 +4,7 @@ export const setupJourneys=Object.freeze([
   {id:'music',title:'Music Assistant',icon:'rooms',group:'connections'},
   {id:'remote',title:'Phone remote',icon:'playing',group:'connections'},
   {id:'sound',title:'Sound & DSP',icon:'speaker',group:'audio'},
+  {id:'room',title:'Room correction',icon:'volume',group:'audio'},
   {id:'sync',title:'Picture & meter sync',icon:'clock',group:'audio'},
 ]);
 /** Connectivity and music sources are independent, not mutually exclusive. */

@@ -27,8 +27,8 @@ test('keyboard shows current MA suggestions and a tap starts the selected track'
  await page.goto(url);await page.locator('.m2-header').getByRole('button',{name:'Search',exact:true}).click();
  const keyboard=page.getByRole('dialog',{name:'Touch keyboard',exact:true}),input=keyboard.getByLabel('Keyboard entry',{exact:true});
  await input.fill('old');await page.waitForTimeout(300);await input.fill('new');
- const suggestions=keyboard.getByRole('region',{name:'Music suggestions',exact:true});await expect(suggestions.getByRole('button',{name:'New song Artist',exact:true})).toBeVisible();await page.waitForTimeout(850);await expect(suggestions).not.toContainText('Old song');
- await page.screenshot({path:'test-results/connect-suggestions.png'});await suggestions.getByRole('button',{name:'New song Artist',exact:true}).click();await expect(keyboard).not.toBeVisible();await expect(page.locator('.music2')).toHaveAttribute('data-page','playing');expect(plays).toEqual([{id:'track1',option:'replace'}]);
+ const suggestions=keyboard.getByRole('region',{name:'Music suggestions',exact:true});await expect(suggestions.getByRole('button',{name:'New song Artist · Song',exact:true})).toBeVisible();await page.waitForTimeout(850);await expect(suggestions).not.toContainText('Old song');
+ await page.screenshot({path:'test-results/connect-suggestions.png'});await suggestions.getByRole('button',{name:'New song Artist · Song',exact:true}).click();await expect(keyboard).not.toBeVisible();await expect(page.locator('.music2')).toHaveAttribute('data-page','playing');expect(plays).toEqual([{id:'track1',option:'replace'}]);
 });
 test('Music Assistant favorites wait for acknowledgement and refresh their visible state',async({page})=>{
  await live(page);let favorite=false;const writes=[];
@@ -64,10 +64,10 @@ test('search suggestions start at 3 characters, debounce, reuse prefixes and sta
  expect(asked).toEqual([]);await expect(suggestions).toContainText('Type at least 3 characters');
  // Quick typing sends only the final query.
  await input.fill('abb');await page.waitForTimeout(80);await input.fill('abba');
- await expect(suggestions.getByRole('button',{name:'Song abba Artist',exact:true})).toBeVisible();
+ await expect(suggestions.getByRole('button',{name:'Song abba Artist · Song',exact:true})).toBeVisible();
  expect(asked).toEqual(['abba']);
- await input.fill('abb');await expect(suggestions.getByRole('button',{name:'Song abb Artist',exact:true})).toBeVisible();
- await input.fill('abba');await expect(suggestions.getByRole('button',{name:'Song abba Artist',exact:true})).toBeVisible();await page.waitForTimeout(400);
+ await input.fill('abb');await expect(suggestions.getByRole('button',{name:'Song abb Artist · Song',exact:true})).toBeVisible();
+ await input.fill('abba');await expect(suggestions.getByRole('button',{name:'Song abba Artist · Song',exact:true})).toBeVisible();await page.waitForTimeout(400);
  expect(asked).toEqual(['abba','abb'],'a prefix seen before is answered from the cache');
  const shown=await suggestions.boundingBox(),keys=await keyboard.locator('.keyboard-keys').boundingBox();
  expect(shown.y+shown.height).toBeLessThanOrEqual(keys.y+1);expect(shown.y).toBeGreaterThanOrEqual(0);
@@ -97,7 +97,7 @@ test('Play now asks before replacing a queue with music waiting, and can save it
  await page.route('**/api/library/save-queue',r=>{saves.push(1);return r.fulfill({json:{saved:2,name:'TuneBox queue 2026-11-19 22:40'}});});
  await page.goto(url);await page.locator('.m2-header').getByRole('button',{name:'Search',exact:true}).click();
  const keyboard=page.getByRole('dialog',{name:'Touch keyboard',exact:true});await keyboard.getByLabel('Keyboard entry',{exact:true}).fill('new');
- await keyboard.getByRole('region',{name:'Music suggestions',exact:true}).getByRole('button',{name:'New song Artist',exact:true}).click();
+ await keyboard.getByRole('region',{name:'Music suggestions',exact:true}).getByRole('button',{name:'New song Artist · Song',exact:true}).click();
  const ask=page.getByRole('dialog',{name:'Music is waiting in the queue',exact:true});await expect(ask).toBeVisible();await expect(ask).toContainText('2 tracks are queued');
  await page.screenshot({path:'test-results/queue-choice.png'});
  await ask.getByRole('button',{name:/^Play next/}).click();await expect(ask).not.toBeVisible();

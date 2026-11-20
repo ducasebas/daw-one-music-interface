@@ -2,7 +2,30 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.14.2 HOTFIX (idle clock fault) — approved
+## GUI 3.15.0 GUIDE — approved
+
+On 20 November 2026 the owner approved this update with "Ja push maar", after being shown the local candidate and its results. Results at approval: unit 429/429, build OK, Python 111, full Chromium 235/235, offline 16/16; WebKit was not run locally.
+
+Scope: release `2026.11.20-guide.1`, cache 63:
+- room correction wizard with a check measurement;
+- Bluetooth setup steps and the negotiated codec, bitrate and stability;
+- full-screen update review and progress with changelog, measured duration and expectations, plus a shared popup style;
+- Louder HAT health in Developer → Hardware;
+- readable search suggestions with a compact keyboard;
+- phone notifications and phone invites.
+
+The Bluetooth details, the duration history and the update page need `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply` on the Pi. See [guide-3-15.md](guide-3-15.md) and [guide-validation.md](guide-validation.md).
+
+## GUI 3.14.2 HOTFIX (idle clock fault) — published
+
+Merged via PR #16 as `1d45d5c0771390457a90848d3d6719870a5cf251` on 20 November 2026 after all six PR CI jobs passed. The final local run also passed: Chromium 227/227 and offline 16/16. Verify on `main` (run 44711873122) and Publish signed preview (run 44712877704) passed on the first attempt, including the public channel check. Release `ota-preview-1d45d5c0771390457a90848d3d6719870a5cf251` is public. Verified independently from this session:
+- the signature verifies with the unchanged project key;
+- the manifest names commit `1d45d5c`, release `2026.11.20-hotfix.2` and label "GUI 3.14.2 · HOTFIX", and the archive hash matches;
+- `release-bundle verify` confirms the full inventory (371 files) with cache v62;
+- `blockingFaults` is present in the measurement and manager code;
+- `checkChannel` selects this release.
+
+Pi installation, the host refresh and a new sweep were not observed.
 
 On 20 November 2026 the owner approved this update with "ja push". The owner had been told the cause and the fix. Cause, from the owner's read-only journal, amixer and dmesg output: the sweep preparation refused to start on the TAS5825's idle "Fault Clock". The fix is `blockingFaults()`, applied to the measurement, Bluetooth, the startup sound and automatic DSP; real faults still block. Further changes: the preparation logs its reason, and the GUI and docs use the full `/opt/daw-one/deploy/update-appliance.sh` path. Scope: release `2026.11.20-hotfix.2`, cache 62. Local results at approval: unit 426/426, build OK, Python 109; the full Chromium run was in progress with no failures. The fix reaches the Pi only through `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply`.
 

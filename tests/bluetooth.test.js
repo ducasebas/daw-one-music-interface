@@ -48,3 +48,20 @@ test('Bluetooth telemetry expires without implicitly switching or exposing raw B
 test('OTA does not interrupt a selected Bluetooth source, including a paused phone',()=>{
  const s={mode:'simulation',device:{mode:'ready',faults:[],amplifierEnabled:false},playback:{playing:false},activity:{bluetoothActive:true}};assert.equal(canUpdate(s),false);s.activity.bluetoothActive=false;assert.equal(canUpdate(s),true);
 });
+test('Bluetooth link quality comes from the negotiated codec, never a guess; stability counts real drop-outs',async()=>{
+ const {bluetoothLinkQuality,bluetoothStability}=await import('../shared/bluetooth.js');
+ // A2DP reference values: SBC joint stereo, 16 blocks, 8 subbands.
+ assert.deepEqual(bluetoothLinkQuality({codec:0,configuration:[0x21,0x15,2,53]}),{codec:'SBC',kbps:328,sampleRate:44100,lossy:true,bitpool:53});
+ assert.equal(bluetoothLinkQuality({codec:0,configuration:[0x11,0x15,2,51]}).kbps,345);
+ assert.equal(bluetoothLinkQuality({codec:2,configuration:[0x80,0x01,0x8C,0x83,0xE8,0x00]}).kbps,256);
+ assert.equal(bluetoothLinkQuality(null),null);assert.equal(bluetoothLinkQuality({codec:0,configuration:[0x21,0x15,2,0]}).kbps,null);
+ assert.equal(bluetoothStability({connectedSeconds:600,dropsLastHour:0}),'stable');assert.equal(bluetoothStability({connectedSeconds:20,dropsLastHour:0}),'new');
+ assert.equal(bluetoothStability({connectedSeconds:600,dropsLastHour:1}),'drops');assert.equal(bluetoothStability({connectedSeconds:600,dropsLastHour:4}),'unstable');assert.equal(bluetoothStability(null),'unknown');
+ const dir=mkdtempSync(join(tmpdir(),'tunebox-bluetooth-'));try{
+  writeFileSync(join(dir,'config'),JSON.stringify({verified:true}));writeFileSync(join(dir,'source.json'),JSON.stringify({active:true}));
+  writeFileSync(join(dir,'telemetry.json'),JSON.stringify({available:true,observedAt:100,devices:[{address:'AA:BB:CC:DD:EE:FF',name:'Phone',connected:true,link:{connectedSeconds:90,dropsLastHour:1,extra:'x'},transport:{codec:0,configuration:[0x21,0x15,2,53],state:'active',path:'/org/bluez/private'}},{address:'AA:BB:CC:DD:EE:00',name:'Bad',connected:true,link:{connectedSeconds:'1'},transport:{codec:999,configuration:[300]}}]}));
+  const s=bluetoothState({directory:dir,configuration:join(dir,'config'),now:100});
+  assert.deepEqual(s.devices[0].link,{connectedSeconds:90,dropsLastHour:1});assert.deepEqual(s.devices[0].transport,{codec:0,configuration:[0x21,0x15,2,53],state:'active'});
+  assert.equal(s.devices[1].link,null);assert.equal(s.devices[1].transport,null);assert.equal(JSON.stringify(s).includes('private'),false);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
