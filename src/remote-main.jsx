@@ -98,7 +98,13 @@ function Invite(){
  const [invite,setInvite]=useState(null),[error,setError]=useState(''),[copied,setCopied]=useState(false);
  async function open(){setError('');setCopied(false);try{setInvite(await api('/api/remote/invite',{}));}catch(e){setError(e.message);}}
  const svg=invite?(()=>{const q=qrcode(0,'M');q.addData(invite.url);q.make();return q.createSvgTag({cellSize:6,margin:2,scalable:true});})():'';
- async function copy(){try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(invite.url);else{const area=document.createElement('textarea');area.value=invite.url;document.body.append(area);area.select();document.execCommand('copy');area.remove();}setCopied(true);}catch{setError(t('Copy the link by hand.'));}}
+ // The clipboard API can be refused (permissions, http on the LAN): fall back to the classic copy before giving up.
+ async function copy(){
+  setError('');
+  try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(invite.url);setCopied(true);return;}}catch{}
+  try{const area=document.createElement('textarea');area.value=invite.url;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.append(area);area.select();const ok=document.execCommand('copy');area.remove();if(ok){setCopied(true);return;}}catch{}
+  setError(t('Copy the link by hand.'));
+ }
  return <>
   <button onClick={open}>{t('Invite a phone')}</button>
   {error&&!invite&&<p role="alert" className="remote-error">{t(error)}</p>}

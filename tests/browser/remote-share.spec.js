@@ -16,6 +16,10 @@ test('the phone shows TuneBox notifications, can dismiss them, and invites anoth
  await page.getByRole('button',{name:'Invite a phone'}).click();expect(invites).toBe(1);
  const sheet=page.getByRole('dialog',{name:'Invite a phone'});await expect(sheet.getByRole('img',{name:'Invitation QR code'}).locator('svg')).toBeVisible();
  await expect(sheet.getByText('The other phone also needs the TuneBox settings PIN.')).toBeVisible();await expect(sheet.getByText('#pair=bbbb',{exact:false})).toBeVisible();
+ // Like a phone on the LAN: the clipboard API refuses, the classic copy still works.
+ await page.evaluate(()=>{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:()=>Promise.reject(new Error('denied'))}});document.execCommand=()=>true;});
  await sheet.getByRole('button',{name:'Copy link'}).click();await expect(sheet.getByRole('button',{name:'Link copied'})).toBeVisible();
+ // When both refuse, the link stays visible with an honest hint.
+ await page.evaluate(()=>{document.execCommand=()=>false;});await sheet.getByRole('button',{name:'Link copied'}).click();await expect(sheet.getByText('Copy the link by hand.')).toBeVisible();
  await shot(page,'remote-invite');await ctx.close();
 });
