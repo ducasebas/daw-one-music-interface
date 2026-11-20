@@ -2225,5 +2225,6 @@
   "Keep the queue": "Keep the queue",
   "Save the queue as a playlist, then play": "Save the queue as a playlist, then play",
   "Recommended · the waiting tracks stay in Music Assistant": "Recommended · the waiting tracks stay in Music Assistant",
-  "Replace the queue and play": "Replace the queue and play"
+  "Replace the queue and play": "Replace the queue and play",
+  "No Squeezelite PCM export · restart the player or TuneBox; a closed login session may have removed it": "No Squeezelite PCM export · restart the player or TuneBox; a closed login session may have removed it"
 }

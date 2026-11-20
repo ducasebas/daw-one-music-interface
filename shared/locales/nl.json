@@ -2225,5 +2225,6 @@
   "Keep the queue": "Wachtrij behouden",
   "Save the queue as a playlist, then play": "Wachtrij opslaan als afspeellijst en daarna afspelen",
   "Recommended · the waiting tracks stay in Music Assistant": "Aanbevolen · de wachtende nummers blijven bewaard in Music Assistant",
-  "Replace the queue and play": "Wachtrij vervangen en afspelen"
+  "Replace the queue and play": "Wachtrij vervangen en afspelen",
+  "No Squeezelite PCM export · restart the player or TuneBox; a closed login session may have removed it": "Geen Squeezelite PCM-export · herstart de speler of TuneBox; een afgesloten inlogsessie kan de export hebben verwijderd"
 }

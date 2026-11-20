@@ -65,6 +65,10 @@ if [[ $export_change_needed == true ]]; then
 else
  echo 'Player service unchanged. Enable upstream -v yourself if it is not already present.'
 fi
+# Keep the player's PCM export when its login user's last session ends (logind RemoveIPC).
+install -d -m 755 /etc/systemd/logind.conf.d
+printf '[Login]\nRemoveIPC=no\n' > /etc/systemd/logind.conf.d/tunebox-player-ipc.conf
+chmod 644 /etc/systemd/logind.conf.d/tunebox-player-ipc.conf
 systemctl daemon-reload
 systemctl restart daw-one.service
 printf 'PCM reader installed for %s. Measurements default off: enable in Settings > Audio analysis.\n' "$player_id"
