@@ -100,5 +100,5 @@ test('a sweep that was not detected explains which check failed, with technical 
  await l.getByText('Technical details').click();
  await expect(l.getByText(/✗ complete/)).toBeVisible();await expect(l.getByText(/✓ prominence/)).toBeVisible();
  await expect(l.getByText(/Player started after the microphone: 180 ms/)).toBeVisible();
- await page.screenshot({path:'docs/images/sweep-diagnostics/results-diagnosis.png'});
+ await page.screenshot({path:test.info().outputPath('results-diagnosis.png')});
 });
