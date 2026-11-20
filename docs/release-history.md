@@ -2,6 +2,10 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
+## GUI 3.14.2 HOTFIX (idle clock fault) — approved
+
+On 20 November 2026 the owner approved this update with "ja push". The owner had been told the cause and the fix. Cause, from the owner's read-only journal, amixer and dmesg output: the sweep preparation refused to start on the TAS5825's idle "Fault Clock". The fix is `blockingFaults()`, applied to the measurement, Bluetooth, the startup sound and automatic DSP; real faults still block. Further changes: the preparation logs its reason, and the GUI and docs use the full `/opt/daw-one/deploy/update-appliance.sh` path. Scope: release `2026.11.20-hotfix.2`, cache 62. Local results at approval: unit 426/426, build OK, Python 109; the full Chromium run was in progress with no failures. The fix reaches the Pi only through `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply`.
+
 ## GUI 3.14.1 HOTFIX (sweep diagnostics, privacy clean-up) — published
 
 Merged via PR #15 as `2fc164ef45c3577a5b486685c1a49c386cedef6a` on 20 November 2026 after all six PR CI jobs passed (check 22/24, Chromium 1–3/3, offline + WebKit). Verify on `main` (run 44705067629) and Publish signed preview (run 44705999034) passed on the first attempt, including the public channel check. Release `ota-preview-2fc164ef45c3577a5b486685c1a49c386cedef6a` is public. Verified independently from this session:
