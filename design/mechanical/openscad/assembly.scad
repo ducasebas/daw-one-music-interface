@@ -91,11 +91,16 @@ module cap_in_case() {     // niche coordinates -> case coordinates
 cx = 43.69; cz = 29.89;                 // case centre
 tape_t = 0.5;
 module screen_in_case() {
-    // glass 170.18 x 104.20 x 0.7 and LCD panel ~163.8 x 101.9 x 7.2 stand proud of the wood;
-    // the driver PCB/connectors behind the panel are a placeholder (real size not yet measured)
-    color([0.05, 0.05, 0.08]) translate([cx - 170.18 / 2, yf - tape_t - 7.2 - 0.68, cz - 104.20 / 2]) cube([170.18, 0.68, 104.20]); // 0.02 behind the ring front, avoids preview flicker
-    color([0.25, 0.35, 0.55]) translate([cx - 163.8 / 2, yf - tape_t - 7.2, cz - 101.9 / 2]) cube([163.8, 7.2, 101.9]);
-    color([0.35, 0.60, 0.35], 0.6) translate([cx - 60, yf, cz - 35]) cube([120, 7.4, 70]);
+    // Waveshare 7inch DSI LCD (E), depth slices of the vendor STEP: glass, panel (off-centre),
+    // driver board and standoffs. Panel back taped onto the wood (0.5 mm tape).
+    gf = yf - tape_t - 5.0;              // glass front
+    color([0.05, 0.05, 0.08]) translate([cx - 85.09, gf + 0.02, cz - 52.10]) cube([170.18, 0.73, 104.20]);
+    color([0.25, 0.35, 0.55]) translate([cx - 83.87, gf + 0.75, cz - 49.90]) cube([161.83, 4.25, 99.80]);
+    color([0.35, 0.60, 0.35]) {
+        translate([cx - 74.59, gf + 5.6, cz - 38.00]) cube([138.59, 1.0, 76.00]);
+        translate([cx - 58.39, gf + 6.6, cz - 37.80]) cube([121.89, 2.0, 74.55]);
+        translate([cx - 9.75,  gf + 8.6, cz - 27.25]) cube([73.25, 6.7, 60.55]);
+    }
 }
 module ring_in_case() {    // ring coordinates: X right, Y up, Z out of the front face
     multmatrix([[1, 0, 0, cx], [0, 0, -1, yf], [0, 1, 0, cz], [0, 0, 0, 1]]) bezel_ring();
