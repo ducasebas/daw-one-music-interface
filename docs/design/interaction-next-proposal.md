@@ -37,7 +37,7 @@ Schermrust met meters is een zichtbaar scherm met een actieve audioviewer. Analy
 
 De actuele keuze is softwarematig uit met de voeding aangesloten. Een aparte voedingscontroller hoort alleen bij een toekomstige, werkelijk stroomloze variant en is geen vereiste voor dit project. De GPIO3/I²C-combinatie voor één kort/lang/wake-knop vraagt nog een concreet aansluitschema; deze notitie wijst geen pinnen toe.
 
-Zelfstandig muten/standby van de HAT bij een doorlopende I²S-stream vraagt expliciete driverondersteuning. De bestaande automatische idle-slaap mag daarvoor niet als bewijs worden gebruikt. Volgens Andriy's eerder gedeelde antwoorden bewaart de DAC DSP-instellingen in zijn slaapstanden zolang PDN/reset niet wordt gebruikt; de praktische aansturing moet op de geleverde hardware worden getest.
+Zelfstandig muten/standby van de HAT bij een doorlopende I²S-stream vraagt expliciete driverondersteuning. De bestaande automatische idle-slaap mag daarvoor niet als bewijs worden gebruikt. Volgens eerdere technische informatie van de fabrikant bewaart de DAC DSP-instellingen in zijn slaapstanden zolang PDN/reset niet wordt gebruikt; de praktische aansturing moet op de geleverde hardware worden getest.
 
 ## Cursor
 

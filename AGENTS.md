@@ -37,6 +37,10 @@ Follow [docs/development-workflow.md](docs/development-workflow.md). Preserve be
 - Keep the HUSB238 ISET startup profile (closed = original 1.25 A) distinct from the verified I2C request.
 - Do not provoke the unresolved Pi/display power interruption.
 
+## Privacy
+
+The repository and its releases are public. Never commit personal correspondence: emails, letters, drafts of messages to third parties, chat transcripts, quotes or summaries attributed to named people, contact details or personal email addresses. Refer to outside parties by role ("the manufacturer"), not by personal name. The owner's name appears only in `LICENSE`. Drafts the owner asks for go in the chat or a scratch file, never in the repository. `tests/privacy.test.js` enforces this in CI; do not weaken it to make a file pass.
+
 ## Product decisions
 
 - The splash artwork is made by the owner in Canva; do not change it.
