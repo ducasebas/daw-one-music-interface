@@ -2,7 +2,17 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.15.3 HOTFIX — approved
+## GUI 3.15.3 HOTFIX — published
+
+Merged via PR #20 as `73b45a089625317213f342ea26dc04cf6b8ea8f5` on 21 November 2026 after all six PR CI jobs passed. Verify on `main` (run 44894739774) passed. Publish signed preview (run 44895321505) signed and published release `ota-preview-73b45a089625317213f342ea26dc04cf6b8ea8f5`. Its public channel check got HTTP 403 on the shared runner, so the failed job was re-run once.
+
+Verified independently from this session:
+- the signature verifies with the unchanged project key;
+- the manifest names commit `73b45a0`, release `2026.11.21-hotfix.1` and label "GUI 3.15.3 · HOTFIX", and the archive hash matches;
+- `release-bundle verify` confirms 403 files with cache v66;
+- `checkChannel` selects this release.
+
+Pi installation and the host refresh were not observed.
 
 On 21 November 2026 the owner approved this update with "ja, widget fix erbij en dan pushen" (yes, add the widget fix and push). That was the answer to the proposal to release the power and sync fixes now and add the widget test fix. Scope: release `2026.11.21-hotfix.1`, cache 66: automatic pause and visible refusals for power setup, journaled manager refusals, sample-clock sync timing with separate clipping and stall messages, and the widget test fix. The reference timing stays deferred, at zero. See [hotfix-3-15-3.md](hotfix-3-15-3.md).
 
