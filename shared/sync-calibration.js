@@ -16,24 +16,31 @@ export function pcmEnergy(measurement){
 export class CaptureEnergy {
   constructor({rate=48000,window=4096,hop=960,inputLatencyMs=0}={}){
     if(!Number.isInteger(rate)||rate<8000||rate>192000||!Number.isInteger(window)||window<256||window>16384||!Number.isInteger(hop)||hop<128||hop>window)throw Error('Invalid capture window');
-    Object.assign(this,{rate,window,hop,inputLatencyMs});this.ring=new Float64Array(window);this.sum=0;this.count=0;this.clipped=0;this.maxChunkMs=0;this.points=[];this.previousTime=null;
+    Object.assign(this,{rate,window,hop,inputLatencyMs});this.ring=new Float64Array(window);this.sum=0;this.count=0;this.clipped=0;this.maxChunkMs=0;this.points=[];this.previousTime=null;this.anchor=Infinity;this.latest=-Infinity;
   }
   push(bytes,at){
     if(!Buffer.isBuffer(bytes)||bytes.length%2||bytes.length>262144||!Number.isFinite(at)||this.previousTime!==null&&at<this.previousTime)throw Error('Invalid microphone capture');
     this.previousTime=at;const frames=bytes.length/2;this.maxChunkMs=Math.max(this.maxChunkMs,1000*frames/this.rate);
+    // Sample clock: the microphone delivers exactly `rate` samples per second, so a sample's time follows from its index.
+    // The chunk that arrived soonest after its last sample anchors that clock; late, bunched delivery no longer skews timing.
+    const start=at-1000*(this.count+frames)/this.rate;this.anchor=Math.min(this.anchor,start);this.latest=Math.max(this.latest,start);
     for(let i=0;i<frames;i++){
       const value=bytes.readInt16LE(i*2)/32768,square=value*value,index=this.count%this.window;
       this.sum+=square-this.ring[index];this.ring[index]=square;this.count++;if(Math.abs(value)>=.999)this.clipped++;
       if(this.count>=this.window&&this.count%this.hop===0){
         // Centre the microphone window. Reference times are the actual server
         // analysis delivery times, so correlation includes analysis delay.
-        const t=at-1000*(frames-i-1)/this.rate-500*this.window/this.rate-this.inputLatencyMs;
-        if(!this.points.length||t>this.points.at(-1).t)this.points.push({t,db:Math.max(-100,10*Math.log10(Math.max(1e-10,this.sum/this.window)))});
+        // Store the sample index of the window centre; times are computed from the final anchor in result().
+        this.points.push({n:this.count-this.window/2,db:Math.max(-100,10*Math.log10(Math.max(1e-10,this.sum/this.window)))});
         if(this.points.length>2048)this.points.shift();
       }
     }
   }
-  result(){return {points:this.points,clipPercent:this.count?100*this.clipped/this.count:0,maxChunkMs:this.maxChunkMs,frames:this.count};}
+  result(){
+    const anchor=Number.isFinite(this.anchor)?this.anchor:0;
+    const points=this.points.map(p=>({t:anchor+1000*p.n/this.rate-this.inputLatencyMs,db:p.db}));
+    return {points,clipPercent:this.count?100*this.clipped/this.count:0,maxChunkMs:this.maxChunkMs,deliverySpreadMs:Number.isFinite(this.anchor)?Math.round(this.latest-this.anchor):0,frames:this.count,timing:'sample-clock'};
+  }
 }
 const percentile=(sorted,p)=>sorted[Math.min(sorted.length-1,Math.max(0,Math.floor(p*(sorted.length-1))))];
 function series(points){
@@ -60,7 +67,10 @@ function onsetCorrelation(ref,mic,lag,start,end,step=30){
 }
 export function estimateSync(reference,capture,{windowMs=85.333,...input}={}){
   const settings=syncCaptureSettings(input),ref=series(reference),mic=series(capture.points);
-  if(!Number.isFinite(capture.clipPercent)||capture.clipPercent>=.1||!Number.isFinite(capture.maxChunkMs)||capture.maxChunkMs>150)throw Error('Microphone clipping or capture buffering is too high; repeat with a stable USB input');
+  if(!Number.isFinite(capture.clipPercent)||capture.clipPercent>=.1)throw Error('The microphone clipped. Move it further from the speaker or lower the volume a little, then repeat.');
+  // With sample-clock timing, bunched delivery only matters when it hides lost samples; the drift check below catches that.
+  const sampleClock=capture.timing==='sample-clock';
+  if(!Number.isFinite(capture.maxChunkMs)||(!sampleClock&&capture.maxChunkMs>150)||capture.maxChunkMs>2000)throw Error('The microphone recording stalled. Close other busy tasks on TuneBox and repeat.');
   if(!Number.isFinite(windowMs)||windowMs<1||windowMs>1000)throw Error('Unknown PCM analysis window');
   // Skip the first second of the recording: a USB microphone's start-up burst and settling distort the envelope.
   const start=Math.max(ref[0].t,mic[0].t+1000),end=Math.min(ref.at(-1).t,mic.at(-1).t-2000);
@@ -76,7 +86,7 @@ export function estimateSync(reference,capture,{windowMs=85.333,...input}={}){
   const top=fine.reduce((a,b)=>b.score>a.score?b:a,fine[0]),onsetsUsable=top.score>=.5;
   const lag=onsetsUsable?top.lag:best.lag,near=onsetsUsable?fine.filter(p=>p.score>=top.score-.02).map(p=>p.lag):[best.lag-10,best.lag+10];
   const peakHalfWidthMs=Math.max(2,(Math.max(...near)-Math.min(...near))/2);
-  const uncertaintyMs=Math.ceil(5+peakHalfWidthMs+capture.maxChunkMs/2+settings.displayUncertaintyMs+Math.abs(halves[0].lag-halves[1].lag)/2);
+  const uncertaintyMs=Math.ceil(5+peakHalfWidthMs+(sampleClock?2:capture.maxChunkMs/2)+settings.displayUncertaintyMs+Math.abs(halves[0].lag-halves[1].lag)/2);
   const effective=Math.round((lag-settings.displayDelayMs)/10)*10;
   if(effective< -uncertaintyMs)throw Error('The visualizer is already behind the sound. Adding screen delay cannot correct this path');
   const delay=Math.max(0,effective),screen=Math.round(Math.max(0,Math.min(2000,lag+windowMs/2))/10)*10;

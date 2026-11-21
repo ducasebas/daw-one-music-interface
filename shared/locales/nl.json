@@ -2237,5 +2237,7 @@
   "Pausing music on this TuneBox, then querying the connected power supply…": "Muziek op deze TuneBox pauzeren en daarna de aangesloten voeding uitvragen…",
   "Before power setup": "Voor het instellen van vermogen",
   "Connect Music Assistant, or pause music on this TuneBox, before power setup": "Verbind Music Assistant, of pauzeer de muziek op deze TuneBox, voordat je het vermogen instelt",
-  "Pause music on this TuneBox before power setup": "Pauzeer de muziek op deze TuneBox voordat je het vermogen instelt"
+  "Pause music on this TuneBox before power setup": "Pauzeer de muziek op deze TuneBox voordat je het vermogen instelt",
+  "The microphone clipped. Move it further from the speaker or lower the volume a little, then repeat.": "De microfoon raakte overstuurd. Zet hem verder van de speaker of het volume iets lager en herhaal.",
+  "The microphone recording stalled. Close other busy tasks on TuneBox and repeat.": "De microfoonopname haperde. Sluit andere zware taken op TuneBox en herhaal."
 }

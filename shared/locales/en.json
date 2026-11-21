@@ -2237,5 +2237,7 @@
   "Pausing music on this TuneBox, then querying the connected power supply…": "Pausing music on this TuneBox, then querying the connected power supply…",
   "Before power setup": "Before power setup",
   "Connect Music Assistant, or pause music on this TuneBox, before power setup": "Connect Music Assistant, or pause music on this TuneBox, before power setup",
-  "Pause music on this TuneBox before power setup": "Pause music on this TuneBox before power setup"
+  "Pause music on this TuneBox before power setup": "Pause music on this TuneBox before power setup",
+  "The microphone clipped. Move it further from the speaker or lower the volume a little, then repeat.": "The microphone clipped. Move it further from the speaker or lower the volume a little, then repeat.",
+  "The microphone recording stalled. Close other busy tasks on TuneBox and repeat.": "The microphone recording stalled. Close other busy tasks on TuneBox and repeat."
 }

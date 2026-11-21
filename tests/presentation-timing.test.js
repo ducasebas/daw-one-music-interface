@@ -77,3 +77,10 @@ test('video timing is saved per track and rejects a stale track, replaced file o
   const current=lib.get(track);assert.deepEqual(lib.timing(track,{...body,id:current.id,revision:0,sync:{mode:'ends',offsetSeconds:-.2}}).sync,{mode:'ends',offsetSeconds:-.2});
  }finally{rmSync(directory,{recursive:true,force:true});}
 });
+test('a new TuneBox starts from the measured reference timing; saved or measured timing still wins',async()=>{
+ const {referenceTiming}=await import('../shared/timing-reference.js');const {settings,defaults}=await import('../shared/settings.js');
+ assert.deepEqual(defaults.timing,{screenDelayMs:40,visualizerTrimMs:-40});assert.deepEqual(referenceTiming.timing,defaults.timing);
+ assert.deepEqual(settings({}).timing,{screenDelayMs:40,visualizerTrimMs:-40});
+ assert.deepEqual(settings({timing:{screenDelayMs:0,visualizerTrimMs:0}}).timing,{screenDelayMs:0,visualizerTrimMs:0});
+ assert.equal(presentationTiming(referenceTiming.timing).screenDelayMs+presentationTiming(referenceTiming.timing).visualizerTrimMs,0);
+});

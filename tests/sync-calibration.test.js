@@ -66,3 +66,20 @@ test('sync history keeps the last five attempts, including the failure reason',a
  assert.equal(h.length,5);assert.equal(h[0].at,'2026-11-20T10:02:00Z');assert.equal(h.at(-1).outcome,'complete');assert.equal(h.find(e=>e.outcome==='failed').error,'The timing match is ambiguous');
  assert.deepEqual(nextHistory('corrupt',{at:'x',outcome:'cancelled'}),[{at:'x',outcome:'cancelled'}]);
 });
+
+// Owner 21 Nov: "microphone clipping or capture buffering is too high" on the Pi.
+test('bunched microphone delivery no longer skews timing: the sample clock anchors on the soonest chunk',()=>{
+ const rate=48000,window=4096,hop=480,energy=new CaptureEnergy({rate,window,hop}),even=new CaptureEnergy({rate,window,hop});
+ const tone=n=>{const b=Buffer.alloc(n*2);for(let i=0;i<n;i++)b.writeInt16LE(Math.round(4000*Math.sin(i/9)),i*2);return b;};
+ // 4 s of audio in 20 ms chunks; in one copy the delivery stalls and arrives in 400 ms bursts up to 380 ms late.
+ const chunk=960;let t0=1000;for(let k=0;k<200;k++){const due=t0+(k+1)*20;even.push(tone(chunk),due);}
+ for(let k=0;k<200;k+=20){const due=t0+(k+20)*20;energy.push(tone(chunk*20),due+380*((k/20)%2));}
+ const a=even.result(),b=energy.result();assert.equal(b.timing,'sample-clock');assert.ok(b.maxChunkMs>=400);
+ assert.equal(a.points.length,b.points.length);for(let i=0;i<a.points.length;i++)assert.ok(Math.abs(a.points[i].t-b.points[i].t)<1,`point ${i}`);
+});
+test('clipping has its own clear message; a stalled recording is named separately',()=>{
+ const f=musicFixture({delay:100});
+ assert.throws(()=>estimateSync(f.reference,{...f.capture,clipPercent:.4}),/clipped/);
+ assert.throws(()=>estimateSync(f.reference,{...f.capture,timing:'sample-clock',maxChunkMs:2500}),/stalled/);
+ const r=estimateSync(f.reference,{...f.capture,timing:'sample-clock',maxChunkMs:600},{displayDelayMs:0,displayUncertaintyMs:12});assert.ok(Math.abs(r.relativeLagMs-100)<=5);
+});
