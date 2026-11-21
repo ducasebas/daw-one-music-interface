@@ -72,7 +72,13 @@ module cap() {
             translate([-gap - wall_t, gap, top_z - 0.01]) cube([wall_t, outer_d, fin_h]);
         }
         // the niche itself, open at the rear (Y = 0) and at the bottom
-        translate([-gap, -1, bottom_wall - 1]) cube([inner_w, inner_d + 1 + gap, inner_h + 1]);
+        // vertical inside corners at the front wall rounded R1.5 for the cutter
+        translate([-gap, -1, bottom_wall - 1]) linear_extrude(inner_h + 1)
+            hull() {
+                square([inner_w, 1]);
+                translate([1.5, inner_d + gap + 1 - 1.5]) circle(r = 1.5);
+                translate([inner_w - 1.5, inner_d + gap + 1 - 1.5]) circle(r = 1.5);
+            }
         // speaker terminal holes
         if (post_mode == "hole")
             for (p = post_xy) translate([p[0], p[1], top_z - wall_t - 1]) cylinder(d = post_hole_d, h = wall_t + 2);
