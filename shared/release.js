@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.20-hotfix.3",
-  label: "GUI 3.15.2 · HOTFIX",
+  id: "2026.11.21-hotfix.1",
+  label: "GUI 3.15.3 · HOTFIX",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Power setup explains why it cannot start and can check again without reopening Settings. Audio analysis keeps working after an SSH session ends. Now Playing loses its duplicate heading, meters stay empty when you switched analysis off, and the queue choice is clearer. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” and a restart once on the Pi for the audio analysis fix.",
+  notes: "Power setup pauses this TuneBox itself and explains clearly when it cannot start. Picture & meter sync is no longer refused when the Pi delivers the recording in bursts, and it says clearly when the microphone clips. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

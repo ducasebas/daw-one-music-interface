@@ -2,6 +2,14 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
+## GUI 3.15.3 HOTFIX — approved
+
+On 21 November 2026 the owner approved this update with "ja, widget fix erbij en dan pushen" (yes, add the widget fix and push). That was the answer to the proposal to release the power and sync fixes now and add the widget test fix. Scope: release `2026.11.21-hotfix.1`, cache 66: automatic pause and visible refusals for power setup, journaled manager refusals, sample-clock sync timing with separate clipping and stall messages, and the widget test fix. The reference timing stays deferred, at zero. See [hotfix-3-15-3.md](hotfix-3-15-3.md).
+
+Also reported by the owner on 21 November 2026: **100 W works** on the Pi with the 3.15.2 power setup, after pausing playback. This is the owner's own report; the contract details were not seen here.
+
+The owner's further feedback is scoped for 3.16, not this update: widgets, an auto-hiding header, screen off after inactivity, screen-rest previews and backgrounds, artwork while skipping, and a time-zone location.
+
 ## GUI 3.15.2 HOTFIX — published
 
 Merged via PR #19 as `232475e95425de30adcd3c268afd3b882cc01766` on 20 November 2026 after all six PR CI jobs passed. Verify on `main` (run 44754439705) and Publish signed preview (run 44755610081) passed on the first attempt, including the public channel check. Release `ota-preview-232475e95425de30adcd3c268afd3b882cc01766` is public.

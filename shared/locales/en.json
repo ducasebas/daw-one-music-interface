@@ -2230,7 +2230,6 @@
   "Power setup is busy or unavailable right now. Wait a moment and try again.": "Power setup is busy or unavailable right now. Wait a moment and try again.",
   "The power contract is not readable right now. Check that HUSB238 reading is on and the adapter is connected.": "The power contract is not readable right now. Check that HUSB238 reading is on and the adapter is connected.",
   "The adapter is not delivering 20 V at the moment, so the offers cannot be checked.": "The adapter is not delivering 20 V at the moment, so the offers cannot be checked.",
-  "Power setup explains why it cannot start and can check again without reopening Settings. Audio analysis keeps working after an SSH session ends. Now Playing loses its duplicate heading, meters stay empty when you switched analysis off, and the queue choice is clearer. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” and a restart once on the Pi for the audio analysis fix.": "Power setup explains why it cannot start and can check again without reopening Settings. Audio analysis keeps working after an SSH session ends. Now Playing loses its duplicate heading, meters stay empty when you switched analysis off, and the queue choice is clearer. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” and a restart once on the Pi for the audio analysis fix.",
   "Power setup could not start": "Power setup could not start",
   "No power request was sent. The supply keeps its current contract.": "No power request was sent. The supply keeps its current contract.",
   "Finish other audio activity before power setup": "Finish other audio activity before power setup",
@@ -2239,5 +2238,6 @@
   "Connect Music Assistant, or pause music on this TuneBox, before power setup": "Connect Music Assistant, or pause music on this TuneBox, before power setup",
   "Pause music on this TuneBox before power setup": "Pause music on this TuneBox before power setup",
   "The microphone clipped. Move it further from the speaker or lower the volume a little, then repeat.": "The microphone clipped. Move it further from the speaker or lower the volume a little, then repeat.",
-  "The microphone recording stalled. Close other busy tasks on TuneBox and repeat.": "The microphone recording stalled. Close other busy tasks on TuneBox and repeat."
+  "The microphone recording stalled. Close other busy tasks on TuneBox and repeat.": "The microphone recording stalled. Close other busy tasks on TuneBox and repeat.",
+  "Power setup pauses this TuneBox itself and explains clearly when it cannot start. Picture & meter sync is no longer refused when the Pi delivers the recording in bursts, and it says clearly when the microphone clips. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.": "Power setup pauses this TuneBox itself and explains clearly when it cannot start. Picture & meter sync is no longer refused when the Pi delivers the recording in bursts, and it says clearly when the microphone clips. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi."
 }
