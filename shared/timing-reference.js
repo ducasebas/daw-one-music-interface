@@ -5,6 +5,7 @@
  * other hardware should measure again. Update this from a fresh, valid sync result (status.json `result.timing`).
  */
 export const referenceTiming=Object.freeze({
- timing:Object.freeze({screenDelayMs:40,visualizerTrimMs:-40}),
- source:'owner appliance sync, 20 Nov 2026 10:33 UTC: valid, correlation 0.769, relative lag −5 ms, ±109 ms (3.15.0 analyser)',
+ // Deferred by the owner (21 Nov 2026): keep zero until a good, precise measurement exists.
+ timing:Object.freeze({screenDelayMs:0,visualizerTrimMs:0}),
+ source:'pending: no reference yet; fill in from a valid, precise sync result on the owner appliance',
 });
