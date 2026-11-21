@@ -2253,5 +2253,6 @@
   "Advanced: time zone by name": "Advanced: time zone by name",
   "Sunset follows the city chosen in Date & time.": "Sunset follows the city chosen in Date & time.",
   "Choose your city in Date & time to use sunset.": "Choose your city in Date & time to use sunset.",
-  "Advanced: coordinates": "Advanced: coordinates"
+  "Advanced: coordinates": "Advanced: coordinates",
+  "Loading the next track…": "Loading the next track…"
 }

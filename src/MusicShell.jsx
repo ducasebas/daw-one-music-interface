@@ -63,6 +63,7 @@ function Cover({ index = 0, small = false }) {
     </div>
   );
 }
+import {startSkipHold,observeSkip,skipHoldMs} from '../shared/skip-hold.js';
 export function MusicShell({
   snapshot,
   offline,
@@ -153,6 +154,10 @@ export function MusicShell({
       available && (bluetoothActive || simulated || snapshot.musicAssistant?.controlEnabled),
     volume = simulated ? (snapshot.audio?.volume ?? 32) : playback.volume,
     muted = simulated ? snapshot.audio?.muted : playback.muted;
+  const [skipHold,setSkipHold]=useState(null),[,setSkipTick]=useState(0);
+  const skipView=observeSkip(skipHold,current,Date.now()),shown=skipView.display||current,skipLoading=skipView.loading;
+  useEffect(()=>{if(skipView.hold!==skipHold)setSkipHold(skipView.hold);},[skipView.hold,skipHold]);
+  useEffect(()=>{if(!skipHold)return;const t=setTimeout(()=>setSkipTick(v=>v+1),skipHold.phase==='holding'?skipHoldMs+50:2600);return()=>clearTimeout(t);},[skipHold]);
   const volumeRequests = useVolumeRequests(event=>send(bluetoothActive?{...event,sourceId:bluetooth.sessionId}:event));
   const canVolume =
     control &&
@@ -208,6 +213,8 @@ export function MusicShell({
   async function command(event) {
     if (lock.current) return;
     lock.current = true;
+    // Skipping: keep showing this track with a loading state until the new one arrives (no flash back).
+    if(['next','previous'].includes(event.type))setSkipHold(startSkipHold(current,Date.now()));
     setPending(true);setPendingAction(event.type);
     setMessage("");
     try {
@@ -660,16 +667,16 @@ export function MusicShell({
             {simulated ? (
               <Cover index={playback.index} />
             ) : (
-              <Artwork src={current.artwork} alt={current.title} />
+              <Artwork src={shown.artwork} alt={shown.title} loading={skipLoading} />
             )}
             <div>
               <small>
                 {tr(simulated ? "SIMULATIE" : "MUSIC ASSISTANT")} /{tr(" ")}
                 {tr(playback.playerName || "TuneBox")}
               </small>
-              <h2 title={current.title}>{current.title}</h2>
+              <h2 title={shown.title}>{shown.title}</h2>
               <p>
-                {current.artist} <span>— {current.album}</span>
+                {shown.artist} <span>— {shown.album}</span>
               </p>
               <PlaybackSeekControl playback={playback} duration={current.duration} disabled={!control||!current.duration||prefs.seekEnabled===false||(!simulated&&!['seek','queue_seek'].some(c=>playback.capabilities?.includes(c)))} onSeek={value=>command({type:'seek',position:value})}/>
             </div>
@@ -718,17 +725,17 @@ export function MusicShell({
           disabled={page==='playing'}
           aria-label={tr("Open Nu spelen")}
         >
-          <span className="m2-current-cover" key={current.id}>
+          <span className="m2-current-cover" key={shown.id}>
             {simulated ? (
               <Cover index={playback.index} small />
             ) : (
-              <Artwork src={current.artwork} alt={current.title} />
+              <Artwork src={shown.artwork} alt={shown.title} loading={skipLoading} />
             )}
           </span>
           <span>
             {page!=='playing'&&<span className="m2-return"><Icon name="back" size={20}/>{tr('Now Playing')}</span>}
-            <strong>{current.title}</strong>
-            <small>{current.artist}</small>
+            <strong>{shown.title}</strong>
+            <small>{shown.artist}</small>
           </span>
         </button>
         )}
