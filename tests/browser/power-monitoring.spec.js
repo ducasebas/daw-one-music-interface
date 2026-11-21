@@ -337,7 +337,10 @@ test('owner Pi 20 Nov: power setup installed while the page was open is found ag
  await expect(button).toBeDisabled();await expect(page.getByText('Complete the device update to install power setup.').first()).toBeVisible();
  installed=true;await page.getByRole('region',{name:'Power supply status'}).getByRole('button',{name:'Check again',exact:true}).click();
  await expect(button).toBeEnabled();await button.click();
- await expect.poll(()=>f.discoveries.length).toBe(1);expect(f.requests).toHaveLength(0);
+ await expect.poll(()=>f.discoveries.length).toBe(1);
+ // Let the follow-up reads finish and the dialog settle before the page closes.
+ const setup=page.getByRole('dialog',{name:'20 V power setup',exact:true});await expect(setup).toBeVisible();await setup.getByRole('button',{name:'Cancel',exact:true}).click();await expect(setup).toHaveCount(0);
+ expect(f.requests).toHaveLength(0);
 });
 test('a refused source query while music plays says so in a window and sends nothing',async({page})=>{
  const f=await fixture(page,{sourceQuery:true,discoveryError:'Pause playback and finish audio tests before power setup'});await open(page);

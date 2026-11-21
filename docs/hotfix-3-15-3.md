@@ -11,6 +11,6 @@ Release `2026.11.21-hotfix.1`, service-worker cache 66. Approved by the owner on
 
 ## Local results (container/simulator, not the Pi)
 
-See the release history for the final local and CI results.
+Unit 438/438 and build OK; Python 111; full Chromium 238/239: the one failure was my own 3.15.2 test ending while follow-up requests were in flight ("Route is already handled"). Fixed by waiting for the dialog and cancelling it; the power spec then passed 56/56 on two repeats. Offline 16/16.
 
 Not observed on the Pi: automatic pause before the power query, a successful sync with the sample clock.
