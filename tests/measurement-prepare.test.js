@@ -44,3 +44,11 @@ test('simulation pauses the simulated playback',async()=>{
  assert.deepEqual(await prepareMeasurement({bluetooth:()=>({active:false}),syncRunning:()=>false,manage:async()=>{},music:null,multiroom:null,runtime}),['playback']);
  assert.deepEqual(events,[{type:'pause'}]);
 });
+
+test('power setup uses the same preparation and names power setup when it cannot pause',async()=>{
+ const h=harness({local:{parentId:'kitchen',state:'playing'}});
+ assert.deepEqual(await prepareMeasurement({...h.deps,purpose:'power'}),['group','playback']);
+ const stuck=harness({local:{state:'playing',canPause:false}});
+ await assert.rejects(prepareMeasurement({...stuck.deps,purpose:'power'}),/before power setup/);
+ await assert.rejects(prepareMeasurement({...harness({status:'disconnected'}).deps,purpose:'power'}),/before power setup/);
+});

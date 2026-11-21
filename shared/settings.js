@@ -1,9 +1,11 @@
 import {presentationTiming} from './presentation-timing.js';
+import {referenceTiming} from './timing-reference.js';
 import { screenSettings } from "./wall.js";
 import {widgetSelection,widgetDefaults} from "./now-playing.js";
 import {soundSettings,soundDefaults} from "./dsp-settings.js";
 export const defaults = {
-  timing: presentationTiming(),
+  // New TuneBoxes start from the measured reference, not from zero; a device's own measurement overrides it.
+  timing: presentationTiming(referenceTiming.timing),
   syncAutomatic: false,
   seekEnabled: true,
   visualizer: "off",
@@ -24,7 +26,7 @@ export const defaults = {
 export function settings(input = {}) {
   input = input && typeof input === "object" ? input : {};
   return {
-    timing: presentationTiming(input.timing),
+    timing: presentationTiming(input.timing===undefined?referenceTiming.timing:input.timing),
     syncAutomatic: input.syncAutomatic===true,
     seekEnabled: typeof input.seekEnabled==='boolean'?input.seekEnabled:true,
     volumeLimitConfigured: input.volumeLimitConfigured===true,

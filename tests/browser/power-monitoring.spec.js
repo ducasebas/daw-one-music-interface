@@ -258,9 +258,9 @@ for(const height of [800,400])test(`explicit source discovery refreshes cached 6
  const f=await fixture(page,{sourceQuery:true,power,cachedTelemetry:true,discoveryDelay:750});await open(page,height===400?url.replace('display=dsi-production','display=hdmi-development'):url);
  expect(f.discoveries).toHaveLength(0);expect(f.requests).toHaveLength(0);
  const setup=page.getByRole('button',{name:'Set up offered power',exact:true});await setup.click();
- const dialog=page.getByRole('dialog',{name:'20 V power setup',exact:true});await expect(dialog.getByRole('status')).toHaveText('Querying the connected power supply…');await expect(setup).toBeDisabled();
+ const dialog=page.getByRole('dialog',{name:'20 V power setup',exact:true});await expect(dialog.getByRole('status')).toHaveText('Pausing music on this TuneBox, then querying the connected power supply…');await expect(setup).toBeDisabled();
  await page.keyboard.press('Escape');await expect(dialog).toBeVisible();expect(f.requests).toHaveLength(0);
- await expect(dialog).toContainText('Verify 100 W at 20 V / 5 A');expect(f.discoveries).toEqual([{command:'power-discover-20v',args:{}}]);
+ await expect(dialog).toContainText('Verify 100 W at 20 V / 5 A');expect(f.discoveries).toEqual([{command:'power-discover-20v',args:{stopOthers:true}}]);
  const request=dialog.getByRole('button',{name:'Request and verify power',exact:true});await expect(request).toBeDisabled();
  await dialog.getByRole('checkbox',{name:'I verified a 100 W USB-C PD supply and a 5 A e-marked cable.',exact:true}).check();
  await dialog.getByRole('checkbox',{name:'Keep these settings after restart',exact:true}).check();
@@ -276,6 +276,9 @@ for(const height of [800,400])test(`explicit source discovery refreshes cached 6
 test('failed source discovery stays actionable without sending a power request or saving any setting',async({page})=>{
  const f=await fixture(page,{sourceQuery:true,discoveryError:'Source capabilities were not confirmed; no power request was sent'});await open(page);
  await page.getByRole('button',{name:'Set up offered power',exact:true}).click();
+ // The reason stays on screen in its own window until closed (owner: "a very short popup, but no negotiation").
+ const failed=page.getByRole('dialog',{name:'Power setup could not start',exact:true});await expect(failed.getByRole('alert')).toContainText('Source capabilities were not confirmed');await expect(failed).toContainText('No power request was sent');
+ await failed.getByRole('button',{name:'OK',exact:true}).click();await expect(failed).toHaveCount(0);
  await expect(page.locator('.power-configuration').getByRole('alert')).toContainText('Source capabilities were not confirmed');await expect(page.getByRole('dialog',{name:'20 V power setup',exact:true})).toHaveCount(0);
  await expect(page.getByRole('button',{name:'Set up offered power',exact:true})).toBeEnabled();expect(f.discoveries).toHaveLength(1);expect(f.requests).toHaveLength(0);expect(f.writes).toHaveLength(0);
 });
@@ -334,5 +337,24 @@ test('owner Pi 20 Nov: power setup installed while the page was open is found ag
  await expect(button).toBeDisabled();await expect(page.getByText('Complete the device update to install power setup.').first()).toBeVisible();
  installed=true;await page.getByRole('region',{name:'Power supply status'}).getByRole('button',{name:'Check again',exact:true}).click();
  await expect(button).toBeEnabled();await button.click();
- await expect.poll(()=>f.discoveries.length).toBe(1);expect(f.requests).toHaveLength(0);
+ await expect.poll(()=>f.discoveries.length).toBe(1);
+ // Let the follow-up reads finish and the dialog settle before the page closes.
+ const setup=page.getByRole('dialog',{name:'20 V power setup',exact:true});await expect(setup).toBeVisible();await setup.getByRole('button',{name:'Cancel',exact:true}).click();await expect(setup).toHaveCount(0);
+ expect(f.requests).toHaveLength(0);
+});
+test('a refused source query while music plays says so in a window and sends nothing',async({page})=>{
+ const f=await fixture(page,{sourceQuery:true,discoveryError:'Pause playback and finish audio tests before power setup'});await open(page);
+ await page.getByRole('button',{name:'Set up offered power',exact:true}).click();
+ const failed=page.getByRole('dialog',{name:'Power setup could not start',exact:true});await expect(failed.getByRole('alert')).toHaveText('Pause playback and finish audio tests before power setup');
+ expect(f.requests).toHaveLength(0);expect(f.writes).toHaveLength(0);
+});
+test('owner 20 Nov: tapping power setup asks the server to pause this TuneBox first and says what it stopped',async({page})=>{
+ const f=await fixture(page,{sourceQuery:true});const sent=[];
+ await page.route('**/api/device',async route=>{const body=route.request().postDataJSON();if(body.command!=='power-discover-20v')return route.fallback();sent.push(body.args);const response=await route.fetch().catch(()=>null);
+  // The fixture answers the query; add what the server stopped beforehand.
+  const p={status:'active',volts:20,amps:1.25,watts:25,attached:true,observedAt:Date.now(),responseCode:1,profiles:[{volts:20,amps:5,watts:100}]};
+  return route.fulfill({json:{supported:true,negotiationSupported:true,profileRequestSupported:true,sourceDiscoverySupported:true,maximumRequestSupported:true,settings:{ina228:true,husb238:true,currentPathVerified:true,voltageSenseVerified:false},sourceCapabilitiesQueried:true,discoveredPd:p,stopped:['group','playback']}});});
+ await open(page);await page.getByRole('button',{name:'Set up offered power',exact:true}).click();
+ const setup=page.getByRole('dialog',{name:'20 V power setup',exact:true});await expect(setup.getByRole('status').filter({hasText:'Before power setup'})).toContainText('left the group, music paused');
+ expect(sent).toEqual([{stopOthers:true}]);expect(f.requests).toHaveLength(0);
 });

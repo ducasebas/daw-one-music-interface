@@ -12,7 +12,8 @@ async function live(page){
  Object.assign(state,{mode:'music-assistant',musicAssistant:{connected:true,status:'connected',playerId:'pi',controlEnabled:true,volumeLimit:40,players:[{id:'pi',name:'Living room',available:true},{id:'k',name:'Kitchen',available:true}]}});
  state.playback={...state.playback,connected:true,playerId:'pi',playerName:'Living room',playing:false,position:10,observedAt:Date.now(),volume:20,capabilities:['volume_set','volume_mute','seek'],sourceFormat:{codec:'flac',sampleRate:44100,bitDepth:16},
   queue:[{id:'t1',title:'First',artist:'A',album:'X',duration:200,artwork:art('a')},{id:'t2',title:'Second',artist:'B',album:'Y',duration:180,artwork:art('b')}],index:0};
- await page.route('**/api/events',r=>r.abort());await page.route('**/api/state',r=>r.fulfill({json:state}));
+ // Serve the live preferences: a frozen copy made before Save made a later state poll undo the saved widgets (intermittent).
+ await page.route('**/api/events',r=>r.abort());await page.route('**/api/state',async r=>{const real=await(await page.request.get('/api/state')).json();return r.fulfill({json:{...state,preferences:real.preferences}});});
  await page.route('**/api/artwork/**',r=>r.fulfill({contentType:'image/svg+xml',body:svg(r.request().url().endsWith('a')?'#c33':'#33c')}));
  return state;
 }
