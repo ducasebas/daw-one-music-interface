@@ -13,8 +13,10 @@ export function ScreenSettings({prefs,update}) {
  const screen=screenSettings(prefs.screen);
  const change=(key,value)=>update('screen',{...screen,[key]:value});
  return <div className="screen-settings control-grid"><label>{tr("Schermrust")}<select aria-label={tr("Schermrust weergave")} value={screen.mode} onChange={e=>change('mode',e.target.value)}>{sleepModes.map(id=><option key={id} value={id}>{tr(labels[id])}</option>)}</select></label>
+ <p className="screen-place">{tr(Number.isFinite(screen.latitude)?'Sunset follows the city chosen in Date & time.':'Choose your city in Date & time to use sunset.')}</p>
+ <details className="screen-coordinates"><summary>{tr('Advanced: coordinates')}</summary>
  <label>{tr("Breedtegraad")}<input aria-label={tr("Breedtegraad")} type="number" min="-90" max="90" step="any" value={screen.latitude??''} onChange={e=>change('latitude',e.target.value===''?null:Number(e.target.value))}/></label>
- <label>{tr("Lengtegraad")}<input aria-label={tr("Lengtegraad")} type="number" min="-180" max="180" step="any" value={screen.longitude??''} onChange={e=>change('longitude',e.target.value===''?null:Number(e.target.value))}/></label>
+ <label>{tr("Lengtegraad")}<input aria-label={tr("Lengtegraad")} type="number" min="-180" max="180" step="any" value={screen.longitude??''} onChange={e=>change('longitude',e.target.value===''?null:Number(e.target.value))}/></label></details>
  <p>{tr("Screen rest keeps your music playing. The first touch wakes the display without pressing a playback control.")}</p>
  <p>{tr("Zonsondergang wordt lokaal berekend voor deze coördinaten, bij benadering. Geen locatie ingesteld betekent geen berekende zonsondergang. Coördinaten blijven in deze browser.")}</p>
  </div>;

@@ -2239,5 +2239,19 @@
   "Pause music on this TuneBox before power setup": "Pause music on this TuneBox before power setup",
   "The microphone clipped. Move it further from the speaker or lower the volume a little, then repeat.": "The microphone clipped. Move it further from the speaker or lower the volume a little, then repeat.",
   "The microphone recording stalled. Close other busy tasks on TuneBox and repeat.": "The microphone recording stalled. Close other busy tasks on TuneBox and repeat.",
-  "Power setup pauses this TuneBox itself and explains clearly when it cannot start. Picture & meter sync is no longer refused when the Pi delivers the recording in bursts, and it says clearly when the microphone clips. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.": "Power setup pauses this TuneBox itself and explains clearly when it cannot start. Picture & meter sync is no longer refused when the Pi delivers the recording in bursts, and it says clearly when the microphone clips. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi."
+  "Power setup pauses this TuneBox itself and explains clearly when it cannot start. Picture & meter sync is no longer refused when the Pi delivers the recording in bursts, and it says clearly when the microphone clips. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.": "Power setup pauses this TuneBox itself and explains clearly when it cannot start. Picture & meter sync is no longer refused when the Pi delivers the recording in bursts, and it says clearly when the microphone clips. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.",
+  "Search your city": "Search your city",
+  "e.g. Amsterdam": "e.g. Amsterdam",
+  "Used for local time, daylight saving and sunrise/sunset. It stays on TuneBox.": "Used for local time, daylight saving and sunrise/sunset. It stays on TuneBox.",
+  "now {offset}, daylight saving automatic": "now {offset}, daylight saving automatic",
+  "sunset {time}": "sunset {time}",
+  "Time zone {zone} · choose your city for sunrise and sunset": "Time zone {zone} · choose your city for sunrise and sunset",
+  "Choose your city": "Choose your city",
+  "Where is this TuneBox?": "Where is this TuneBox?",
+  "Choose your city. TuneBox then shows the right local time, switches between summer and winter time by itself, and knows when the sun sets for screen rest.": "Choose your city. TuneBox then shows the right local time, switches between summer and winter time by itself, and knows when the sun sets for screen rest.",
+  "Location": "Location",
+  "Advanced: time zone by name": "Advanced: time zone by name",
+  "Sunset follows the city chosen in Date & time.": "Sunset follows the city chosen in Date & time.",
+  "Choose your city in Date & time to use sunset.": "Choose your city in Date & time to use sunset.",
+  "Advanced: coordinates": "Advanced: coordinates"
 }

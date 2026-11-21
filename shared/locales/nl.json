@@ -2239,5 +2239,19 @@
   "Pause music on this TuneBox before power setup": "Pauzeer de muziek op deze TuneBox voordat je het vermogen instelt",
   "The microphone clipped. Move it further from the speaker or lower the volume a little, then repeat.": "De microfoon raakte overstuurd. Zet hem verder van de speaker of het volume iets lager en herhaal.",
   "The microphone recording stalled. Close other busy tasks on TuneBox and repeat.": "De microfoonopname haperde. Sluit andere zware taken op TuneBox en herhaal.",
-  "Power setup pauses this TuneBox itself and explains clearly when it cannot start. Picture & meter sync is no longer refused when the Pi delivers the recording in bursts, and it says clearly when the microphone clips. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.": "Vermogen instellen pauzeert deze TuneBox zelf en legt duidelijk uit wanneer het niet kan starten. Beeld- en metersynchronisatie wordt niet meer geweigerd als de Pi de opname in stukken aanlevert, en meldt duidelijk wanneer de microfoon overstuurt. Vereist één keer “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” op de Pi."
+  "Power setup pauses this TuneBox itself and explains clearly when it cannot start. Picture & meter sync is no longer refused when the Pi delivers the recording in bursts, and it says clearly when the microphone clips. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.": "Vermogen instellen pauzeert deze TuneBox zelf en legt duidelijk uit wanneer het niet kan starten. Beeld- en metersynchronisatie wordt niet meer geweigerd als de Pi de opname in stukken aanlevert, en meldt duidelijk wanneer de microfoon overstuurt. Vereist één keer “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” op de Pi.",
+  "Search your city": "Zoek je woonplaats",
+  "e.g. Amsterdam": "bijv. Amsterdam",
+  "Used for local time, daylight saving and sunrise/sunset. It stays on TuneBox.": "Gebruikt voor de lokale tijd, zomer- en wintertijd en zonsopkomst/-ondergang. Het blijft op TuneBox.",
+  "now {offset}, daylight saving automatic": "nu {offset}, zomer- en wintertijd automatisch",
+  "sunset {time}": "zonsondergang {time}",
+  "Time zone {zone} · choose your city for sunrise and sunset": "Tijdzone {zone} · kies je woonplaats voor zonsopkomst en -ondergang",
+  "Choose your city": "Kies je woonplaats",
+  "Where is this TuneBox?": "Waar staat deze TuneBox?",
+  "Choose your city. TuneBox then shows the right local time, switches between summer and winter time by itself, and knows when the sun sets for screen rest.": "Kies je woonplaats. TuneBox toont dan de juiste lokale tijd, schakelt zelf tussen zomer- en wintertijd en weet wanneer de zon ondergaat voor schermrust.",
+  "Location": "Locatie",
+  "Advanced: time zone by name": "Geavanceerd: tijdzone op naam",
+  "Sunset follows the city chosen in Date & time.": "Zonsondergang volgt de woonplaats bij Datum & tijd.",
+  "Choose your city in Date & time to use sunset.": "Kies je woonplaats bij Datum & tijd om zonsondergang te gebruiken.",
+  "Advanced: coordinates": "Geavanceerd: coördinaten"
 }
