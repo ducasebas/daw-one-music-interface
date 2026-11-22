@@ -237,7 +237,7 @@
 @media(prefers-reduced-motion:reduce){.music2[data-panel="wall-16-10"],.music2[data-panel="wall-16-10"]>.m2-header{transition:none}.music2 .m2-header-pull{animation:none}}
 
 /* 3.16 · Widgets: calmer chips, and Now Playing always fits above the footer, visualizer or not. */
-.music2 .np-widget,.np-widget{min-height:68px;padding:10px 16px;gap:12px;border:0;border-radius:18px;background:color-mix(in srgb,var(--panel,var(--surface)) 72%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 9%,transparent)}
+.music2 .np-widget,.np-widget{min-height:80px;padding:10px 16px;gap:12px;border:0;border-radius:18px;background:color-mix(in srgb,var(--panel,var(--surface)) 72%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 9%,transparent)}
 .music2[data-panel="wall-16-10"] .m2-playing .np-widget{border:0}
 .music2[data-panel="wall-16-10"] .m2-playing button.np-widget:active{box-shadow:inset 0 0 0 2px var(--accent)}
 .np-widget-text small{font-size:12px;letter-spacing:.08em}
@@ -272,9 +272,9 @@
 .np-flip{transform:scaleX(-1)}
 .music2[data-panel="wall-16-10"][data-header=hidden]>.m2-content{padding-top:46px;transition:padding-top 320ms cubic-bezier(.2,.8,.2,1)}
 /* Visualizer + widgets: tighter track block and gaps so the visualizer keeps at least ~250 px with the menu bar shown. */
-.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets){row-gap:12px}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets){row-gap:8px}
 .music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-track h2{margin:0 0 4px}
 .music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-track p{margin:0}
 .music2[data-panel="wall-16-10"] .m2-playing:has(>.np-widgets)>.np-widgets{padding:0;margin:0}
-.music2[data-panel="wall-16-10"] .m2-playing:has(>.np-widgets) .np-widget{min-height:64px;max-height:68px}
+.music2[data-panel="wall-16-10"] .m2-playing:has(>.np-widgets) .np-widget{min-height:80px;max-height:80px}
 .music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-track .seek-control input{margin:4px 0}
