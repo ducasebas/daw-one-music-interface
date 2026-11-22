@@ -2344,7 +2344,6 @@
   "The supply now offers {now} W; this TuneBox had {best} W before. Run power setup again, or check the charger and cable.": "De voeding biedt nu {now} W; deze TuneBox had eerder {best} W. Start de vermogensinstelling opnieuw, of controleer lader en kabel.",
   "Highest contract seen on this TuneBox": "Hoogste contract gezien op deze TuneBox",
   "All offers limited to 3 A": "Alle aanbiedingen beperkt tot 3 A",
-  "Screen rest no longer switches itself back on right after you start it, and the power widget keeps the last reading. Stability for Raspberry Pi 4 + Louder HAT: Squeezelite keeps the audio device open, 44.1–96 kHz rate protection, calmer automatic DSP changes, faster visualizer capture, steadier Chromium and Wi-Fi without power saving. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.": "Schermrust gaat niet meer vanzelf weer aan direct nadat je hem start, en de vermogenswidget houdt de laatste meting vast. Stabiliteit voor Raspberry Pi 4 + Louder HAT: Squeezelite houdt het audioapparaat open, 44,1–96 kHz-bescherming, rustigere automatische DSP-wijzigingen, snellere visualizer-meting, stabielere Chromium en wifi zonder energiebesparing. Vraagt eenmalig “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply”.",
   "Party mode": "Party mode",
   "Last reading {age} min ago": "Laatste meting {age} min geleden",
   "SSH": "SSH",
@@ -2401,5 +2400,6 @@
   "Room light": "Licht in de kamer",
   "Today": "Vandaag",
   "Choose your city in Date & time": "Kies je stad bij Datum en tijd",
-  "No sunset today": "Vandaag geen zonsondergang"
+  "No sunset today": "Vandaag geen zonsondergang",
+  "Drag widgets onto Now Playing and the rest screen. The menu bar slides away without moving anything. Hold to wake the screen. Keep playing (∞) next to mute, crossfade when Music Assistant offers it, mute rests the meters. Remove phones in Party mode, Pi throttling in Sensors, SSH switch for developers. After a restart TuneBox leaves multiroom and says so. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once for SSH.": "Sleep widgets naar Speelt nu en het rustscherm. De menubalk schuift weg zonder dat er iets verspringt. Houd vast om het scherm te wekken. Blijven spelen (∞) naast dempen, crossfade als Music Assistant het aanbiedt, dempen zet de meters in rust. Telefoons verwijderen in Party mode, Pi-throttling bij Sensoren, SSH-schakelaar voor ontwikkelaars. Na een herstart verlaat TuneBox multiroom en meldt dat. Vraagt eenmalig “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” voor SSH."
 }
