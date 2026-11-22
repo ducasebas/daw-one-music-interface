@@ -235,8 +235,8 @@
 .music2[data-panel="wall-16-10"][data-header-mode=auto][data-header=hidden]>.m2-header>.m2-brand,.music2[data-panel="wall-16-10"][data-header-mode=auto][data-header=hidden]>.m2-header>nav{opacity:0;transform:translateY(-14px)}
 .music2 .m2-header-pull{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:40;width:112px;height:30px;min-height:0!important;min-width:0;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid color-mix(in srgb,var(--text) 14%,transparent);border-top:0;border-radius:0 0 18px 18px;background:color-mix(in srgb,var(--panel,var(--surface)) 45%,transparent);color:color-mix(in srgb,var(--text) 60%,transparent);opacity:.75}
 .music2[data-header=shown] .m2-header-pull{top:64px;height:22px}
-.music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header nav button{min-height:56px;height:56px;padding:4px 12px;font-size:14px;gap:2px}
-.music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header nav button .tb-icon{width:22px;height:22px}
+.music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header nav button{min-height:60px;height:60px;padding:2px 12px;font-size:13px;gap:0;line-height:1.1}
+.music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header nav button .tb-icon{width:32px;height:32px}
 .music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header>.m2-brand{font-size:19px;min-height:48px}
 .music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header button{min-height:52px}
 .music2 .m2-header-pull::before{content:"";position:absolute;inset:-6px -24px -20px}
