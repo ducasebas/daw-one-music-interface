@@ -78,13 +78,11 @@ test('3.16.1: screen rest started by a tap stays on; the same tap never wakes it
  await page.goto('/?gui=2&screen=1&display=dsi-production&panel=wall-16-10');
  const rest=page.getByRole('button',{name:'Screen rest',exact:true});await expect(rest).toBeVisible();
  await page.waitForTimeout(2200);// the previous activity report is older than the 2 s throttle
- // A real finger moves a little while touching: send touchstart, a tiny touchmove and touchend (trusted input).
- const box=await rest.boundingBox(),x=box.x+box.width/2,y=box.y+box.height/2,cdp=await page.context().newCDPSession(page);
- await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+6,y:y+4}]});await page.waitForTimeout(120);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ await rest.tap();
  const sleep=page.getByRole('button',{name:'Wake display',exact:true});await expect(sleep).toBeVisible();
  const late=[];page.on('request',q=>{if(q.url().endsWith('/api/activity'))late.push(q.url());});
  // A stray touch right after the tap (panel bounce) is ignored…
- await page.waitForTimeout(250);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:640,y:400}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ await page.waitForTimeout(250);await page.touchscreen.tap(640,400);
  await page.waitForTimeout(3500);await expect(sleep).toBeVisible();expect(late,'no delayed activity report from the rest tap').toEqual([]);
  expect((await(await page.request.get('/api/state')).json()).device.displayAwake).toBe(false);
  await expect(sleep).toHaveAttribute('data-armed','true');await sleep.tap();await expect(sleep).not.toBeVisible();
