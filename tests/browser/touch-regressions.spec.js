@@ -1,3 +1,4 @@
+import {holdToWake} from './wake-helper.js';
 import {chooseSettingsSection,chooseDeveloperTopic} from './settings-helpers.js';
 import {test,expect} from '@playwright/test';
 import {presets} from '../../shared/themes.js';
@@ -135,7 +136,7 @@ test('manual moon wake stays available in live read-only mode with Music Assista
  await page.route('**/api/state',async r=>{const response=await r.fetch();await r.fulfill({json:live(await response.json())});});
  await page.route('**/api/event',async r=>{const response=await r.fetch();await r.fulfill({status:response.status(),json:live(await response.json())});});
  await page.reload();const before=await(await page.request.get('/api/state')).json();
- await page.getByRole('button',{name:'Screen rest',exact:true}).tap();const wake=page.getByRole('button',{name:'Wake display',exact:true});await expect(wake).toBeVisible();await expect(wake).toHaveAttribute('data-armed','true');await wake.tap();await expect(wake).not.toBeVisible();
+ await page.getByRole('button',{name:'Screen rest',exact:true}).tap();const wake=page.getByRole('button',{name:'Wake display',exact:true});await expect(wake).toBeVisible();await holdToWake(page,wake);await expect(wake).not.toBeVisible();
  const after=await(await page.request.get('/api/state')).json();expect(after.playback.playing).toBe(before.playback.playing);expect(after.device.amplifierEnabled).toBe(before.device.amplifierEnabled);await expect(page.locator('.m2-player-status')).not.toContainText('Simulation controls are disabled');
 });
 test('explicit animation overrides Pi3 automatic still policy and missing WebP plus MP4 retries WebM',async({page})=>{

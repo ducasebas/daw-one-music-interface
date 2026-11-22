@@ -13,8 +13,10 @@ import { BuildBadge } from "./BuildBadge.jsx";
 import { TouchVolume, useVolumeRequests } from "./TouchVolume.jsx";
 import {controlVolumeLimit} from '../shared/volume.js';
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { saveSetupPreferences } from "./setup-api.js";
 const headerHideMs = 6000;
-const restArmMs = 900;
+const restArmMs = 500;
+const wakeHoldMs = 650;
 import { flushSync } from "react-dom";
 import { SkinPanel } from "./SkinPanel.jsx";
 import { presets } from "../shared/themes.js";
@@ -107,6 +109,12 @@ export function MusicShell({
   // A touch panel can report a stray touch or bounce right after the tap that started rest; ignore input briefly.
   const restStartedAt=useRef(-Infinity),[restReady,setRestReady]=useState(true);
   const restArmed=()=>performance.now()-restStartedAt.current>=restArmMs;
+  // Waking from rest is a deliberate press-and-hold (a ring fills); a quick or stray touch only shows a hint.
+  const wakeTimer=useRef(null),[wakeHold,setWakeHold]=useState('idle');
+  const startWakeHold=()=>{clearTimeout(wakeTimer.current);setWakeHold('holding');wakeTimer.current=setTimeout(()=>{wakeTimer.current=null;setWakeHold('idle');wake();},wakeHoldMs);};
+  const endWakeHold=()=>{if(wakeTimer.current===null)return;clearTimeout(wakeTimer.current);wakeTimer.current=null;setWakeHold(h=>h==='holding'?'hint':h);};
+  useEffect(()=>{if(wakeHold!=='hint')return;const t=setTimeout(()=>setWakeHold('idle'),1800);return()=>clearTimeout(t);},[wakeHold]);
+  useEffect(()=>()=>clearTimeout(wakeTimer.current),[]);
   const sleep = async () => {
     restStartedAt.current=performance.now();setRestReady(false);setTimeout(()=>setRestReady(true),restArmMs);
     window.dispatchEvent(new Event("tunebox-screen-rest"));
@@ -134,6 +142,7 @@ export function MusicShell({
   const [headerHidden,setHeaderHidden]=useState(false);
   const headerTimer=useRef(null);
   const showHeader=useCallback(()=>{clearTimeout(headerTimer.current);setHeaderHidden(false);if(autoHideHeader)headerTimer.current=setTimeout(()=>setHeaderHidden(true),headerHideMs);},[autoHideHeader]);
+  const hideHeader=useCallback(()=>{clearTimeout(headerTimer.current);setHeaderHidden(true);},[]);
   useEffect(()=>{showHeader();return()=>clearTimeout(headerTimer.current);},[showHeader]);
   const prompted=useRef(false);
   useEffect(()=>{const manager=deviceUpdates?.info?.manager;if(!prompted.current&&manager?.managed&&!manager.simulated&&manager.setupComplete===false){prompted.current=true;setSettingsPage(13);setPage("settings");}},[deviceUpdates?.info?.manager?.managed,deviceUpdates?.info?.manager?.setupComplete]);
@@ -238,6 +247,12 @@ export function MusicShell({
       setPending(false);setPendingAction(null);
     }
   }
+  // Keep playing (Music Assistant 'Don't stop the music'): on → the queue is topped up with similar music; off → the queue stays and the music can end.
+  function toggleKeepPlaying(){
+    const next=prefs.keepPlaying===false;
+    update('keepPlaying',next);
+    if(deviceUpdates?.info?.controlToken)saveSetupPreferences(deviceUpdates.info.controlToken,{prefs:{keepPlaying:next}}).catch(()=>{update('keepPlaying',!next);setMessage('Keep playing could not be changed. Try again.');});
+  }
   async function toggleVisualizer(){
     const next=prefs.visualizer==='off'?'spectrum':prefs.visualizer==='spectrum'?'meters':'off';
     update('artwork','cover');
@@ -249,6 +264,8 @@ export function MusicShell({
       }catch{setMessage('Audio analysis is unavailable. Open Audio settings.');return;}
     }
     update('visualizer',next);
+    // Keep the choice on TuneBox too; otherwise the next preferences update from the server restores the old mode.
+    if(wall&&!offline&&deviceUpdates?.info?.controlToken)saveSetupPreferences(deviceUpdates.info.controlToken,{prefs:{visualizer:next,artwork:'cover'}}).catch(()=>{});
   }
   const sample = tracks.filter((t) =>
     `${t.title} ${t.artist} ${t.album}`
@@ -293,12 +310,15 @@ export function MusicShell({
       data-panel={wall ? "wall-16-10" : "legacy-wide"}
       onContextMenu={e=>{if(!e.target.closest('input,textarea,[contenteditable="true"]'))e.preventDefault();}}
       onDragStart={e=>{if(e.target.tagName==='IMG')e.preventDefault();}}
-      onPointerDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();if(restArmed())wake();}:undefined}
-      onClickCapture={sleeping ? e=>{if(!restArmed()){e.preventDefault();e.stopPropagation();}}:undefined}
+      onPointerDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();if(restArmed())startWakeHold();}:undefined}
+      onPointerUpCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();endWakeHold();}:undefined}
+      onPointerCancelCapture={sleeping ? ()=>endWakeHold():undefined}
+      onClickCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();}:undefined}
       onKeyDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();if(restArmed())wake();}:undefined}
       data-theme={theme.id}
       data-page={page}
       data-header={autoHideHeader&&headerHidden?"hidden":"shown"}
+      data-header-mode={autoHideHeader?"auto":"fixed"}
       data-performance={prefs.lowPower ? "pi3" : "standard"}
       data-skin={
         presets.some((p) => p.id === theme.id) ? theme.id : "reference-dark"
@@ -312,7 +332,7 @@ export function MusicShell({
     >
       <GlobalUpdateProgress />
       {wall&&(page==='settings'||page==='playing'&&!bluetoothActive&&!video)&&<NowPlayingBackdrop snapshot={snapshot} prefs={prefs} offline={offline}/>}
-      {(sleeping||waking) && <SleepSurface prefs={prefs} snapshot={snapshot} offline={offline} wake={wake} waking={waking} armed={restReady} />}
+      {(sleeping||waking) && <SleepSurface prefs={prefs} snapshot={snapshot} offline={offline} wake={wake} waking={waking} armed={restReady} hold={wakeHold} holdMs={wakeHoldMs} />}
 
       <StartupScreen
         mode={device.mode}
@@ -324,11 +344,11 @@ export function MusicShell({
         onComplete={setStartupReady}
       />
       <StartupJoin active={wall&&startupReady&&!offline&&!sleeping&&(!snapshot.onboardingRequired||snapshot.preferences?.setupDeferred)&&snapshot.mode==='music-assistant'&&!['settings','rooms'].includes(page)&&!['installing','restarting','checking-health','rolling-back'].includes(deviceUpdates.info?.status)} controlToken={deviceUpdates.info?.controlToken} onSnapshot={setSnapshot} onRooms={()=>go('rooms')} onUnlock={()=>{setSettingsPage(21);go('settings');}}/>
-      {autoHideHeader&&headerHidden&&<button className="m2-header-pull" aria-label={tr("Show menu")} onClick={showHeader}><Icon name="back" size={22} className="m2-header-pull-icon"/></button>}
-      <header className="m2-header" aria-hidden={autoHideHeader&&headerHidden?true:undefined} inert={autoHideHeader&&headerHidden} onPointerDownCapture={autoHideHeader?showHeader:undefined}>
-        <button className="m2-brand" onClick={() => go("playing")} aria-label={tr("Now Playing")}>{tr("DAW ")}<b>{tr("TuneBox")}</b>
+      {autoHideHeader&&<button className="m2-header-pull" data-direction={headerHidden?"down":"up"} aria-label={tr(headerHidden?"Show menu":"Hide menu")} aria-expanded={!headerHidden} onClick={headerHidden?showHeader:hideHeader}><Icon name="back" size={20} className="m2-header-pull-icon"/></button>}
+      <header className="m2-header" onPointerDownCapture={autoHideHeader&&!headerHidden?showHeader:undefined}>
+        <button className="m2-brand" inert={autoHideHeader&&headerHidden} onClick={() => go("playing")} aria-label={tr("Now Playing")}>{tr("DAW ")}<b>{tr("TuneBox")}</b>
         </button>
-        <nav aria-label={tr("Muzieknavigatie")}>
+        <nav aria-label={tr("Muzieknavigatie")} inert={autoHideHeader&&headerHidden}>
           {sections.map(([id, label]) => (
             <button
               key={id}
@@ -698,21 +718,21 @@ export function MusicShell({
               <PlaybackSeekControl playback={playback} duration={current.duration} disabled={!control||!current.duration||prefs.seekEnabled===false||(!simulated&&!['seek','queue_seek'].some(c=>playback.capabilities?.includes(c)))} onSeek={value=>command({type:'seek',position:value})}/>
             </div>
             <aside>
-              <div className="m2-artwork-controls"><button
+              <div className="m2-artwork-controls">{(video||snapshot.videoConfigured!==false)&&<button
                 disabled={prefs.lowPower}
                 aria-pressed={video}
                 onClick={() => update('artwork',video?'cover':'video')}
               >
                 <Icon name="film" size={16} />{tr(" ")}
                 {tr(prefs.lowPower ? "Video uit · Pi 3 modus" : "Video Artwork")}
-              </button>
+              </button>}
               <button aria-label={tr("Switch visualizer")} onClick={toggleVisualizer}>{tr("Visualizer ")}{tr(prefs.visualizer==="off"?"uit":prefs.visualizer==="meters"?"meters":"spectrum")}</button></div>
               {video ? (
                 <div className="m2-video">
                   <VideoArtwork snapshot={snapshot} prefs={prefs} offline={offline} onConfigure={()=>{setSettingsPage(16);go('settings');}}/>
                 </div>
               ) : prefs.visualizer!=="off" ? (
-                <AudioVisualizer timing={prefs.timing} timeline={playback} mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline} awake={device.displayAwake!==false&&!sleeping} paused={!playback.playing}/>
+                <AudioVisualizer timing={prefs.timing} timeline={playback} mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline} awake={device.displayAwake!==false&&!sleeping} paused={!playback.playing||playback.muted===true}/>
               ) : wall ? null : (
                 <SkinPanel
                   skin={
@@ -803,6 +823,16 @@ export function MusicShell({
                     ? "SIMULATIE · GEEN AUDIO"
                     : ""))}
         </div>
+        {wall&&snapshot.mode==='music-assistant'&&<button
+          className="m2-keep-playing"
+          aria-label={tr("Keep playing")}
+          aria-pressed={prefs.keepPlaying!==false}
+          title={tr(prefs.keepPlaying!==false?"Keep playing is on: similar music is added when the queue ends.":"Keep playing is off: the music stops when the queue ends.")}
+          disabled={offline||!deviceUpdates?.info?.controlToken}
+          onClick={toggleKeepPlaying}
+        >
+          <Icon name="infinity" />
+        </button>}
         <button
           className="m2-mute"
           aria-label={tr(muted ? "Geluid aan" : "Dempen")}

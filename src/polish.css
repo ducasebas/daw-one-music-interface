@@ -218,23 +218,33 @@
 .real-artwork{position:relative}
 .real-artwork[data-loading] img{filter:brightness(.72) saturate(.85);transition:filter .25s}
 .artwork-loading{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;border:4px solid color-mix(in srgb,#fff 30%,transparent);border-top-color:var(--accent,#c5a466);animation:artwork-spin .9s linear infinite;box-shadow:0 2px 16px #0008}
-.m2-current-cover .artwork-loading{width:26px;height:26px;margin:-13px 0 0 -13px;border-width:3px}
+.m2-current-cover .artwork-loading{display:none}
 .artwork-fade-in{animation:artwork-fade .35s ease-out}
 @keyframes artwork-spin{to{transform:rotate(360deg)}}@keyframes artwork-fade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.artwork-loading{animation-duration:2.4s}.artwork-fade-in{animation:none}}
 
-/* 3.16 · Header slides up on the wall's Now Playing page; a small tab brings it back. */
-.music2[data-panel="wall-16-10"]{transition:grid-template-rows 320ms cubic-bezier(.2,.8,.2,1)}
-.music2[data-panel="wall-16-10"]>.m2-header{transition:transform 320ms cubic-bezier(.2,.8,.2,1),opacity 220ms ease}
-.music2[data-panel="wall-16-10"][data-header=hidden]{grid-template-rows:0 48px minmax(0,1fr) 178px}
-.music2[data-panel="wall-16-10"][data-header=hidden]>.m2-header{transform:translateY(-110%);opacity:0;pointer-events:none}
-.music2 .m2-header-pull{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:40;width:128px;height:40px;min-height:0;min-width:0;padding:0;display:flex;align-items:center;justify-content:center;border:2px solid color-mix(in srgb,var(--divider,var(--border-color)) 85%,transparent);border-top:0;border-radius:0 0 20px 20px;background:color-mix(in srgb,var(--panel,var(--surface)) 88%,transparent);color:var(--muted);animation:header-pull-in 260ms ease-out both}
+/* 3.16.2 · On the wall's Now Playing page the header overlays the content instead of resizing it: the layout never
+   changes when the menu hides, so text, widgets and the visualizer do not jump or flicker. Brand and menu fade away;
+   the status icons stay. A translucent tab toggles the menu (down = show, up = hide). Only opacity/transform animate. */
+.music2[data-panel="wall-16-10"][data-header-mode=auto]{grid-template-rows:0 48px minmax(0,1fr) 178px}
+.music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-content{grid-row:2 / span 2;padding-top:86px}
+.music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header{position:absolute;top:0;left:24px;right:24px;z-index:35;height:64px;min-height:64px;padding-top:0;padding-bottom:0;background:color-mix(in srgb,var(--background,#111) 92%,transparent);transition:background-color 240ms ease,border-color 240ms ease}
+.music2[data-panel="wall-16-10"][data-header-mode=auto][data-header=hidden]>.m2-header{background:transparent;border-color:transparent;pointer-events:none}
+.music2[data-panel="wall-16-10"][data-header-mode=auto][data-header=hidden]>.m2-header>:not(.m2-brand):not(nav){pointer-events:auto}
+.music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header>.m2-brand,.music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header>nav{transition:opacity 240ms ease,transform 280ms cubic-bezier(.2,.8,.2,1)}
+.music2[data-panel="wall-16-10"][data-header-mode=auto][data-header=hidden]>.m2-header>.m2-brand,.music2[data-panel="wall-16-10"][data-header-mode=auto][data-header=hidden]>.m2-header>nav{opacity:0;transform:translateY(-14px)}
+.music2 .m2-header-pull{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:40;width:112px;height:30px;min-height:0!important;min-width:0;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid color-mix(in srgb,var(--text) 14%,transparent);border-top:0;border-radius:0 0 18px 18px;background:color-mix(in srgb,var(--panel,var(--surface)) 45%,transparent);color:color-mix(in srgb,var(--text) 60%,transparent);opacity:.75}
+.music2[data-header=shown] .m2-header-pull{top:64px;height:22px}
+.music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header nav button{min-height:60px;height:60px;padding:2px 12px;font-size:13px;gap:0;line-height:1.1}
+.music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header nav button .tb-icon{width:32px;height:32px}
+.music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header>.m2-brand{font-size:19px;min-height:48px}
+.music2[data-panel="wall-16-10"][data-header-mode=auto]>.m2-header button{min-height:52px}
 .music2 .m2-header-pull::before{content:"";position:absolute;inset:-6px -24px -20px}
-.music2 .m2-header-pull:active{color:var(--accent);border-color:var(--accent)}
-.m2-header-pull-icon{transform:rotate(-90deg)}
-@keyframes header-pull-in{from{transform:translate(-50%,-100%)}to{transform:translate(-50%,0)}}
-.music2[data-performance=pi3],.music2[data-performance=pi3]>.m2-header{transition:none}
-@media(prefers-reduced-motion:reduce){.music2[data-panel="wall-16-10"],.music2[data-panel="wall-16-10"]>.m2-header{transition:none}.music2 .m2-header-pull{animation:none}}
+.music2 .m2-header-pull:active{color:var(--accent);opacity:1}
+.m2-header-pull-icon{transform:rotate(-90deg);transition:transform 240ms ease}
+.m2-header-pull[data-direction=up] .m2-header-pull-icon{transform:rotate(90deg)}
+.music2[data-performance=pi3] .m2-header>*,.music2[data-performance=pi3] .m2-header{transition:none!important}
+@media(prefers-reduced-motion:reduce){.music2[data-panel="wall-16-10"]>.m2-header,.music2[data-panel="wall-16-10"]>.m2-header>*{transition:none!important}}
 
 /* 3.16 · Widgets: calmer chips, and Now Playing always fits above the footer, visualizer or not. */
 .music2 .np-widget,.np-widget{min-height:80px;padding:10px 16px;gap:12px;border:0;border-radius:18px;background:color-mix(in srgb,var(--panel,var(--surface)) 72%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 9%,transparent)}
@@ -270,7 +280,6 @@
 .np-widget-order-item>strong{font-size:16px;font-weight:500;padding:0 4px;white-space:nowrap}
 .np-widget-order-item>button{min-width:52px;min-height:52px;padding:0;display:inline-flex;align-items:center;justify-content:center}
 .np-flip{transform:scaleX(-1)}
-.music2[data-panel="wall-16-10"][data-header=hidden]>.m2-content{padding-top:46px;transition:padding-top 320ms cubic-bezier(.2,.8,.2,1)}
 /* Visualizer + widgets: tighter track block and gaps so the visualizer keeps at least ~250 px with the menu bar shown. */
 .music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets){row-gap:8px}
 .music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-track h2{margin:0 0 4px}
@@ -278,3 +287,14 @@
 .music2[data-panel="wall-16-10"] .m2-playing:has(>.np-widgets)>.np-widgets{padding:0;margin:0}
 .music2[data-panel="wall-16-10"] .m2-playing:has(>.np-widgets) .np-widget{min-height:80px;max-height:80px}
 .music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-track .seek-control input{margin:4px 0}
+.throttle-card[data-state=now] strong{color:var(--danger,#e5484d)}.throttle-card[data-state=past] small{color:var(--warning,#d9a441)}
+.party-phones{display:grid;gap:8px;margin:6px 0}.party-phones h4{margin:0;font-size:17px}.party-phones ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.party-phones li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 6px 6px 14px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--divider,var(--border-color))}
+.party-phones li button{min-height:52px}
+/* 3.16.2 Keep playing: an infinity button next to mute in the footer. */
+.music2[data-panel="wall-16-10"] .m2-player:has(>.m2-keep-playing){grid-template-columns:minmax(200px,1fr) 284px 64px 64px 380px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player:has(>.m2-keep-playing){grid-template-columns:304px 80px 80px minmax(0,1fr);gap:18px}
+.m2-player>.m2-keep-playing{width:64px;min-width:64px;height:64px;border-radius:16px;background:transparent;border-color:var(--divider,var(--skin-line));color:var(--muted);display:inline-flex;align-items:center;justify-content:center}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player>.m2-keep-playing{width:80px;min-width:80px;height:80px}
+.m2-player>.m2-keep-playing .tb-icon{width:34px;height:34px}
+.m2-player>.m2-keep-playing[aria-pressed=true]{color:var(--accent);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}

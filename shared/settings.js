@@ -1,7 +1,7 @@
 import {presentationTiming} from './presentation-timing.js';
 import {referenceTiming} from './timing-reference.js';
 import { screenSettings } from "./wall.js";
-import {widgetSelection,widgetDefaults} from "./now-playing.js";
+import {widgetSelection,widgetDefaults,restWidgetSelection} from "./now-playing.js";
 import {soundSettings,soundDefaults} from "./dsp-settings.js";
 export const defaults = {
   // New TuneBoxes start from the measured reference, not from zero; a device's own measurement overrides it.
@@ -37,6 +37,7 @@ export function settings(input = {}) {
     keepPlaying: input.keepPlaying !== false,
     sound: soundSettings(input.sound),
     widgets: widgetSelection(input.widgets),
+    restWidgets: restWidgetSelection(input.restWidgets),
     widgetPlacement: input.widgetPlacement === 'top' ? 'top' : 'bottom',
     headerAutoHide: input.headerAutoHide !== false,
     visualizer: ["meters","spectrum"].includes(input.visualizer)?input.visualizer:"off",

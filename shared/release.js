@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.22-hotfix.1",
-  label: "GUI 3.16.1 · HOTFIX",
+  id: "2026.11.22-play.1",
+  label: "GUI 3.16.2 · PLAY",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Screen rest no longer switches itself back on right after you start it, and the power widget keeps the last reading. Stability for Raspberry Pi 4 + Louder HAT: Squeezelite keeps the audio device open, 44.1–96 kHz rate protection, calmer automatic DSP changes, faster visualizer capture, steadier Chromium and Wi-Fi without power saving. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.",
+  notes: "Drag widgets onto Now Playing and the rest screen. The menu bar slides away without moving anything. Hold to wake the screen. Keep playing (∞) next to mute, crossfade when Music Assistant offers it, mute rests the meters. Remove phones in Party mode, Pi throttling in Sensors, SSH switch for developers. After a restart TuneBox leaves multiroom and says so. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once for SSH.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

@@ -174,6 +174,7 @@ test("settings whitelist, clamp and safe defaults", () => {
       screen: { mode: "clock", background: "black", latitude: null, longitude: null },
       backdrop: "art",
       widgets: ["clock", "upnext", "source"],
+      restWidgets: ["temperature", "light", "sunset"],
       widgetPlacement: "bottom",
       headerAutoHide: true,
       font: "inter",

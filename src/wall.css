@@ -266,3 +266,10 @@ html[data-tunebox-kiosk="true"],html[data-tunebox-kiosk="true"] *{cursor:none!im
 .rest-backdrop[data-kind=gradient]{background:radial-gradient(ellipse at 18% 12%,color-mix(in srgb,var(--accent) 48%,#050608) 0%,transparent 58%),radial-gradient(ellipse at 88% 92%,color-mix(in srgb,var(--accent) 22%,#1a2140) 0%,transparent 62%),#07080c}
 .sleep-surface[data-backdrop=photo] .sleep-clock,.sleep-surface[data-backdrop=photo] .sleep-date,.sleep-surface[data-backdrop=art] .sleep-clock{text-shadow:0 2px 24px rgba(0,0,0,.55)}
 .music2[data-performance=pi3] .rest-backdrop[data-kind=art]>span{filter:brightness(.4)}
+/* 3.16.2 hold to wake: a ring fills while the finger stays down; a quick tap only shows the hint. */
+.sleep-surface .wake-hold{position:absolute;left:50%;top:50%;width:132px;height:132px;margin:-66px 0 0 -66px;pointer-events:none;z-index:2}
+.wake-hold svg{width:100%;height:100%;transform:rotate(-90deg)}
+.wake-hold circle{fill:none;stroke:color-mix(in srgb,#fff 18%,transparent);stroke-width:5}
+.wake-hold .wake-hold-fill{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;animation:wake-hold-fill var(--hold-ms,650ms) linear forwards}
+@keyframes wake-hold-fill{to{stroke-dashoffset:0}}
+.sleep-surface .wake-hint{color:var(--text)!important;opacity:.85}

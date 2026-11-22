@@ -41,6 +41,7 @@ const paths = {
   next: "M17 5h2v14h-2Z M6 5l10 7L6 19Z",
   volume: "M3 9h4l5-5v16l-5-5H3ZM16 8q5 4 0 8M19 5q8 7 0 14",
   mute: "M3 9h4l5-5v16l-5-5H3ZM17 9l5 6M22 9l-5 6",
+  infinity: "M7.5 8C5 8 3 9.8 3 12s2 4 4.5 4c3.5 0 5.5-8 9-8 2.5 0 4.5 1.8 4.5 4s-2 4-4.5 4c-3.5 0-5.5-8-9-8Z",
   back: "M15 4l-8 8 8 8",
   close: "M6 6l12 12M18 6L6 18",
   expand: "M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6",

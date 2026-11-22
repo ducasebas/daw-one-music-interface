@@ -1,0 +1,29 @@
+# GUI 3.16.2 · PLAY: scope
+
+Release `2026.11.22-play.1`, service-worker cache 69, on top of GUI 3.16.1. It is a local candidate built from the owner's list of 22 November 2026. Publishing needs the owner's separate approval (see `AGENTS.md`).
+
+| Owner request | Implementation |
+|---|---|
+| SSH switch in Developer options, default off | Developer → Services → "SSH access". It uses the manager commands `ssh-status` and `ssh-set` (`deploy/manager/ssh.mjs`) and asks for confirmation; the settings PIN applies. TuneBox never switches SSH on by itself. Switching it off stops `ssh.service` and `ssh.socket`, and open sessions stay connected. The current state is shown, so the owner's own SSH is left as it is. Needs the host refresh. |
+| Mute should stop the visualizers | While muted, the Now Playing visualizer and the rest-view meters rest exactly as when paused, and the analysis lease is released. |
+| Header tab: more transparent, stays visible pointing up, the status icons always visible, no flicker or jank | On the wall's Now Playing page the header is now a compact 64 px bar that overlays the content. The layout no longer changes when it hides: widgets, text and visualizer keep the same size and position, which removes the flicker and jank (measured: identical positions shown and hidden). Brand and menu fade away; the status icons stay. A translucent tab points down to show the menu and up to hide it. |
+| Rest screen widgets configurable, the same way as Now Playing, interactive: unused widgets in a list with previews (real value, or a demo value), dragged to a place | New widget editor for both places (`src/WidgetEditor.jsx`):<br>• **Places on top**, and a shelf of every unused widget with a live preview. A widget that cannot be measured shows a value marked "Demo".<br>• **Drag** a widget onto a place (the place lights up; the old one goes back to the shelf), drag between places to swap, or drag back to the shelf to remove.<br>• **Without dragging:** tapping a shelf widget adds it; each place has move and remove buttons.<br>• New tiles: Ambient light and Sunset. The rest view's Widgets mode shows the chosen three (`prefs.restWidgets`). |
+| Waking the screen should take a slightly longer press; manual rest sometimes ended at once | Press and hold for 0.65 s; a ring fills. A quick or stray touch only shows "Hold to wake". Rest accepts input 0.5 s after it starts. The physical button and a remote wake are unchanged. |
+| The power widget works for a few seconds, then "Not available" | It keeps the last good reading for up to ten minutes with its age ("Last reading 3 min ago") instead of blanking. If it still empties, Developer → Values ("Read at") shows whether the reader stopped. |
+| "Feest" should be "Party mode" | Shown as "Party mode" in both languages (widget, sheet, settings). |
+| Tapping some widgets does nothing | Every widget now opens its screen: Clock → Date & time, Source → Audio, Temperature/Light → Sensors, Wi-Fi → Connections, Sunset → Date & time (alongside the existing Up next, Rooms, Power, Party). |
+| Returning to Now Playing forgets the visualizer choice | The choice was only kept in the screen's local copy and was overwritten by the server preferences. It is now saved on TuneBox too. |
+| Kick phones from the group in the menu | Party mode lists the paired phones, each with a Remove button (settings PIN applies). |
+| Video Artwork button gone when nothing is set up | Shown only when a video is linked or uploaded, or automatic YouTube video is allowed (`snapshot.videoConfigured`), or when video is already on. |
+| Crossfade: if possible, adjustable, default 1.2 s, can be off | Playback → "Crossfade between songs", stored in Music Assistant's own player settings (`config/players`). It is shown only when the connected Music Assistant reports crossfade (`crossfade` or `smart_fades_mode` plus `crossfade_duration`). Off/on, with the length preset to 1.2 s. If that version accepts only whole seconds, the setting says so and uses 1 s. TuneBox does not switch it on by itself. |
+| A real shuffle | Proposal in [true-shuffle-proposal.md](true-shuffle-proposal.md) (one pass without repeats, artist spacing, memory of recent tracks). Not implemented yet. |
+| Keep playing as a visible footer button with ∞; on fills the queue, off keeps it and lets the music end; what does Spotify call it? | An ∞ button next to mute (Music Assistant mode). It lights up when on and saves the existing Keep playing preference: Music Assistant's "Don't stop the music". Labelled "Keep playing" in English and "Blijven spelen" in Dutch. Spotify calls this **Autoplay**. |
+| After a reboot, leave multiroom and control the own player, with a notice | `server/boot-rooms.js`: once per boot (by kernel boot ID, so an app restart does not count), when the local player appears in Music Assistant, TuneBox leaves its group, drops dynamic members it leads (permanent ones stay) and selects its own player. A notice "Multiroom switched off after restart" links to Rooms. It never acts read-only. |
+| Tiny loading icon bottom left when tapping | The loading ring on the small footer cover during a skip; it now shows only on the large cover. |
+| Raspberry Pi throttle info in Sensors | A card reads the firmware flags (as `vcgencmd get_throttled`): under-voltage, CPU speed capped, throttled, temperature limit. It shows what is happening now and since start. |
+| Rest screen shows a play symbol while paused | It shows the pause symbol while paused. |
+| Audio-analysis "off" notice; audio measurement no longer works | The notice is already hidden when the owner switched analysis off (3.15). This item repeats an earlier list. The device output of `/api/audio` is needed to see why measurement stopped. |
+
+## Host-helper refresh
+
+SSH needs the updated manager: `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply`. Everything else arrives with OTA.
