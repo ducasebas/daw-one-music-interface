@@ -2,7 +2,19 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.16.1 HOTFIX — approved
+## GUI 3.16.1 HOTFIX — published
+
+Merged via PR #22 as `cb95139b8831eca819282a98c91607840e1dbded` on 22 November 2026 after all six PR CI jobs passed on head `64b503b`. The first head failed only in WebKit: the new screen-rest test used a Chromium-only touch API. It was rewritten with the portable touchscreen and still fails on the old code. The owner's 30 fps CPU request was added before the merge. Verify on `main` (run 45037394541) passed. Publish signed preview (run 45038125406) passed, including its channel check.
+
+Verified independently from this session:
+- the signature verifies with the unchanged project key;
+- the manifest names commit `cb95139`, release `2026.11.22-hotfix.1` and label "GUI 3.16.1 · HOTFIX", and the archive hash matches;
+- `release-bundle verify` confirms 413 files with cache v68; the bundle contains the 33 ms PCM reader and the kiosk `--disable-gpu` flag;
+- `checkChannel` selects this release.
+
+Pi installation, the host refresh and the physical checks were not observed: screen rest staying on, rendering without GPU, and audio stability.
+
+### Approval
 
 The owner approved the combined candidate on 22 November 2026 with “zeker”, in answer to whether to push and publish it once the tests pass. The scope is in [hotfix-3-16-1.md](hotfix-3-16-1.md): the screen-rest and power-widget fixes, merged with the other agent's `hotfix/tas58xx-audio-stability` branch (Pi 4 + Louder HAT stability tuning). The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full CI passes. It authorizes no live hardware experiment or physical confirmation.
 
