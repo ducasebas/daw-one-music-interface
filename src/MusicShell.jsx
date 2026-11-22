@@ -124,7 +124,7 @@ export function MusicShell({
   const video=prefs.artwork==='video';
   // 3.16: on the wall's Now Playing page the header slides up after a few quiet seconds; a small tab brings it back.
   const headerOverride=(()=>{try{return localStorage.getItem('tunebox.headerAutoHide');}catch{return null;}})();
-  const autoHideHeader = wall && page === "playing" && !sleeping && prefs.headerAutoHide !== false && headerOverride !== "off";
+  const autoHideHeader = wall && startupReady && page === "playing" && !sleeping && prefs.headerAutoHide !== false && headerOverride !== "off";
   const [headerHidden,setHeaderHidden]=useState(false);
   const headerTimer=useRef(null);
   const showHeader=useCallback(()=>{clearTimeout(headerTimer.current);setHeaderHidden(false);if(autoHideHeader)headerTimer.current=setTimeout(()=>setHeaderHidden(true),headerHideMs);},[autoHideHeader]);

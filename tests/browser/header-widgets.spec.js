@@ -33,3 +33,9 @@ test('3.16: widget order can be changed in Settings',async({page})=>{
  await page.getByRole('combobox',{name:'Widget position',exact:true}).selectOption('top');await page.getByRole('button',{name:'Save',exact:true}).click();
  await expect.poll(async()=>(await(await page.request.get('/api/preferences')).json()).prefs.widgetPlacement).toBe('top');
 });
+test('3.16: Developer → Values reads the timing and power values without changing them',async({page})=>{
+ await page.goto(wall);
+ const {chooseDeveloperTopic}=await import('./settings-helpers.js');await chooseDeveloperTopic(page,'Values',{open:true});
+ const values=page.locator('.developer-values');await expect(values).toContainText('In use: screen delay');await expect(values).toContainText('Contract now');
+ await expect(values).toContainText('Reference timing for new TuneBoxes');await values.getByRole('button',{name:'Read again',exact:true}).click();await expect(values).toContainText('Offered by the supply');
+});

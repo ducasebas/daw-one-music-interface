@@ -271,3 +271,10 @@
 .np-widget-order-item>button{min-width:52px;min-height:52px;padding:0;display:inline-flex;align-items:center;justify-content:center}
 .np-flip{transform:scaleX(-1)}
 .music2[data-panel="wall-16-10"][data-header=hidden]>.m2-content{padding-top:46px;transition:padding-top 320ms cubic-bezier(.2,.8,.2,1)}
+/* Visualizer + widgets: tighter track block and gaps so the visualizer keeps at least ~250 px with the menu bar shown. */
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets){row-gap:12px}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-track h2{margin:0 0 4px}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-track p{margin:0}
+.music2[data-panel="wall-16-10"] .m2-playing:has(>.np-widgets)>.np-widgets{padding:0;margin:0}
+.music2[data-panel="wall-16-10"] .m2-playing:has(>.np-widgets) .np-widget{min-height:64px;max-height:68px}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-track .seek-control input{margin:4px 0}
