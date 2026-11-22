@@ -2,7 +2,19 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.16.0 REST — approved
+## GUI 3.16.0 REST — published
+
+Merged via PR #21 as `dbdca6015dd18a34296be0bde90f01622e7176bf` on 22 November 2026 after all six PR CI jobs passed on head `49d14af` (two CI failures on the first head were fixed within scope: offline tests still used the old rest-view select, and widgets must stay at least 80 px tall). Verify on `main` (run 45009306563) passed. Publish signed preview (run 45009888213) passed, including its channel check.
+
+Verified independently from this session:
+- the signature verifies with the unchanged project key;
+- the manifest names commit `dbdca60`, release `2026.11.22-rest.1` and label "GUI 3.16.0 · REST", and the archive hash matches;
+- `release-bundle verify` confirms 412 files with cache v67; the three bundled rest photos carry no EXIF;
+- `checkChannel` selects this release.
+
+Pi installation, the host refresh and physical checks (backlight off, phone photo upload) were not observed.
+
+### Approval
 
 The owner approved publishing on 22 November 2026 with “ja voeg maar toe. en push maar” (add the power warning, then push). The scope is in [rest-3-16.md](rest-3-16.md): city location, calm skipping, screen preservation, rest previews and backgrounds with the owner's photos and phone upload, auto-hiding header, widget fit/order/position, Developer → Values, the onset sync save fix and the lower-PD-contract notice. The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full CI passes. It authorizes no live PD request or physical confirmation. The owner's readout that day showed every PD offer capped at 3 A; that is a supply/cable observation, not a confirmed cause.
 
