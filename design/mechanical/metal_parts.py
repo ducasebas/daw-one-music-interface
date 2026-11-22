@@ -19,13 +19,17 @@ M3_CLEAR, M3_CSK = 3.4, 6.5     # countersunk M3 (90°)
 M25_TAP, M4_TAP = 2.05, 3.3
 
 # ------------------------------------------------------------------ rear plate (case variant B)
-BP_W, BP_H, BP_T, BP_R = 174.78, 108.80, 3.0, 4.5
-NOTCH_W, NOTCH_H, NOTCH_R = 105.00, 22.80, 1.5
+# Hole positions are fixed relative to the case (174.78 x 108.80); the plate is 0.25 mm smaller per
+# side (owner, 22 Nov 2026) so it never overhangs the wood. Lists below are in PLATE coordinates.
+CASE_W, CASE_H, INSET = 174.78, 108.80, 0.25
+BP_W, BP_H, BP_T, BP_R = CASE_W - 2 * INSET, CASE_H - 2 * INSET, 3.0, 4.5 - INSET
+NOTCH_W, NOTCH_H, NOTCH_R = 105.00, 22.80 - INSET, 1.5
 WALL = 11.8
-BP_CSK = [(WALL / 2, 15.0), (WALL / 2, BP_H - 15.0), (BP_W - WALL / 2, 15.0), (BP_W - WALL / 2, BP_H - 15.0),
-          (BP_W / 2 - 45.0, BP_H - WALL / 2), (BP_W / 2 + 45.0, BP_H - WALL / 2)]
-BP_M25 = [(76.48, 30.89), (134.48, 30.89), (76.48, 79.89), (134.48, 79.89)]       # Pi 4 + HAT stack
-BP_M4 = [(37.39, 86.0), (137.39, 86.0), (17.0, 12.0), (157.78, 12.0)]            # hanging pins, bumpers
+def _p(pts): return [(round(x - INSET, 2), round(y - INSET, 2)) for x, y in pts]
+BP_CSK = _p([(WALL / 2, 15.0), (WALL / 2, CASE_H - 15.0), (CASE_W - WALL / 2, 15.0), (CASE_W - WALL / 2, CASE_H - 15.0),
+             (CASE_W / 2 - 45.0, CASE_H - WALL / 2), (CASE_W / 2 + 45.0, CASE_H - WALL / 2)])
+BP_M25 = _p([(76.48, 30.89), (134.48, 30.89), (76.48, 79.89), (134.48, 79.89)])  # Pi 4 + HAT stack
+BP_M4 = _p([(37.39, 86.0), (137.39, 86.0), (17.0, 12.0), (157.78, 12.0)])       # hanging pins, bumpers
 
 # ------------------------------------------------------------------ I/O cap
 NICHE_W, NICHE_D, BOTTOM_WALL, INNER_H, CAP_T = 105.00, 22.00, 11.80, 11.0, 3.0
@@ -121,7 +125,7 @@ NOTES_COMMON = [
 def sheet_rear_plate(plt):
     from matplotlib.patches import FancyBboxPatch, Rectangle, Circle
     fig = plt.figure(figsize=(16.54, 11.69))
-    head(fig, "Achterplaat — 174,78 × 108,80 × 3 mm", "Aanzicht van BUITEN (muurzijde); oorsprong linksonder. Verzinkingen aan deze zijde.", 1)
+    head(fig, "Achterplaat — 174,28 × 108,30 × 3 mm", "Aanzicht van BUITEN (muurzijde); oorsprong linksonder. Verzinkingen aan deze zijde. (Kast is 174,78 × 108,80: plaat 0,25 mm per kant kleiner.)", 1)
     ax = fig.add_axes([0.04, 0.30, 0.58, 0.60])
     ax.add_patch(FancyBboxPatch((BP_R, BP_R), BP_W - 2 * BP_R, BP_H - 2 * BP_R, boxstyle=f"round,pad={BP_R}", fc="#c7c9cc", ec="#222"))
     nx = (BP_W - NOTCH_W) / 2
@@ -137,7 +141,7 @@ def sheet_rear_plate(plt):
               ((nx, NOTCH_H + 4), (nx + NOTCH_W, NOTCH_H + 4), f"uitsparing {NOTCH_W:.2f}"),
               ((nx - 4, 0), (nx - 4, NOTCH_H), f"{NOTCH_H:.2f}")])
     ax.text(BP_W / 2, NOTCH_H / 2, f"gecentreerd, binnenhoeken R{NOTCH_R}", ha="center", fontsize=8)
-    ax.text(BP_W - 2, BP_H + 3, f"hoeken R{BP_R}", ha="right", fontsize=8)
+    ax.text(BP_W - 2, BP_H + 3, f"hoeken R{BP_R:.2f}", ha="right", fontsize=8)
     ax.set_xlim(-18, BP_W + 8); ax.set_ylim(-16, BP_H + 8); ax.set_aspect("equal"); ax.axis("off")
     table(fig, [0.65, 0.30, 0.33, 0.60], "Gatentabel (X, Y vanaf linksonder, aanzicht van buiten)",
           [("A1–A6", f"Ø{M3_CLEAR} door, verzonken 90° Ø{M3_CSK} (M3 platkop)", BP_CSK),

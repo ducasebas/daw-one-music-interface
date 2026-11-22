@@ -4,11 +4,14 @@ Three parts for the hardwood case variant B ([`../case-b/`](../case-b/)), genera
 
 | File | Part | Size | Stock |
 | --- | --- | --- | --- |
-| `rear-plate.stp` | Rear plate | 174.78 × 108.80 × 3 | 3 mm plate |
+| `rear-plate.stp` | Rear plate | 174.28 × 108.30 × 3 (0.25 mm per side smaller than the case, so it never overhangs) | 3 mm plate |
+| `rear-plate.dxf` | Rear plate 2D profile for laser cutting (outline, through holes at clearance / tap-drill size) | | |
 | `io-cap.stp` | I/O cap with HUSB238 fin | 111.40 × 32.80 × 43 | solid block |
 | `wall-bracket.stp` | Wall bracket | 120 × 26 × 6 | 6 mm plate |
 | `metal-parts.pdf` | Dimensioned sheet per part: holes, threads, countersinks, notes | | |
 
-Order settings: CNC machining, aluminium 6061-T6, finish bead blast + anodising grey (slightly darker than natural; confirm the colour sample), tolerance ISO 2768-m, upload the `.stp` files and the PDF as technical drawing (threads: M2.5 × 8, M4 × 4 per the hole tables). Threads are modelled as tap-drill holes.
+Order settings for the cap and bracket: CNC machining, aluminium 6061-T6, finish bead blast + anodising grey (slightly darker than natural; confirm the colour sample), tolerance ISO 2768-m, upload the `.stp` files and the PDF as technical drawing (threads: M2.5 × 8, M4 × 4 per the hole tables). Threads are modelled as tap-drill holes.
+
+Rear plate, cheaper route: sheet metal fabrication (laser cutting) of 3 mm aluminium from `rear-plate.dxf`, with secondary operations from the PDF: 6 countersinks (90°, Ø6.5) on the outer side, 4 × M2.5 and 4 × M4 tapped holes, then bead blast and grey anodising. The Ø2.05 tap-drill holes are below the usual laser minimum (≈ material thickness), so the shop may drill them. Compare that quote with CNC machining of `rear-plate.stp`.
 
 Before ordering: the wooden case must match `case-b` (outer 174.78 × 108.80); the speaker terminal holes in the I/O cap are drilled by the owner. Design model, not a released production drawing.

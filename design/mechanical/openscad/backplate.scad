@@ -2,16 +2,23 @@
 // Case variant B (owner, 20 Nov 2026): solid hardwood, 174.78 x 108.80 x 52.50 mm, 11.8 mm walls,
 // screen sunk into a front rebate. Interior and board positions as in the supplied case STEP
 // (SHA-256 4312a155…87c4a81); the outer size grew 2.8 mm per side.
-// Coordinates: viewed from OUTSIDE (the wall side), origin at the lower-left corner, X right, Y up,
-// Z = 0 inner face (electronics side), Z = plate_t outer face (countersinks open here).
+// The plate is 0.25 mm smaller per side than the case (owner, 22 Nov 2026), so it never overhangs
+// the wood; every hole keeps its position relative to the case.
+// Coordinates: viewed from OUTSIDE (the wall side), origin at the plate's lower-left corner, X right,
+// Y up, Z = 0 inner face (electronics side), Z = plate_t outer face (countersinks open here).
+// Hole lists below are in CASE coordinates (origin at the case's lower-left corner); the module
+// shifts everything by -bp_inset.
 // The plate is symmetric so far; once asymmetric features are added, remember that "left" seen from
 // the rear is "right" seen from the screen.
 include <pcbway.scad>
 
 /* [Outline — case variant B] */
-bp_w        = 174.78;   // = outer width of the case
-bp_h        = 108.80;   // = outer height of the case
-bp_corner_r = 4.50;     // matches the R4.5 edges of the walnut sides
+case_w      = 174.78;   // outer width of the case
+case_h      = 108.80;   // outer height of the case
+bp_inset    = 0.25;     // plate smaller per side than the case
+bp_w        = case_w - 2 * bp_inset;   // 174.28
+bp_h        = case_h - 2 * bp_inset;   // 108.30
+bp_corner_r = 4.50 - bp_inset;         // concentric with the R4.5 case edges
 
 /* [I/O notch] */
 io_w        = 105.00;   // centred
@@ -47,38 +54,37 @@ m4_tap_d    = 3.3;
 mount_holes = [[37.39, 86.0], [137.39, 86.0],    // hanging pins
                [17.0, 12.0],  [157.78, 12.0]];   // bumpers
 
-module backplate_2d() {
+module backplate_2d_case() {      // in case coordinates
     difference() {
-        rrect(bp_w, bp_h, bp_corner_r);
+        translate([bp_inset, bp_inset]) rrect(bp_w, bp_h, bp_corner_r);
         // notch, open to the bottom edge; the extra 1 mm makes it cut through cleanly
-        translate([(bp_w - io_w) / 2, -1])
+        translate([(case_w - io_w) / 2, -1])
             rrect(io_w, io_h + 1, io_inner_r);
     }
 }
+module backplate_2d() translate([-bp_inset, -bp_inset]) backplate_2d_case();
 
 function stack_holes() = [for (i = [0, 1], j = [0, 1])
     [stack_x0 + i * stack_dx, stack_y0 + j * stack_dy]];
 
 function fastening_holes() = [
-    [wall / 2,        side_hole_y],
-    [wall / 2,        bp_h - side_hole_y],
-    [bp_w - wall / 2, side_hole_y],
-    [bp_w - wall / 2, bp_h - side_hole_y],
-    [bp_w / 2 - top_hole_dx, bp_h - wall / 2],
-    [bp_w / 2 + top_hole_dx, bp_h - wall / 2],
+    [wall / 2,          side_hole_y],
+    [wall / 2,          case_h - side_hole_y],
+    [case_w - wall / 2, side_hole_y],
+    [case_w - wall / 2, case_h - side_hole_y],
+    [case_w / 2 - top_hole_dx, case_h - wall / 2],
+    [case_w / 2 + top_hole_dx, case_h - wall / 2],
 ];
 
-module backplate() {
-    difference() {
-        linear_extrude(plate_t) backplate_2d();
+module backplate() translate([-bp_inset, -bp_inset, 0]) difference() {
+        linear_extrude(plate_t) backplate_2d_case();
         if (show_holes) for (p = fastening_holes()) translate([p[0], p[1], 0]) csk_hole();
         for (p = stack_holes()) translate([p[0], p[1], -1]) cylinder(d = m25_tap_d, h = plate_t + 2);
         for (p = mount_holes) translate([p[0], p[1], -1]) cylinder(d = m4_tap_d, h = plate_t + 2);
-    }
 }
 
 // Reference envelopes on the inner face (Z < 0), measured from the hole pattern
-module stack_envelopes() {
+module stack_envelopes() translate([-bp_inset, -bp_inset, 0]) {
     // Pi 4 PCB 85 x 56 (+3 mm ports, +2.5 mm SD card), underside 31 mm from the plate
     color("green", 0.5) translate([stack_x0 - 3.5 - 2.5, stack_y0 - 3.5, -31])
         cube([85 + 3 + 2.5, 56, 3.4]);
@@ -89,9 +95,9 @@ module stack_envelopes() {
 }
 
 // 2D profile for DXF: outline plus through-hole circles (countersinks go on the drawing/STEP)
-module backplate_profile() {
+module backplate_profile() translate([-bp_inset, -bp_inset]) {
     difference() {
-        backplate_2d();
+        backplate_2d_case();
         if (show_holes) for (p = fastening_holes()) translate(p) circle(d = m3_clear_d);
         for (p = stack_holes()) translate(p) circle(d = m25_tap_d);
         for (p = mount_holes) translate(p) circle(d = m4_tap_d);

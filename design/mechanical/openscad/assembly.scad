@@ -112,7 +112,8 @@ module case_top() {
 
 // ---------------------------------------------------------------- aluminium parts
 module plate_in_case() {   // plate coordinates seen from outside -> case coordinates
-    multmatrix([[-1, 0, 0, x1], [0, 0, 1, yb], [0, 1, 0, z0], [0, 0, 0, 1]]) backplate();
+    // plate origin sits 0.25 mm inside the case corner (plate 0.25 mm smaller per side)
+    multmatrix([[-1, 0, 0, x1 - 0.25], [0, 0, 1, yb], [0, 1, 0, z0 + 0.25], [0, 0, 0, 1]]) backplate();
 }
 module cap_in_case() {     // niche coordinates -> case coordinates
     multmatrix([[-1, 0, 0, 96.19], [0, -1, 0, yb], [0, 0, 1, z0], [0, 0, 0, 1]]) cap();
