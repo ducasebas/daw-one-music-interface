@@ -2360,5 +2360,20 @@
   "SSH is on.": "SSH staat aan.",
   "SSH is off. Open sessions stay connected until they close.": "SSH staat uit. Open sessies blijven verbonden tot ze sluiten.",
   "Hold to wake": "Houd vast om te wekken",
-  "Hide menu": "Menu verbergen"
+  "Hide menu": "Menu verbergen",
+  "Raspberry Pi power & throttling": "Raspberry Pi-voeding en throttling",
+  "Under-voltage": "Onderspanning",
+  "CPU speed capped": "Processorsnelheid begrensd",
+  "Throttled": "Afgeknepen",
+  "Temperature limit": "Temperatuurgrens",
+  "Since start": "Sinds opstarten",
+  "No throttling since start": "Geen throttling sinds opstarten",
+  "The firmware does not report throttling here.": "De firmware meldt hier geen throttling.",
+  "Multiroom switched off after restart": "Multiroom uitgezet na herstart",
+  "For stability this TuneBox left its room group and controls its own speaker again. Group the rooms again in Rooms if you want.": "Voor de stabiliteit heeft deze TuneBox zijn kamergroep verlaten en bedient hij weer zijn eigen speaker. Groepeer de kamers opnieuw via Kamers als je wilt.",
+  "Remove": "Verwijderen",
+  "Removing…": "Verwijderen…",
+  "Unlock settings to manage phones": "Ontgrendel de instellingen om telefoons te beheren",
+  "The phone could not be removed": "De telefoon kon niet worden verwijderd",
+  "Phone": "Telefoon"
 }

@@ -43,6 +43,7 @@ import { DeviceRuntime, runScenario, scenarios } from "../shared/runtime.js";
 import { musicConfig } from "./ma-config.js";
 import { LiveMusicService } from "./ma-service.js";
 import {MultiroomService} from './multiroom.js';
+import {BootRooms} from './boot-rooms.js';
 import {savedVolumeLimit} from '../shared/volume.js';
 const startupStore = new BootStore(
   process.env.DAW_STATE_DIR || ".tunebox-state",
@@ -77,6 +78,9 @@ if(music)music.setVolumeLimit(savedVolumeLimit(preferences.get(),music.defaultVo
 music?.wantKeepPlaying(preferences.get().prefs?.keepPlaying!==false);
 const audioAnalysis=new AudioAnalysis({onStatus:status=>{runtime.record(Date.now(),"audio-analysis",runtime.device.mode,"Local PCM measurement: "+status);broadcast();}});
 const multiroom = new MultiroomService(music,{localId:audioAnalysis.playerId||config.playerId});
+// Owner 22 Nov 2026: after a reboot leave multiroom and control the own player again; show a notice.
+const bootRooms=new BootRooms({multiroom,directory:stateDirectory});
+music?.on('change',()=>{if(bootRooms.pending())bootRooms.check().then(r=>{if(r)broadcast();}).catch(()=>{});});
 const library = music ? new MusicLibrary(music) : null;
 const localAudio=new LocalAudio(music,multiroom,{onChange:()=>{automaticSound.schedule();broadcast();}});
 const youtube = new YoutubeService(music,stateDirectory);
@@ -104,6 +108,7 @@ const snapshot = () => {
     ...runtime.snapshot(),
     screenOff,
     restPhoto:restPhoto.status(),
+    roomsReset:bootRooms.notice(),
     powerHistory:{highestWatts:powerHistory.highestWatts??null,highestAt:powerHistory.highestAt??null,drop:powerDrop(powerHistory,host.value.power)},
     build: release,
     automaticDsp:publicAutomaticDsp(),
