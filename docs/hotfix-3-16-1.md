@@ -22,7 +22,8 @@ Publishing needs the owner's separate approval (see `AGENTS.md`).
 | Squeezelite (`player-export.py`) | When the visualizer override is written: removes `-C` (close-on-idle) so the ALSA device stays open; adds `-r 44100-96000` when a LouderRaspberry/tas58xx card is present and no `-r` is set; sets `TimeoutStopSec=5`. |
 | Player stop | `TimeoutStopSec=5` also via `power.conf` and a new `10-timeout.conf` drop-in. |
 | Automatic DSP | Waits 2 s for the track to settle before an unforced EQ change and checks that track and source are unchanged; ramp steps 600 ms instead of 180 ms. |
-| Visualizer PCM reader | Polls every 16 ms instead of 50 ms (about 60 fps). |
+| Visualizer PCM reader | Polls every 33 ms instead of 50 ms (about 30 fps). The merged branch used 16 ms (60 fps); the owner asked to keep 30 fps to save CPU. |
+| Visualizer drawing | The browser's meter and bar animation runs at most ~30 fps (`meterFrameMs`); it ran at the display rate while new data arrives only ten times a second. The default stays 32 bars, with no blur or shadow on the bars. |
 | Kiosk | Chromium starts with `--disable-gpu` against v3d ring-buffer hangs on the Pi 4. |
 | System (`install.sh`, `update-appliance.sh`) | Wi-Fi power saving off (NetworkManager and `iw`); systemd hardware watchdog (3 min runtime, 5 min reboot); apt-daily, man-db and e2scrub timers disabled; 0644 on installed units and drop-ins. |
 
@@ -32,7 +33,7 @@ The other agent's choices were kept as made. To check on the Pi:
 
 - **`--disable-gpu`:** Chromium then renders in software. The blurred backgrounds, the visualizer and animations cost more CPU. Watch for stutter on Now Playing and the rest views; Pi 3 low-power mode already avoids blur.
 - **Close-on-idle (`-C`):** removing it keeps the device open. Squeezelite's `-C <seconds>` closes the output after that many idle seconds; it does not keep it open. The owner's own `zzz-stability.conf` drop-in (with `-C 30`) sorts after `90-tunebox-analysis.conf` and still decides the player arguments. Neither update removes it.
-- **CPU:** the 16 ms PCM poll triples the reader's wake-ups. It is cheap per poll, but worth a glance in Developer → Status.
+- **CPU:** the PCM poll is now 33 ms and drawing is capped at 30 fps. Worth a glance in Developer → Status with `--disable-gpu`.
 
 ## Host-helper refresh
 
