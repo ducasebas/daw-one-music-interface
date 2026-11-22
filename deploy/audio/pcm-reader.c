@@ -58,7 +58,7 @@ int main(int argc,char **argv){
   /* No producer lock is ever acquired; blocking stdout cannot block playback. */
   if(!emit(status,rate,index,updated,first))break;
   if(once)break;
-  struct timespec delay={0,50000000};while(nanosleep(&delay,&delay)<0&&errno==EINTR&&!stopping){}
+  struct timespec delay={0,16000000};while(nanosleep(&delay,&delay)<0&&errno==EINTR&&!stopping){}
  }while(!stopping);
  return 0;
 }

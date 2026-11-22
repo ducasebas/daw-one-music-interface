@@ -7,16 +7,27 @@ class AudioExportTests(unittest.TestCase):
         argv=['/usr/bin/squeezelite','-n','DAW TuneBox v1','-m','02:00:00:00:00:01','-o','plughw:CARD=Headphones,DEV=0','-s','10.0.0.1:3483','-r','44100']
         result=module.export_arguments(argv,'02:00:00:00:00:01')
         self.assertEqual(result,argv+['-v']);self.assertEqual(module.export_arguments(result,'02:00:00:00:00:01'),result)
+    def test_strips_close_delay_and_bounds_louder_sample_rate(self):
+        argv=['/usr/bin/squeezelite','-m','02:00:00:00:00:01','-C','5','-o','plughw:CARD=LouderRaspberry,DEV=0']
+        result=module.export_arguments(argv,'02:00:00:00:00:01')
+        self.assertNotIn('-C',result);self.assertNotIn('5',result)
+        self.assertIn('-r',result);self.assertIn('44100-96000',result)
+        self.assertIn('-v',result)
+        # Existing -r is kept
+        with_rate=['/usr/bin/squeezelite','-m','02:00:00:00:00:01','-o','plughw:CARD=LouderRaspberry,DEV=0','-r','48000']
+        result_with_rate=module.export_arguments(with_rate,'02:00:00:00:00:01')
+        self.assertIn('48000',result_with_rate);self.assertNotIn('44100-96000',result_with_rate)
     def test_does_not_guess_identity_or_accept_dsd(self):
         for argv in [['/usr/bin/squeezelite'],['/usr/bin/squeezelite','-m','02:00:00:00:00:02'],['/usr/bin/squeezelite','-m','02:00:00:00:00:01','-D','dop']]:
             with self.assertRaises(ValueError):module.export_arguments(argv,'02:00:00:00:00:01')
     def test_systemd_special_characters_are_literal(self):
         value=module.systemd_override(['/usr/bin/squeezelite','-n','My $room %n "test"'])
         self.assertIn('ExecStart=:',value);self.assertIn('%%n',value);self.assertIn('$room',value);self.assertIn('\\"test\\"',value)
+        self.assertIn('TimeoutStopSec=5',value)
         with self.assertRaises(ValueError):module.systemd_override(['/usr/bin/squeezelite','bad\nExecStart=evil'])
 
     def fixture(self,root):
-        executable=root/'bin'/'squeezelite';executable.parent.mkdir();executable.write_text('fixture')
+        executable=(root/'bin'/'squeezelite').resolve();executable.parent.mkdir();executable.write_text('fixture')
         process=root/'proc'/'1234';process.mkdir(parents=True);(process/'exe').symlink_to(executable)
         argv=[str(executable),'-n','DAW TuneBox v1','-m','02:00:00:00:00:01','-s','10.0.0.1:3483','-o','plughw:CARD=Headphones,DEV=0','-d','slimproto=info','-r','44100']
         entry=[str(executable),argv,[],0,0,0,0,1234,0,0]

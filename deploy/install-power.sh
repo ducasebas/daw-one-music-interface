@@ -47,6 +47,7 @@ StandardError=journal
 [Install]
 WantedBy=multi-user.target
 UNIT
+chmod 644 /etc/systemd/system/daw-one-power.service
 for mode in request startup; do
   argument=manual
   [[ $mode != startup ]] || argument=startup
@@ -85,6 +86,7 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 UNIT
   fi
+  chmod 644 "/etc/systemd/system/daw-one-pd-$mode.service"
 done
 install -d -m 755 /etc/systemd/system/tunebox-player.service.d
 cat > /etc/systemd/system/tunebox-player.service.d/power.conf <<'UNIT'
@@ -94,12 +96,15 @@ After=daw-one-pd-startup.service
 [Service]
 SupplementaryGroups=dawsensors
 ExecStartPre=/usr/bin/python3 /usr/local/lib/daw-one-control/deploy/power/player_power_guard.py
+TimeoutStopSec=5
 UNIT
+chmod 644 /etc/systemd/system/tunebox-player.service.d/power.conf
 install -d -m 755 /etc/systemd/system/daw-one.service.d
 cat > /etc/systemd/system/daw-one.service.d/power.conf <<'UNIT'
 [Service]
 SupplementaryGroups=dawsensors
 UNIT
+chmod 644 /etc/systemd/system/daw-one.service.d/power.conf
 systemctl daemon-reload
 # Installing or saving this policy never renegotiates power or restarts a player.
 if python3 - <<'PY'

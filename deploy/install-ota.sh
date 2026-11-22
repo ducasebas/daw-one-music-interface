@@ -41,6 +41,7 @@ UMask=0077
 ProtectHome=yes
 PrivateTmp=yes
 UNIT
+chmod 644 /etc/systemd/system/daw-one-update.service
 cat > /etc/systemd/system/daw-one-update.timer <<'UNIT'
 [Unit]
 Description=Check TuneBox signed update channel
@@ -51,6 +52,7 @@ RandomizedDelaySec=60
 [Install]
 WantedBy=timers.target
 UNIT
+chmod 644 /etc/systemd/system/daw-one-update.timer
 bash "$repo/deploy/install-manager.sh"
 systemctl daemon-reload
 systemctl enable --now daw-one-update.timer

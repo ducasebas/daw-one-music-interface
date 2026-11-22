@@ -81,6 +81,25 @@ apt-get update
 apt-get install -y --no-install-recommends cage chromium curl alsa-utils libinput-tools wlr-randr seatd dbus-user-session libpam-systemd network-manager dnsmasq-base iw
 if [[ $target == pi4 || $target == pi3-experimental ]]; then
   python3 "$repo/deploy/chromium/configure.py"
+  install -d -m 755 /etc/NetworkManager/conf.d
+  cat > /etc/NetworkManager/conf.d/wifi-powersave-off.conf <<'CONF'
+[connection]
+wifi.powersave = 2
+CONF
+  chmod 644 /etc/NetworkManager/conf.d/wifi-powersave-off.conf
+  if command -v iw >/dev/null && iw dev wlan0 info &>/dev/null; then
+    iw dev wlan0 set power_save off || true
+  fi
+  install -d -m 755 /etc/systemd/system.conf.d
+  cat > /etc/systemd/system.conf.d/watchdog.conf <<'CONF'
+[Manager]
+RuntimeWatchdogSec=3min
+RebootWatchdogSec=5min
+CONF
+  chmod 644 /etc/systemd/system.conf.d/watchdog.conf
+  for timer in apt-daily.timer apt-daily-upgrade.timer man-db.timer e2scrub_all.timer; do
+    systemctl disable --now "$timer" 2>/dev/null || true
+  done
 fi
 getent group dawone >/dev/null || groupadd --system dawone
 id dawone >/dev/null 2>&1 || useradd --system --gid dawone --create-home --home-dir /var/lib/dawone --shell /usr/sbin/nologin dawone

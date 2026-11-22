@@ -40,6 +40,7 @@ NoNewPrivileges=yes
 ReadWritePaths=/var/lib/daw-one-measurement /var/lib/daw-one-manager
 RestrictAddressFamilies=AF_UNIX
 UNIT
+chmod 644 /etc/systemd/system/daw-one-measurement.service
 systemctl daemon-reload
 # The manager only gets write access to optional state directories that existed when it
 # started (ReadWritePaths=-/var/lib/daw-one-measurement). Restart it so a fresh install is writable (EROFS otherwise).

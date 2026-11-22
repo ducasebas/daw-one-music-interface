@@ -58,6 +58,13 @@ export class AutomaticDsp {
     const trackKey=context.trackKey||null,source=context.bluetooth?'bluetooth':context.selectedLocal?'local':'unselected';
     // Late/changed metadata is used on the next track, not halfway through a song.
     if(!force&&trackKey===this.state.trackKey&&source===this.state.source)return this.publicStatus();
+    if(!force){
+      await this.sleep(2000);
+      const settled=await this.context();
+      if(!settled.ready||!settled.bluetooth&&(!settled.playing||!settled.selectedLocal))return {...this.publicStatus(),deferred:true};
+      const settledTrackKey=settled.trackKey||null,settledSource=settled.bluetooth?'bluetooth':settled.selectedLocal?'local':'unselected';
+      if(settledTrackKey!==trackKey||settledSource!==source)return {...this.publicStatus(),deferred:true};
+    }
     const actual=await this.dsp.get();this.supported=actual.supported===true;
     if(!actual.supported||blockingFaults(actual.faults).length)return {...this.publicStatus(),deferred:true};
     if(!sameDspEq(actual.controls,this.state.lastApplied)){
@@ -70,7 +77,7 @@ export class AutomaticDsp {
       for(let i=0;i<frames.length;i++){
         const check=await this.context();if(!check.ready||check.bluetooth!==context.bluetooth||check.trackKey!==context.trackKey||check.selectedLocal!==context.selectedLocal)throw Error('Audio source changed during sound adjustment');
         current=await this.dsp.set(frames[i]);this.state.lastApplied=dspEqSnapshot(current.controls);this.save();
-        if(i<frames.length-1)await this.sleep(180);
+        if(i<frames.length-1)await this.sleep(600);
       }
       this.state={...this.state,trackKey,source,activeProfile:proposal.profile,reason:proposal.reason,error:null,lastAppliedAt:frames.length?this.now():this.state.lastAppliedAt||this.now()};this.save();
       return this.publicStatus();

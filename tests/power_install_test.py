@@ -73,6 +73,10 @@ with open(os.environ['POWER_INSTALL_CALLS'],'a') as stream: stream.write(json.du
             self.assertNotIn('ExecStartPre=/usr/bin/test', (root/f'etc/systemd/system/daw-one-{name}.service').read_text())
             self.assertIn('TimeoutStartSec=12', (root/f'etc/systemd/system/daw-one-{name}.service').read_text())
         self.assertTrue((root/'etc/systemd/system/tunebox-player.service.d/power.conf').is_file())
+        self.assertIn('TimeoutStopSec=5', (root/'etc/systemd/system/tunebox-player.service.d/power.conf').read_text())
+        self.assertEqual((root/'etc/systemd/system/tunebox-player.service.d/power.conf').stat().st_mode & 0o777, 0o644)
+        self.assertEqual((root/'etc/systemd/system/daw-one-power.service').stat().st_mode & 0o777, 0o644)
+        self.assertEqual((root/'etc/systemd/system/daw-one-pd-request.service').stat().st_mode & 0o777, 0o644)
 
     def test_legacy_wiring_and_existing_startup_choice_are_preserved_without_starting_a_request(self):
         legacy = dict(ina228=True, husb238=True, currentPathVerified=True, voltageSenseVerified=False)
