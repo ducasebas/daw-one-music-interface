@@ -224,6 +224,15 @@ export class MusicAssistantTransport {
     if (typeof queueId !== "string" || !queueId || typeof enabled !== "boolean") throw Error("Keep playing unavailable");
     return this.command("player_queues/dont_stop_the_music", { queue_id: queueId, dont_stop_the_music_enabled: enabled });
   }
+  /** Player settings (crossfade lives here). Read-only unless savePlayerConfig is called on request. */
+  async playerConfig(playerId) {
+    if (typeof playerId !== "string" || !playerId) throw Error("Player unavailable");
+    return this.command("config/players/get", { player_id: playerId });
+  }
+  async savePlayerConfig(playerId, values) {
+    if (typeof playerId !== "string" || !playerId || !values || typeof values !== "object") throw Error("Player unavailable");
+    return this.command("config/players/save", { player_id: playerId, values });
+  }
   /** Seek within the active Music Assistant queue, for players without native seek. */
   async queueSeek(queueId, position) {
     if (typeof queueId !== "string" || !queueId || !Number.isFinite(position) || position < 0) throw Error("Seek unavailable");

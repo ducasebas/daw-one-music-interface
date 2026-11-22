@@ -291,3 +291,10 @@
 .party-phones{display:grid;gap:8px;margin:6px 0}.party-phones h4{margin:0;font-size:17px}.party-phones ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .party-phones li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 6px 6px 14px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--divider,var(--border-color))}
 .party-phones li button{min-height:52px}
+/* 3.16.2 Keep playing: an infinity button next to mute in the footer. */
+.music2[data-panel="wall-16-10"] .m2-player:has(>.m2-keep-playing){grid-template-columns:minmax(200px,1fr) 284px 64px 64px 380px}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player:has(>.m2-keep-playing){grid-template-columns:304px 80px 80px minmax(0,1fr);gap:18px}
+.m2-player>.m2-keep-playing{width:64px;min-width:64px;height:64px;border-radius:16px;background:transparent;border-color:var(--divider,var(--skin-line));color:var(--muted);display:inline-flex;align-items:center;justify-content:center}
+.music2[data-panel="wall-16-10"][data-page="playing"] .m2-player>.m2-keep-playing{width:80px;min-width:80px;height:80px}
+.m2-player>.m2-keep-playing .tb-icon{width:34px;height:34px}
+.m2-player>.m2-keep-playing[aria-pressed=true]{color:var(--accent);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}

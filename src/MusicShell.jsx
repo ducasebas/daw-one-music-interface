@@ -247,6 +247,12 @@ export function MusicShell({
       setPending(false);setPendingAction(null);
     }
   }
+  // Keep playing (Music Assistant 'Don't stop the music'): on → the queue is topped up with similar music; off → the queue stays and the music can end.
+  function toggleKeepPlaying(){
+    const next=prefs.keepPlaying===false;
+    update('keepPlaying',next);
+    if(deviceUpdates?.info?.controlToken)saveSetupPreferences(deviceUpdates.info.controlToken,{prefs:{keepPlaying:next}}).catch(()=>{update('keepPlaying',!next);setMessage('Keep playing could not be changed. Try again.');});
+  }
   async function toggleVisualizer(){
     const next=prefs.visualizer==='off'?'spectrum':prefs.visualizer==='spectrum'?'meters':'off';
     update('artwork','cover');
@@ -817,6 +823,16 @@ export function MusicShell({
                     ? "SIMULATIE · GEEN AUDIO"
                     : ""))}
         </div>
+        {wall&&snapshot.mode==='music-assistant'&&<button
+          className="m2-keep-playing"
+          aria-label={tr("Keep playing")}
+          aria-pressed={prefs.keepPlaying!==false}
+          title={tr(prefs.keepPlaying!==false?"Keep playing is on: similar music is added when the queue ends.":"Keep playing is off: the music stops when the queue ends.")}
+          disabled={offline||!deviceUpdates?.info?.controlToken}
+          onClick={toggleKeepPlaying}
+        >
+          <Icon name="infinity" />
+        </button>}
         <button
           className="m2-mute"
           aria-label={tr(muted ? "Geluid aan" : "Dempen")}

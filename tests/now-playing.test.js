@@ -8,7 +8,7 @@ const live={mode:'music-assistant',musicAssistant:{connected:true,players:[{id:'
 
 test('widget choice is bounded, known and unique',()=>{
  assert.deepEqual(widgetSelection(['power','power','nope','clock','wifi','rooms','party']),['power','clock','wifi','rooms']);
- assert.equal(widgetSelection('x').length>0,true);assert.equal(widgetLimit,4);assert.equal(widgetCatalog.length,8);
+ assert.equal(widgetSelection('x').length>0,true);assert.equal(widgetLimit,4);assert.equal(widgetCatalog.length,10);
 });
 test('the backdrop uses only local artwork and turns static in low-power mode',()=>{
  assert.deepEqual(backdropSource({snapshot:live}).src,'/api/artwork/'+'a'.repeat(64));
@@ -55,4 +55,16 @@ test('3.16.1: the power tile keeps the last good reading for ten minutes and jud
  assert.equal(nowPlayingWidget('power',stale,{powerNow:t+61000,lastPower:reading}).detail,'Last reading {age} min ago');
  assert.equal(nowPlayingWidget('power',stale,{powerNow:t+601000,lastPower:reading}).available,false);
  assert.equal(nowPlayingWidget('power',stale,{powerNow:t+30000,lastPower:reading,offline:true}).available,false);
+});
+
+test('3.16.2: rest widgets are chosen separately (three), light and sunset tiles, demo values for every widget',async()=>{
+ const {restWidgetSelection,restWidgets,widgetDemo,widgetCatalog,nowPlayingWidget}=await import('../shared/now-playing.js');
+ assert.deepEqual(restWidgetSelection(undefined),['temperature','light','sunset']);
+ assert.deepEqual(restWidgetSelection(['clock','clock','sunset','power','wifi']),['clock','sunset','power']);
+ for(const id of widgetCatalog)assert.ok(widgetDemo[id]?.value,id);
+ const snap={mode:'music-assistant',hardwareTelemetry:{light:{status:'ok',value:118.6}},preferences:{clock:{timeZone:'Europe/Amsterdam'},prefs:{screen:{latitude:52.37,longitude:4.9}}}};
+ assert.equal(nowPlayingWidget('light',snap,{}).value,'119 lux');
+ const sun=nowPlayingWidget('sunset',snap,{now:Date.UTC(2026,10,22,12)});assert.match(sun.value,/^16:\d\d$/);
+ assert.equal(nowPlayingWidget('sunset',{preferences:{prefs:{screen:{}}}},{}).available,false);
+ assert.equal(restWidgets(['light'],snap,{}).length,1);
 });

@@ -1,7 +1,8 @@
 import {powerIsFresh} from './power-status.js';
+import {sunsetAt as sunsetTime} from './wall.js';
 /** Now Playing presentation for GUI 3.11 LIVELY: the artwork backdrop and the widget tiles.
  * Every value comes from a real reading; anything unknown says so instead of guessing. */
-export const widgetCatalog = ['clock','upnext','source','rooms','temperature','wifi','power','party'];
+export const widgetCatalog = ['clock','upnext','source','rooms','temperature','wifi','power','party','light','sunset'];
 export const widgetLimit = 4;
 export const widgetDefaults = ['clock','upnext','source'];
 export function widgetSelection(value) {
@@ -9,6 +10,16 @@ export function widgetSelection(value) {
   const seen = new Set();
   return value.filter((id) => widgetCatalog.includes(id) && !seen.has(id) && seen.add(id)).slice(0, widgetLimit);
 }
+/** Screen rest widgets (3.16.2): the same tiles, chosen separately; three fit the rest view. */
+export const restWidgetLimit = 3;
+export const restWidgetDefaults = ['temperature','light','sunset'];
+export function restWidgetSelection(value) {
+  if (!Array.isArray(value)) return [...restWidgetDefaults];
+  const seen = new Set();
+  return value.filter((id) => widgetCatalog.includes(id) && !seen.has(id) && seen.add(id)).slice(0, restWidgetLimit);
+}
+/** Example values for the widget editor when a real reading is not available, clearly marked as a demo. */
+export const widgetDemo = {clock:{value:'20:42',detail:'2026-11-22'},upnext:{value:'Midnight City',detail:'M83'},source:{value:'FLAC · 96 kHz · 24-bit',detail:'Music Assistant'},rooms:{value:'{count} rooms',params:{count:3},detail:'Living room'},temperature:{value:'21.5 °C',detail:'Case'},wifi:{value:'78%',detail:'Home'},power:{value:'{used} W in use',params:{used:'14.2',watts:60},detail:'{watts} W contract'},party:{value:'{count} phones',params:{count:2},detail:'Code on screen'},light:{value:'120 lux',detail:'Room light'},sunset:{value:'16:41',detail:'Today'}};
 export const backdropModes = ['art','off'];
 
 /** What the backdrop shows: the current artwork, a static fallback, or nothing. */
@@ -96,6 +107,21 @@ export function nowPlayingWidget(id, snapshot = {}, {now = Date.now(), powerNow 
       if (age >= 1) return {...base, available: true, value: used || contract, detail: 'Last reading {age} min ago', params: {age, watts: Number.isFinite(power.contractWatts) ? Math.round(power.contractWatts) : null, used: Number.isFinite(power.watts) ? power.watts.toFixed(1) : null}};
       return {...base, available: true, value: used || contract, detail: used && contract ? contract : used ? '' : 'Consumption needs verified wiring', params: {watts: Number.isFinite(power.contractWatts) ? Math.round(power.contractWatts) : null, used: Number.isFinite(power.watts) ? power.watts.toFixed(1) : null}};
     }
+    case 'light': {
+      const base = {id, icon: 'sun', label: 'Ambient light', action: 'sensors'};
+      if (offline) return unavailable(base, 'Offline');
+      const l = snapshot.hardwareTelemetry?.light;
+      return l?.status === 'ok' && Number.isFinite(l.value) ? {...base, available: true, value: `${Math.round(l.value)} lux`, detail: 'Room light'} : unavailable(base, 'No sensor reading');
+    }
+    case 'sunset': {
+      const base = {id, icon: 'sunset', label: 'Sunset', action: 'date'};
+      const screen = snapshot.preferences?.prefs?.screen || {}, clock = snapshot.preferences?.clock || {};
+      if (!Number.isFinite(screen.latitude) || !Number.isFinite(screen.longitude)) return unavailable(base, 'Choose your city in Date & time');
+      const at = sunsetTime(new Date(now), screen.latitude, screen.longitude);
+      if (!at) return unavailable(base, 'No sunset today');
+      const value = new Intl.DateTimeFormat('en-GB', {timeZone: clock.timeZone || 'Europe/Amsterdam', hour: '2-digit', minute: '2-digit', hour12: clock.hour12 === true}).format(at);
+      return {...base, available: true, value, detail: 'Today'};
+    }
     case 'party': {
       const base = {id, icon: 'phone', label: 'Party mode', action: 'remote'};
       const phones = Number.isInteger(snapshot.remoteControl?.phones) ? snapshot.remoteControl.phones : null;
@@ -105,6 +131,9 @@ export function nowPlayingWidget(id, snapshot = {}, {now = Date.now(), powerNow 
     default:
       return null;
   }
+}
+export function restWidgets(ids, snapshot, context) {
+  return restWidgetSelection(ids).map((id) => nowPlayingWidget(id, snapshot, context)).filter(Boolean);
 }
 export function nowPlayingWidgets(ids, snapshot, context) {
   return widgetSelection(ids).map((id) => nowPlayingWidget(id, snapshot, context)).filter(Boolean);
