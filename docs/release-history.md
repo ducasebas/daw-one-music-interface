@@ -2,7 +2,23 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.16.2 PLAY — approved
+## GUI 3.16.2 PLAY — published
+
+Merged via PR #23 as `4ef3d3adc06d6f675a6cd7522c177db5df614e07` on 22 November 2026 after all six PR CI jobs passed on head `9bc8d46`. Three CI failures on earlier heads were fixed within scope:
+- the compact header's menu icons went back to 32 px;
+- the Pi 3 and GUI2 tests now follow `videoConfigured`, because the Video Artwork button is hidden without a video.
+
+Verify on `main` (run 45065557290) passed. Publish signed preview (run 45066292410) passed, including its channel check.
+
+Verified independently from this session:
+- the signature verifies with the unchanged project key;
+- the manifest names commit `4ef3d3a`, release `2026.11.22-play.1` and label "GUI 3.16.2 · PLAY", and the archive hash matches;
+- `release-bundle verify` confirms 418 files with cache v69, including the SSH manager module;
+- `checkChannel` selects this release.
+
+Pi installation, the host refresh and the physical checks were not observed: drag and drop on the touch panel, hold to wake, crossfade on the owner's Music Assistant, and leaving multiroom after a reboot.
+
+### Approval
 
 The owner approved on 22 November 2026 with “Ja pushy maar”, after the summary of the local candidate. The scope is in [update-3-16-2.md](update-3-16-2.md): widget editor, overlay header, hold to wake, Keep playing button, crossfade, SSH switch, leaving multiroom after a reboot, the Pi throttle card and the small fixes. The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full CI passes. It authorizes no live hardware experiment or physical confirmation.
 
