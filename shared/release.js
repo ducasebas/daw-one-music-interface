@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.21-hotfix.1",
-  label: "GUI 3.15.3 · HOTFIX",
+  id: "2026.11.22-rest.1",
+  label: "GUI 3.16.0 · REST",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Power setup pauses this TuneBox itself and explains clearly when it cannot start. Picture & meter sync is no longer refused when the Pi delivers the recording in bursts, and it says clearly when the microphone clips. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.",
+  notes: "Choose your city for local time and sunset. Skipping keeps the cover with a loading ring. The screen can switch fully off after a while to protect it. Rest views get previews and backgrounds: blurred cover, gradient, photos or your own from the phone. The menu bar slides away on Now Playing and widgets always fit. Developer → Values shows sync and power. Full screen-off needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

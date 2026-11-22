@@ -2239,7 +2239,6 @@
   "Pause music on this TuneBox before power setup": "Pause music on this TuneBox before power setup",
   "The microphone clipped. Move it further from the speaker or lower the volume a little, then repeat.": "The microphone clipped. Move it further from the speaker or lower the volume a little, then repeat.",
   "The microphone recording stalled. Close other busy tasks on TuneBox and repeat.": "The microphone recording stalled. Close other busy tasks on TuneBox and repeat.",
-  "Power setup pauses this TuneBox itself and explains clearly when it cannot start. Picture & meter sync is no longer refused when the Pi delivers the recording in bursts, and it says clearly when the microphone clips. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.": "Power setup pauses this TuneBox itself and explains clearly when it cannot start. Picture & meter sync is no longer refused when the Pi delivers the recording in bursts, and it says clearly when the microphone clips. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once on the Pi.",
   "Search your city": "Search your city",
   "e.g. Amsterdam": "e.g. Amsterdam",
   "Used for local time, daylight saving and sunrise/sunset. It stays on TuneBox.": "Used for local time, daylight saving and sunrise/sunset. It stays on TuneBox.",
@@ -2339,5 +2338,6 @@
   "Not supported": "Not supported",
   "Busy": "Busy",
   "Highest 20 V offer": "Highest 20 V offer",
-  "Verified 20 V profile": "Verified 20 V profile"
+  "Verified 20 V profile": "Verified 20 V profile",
+  "Choose your city for local time and sunset. Skipping keeps the cover with a loading ring. The screen can switch fully off after a while to protect it. Rest views get previews and backgrounds: blurred cover, gradient, photos or your own from the phone. The menu bar slides away on Now Playing and widgets always fit. Developer → Values shows sync and power. Full screen-off needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.": "Choose your city for local time and sunset. Skipping keeps the cover with a loading ring. The screen can switch fully off after a while to protect it. Rest views get previews and backgrounds: blurred cover, gradient, photos or your own from the phone. The menu bar slides away on Now Playing and widgets always fit. Developer → Values shows sync and power. Full screen-off needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once."
 }
