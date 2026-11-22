@@ -105,10 +105,10 @@ export function MusicShell({
     setWaking(false);
   };
   // A touch panel can report a stray touch or bounce right after the tap that started rest; ignore input briefly.
-  const restStartedAt=useRef(-Infinity);
+  const restStartedAt=useRef(-Infinity),[restReady,setRestReady]=useState(true);
   const restArmed=()=>performance.now()-restStartedAt.current>=restArmMs;
   const sleep = async () => {
-    restStartedAt.current=performance.now();
+    restStartedAt.current=performance.now();setRestReady(false);setTimeout(()=>setRestReady(true),restArmMs);
     window.dispatchEvent(new Event("tunebox-screen-rest"));
     setSleepPreview(true);
     if(!offline&&await send({type:'display-timeout'})===false)setSleepPreview(false);
@@ -312,7 +312,7 @@ export function MusicShell({
     >
       <GlobalUpdateProgress />
       {wall&&(page==='settings'||page==='playing'&&!bluetoothActive&&!video)&&<NowPlayingBackdrop snapshot={snapshot} prefs={prefs} offline={offline}/>}
-      {(sleeping||waking) && <SleepSurface prefs={prefs} snapshot={snapshot} offline={offline} wake={wake} waking={waking} />}
+      {(sleeping||waking) && <SleepSurface prefs={prefs} snapshot={snapshot} offline={offline} wake={wake} waking={waking} armed={restReady} />}
 
       <StartupScreen
         mode={device.mode}
