@@ -73,10 +73,12 @@ test("GUI2 all sections fit the native screen, use shared settings and show faul
   const state = await (await page.request.get("/api/state")).json();
   expect(state.device.amplifierEnabled).toBe(false);
   await page.getByRole("button", { name: "Open Now Playing" }).click();
-  await page
-    .getByRole("button", { name: "Video Artwork", exact: true })
-    .click();
-  await expect(page.getByRole('region',{name:'Video artwork',exact:true})).toBeVisible();
+  // 3.16.2: the Video Artwork button exists only when a video is set up (owner request); then it opens the video.
+  const videoButton = page.getByRole("button", { name: "Video Artwork", exact: true });
+  if (state.videoConfigured) {
+    await videoButton.click();
+    await expect(page.getByRole('region',{name:'Video artwork',exact:true})).toBeVisible();
+  } else await expect(videoButton).toHaveCount(0);
 });
 
 test("GUI2 album playback returns to the same search context", async ({
