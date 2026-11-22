@@ -1,5 +1,6 @@
 import {settingsAttention} from '../shared/interface.js';
 import {LocalAudio} from './local-audio.js';
+import {screenOffDue} from '../shared/screen-off.js';
 import {SyncProfiles,synchronizationContext,playbackRoute} from './sync-profiles.js';
 import {AutomaticSound} from './automatic-sound.js';
 import {AudioAnalysis} from "./audio-analysis.js";
@@ -91,6 +92,7 @@ const snapshot = () => {
   let roomMeasurement=false;try{const value=JSON.parse(readFileSync('/var/lib/daw-one-measurement/status.json','utf8'));roomMeasurement=['queued','measuring-left','measuring-right','analysing'].includes(value.phase)&&Number.isFinite(value.observedAt)&&Math.abs(Date.now()-value.observedAt)<90000;}catch{}
   const state = {
     ...runtime.snapshot(),
+    screenOff,
     build: release,
     automaticDsp:publicAutomaticDsp(),
     localAudio:localAudio.get(),
@@ -149,8 +151,11 @@ const snapshot = () => {
 };
 const streamWriter = snapshotWriter();
 const remoteWriter=snapshotWriter(),remoteClients=new Set();let lastRemoteView='';
-const publishDisplay=()=>{try{const path='/run/daw-one-display/activity.json';writeFileSync(path+'.tmp',JSON.stringify({awake:runtime.device.displayAwake,mode:runtime.device.mode,observedAt:Date.now()})+'\n',{mode:0o660});renameSync(path+'.tmp',path);}catch{}};
+let screenOff=false;
+const updateScreenOff=(now=Date.now())=>{const next=screenOffDue({display:displayConfiguration,displayAwake:runtime.device.displayAwake,idleMs:now-runtime.lastActivity,playing:(music?.playback||runtime.playback)?.playing===true||bluetoothState().active});if(next===screenOff)return false;screenOff=next;runtime.record(now,next?'screen-off':'screen-on',runtime.device.mode,next?'Screen preservation: backlight off after inactivity; music unchanged':'Screen preservation ended');return true;};
+const publishDisplay=()=>{try{const path='/run/daw-one-display/activity.json';writeFileSync(path+'.tmp',JSON.stringify({awake:runtime.device.displayAwake,screenOff,mode:runtime.device.mode,observedAt:Date.now()})+'\n',{mode:0o660});renameSync(path+'.tmp',path);}catch{}};
 const broadcast = () => {
+  updateScreenOff();
   publishDisplay();
   const body = `data: ${JSON.stringify(snapshot())}\n\n`;
   for (const client of clients) streamWriter.write(client, body);
@@ -307,7 +312,7 @@ app.post("/api/device",async(q,r)=>{
  }catch(error){debug.record('device','rejected');if(q.body.command==='hotspot-start'&&phoneServer){phoneServer.close();phoneServer=null;await manage({command:'hotspot-stop',args:{}}).catch(()=>{});}r.status(409).json({error:String(error.message).slice(0,180),...(error.code==='update-group-confirmation'?{code:error.code,rooms:error.rooms,roomsRevision:error.roomsRevision}:{})});}
 });
 app.get('/api/bluetooth',(_q,r)=>r.set('Cache-Control','no-store').json(bluetoothState()));
-app.get("/api/audio",(q,r)=>{if(bluetoothState().active)return r.set('Cache-Control','no-store').json({enabled:false,configured:audioAnalysis.configured,status:'source-unavailable',source:'bluetooth',simulated:false,measurement:null});r.set("Cache-Control","no-store").json(audioAnalysis.get({watch:q.query.watch==="1",awake:(runtime.device.displayAwake||['vu','bars','spectrum'].includes(preferences.get().prefs.screen.mode))&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId}));});
+app.get("/api/audio",(q,r)=>{if(bluetoothState().active)return r.set('Cache-Control','no-store').json({enabled:false,configured:audioAnalysis.configured,status:'source-unavailable',source:'bluetooth',simulated:false,measurement:null});r.set("Cache-Control","no-store").json(audioAnalysis.get({watch:q.query.watch==="1",awake:!screenOff&&(runtime.device.displayAwake||['vu','bars','spectrum'].includes(preferences.get().prefs.screen.mode))&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId}));});
 app.post("/api/audio/settings",(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:"Reload TuneBox before changing measurement settings"});
  try{if(!q.body||Object.keys(q.body).length!==1||!Object.hasOwn(q.body,"enabled"))throw Error("Only enabled can be changed");audioAnalysis.setEnabled(q.body.enabled);preferences.save(preferences.get().revision,{audioEnabled:q.body.enabled});r.json(audioAnalysis.get());}catch(error){r.status(400).json({error:error.message});}
@@ -690,6 +695,7 @@ const clock = setInterval(() => {
   if (runtime.sensors.heartbeatEnabled) runtime.sensors.lastHeartbeat = now;
   const before = runtime.device;
   presence.tick(preferences.get(),runtime,now);
+  const screenChanged=updateScreenOff(now);
   publishDisplay();
   const savedTimeout=runtime.displayTimeoutMs;
   if(presence.value.status==='ok')runtime.displayTimeoutMs=Infinity;
@@ -697,7 +703,7 @@ const clock = setInterval(() => {
   runtime.displayTimeoutMs=savedTimeout;
   if (
     before.mode !== runtime.device.mode ||
-    before.displayAwake !== runtime.device.displayAwake ||
+    before.displayAwake !== runtime.device.displayAwake || screenChanged ||
     (!music && runtime.playback.playing)
   )
     broadcast();

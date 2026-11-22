@@ -2254,5 +2254,14 @@
   "Sunset follows the city chosen in Date & time.": "Zonsondergang volgt de woonplaats bij Datum & tijd.",
   "Choose your city in Date & time to use sunset.": "Kies je woonplaats bij Datum & tijd om zonsondergang te gebruiken.",
   "Advanced: coordinates": "Geavanceerd: coördinaten",
-  "Loading the next track…": "Volgend nummer laden…"
+  "Loading the next track…": "Volgend nummer laden…",
+  "Turn the screen off": "Scherm uitzetten",
+  "{time} after screen rest": "{time} na schermrust",
+  "15 minutes": "15 minuten",
+  "30 minutes": "30 minuten",
+  "1 hour": "1 uur",
+  "2 hours": "2 uur",
+  "4 hours": "4 uur",
+  "Also while music plays": "Ook als er muziek speelt",
+  "Screen preservation: a display that stays lit for hours wears faster and can keep a faint image. After this time without a touch the backlight turns off completely. Music keeps playing, and a touch wakes the screen.": "Schermbehoud: een scherm dat urenlang brandt slijt sneller en kan een vaag beeld vasthouden. Na deze tijd zonder aanraking gaat de verlichting helemaal uit. De muziek speelt door en één tik wekt het scherm."
 }

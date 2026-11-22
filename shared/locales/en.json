@@ -2254,5 +2254,14 @@
   "Sunset follows the city chosen in Date & time.": "Sunset follows the city chosen in Date & time.",
   "Choose your city in Date & time to use sunset.": "Choose your city in Date & time to use sunset.",
   "Advanced: coordinates": "Advanced: coordinates",
-  "Loading the next track…": "Loading the next track…"
+  "Loading the next track…": "Loading the next track…",
+  "Turn the screen off": "Turn the screen off",
+  "{time} after screen rest": "{time} after screen rest",
+  "15 minutes": "15 minutes",
+  "30 minutes": "30 minutes",
+  "1 hour": "1 hour",
+  "2 hours": "2 hours",
+  "4 hours": "4 hours",
+  "Also while music plays": "Also while music plays",
+  "Screen preservation: a display that stays lit for hours wears faster and can keep a faint image. After this time without a touch the backlight turns off completely. Music keeps playing, and a touch wakes the screen.": "Screen preservation: a display that stays lit for hours wears faster and can keep a faint image. After this time without a touch the backlight turns off completely. Music keeps playing, and a touch wakes the screen."
 }

@@ -30,13 +30,14 @@ export function SleepSurface({prefs,snapshot,offline,wake,waking=false}) {
  const temperature=useTemperatureDisplay(snapshot.hardwareTelemetry?.temperature,offline);
  const clock=snapshot.preferences?.clock||{};
  const clockOptions={timeZone:clock.timeZone||'Europe/Amsterdam',hour12:clock.hour12===true};
- const meters=['vu','bars','spectrum'].includes(screen.mode);
+ const off=snapshot.screenOff===true;
+ const meters=!off&&['vu','bars','spectrum'].includes(screen.mode);
  const time=now.toLocaleTimeString(locale,{...clockOptions,hour:'2-digit',minute:'2-digit'});
  const sunsetText=sunset?sunset.toLocaleTimeString(locale,{...clockOptions,hour:'2-digit',minute:'2-digit'}):'Location not set';
  const reading=(metric,digits,unit)=>!offline&&metric?.status==='ok'&&Number.isFinite(metric.value)?metric.value.toFixed(digits)+' '+unit:'Niet beschikbaar';
- return <button ref={root} className="sleep-surface" data-mode={screen.mode} data-waking={waking} aria-label={tr("Scherm wekken")} aria-busy={waking} onClick={wake}>
+ return <button ref={root} className="sleep-surface" data-mode={off?'black':screen.mode} data-screen-off={off} data-waking={waking} aria-label={tr("Scherm wekken")} aria-busy={waking} onClick={wake}>
  {snapshot.device.faults?.length>0&&!offline&&<span role="alert" className="sleep-fault"><Icon name="alert" size={28}/>{tr("Hardware alert · ")}{tr(snapshot.device.faults.join(', '))}</span>}
- {screen.mode!=='black'&&<>
+ {screen.mode!=='black'&&!off&&<>
  {meters&&<span className="sleep-meters" style={{'--meter-left':screen.leftColor||'var(--accent)','--meter-right':screen.rightColor||'var(--accent)'}}><AudioVisualizer timing={prefs.timing} timeline={snapshot.playback} mode={screen.mode} offline={offline} awake paused={!snapshot.playback?.playing} reference={screen.meterReference||-18}/></span>}
  {screen.mode!=='playing'&&!meters&&<><strong className="sleep-clock">{tr(time)}</strong>{screen.showDate!==false&&<span className="sleep-date">{tr(now.toLocaleDateString(locale,{...clockOptions,weekday:'long',day:'numeric',month:'long'}))}</span>}</>}
  {screen.mode==='widgets'&&<div className="sleep-widgets"><span><Icon name="temperature" size={30}/>{tr("Temperatuur")}<strong>{tr(reading({...snapshot.hardwareTelemetry?.temperature,value:temperature},1,'°C'))}</strong></span><span><Icon name="sun" size={30}/>{tr("Omgevingslicht")}<strong>{tr(reading(snapshot.hardwareTelemetry?.light,0,'lux'))}</strong></span><span><Icon name="sunset" size={30}/>{tr("Zonsondergang")}<strong>{tr(sunsetText)}</strong></span></div>}

@@ -69,7 +69,7 @@ def loop():
         settings = preferences.get('display', read_json('/var/lib/daw-one-state/display.json'))
         activity = read_json('/run/daw-one-display/activity.json')
         fresh_activity = isinstance(activity.get('observedAt'),(int,float)) and -1000 <= now*1000-activity['observedAt'] <= 5000
-        screen_off = fresh_activity and activity.get('awake') is False and preferences.get('prefs',{}).get('screen',{}).get('mode') == 'black'
+        screen_off = fresh_activity and activity.get('awake') is False and (activity.get('screenOff') is True or preferences.get('prefs',{}).get('screen',{}).get('mode') == 'black')
         target_level, mode, lux = target(settings,read_json('/run/daw-one-sensors/readings.json'),now)
         ready = read_json('/run/daw-one-display/ready.json')
         # A local kiosk handshake reveals the decoded first frame. Fail open after
