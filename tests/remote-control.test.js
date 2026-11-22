@@ -123,6 +123,16 @@ test('HTTP: the remote listener pairs from the wall QR code and only reaches pla
   assert.equal((await call(port,'/api/remote/invite',{method:'POST',headers:wall,body:{}})).status,404);
   const second=await call(remotePort,'/api/remote/pair',{method:'POST',body:{token:invite.json.url.split('#pair=')[1],name:'Friend'}});assert.equal(second.status,200);
   const friend=(await call(port,'/api/remote/phones')).json.phones.find(p=>p.name==='Friend');assert.ok(friend);assert.equal((await call(port,'/api/remote/forget',{method:'POST',headers:wall,body:{id:friend.id}})).status,200);
+  // GUI 3.16: a paired phone may send a screen-rest photo; it waits until TuneBox itself accepts it, and metadata is stripped.
+  const photo=Buffer.concat([Buffer.from([0xff,0xd8,0xff,0xe1,0x00,0x08]),Buffer.from('Exif\0\0'),Buffer.from([0xff,0xdb,0x00,0x04,1,2,0xff,0xda,0x00,0x02]),Buffer.alloc(400,7),Buffer.from([0xff,0xd9])]);
+  const raw=(path,headers)=>new Promise((resolve,reject)=>{const q=request({host:'127.0.0.1',port:remotePort,path,method:'POST',headers:{'Content-Type':'image/jpeg','Content-Length':photo.length,...headers}},r=>{let text='';r.on('data',c=>text+=c);r.on('end',()=>resolve({status:r.statusCode,json:JSON.parse(text||'null')}));});q.on('error',reject);q.end(photo);});
+  assert.equal((await raw('/api/remote/rest-photo',{})).status,401);
+  const sent=await raw('/api/remote/rest-photo',phone);assert.equal(sent.status,200);assert.equal(sent.json.status.pending.from,'Phone');assert.equal(sent.json.status.current,null);
+  assert.equal((await call(remotePort,'/api/rest-photo',{method:'POST',headers:phone,body:{action:'accept'}})).status,403);
+  assert.equal((await call(port,'/api/rest-photo',{method:'POST',body:{action:'accept'}})).status,403);
+  const accepted=await call(port,'/api/rest-photo',{method:'POST',headers:wall,body:{action:'accept'}});assert.equal(accepted.status,200);assert.equal(accepted.json.current.revision,1);assert.equal(accepted.json.pending,null);
+  const stored=readFileSync(join(dir,'rest-photo.jpg'));assert.equal(stored.includes(Buffer.from('Exif')),false);assert.equal(stored.length,photo.length-10);
+  assert.equal((await call(port,'/api/rest-photo/current')).status,200);
   const state=await call(remotePort,'/api/remote/state',{headers:phone});assert.equal(state.status,200);assert.equal(state.json.playback.volume,32);
   for(const path of ['/api/state','/api/updates','/api/preferences','/api/system','/api/network','/api/security/status','/api/remote/phones'])assert.equal((await call(remotePort,path,{headers:phone})).status,403,path);
   for(const [path,body] of [['/api/event',{type:'pause'}],['/api/preferences',{revision:0,patch:{}}],['/api/device',{command:'wifi'}],['/api/reset',{}],['/api/remote/forget',{all:true}]])assert.equal((await call(remotePort,path,{method:'POST',headers:phone,body})).status,403,path);

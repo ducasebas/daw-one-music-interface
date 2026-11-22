@@ -92,7 +92,7 @@ export function remoteView(snapshot,{notifications=[]}={}){
    next:remoteNext(p,bluetooth),quality:bluetooth?null:sourceQuality(p.sourceFormat)},
   style:remoteStyle(snapshot),
   // GUI 3.15: TuneBox notifications (update offer, Music Assistant offline, hardware) reach paired phones too.
-  notifications:(Array.isArray(notifications)?notifications:[]).slice(0,6).filter(n=>typeof n?.id==='string'&&typeof n.title==='string').map(n=>({id:n.id.slice(0,40),title:n.title.slice(0,80),detail:typeof n.detail==='string'?n.detail.slice(0,160):''})),
+  notifications:(Array.isArray(notifications)?notifications:[]).slice(0,6).filter(n=>typeof n?.id==='string'&&typeof n.title==='string').map(n=>({id:n.id.slice(0,40),title:n.title.slice(0,80),detail:typeof n.detail==='string'?n.detail.replace(/\{(\w+)\}/g,(all,k)=>n.params&&Object.hasOwn(n.params,k)?String(n.params[k]):all).slice(0,160):''})),
   volumeLimit:bluetooth&&Number.isInteger(snapshot.bluetooth.limit)?snapshot.bluetooth.limit:controlVolumeLimit(snapshot||{}),
  };
 }

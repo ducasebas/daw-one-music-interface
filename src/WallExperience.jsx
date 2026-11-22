@@ -1,7 +1,9 @@
-import {tr} from "../shared/i18n.js";
+import {tr,translateFormat} from "../shared/i18n.js";
 import React,{useEffect,useRef,useState} from 'react';
 import {Icon} from './Icon.jsx';
 import {sleepModes,screenSettings,sunsetAt,wallNotifications} from '../shared/wall.js';
+import {restBackdrop,RestBackdrop} from './RestBackdrop.jsx';
+import {RestPicker} from './RestPicker.jsx';
 import {trackUpdate,loadUpdateMemory,saveUpdateMemory} from '../shared/update-notice.js';
 import {settingsAttention} from '../shared/interface.js';
 import {useTemperatureDisplay} from './useTemperatureDisplay.js';
@@ -9,12 +11,14 @@ import {getLanguage} from '../shared/i18n.js';
 import {AudioVisualizer} from './AudioVisualizer.jsx';
 import {PowerOffButton} from './PowerControls.jsx';
 const labels={clock:'Klok & datum',widgets:'Widgets',sunset:'Zonsondergang',glow:'Glow',playing:'Now playing',black:'Black · backlight off'};
-export function ScreenSettings({prefs,update}) {
+export function ScreenSettings({prefs,update,snapshot}) {
  const screen=screenSettings(prefs.screen);
  const change=(key,value)=>update('screen',{...screen,[key]:value});
- return <div className="screen-settings control-grid"><label>{tr("Schermrust")}<select aria-label={tr("Schermrust weergave")} value={screen.mode} onChange={e=>change('mode',e.target.value)}>{sleepModes.map(id=><option key={id} value={id}>{tr(labels[id])}</option>)}</select></label>
+ return <div className="screen-settings control-grid"><RestPicker screen={prefs.screen} snapshot={snapshot} onChange={next=>update('screen',next)}/>
+ <p className="screen-place">{tr(Number.isFinite(screen.latitude)?'Sunset follows the city chosen in Date & time.':'Choose your city in Date & time to use sunset.')}</p>
+ <details className="screen-coordinates"><summary>{tr('Advanced: coordinates')}</summary>
  <label>{tr("Breedtegraad")}<input aria-label={tr("Breedtegraad")} type="number" min="-90" max="90" step="any" value={screen.latitude??''} onChange={e=>change('latitude',e.target.value===''?null:Number(e.target.value))}/></label>
- <label>{tr("Lengtegraad")}<input aria-label={tr("Lengtegraad")} type="number" min="-180" max="180" step="any" value={screen.longitude??''} onChange={e=>change('longitude',e.target.value===''?null:Number(e.target.value))}/></label>
+ <label>{tr("Lengtegraad")}<input aria-label={tr("Lengtegraad")} type="number" min="-180" max="180" step="any" value={screen.longitude??''} onChange={e=>change('longitude',e.target.value===''?null:Number(e.target.value))}/></label></details>
  <p>{tr("Screen rest keeps your music playing. The first touch wakes the display without pressing a playback control.")}</p>
  <p>{tr("Zonsondergang wordt lokaal berekend voor deze coördinaten, bij benadering. Geen locatie ingesteld betekent geen berekende zonsondergang. Coördinaten blijven in deze browser.")}</p>
  </div>;
@@ -28,13 +32,16 @@ export function SleepSurface({prefs,snapshot,offline,wake,waking=false}) {
  const temperature=useTemperatureDisplay(snapshot.hardwareTelemetry?.temperature,offline);
  const clock=snapshot.preferences?.clock||{};
  const clockOptions={timeZone:clock.timeZone||'Europe/Amsterdam',hour12:clock.hour12===true};
- const meters=['vu','bars','spectrum'].includes(screen.mode);
+ const off=snapshot.screenOff===true;
+ const backdrop=off?null:restBackdrop(screen,{artwork:track?.artwork,restPhoto:snapshot.restPhoto});
+ const meters=!off&&['vu','bars','spectrum'].includes(screen.mode);
  const time=now.toLocaleTimeString(locale,{...clockOptions,hour:'2-digit',minute:'2-digit'});
  const sunsetText=sunset?sunset.toLocaleTimeString(locale,{...clockOptions,hour:'2-digit',minute:'2-digit'}):'Location not set';
  const reading=(metric,digits,unit)=>!offline&&metric?.status==='ok'&&Number.isFinite(metric.value)?metric.value.toFixed(digits)+' '+unit:'Niet beschikbaar';
- return <button ref={root} className="sleep-surface" data-mode={screen.mode} data-waking={waking} aria-label={tr("Scherm wekken")} aria-busy={waking} onClick={wake}>
+ return <button ref={root} className="sleep-surface" data-mode={off?'black':screen.mode} data-screen-off={off} data-backdrop={backdrop?.kind||'none'} data-waking={waking} aria-label={tr("Scherm wekken")} aria-busy={waking} onClick={wake}>
  {snapshot.device.faults?.length>0&&!offline&&<span role="alert" className="sleep-fault"><Icon name="alert" size={28}/>{tr("Hardware alert · ")}{tr(snapshot.device.faults.join(', '))}</span>}
- {screen.mode!=='black'&&<>
+ <RestBackdrop backdrop={backdrop}/>
+ {screen.mode!=='black'&&!off&&<>
  {meters&&<span className="sleep-meters" style={{'--meter-left':screen.leftColor||'var(--accent)','--meter-right':screen.rightColor||'var(--accent)'}}><AudioVisualizer timing={prefs.timing} timeline={snapshot.playback} mode={screen.mode} offline={offline} awake paused={!snapshot.playback?.playing} reference={screen.meterReference||-18}/></span>}
  {screen.mode!=='playing'&&!meters&&<><strong className="sleep-clock">{tr(time)}</strong>{screen.showDate!==false&&<span className="sleep-date">{tr(now.toLocaleDateString(locale,{...clockOptions,weekday:'long',day:'numeric',month:'long'}))}</span>}</>}
  {screen.mode==='widgets'&&<div className="sleep-widgets"><span><Icon name="temperature" size={30}/>{tr("Temperatuur")}<strong>{tr(reading({...snapshot.hardwareTelemetry?.temperature,value:temperature},1,'°C'))}</strong></span><span><Icon name="sun" size={30}/>{tr("Omgevingslicht")}<strong>{tr(reading(snapshot.hardwareTelemetry?.light,0,'lux'))}</strong></span><span><Icon name="sunset" size={30}/>{tr("Zonsondergang")}<strong>{tr(sunsetText)}</strong></span></div>}
@@ -58,7 +65,7 @@ export function WallControls({snapshot,offline,updates,security,onSleep,onNaviga
  <dialog ref={dialog} className="wall-notifications" aria-label={tr("Meldingenpaneel")} onClose={()=>trigger.current?.focus()} onClick={e=>{if(e.target===e.currentTarget)dialog.current.close();}}>
  <div className="wall-tray"><header><h2>{tr("Meldingen")}</h2><button aria-label={tr("Meldingen sluiten")} onClick={()=>dialog.current.close()}><Icon name="close"/></button></header>
  <nav aria-label={tr("Meldingcategorieën")}>{notifications.map((n,i)=><button key={n.id} aria-label={tr(n.title)} aria-pressed={page===i} onClick={()=>setPage(i)}><Icon name={n.icon} size={25}/>{n.attention&&<i className="attention-dot"/>}</button>)}</nav>
- <article data-attention={item.attention||false}><Icon name={item.icon} size={36}/><h3>{tr(item.title)}</h3>{item.simulated&&<small>{tr("GESIMULEERDE HARDWARESTATUS")}</small>}<p>{tr(item.detail)}</p>
+ <article data-attention={item.attention||false}><Icon name={item.icon} size={36}/><h3>{tr(item.title)}</h3>{item.simulated&&<small>{tr("GESIMULEERDE HARDWARESTATUS")}</small>}<p>{item.params?translateFormat(item.detail,item.params):tr(item.detail)}</p>
  {item.label&&<p>{tr(item.label)}</p>}{item.action&&<button onClick={()=>navigate(item.action)}>{tr(item.id==='update'?'Open Updates':'Open ')}{item.id==='update'?null:tr(item.title)}</button>}{item.dismissible&&<button onClick={dismiss}>{tr('Dismiss')}</button>}
  {item.id==='status'&&<><p>{tr("Versterker: ")}{tr(snapshot.device?.verified?'simulatie geverifieerd':'niet geverifieerd')}{tr(" · fouten: ")}{tr(snapshot.device?.faults?.length||0)}</p><button onClick={()=>navigate('screen')}>{tr("Schermrust instellen")}</button></>}
  {item.id==='tutorial'&&<button onClick={()=>navigate('playing')}>{tr("Open Nu spelen")}</button>}

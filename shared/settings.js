@@ -37,6 +37,8 @@ export function settings(input = {}) {
     keepPlaying: input.keepPlaying !== false,
     sound: soundSettings(input.sound),
     widgets: widgetSelection(input.widgets),
+    widgetPlacement: input.widgetPlacement === 'top' ? 'top' : 'bottom',
+    headerAutoHide: input.headerAutoHide !== false,
     visualizer: ["meters","spectrum"].includes(input.visualizer)?input.visualizer:"off",
     visualizerBands: input.visualizerBands===16?16:32,
     volumeControl: input.volumeControl === "circular" ? "circular" : "linear",

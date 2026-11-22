@@ -3,11 +3,16 @@ import {release,releaseTitle} from './release.js';
 import {powerStatus} from './power-status.js';
 /** Wall display presentation contracts. Never grant actuator permissions. */
 export const sleepModes = ['clock','widgets','sunset','glow','playing','black','vu','spectrum','bars'];
+/** Backgrounds for the dark rest views (clock, widgets, sunset, now playing). Bundled photos are the owner's own, copyright free. */
+export const restBackgrounds = ['black','art','gradient','fjord','lake','pines','own'];
+export const restPhotos = Object.freeze({fjord:'/rest/fjord.jpg',lake:'/rest/lake.jpg',pines:'/rest/pines.jpg'});
+export const backgroundModes = ['clock','widgets','sunset','playing'];
 export function screenSettings(value = {}) {
   value = value && typeof value === 'object' ? value : {};
   const extended=value.extended===true;
   return {
     mode: sleepModes.includes(value.mode) ? value.mode : 'clock',
+    background: restBackgrounds.includes(value.background) ? value.background : 'black',
     latitude: Number.isFinite(value.latitude) && Math.abs(value.latitude)<=90 ? value.latitude : null,
     longitude: Number.isFinite(value.longitude) && Math.abs(value.longitude)<=180 ? value.longitude : null,
     ...(extended?{extended:true,showDate:value.showDate!==false,showHint:value.showHint!==false,leftColor:/^#[a-f0-9]{6}$/i.test(value.leftColor||'')?value.leftColor:'#c8a56c',rightColor:/^#[a-f0-9]{6}$/i.test(value.rightColor||'')?value.rightColor:'#c8a56c',meterReference:[-24,-20,-18,-16,-14].includes(value.meterReference)?value.meterReference:-18}:{}),
@@ -49,6 +54,8 @@ export function wallNotifications(snapshot,updates,offline=false,now=Date.now(),
     // Update notices follow their condition: offer → progress → outcome, and vanish when resolved.
     updateNotification(updateMemory,updates,offline),
     {id:'hardware',icon:'alert',title:'Hardware alert',detail:faults.length?faults.join(', '):power.severity==='unknown'?'PD contract unavailable. Open Sensors to check power monitoring.':power.title,attention:faults.length>0||power.severity!=='ok',simulated,action:'sensors'},
+    // 3.16: the supply now offers less than this TuneBox has had before (read-only explanation; never requests power).
+    !offline&&snapshot.powerHistory?.drop&&{id:'power-drop',icon:'alert',title:'Less power offered',params:{now:snapshot.powerHistory.drop.nowWatts,best:snapshot.powerHistory.drop.bestWatts},detail:snapshot.powerHistory.drop.capped3A?'The supply now offers {now} W; this TuneBox had {best} W before. Every profile is limited to 3 A: usually the charger does not recognise the cable as 5 A, or it shares power with another port. Use the 100 W port with nothing else connected, re-plug the cable at the charger, then run power setup again.':'The supply now offers {now} W; this TuneBox had {best} W before. Run power setup again, or check the charger and cable.',attention:true,action:'sensors'},
     {id:'newsletter',icon:'mail',title:'Newsletter',detail:'Geen nieuwsbrief gekoppeld. Er wordt niets automatisch opgehaald of verstuurd.'},
     {id:'whatsnew',icon:'discover',title:'What’s new',detail:`${releaseTitle(release)} · ${release.notes}`},
     {id:'tutorial',icon:'tutorial',title:'Tutorial',detail:'Choose a track to play. Settings are grouped by topic; scroll for related options. Screen rest keeps music playing. Tap once to wake.'},

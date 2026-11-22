@@ -1,4 +1,5 @@
-import {tr} from "../shared/i18n.js";
+import {tr,translateFormat} from "../shared/i18n.js";
+import {screenOffChoices,screenOffLabel} from '../shared/screen-off.js';
 import React,{useEffect,useRef,useState} from 'react';
 import {useDeviceUpdates} from './DeviceUpdates.jsx';
 import {displayDefaults,timeoutChoices} from '../shared/display-settings.js';
@@ -17,7 +18,7 @@ export function SensorDashboard({snapshot,offline=false}) {
   </section>;
 }
 
-export function DisplaySettings({prefs,update,offline=false}) {
+export function DisplaySettings({prefs,update,offline=false,snapshot}) {
   const device=useDeviceUpdates();
   const [data,setData]=useState(null),[draft,setDraft]=useState(null),[notice,setNotice]=useState('');
   const timer=useRef(null),latest=useRef(null);
@@ -33,12 +34,14 @@ export function DisplaySettings({prefs,update,offline=false}) {
   return <div className="display-settings">
     <div className="settings-fields">
       <label>{tr("Screen timeout")}<select aria-label={tr("Screen timeout")} disabled={disabled} value={value.timeoutSeconds} onChange={e=>change('timeoutSeconds',Number(e.target.value))}>{timeoutChoices.map(n=><option key={n} value={n}>{n===0?tr('Never'):n<60?n+' '+tr('seconds'):n/60+' '+tr(n===60?'minute':'minutes')}</option>)}</select></label>
+      <label>{tr('Turn the screen off')}<select aria-label={tr('Turn the screen off')} disabled={disabled} value={value.offAfterSeconds??3600} onChange={e=>change('offAfterSeconds',Number(e.target.value))}>{screenOffChoices.map(n=><option key={n} value={n}>{n?translateFormat('{time} after screen rest',{time:tr(screenOffLabel(n))}):tr('Never')}</option>)}</select><small>{tr('Screen preservation: a display that stays lit for hours wears faster and can keep a faint image. After this time without a touch the backlight turns off completely. Music keeps playing, and a touch wakes the screen.')}</small></label>
+      {(value.offAfterSeconds??3600)>0&&<label className="setting-switch"><span>{tr('Also while music plays')}</span><input aria-label={tr('Also while music plays')} type="checkbox" role="switch" disabled={disabled} checked={value.offWhilePlaying===true} onChange={e=>change('offWhilePlaying',e.target.checked)}/></label>}
       <label className="setting-switch"><span>{tr("Automatic brightness")}<small>{tr("Adjust the DSI backlight using the light sensor.")}</small></span><input aria-label={tr("Automatic brightness")} type="checkbox" role="switch" disabled={disabled||!data?.backlight?.supported} checked={value.brightnessMode==='auto'} onChange={e=>change('brightnessMode',e.target.checked?'auto':'manual')}/></label>
       <label>{tr("Brightness ")}<output>{tr(value.brightness)}%</output><input aria-label={tr("Manual brightness")} type="range" min="5" max="100" disabled={disabled} value={value.brightness} onChange={e=>change('brightness',Number(e.target.value))}/><small>{tr(value.brightnessMode==='auto'?'Used when a light reading is unavailable.':'Manual backlight level.')}</small></label>
       {value.brightnessMode==='auto'&&<><label>{tr("Minimum brightness ")}<output>{tr(value.minimum)}%</output><input aria-label={tr("Minimum brightness")} type="range" min="5" max={value.maximum} value={value.minimum} disabled={disabled} onChange={e=>change('minimum',Number(e.target.value))}/></label><label>{tr("Maximum brightness ")}<output>{tr(value.maximum)}%</output><input aria-label={tr("Maximum brightness")} type="range" min={value.minimum} max="100" value={value.maximum} disabled={disabled} onChange={e=>change('maximum',Number(e.target.value))}/></label></>}
     </div>
     {!data?.backlight?.supported&&<p className="settings-note">{tr("Physical brightness control requires the display service on the Pi.")}</p>}
-    <ScreenSettings prefs={prefs} update={update}/>
+    <ScreenSettings prefs={prefs} update={update} snapshot={snapshot}/>
     <p role="status" className="settings-note">{tr(notice)}</p>
   </div>;
 }

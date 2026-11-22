@@ -12,8 +12,8 @@ test('wall profile is explicit; legacy deployment stays compatible',()=>{
  assert.equal(g.renderedHeight,640);
 });
 test('screen preferences survive normalization; malformed input cannot invent a location',()=>{
- assert.deepEqual(settings({screen:{mode:'widgets',latitude:52,longitude:4}}).screen,{mode:'widgets',latitude:52,longitude:4});
- assert.deepEqual(screenSettings({mode:'unknown',latitude:Infinity,longitude:181}),{mode:'clock',latitude:null,longitude:null});
+ assert.deepEqual(settings({screen:{mode:'widgets',latitude:52,longitude:4}}).screen,{mode:'widgets',background:'black',latitude:52,longitude:4});
+ assert.deepEqual(screenSettings({mode:'unknown',latitude:Infinity,longitude:181}),{mode:'clock',background:'black',latitude:null,longitude:null});
  assert.equal(screenSettings(null).mode,'clock');
 });
 test('sunset approximation matches equinox reference within 10 minutes; polar/no-location is explicit',()=>{

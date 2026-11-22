@@ -12,7 +12,8 @@ import { NetworkStatus } from "./NetworkStatus.jsx";
 import { BuildBadge } from "./BuildBadge.jsx";
 import { TouchVolume, useVolumeRequests } from "./TouchVolume.jsx";
 import {controlVolumeLimit} from '../shared/volume.js';
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+const headerHideMs = 6000;
 import { flushSync } from "react-dom";
 import { SkinPanel } from "./SkinPanel.jsx";
 import { presets } from "../shared/themes.js";
@@ -63,6 +64,7 @@ function Cover({ index = 0, small = false }) {
     </div>
   );
 }
+import {startSkipHold,observeSkip,skipHoldMs} from '../shared/skip-hold.js';
 export function MusicShell({
   snapshot,
   offline,
@@ -120,6 +122,13 @@ export function MusicShell({
     [pendingAction,setPendingAction]=useState(null),
     [searchCycle,setSearchCycle]=useState(0);
   const video=prefs.artwork==='video';
+  // 3.16: on the wall's Now Playing page the header slides up after a few quiet seconds; a small tab brings it back.
+  const headerOverride=(()=>{try{return localStorage.getItem('tunebox.headerAutoHide');}catch{return null;}})();
+  const autoHideHeader = wall && startupReady && page === "playing" && !sleeping && prefs.headerAutoHide !== false && headerOverride !== "off";
+  const [headerHidden,setHeaderHidden]=useState(false);
+  const headerTimer=useRef(null);
+  const showHeader=useCallback(()=>{clearTimeout(headerTimer.current);setHeaderHidden(false);if(autoHideHeader)headerTimer.current=setTimeout(()=>setHeaderHidden(true),headerHideMs);},[autoHideHeader]);
+  useEffect(()=>{showHeader();return()=>clearTimeout(headerTimer.current);},[showHeader]);
   const prompted=useRef(false);
   useEffect(()=>{const manager=deviceUpdates?.info?.manager;if(!prompted.current&&manager?.managed&&!manager.simulated&&manager.setupComplete===false){prompted.current=true;setSettingsPage(13);setPage("settings");}},[deviceUpdates?.info?.manager?.managed,deviceUpdates?.info?.manager?.setupComplete]);
   const [favorites, setFavorites] = useState(() => {
@@ -153,6 +162,10 @@ export function MusicShell({
       available && (bluetoothActive || simulated || snapshot.musicAssistant?.controlEnabled),
     volume = simulated ? (snapshot.audio?.volume ?? 32) : playback.volume,
     muted = simulated ? snapshot.audio?.muted : playback.muted;
+  const [skipHold,setSkipHold]=useState(null),[,setSkipTick]=useState(0);
+  const skipView=observeSkip(skipHold,current,Date.now()),shown=skipView.display||current,skipLoading=skipView.loading;
+  useEffect(()=>{if(skipView.hold!==skipHold)setSkipHold(skipView.hold);},[skipView.hold,skipHold]);
+  useEffect(()=>{if(!skipHold)return;const t=setTimeout(()=>setSkipTick(v=>v+1),skipHold.phase==='holding'?skipHoldMs+50:2600);return()=>clearTimeout(t);},[skipHold]);
   const volumeRequests = useVolumeRequests(event=>send(bluetoothActive?{...event,sourceId:bluetooth.sessionId}:event));
   const canVolume =
     control &&
@@ -208,6 +221,8 @@ export function MusicShell({
   async function command(event) {
     if (lock.current) return;
     lock.current = true;
+    // Skipping: keep showing this track with a loading state until the new one arrives (no flash back).
+    if(['next','previous'].includes(event.type))setSkipHold(startSkipHold(current,Date.now()));
     setPending(true);setPendingAction(event.type);
     setMessage("");
     try {
@@ -276,6 +291,7 @@ export function MusicShell({
       onKeyDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();wake();}:undefined}
       data-theme={theme.id}
       data-page={page}
+      data-header={autoHideHeader&&headerHidden?"hidden":"shown"}
       data-performance={prefs.lowPower ? "pi3" : "standard"}
       data-skin={
         presets.some((p) => p.id === theme.id) ? theme.id : "reference-dark"
@@ -301,7 +317,8 @@ export function MusicShell({
         onComplete={setStartupReady}
       />
       <StartupJoin active={wall&&startupReady&&!offline&&!sleeping&&(!snapshot.onboardingRequired||snapshot.preferences?.setupDeferred)&&snapshot.mode==='music-assistant'&&!['settings','rooms'].includes(page)&&!['installing','restarting','checking-health','rolling-back'].includes(deviceUpdates.info?.status)} controlToken={deviceUpdates.info?.controlToken} onSnapshot={setSnapshot} onRooms={()=>go('rooms')} onUnlock={()=>{setSettingsPage(21);go('settings');}}/>
-      <header className="m2-header">
+      {autoHideHeader&&headerHidden&&<button className="m2-header-pull" aria-label={tr("Show menu")} onClick={showHeader}><Icon name="back" size={22} className="m2-header-pull-icon"/></button>}
+      <header className="m2-header" aria-hidden={autoHideHeader&&headerHidden?true:undefined} inert={autoHideHeader&&headerHidden} onPointerDownCapture={autoHideHeader?showHeader:undefined}>
         <button className="m2-brand" onClick={() => go("playing")} aria-label={tr("Now Playing")}>{tr("DAW ")}<b>{tr("TuneBox")}</b>
         </button>
         <nav aria-label={tr("Muzieknavigatie")}>
@@ -660,16 +677,16 @@ export function MusicShell({
             {simulated ? (
               <Cover index={playback.index} />
             ) : (
-              <Artwork src={current.artwork} alt={current.title} />
+              <Artwork src={shown.artwork} alt={shown.title} loading={skipLoading} />
             )}
-            <div>
+            <div className="m2-track">
               <small>
                 {tr(simulated ? "SIMULATIE" : "MUSIC ASSISTANT")} /{tr(" ")}
                 {tr(playback.playerName || "TuneBox")}
               </small>
-              <h2 title={current.title}>{current.title}</h2>
+              <h2 title={shown.title}>{shown.title}</h2>
               <p>
-                {current.artist} <span>— {current.album}</span>
+                {shown.artist} <span>— {shown.album}</span>
               </p>
               <PlaybackSeekControl playback={playback} duration={current.duration} disabled={!control||!current.duration||prefs.seekEnabled===false||(!simulated&&!['seek','queue_seek'].some(c=>playback.capabilities?.includes(c)))} onSeek={value=>command({type:'seek',position:value})}/>
             </div>
@@ -718,17 +735,17 @@ export function MusicShell({
           disabled={page==='playing'}
           aria-label={tr("Open Nu spelen")}
         >
-          <span className="m2-current-cover" key={current.id}>
+          <span className="m2-current-cover" key={shown.id}>
             {simulated ? (
               <Cover index={playback.index} small />
             ) : (
-              <Artwork src={current.artwork} alt={current.title} />
+              <Artwork src={shown.artwork} alt={shown.title} loading={skipLoading} />
             )}
           </span>
           <span>
             {page!=='playing'&&<span className="m2-return"><Icon name="back" size={20}/>{tr('Now Playing')}</span>}
-            <strong>{current.title}</strong>
-            <small>{current.artist}</small>
+            <strong>{shown.title}</strong>
+            <small>{shown.artist}</small>
           </span>
         </button>
         )}

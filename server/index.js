@@ -1,5 +1,8 @@
 import {settingsAttention} from '../shared/interface.js';
 import {LocalAudio} from './local-audio.js';
+import {screenOffDue} from '../shared/screen-off.js';
+import {RestPhoto,restPhotoLimits} from './rest-photo.js';
+import {nextPowerHistory,powerDrop} from '../shared/power-history.js';
 import {SyncProfiles,synchronizationContext,playbackRoute} from './sync-profiles.js';
 import {AutomaticSound} from './automatic-sound.js';
 import {AudioAnalysis} from "./audio-analysis.js";
@@ -53,6 +56,11 @@ let previousAudio=false;try{previousAudio=JSON.parse(readFileSync(join(stateDire
 const preferences=new PreferencesStore(stateDirectory,{display:displayConfiguration,audioEnabled:previousAudio});
 const security=new DeviceSecurity(stateDirectory);
 const remote=new RemoteAccess(stateDirectory);
+const restPhoto=new RestPhoto(stateDirectory);
+// Highest PD contract read on this TuneBox; a later lower contract gets an explanation (read-only, never requests power).
+const powerHistoryPath=join(stateDirectory,'power-history.json');
+let powerHistory=(()=>{try{return JSON.parse(readFileSync(powerHistoryPath,'utf8'));}catch{return {};}})();
+const updatePowerHistory=(now=Date.now())=>{const next=nextPowerHistory(powerHistory,host.value.power,now);if(next.highestWatts!==powerHistory.highestWatts){try{writeFileSync(powerHistoryPath+'.tmp',JSON.stringify({...next,lowerSince:null})+'\n',{mode:0o600});renameSync(powerHistoryPath+'.tmp',powerHistoryPath);}catch{}}powerHistory=next;};
 const host=new HostTelemetry();
 const debug=new DebugLog(stateDirectory);
 const presence=new PresencePolicy(process.env.DAW_PRESENCE_FILE);
@@ -91,6 +99,9 @@ const snapshot = () => {
   let roomMeasurement=false;try{const value=JSON.parse(readFileSync('/var/lib/daw-one-measurement/status.json','utf8'));roomMeasurement=['queued','measuring-left','measuring-right','analysing'].includes(value.phase)&&Number.isFinite(value.observedAt)&&Math.abs(Date.now()-value.observedAt)<90000;}catch{}
   const state = {
     ...runtime.snapshot(),
+    screenOff,
+    restPhoto:restPhoto.status(),
+    powerHistory:{highestWatts:powerHistory.highestWatts??null,highestAt:powerHistory.highestAt??null,drop:powerDrop(powerHistory,host.value.power)},
     build: release,
     automaticDsp:publicAutomaticDsp(),
     localAudio:localAudio.get(),
@@ -149,8 +160,11 @@ const snapshot = () => {
 };
 const streamWriter = snapshotWriter();
 const remoteWriter=snapshotWriter(),remoteClients=new Set();let lastRemoteView='';
-const publishDisplay=()=>{try{const path='/run/daw-one-display/activity.json';writeFileSync(path+'.tmp',JSON.stringify({awake:runtime.device.displayAwake,mode:runtime.device.mode,observedAt:Date.now()})+'\n',{mode:0o660});renameSync(path+'.tmp',path);}catch{}};
+let screenOff=false;
+const updateScreenOff=(now=Date.now())=>{const next=screenOffDue({display:displayConfiguration,displayAwake:runtime.device.displayAwake,idleMs:now-runtime.lastActivity,playing:(music?.playback||runtime.playback)?.playing===true||bluetoothState().active});if(next===screenOff)return false;screenOff=next;runtime.record(now,next?'screen-off':'screen-on',runtime.device.mode,next?'Screen preservation: backlight off after inactivity; music unchanged':'Screen preservation ended');return true;};
+const publishDisplay=()=>{try{const path='/run/daw-one-display/activity.json';writeFileSync(path+'.tmp',JSON.stringify({awake:runtime.device.displayAwake,screenOff,mode:runtime.device.mode,observedAt:Date.now()})+'\n',{mode:0o660});renameSync(path+'.tmp',path);}catch{}};
 const broadcast = () => {
+  updateScreenOff();
   publishDisplay();
   const body = `data: ${JSON.stringify(snapshot())}\n\n`;
   for (const client of clients) streamWriter.write(client, body);
@@ -177,7 +191,7 @@ app.use('/api',(q,r,next)=>{
   const mutating=!['GET','HEAD','OPTIONS'].includes(q.method),path=q.path;
   if(q.remote){
    const open=q.method==='GET'&&path==='/remote/session'||q.method==='POST'&&path==='/remote/pair';
-   const paired=q.method==='GET'&&(['/remote/state','/remote/events','/remote/search'].includes(path)||/^\/artwork\/[^/]+$/.test(path))||q.method==='POST'&&['/remote/event','/remote/play','/remote/leave','/remote/invite'].includes(path);
+   const paired=q.method==='GET'&&(['/remote/state','/remote/events','/remote/search'].includes(path)||/^\/artwork\/[^/]+$/.test(path))||q.method==='POST'&&['/remote/event','/remote/play','/remote/leave','/remote/invite','/remote/rest-photo'].includes(path);
    if(!open&&!paired)return r.status(403).json({error:'This remote can only control playback'});
    if(paired&&!remote.phone(q))return r.status(401).json({error:'Scan the remote code shown on TuneBox'});
    return next();
@@ -188,7 +202,7 @@ app.use('/api',(q,r,next)=>{
    if(!allowed)return r.status(403).json({error:'This setup connection only controls Wi-Fi'});
    if(mutating&&path!=='/setup/pair'&&security.session(q)?.role!=='provision')return r.status(423).json({error:'Scan the setup link shown on the TuneBox'});
   }
-   const admin=mutating&&(['/remote/pairing','/remote/forget','/device','/preferences','/music/keep-playing/check','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/video/youtube','/youtube/settings','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/rooms'&&['group','leave','transfer','join'].includes(q.body?.action)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
+   const admin=mutating&&(['/remote/pairing','/remote/forget','/rest-photo','/device','/preferences','/music/keep-playing/check','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/video/youtube','/youtube/settings','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/rooms'&&['group','leave','transfer','join'].includes(q.body?.action)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
   if(admin&&!(q.provisioning&&path==='/device'&&provisionCommands.includes(q.body?.command)))security.requireAdmin(q);
   next();
  }catch(e){r.status(e.status||423).json({error:e.message});}
@@ -307,7 +321,7 @@ app.post("/api/device",async(q,r)=>{
  }catch(error){debug.record('device','rejected');if(q.body.command==='hotspot-start'&&phoneServer){phoneServer.close();phoneServer=null;await manage({command:'hotspot-stop',args:{}}).catch(()=>{});}r.status(409).json({error:String(error.message).slice(0,180),...(error.code==='update-group-confirmation'?{code:error.code,rooms:error.rooms,roomsRevision:error.roomsRevision}:{})});}
 });
 app.get('/api/bluetooth',(_q,r)=>r.set('Cache-Control','no-store').json(bluetoothState()));
-app.get("/api/audio",(q,r)=>{if(bluetoothState().active)return r.set('Cache-Control','no-store').json({enabled:false,configured:audioAnalysis.configured,status:'source-unavailable',source:'bluetooth',simulated:false,measurement:null});r.set("Cache-Control","no-store").json(audioAnalysis.get({watch:q.query.watch==="1",awake:(runtime.device.displayAwake||['vu','bars','spectrum'].includes(preferences.get().prefs.screen.mode))&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId}));});
+app.get("/api/audio",(q,r)=>{if(bluetoothState().active)return r.set('Cache-Control','no-store').json({enabled:false,configured:audioAnalysis.configured,status:'source-unavailable',source:'bluetooth',simulated:false,measurement:null});r.set("Cache-Control","no-store").json(audioAnalysis.get({watch:q.query.watch==="1",awake:!screenOff&&(runtime.device.displayAwake||['vu','bars','spectrum'].includes(preferences.get().prefs.screen.mode))&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId}));});
 app.post("/api/audio/settings",(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:"Reload TuneBox before changing measurement settings"});
  try{if(!q.body||Object.keys(q.body).length!==1||!Object.hasOwn(q.body,"enabled"))throw Error("Only enabled can be changed");audioAnalysis.setEnabled(q.body.enabled);preferences.save(preferences.get().revision,{audioEnabled:q.body.enabled});r.json(audioAnalysis.get());}catch(error){r.status(400).json({error:error.message});}
@@ -636,6 +650,10 @@ app.post('/api/remote/pair',(q,r)=>{
 // A paired phone can invite another phone: a new single-use code (10 minutes). A settings PIN still applies when the new phone pairs.
 app.post('/api/remote/invite',(q,r)=>{if(!remoteOnly(q,r))return;try{if(q.body&&Object.keys(q.body).length)throw Error('Unexpected invite request');const address=process.env.DAW_REMOTE_ADDRESS||remoteAddress();if(!address)throw Error('TuneBox is not on the home network');const pair=remote.createPair();clearTimeout(remoteExpiry);remoteExpiry=setTimeout(stopRemoteServerWhenUnused,pair.expiresAt-Date.now()+1000);remoteExpiry.unref();debug.record('remote','invite',{accepted:true});broadcast();r.set('Cache-Control','no-store').json({url:`http://${address}:${remotePort}/remote.html#pair=${pair.token}`,expiresAt:pair.expiresAt,pinRequired:remotePinRequired()});}catch(e){r.status(409).json({error:e.message});}});
 app.post('/api/remote/leave',(q,r)=>{if(!remoteOnly(q,r))return;try{remote.forget(remote.phone(q).id);}catch{}r.setHeader('Set-Cookie','tunebox_remote=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');setTimeout(stopRemoteServerWhenUnused,250).unref();r.json({paired:false});});
+// Own screen-rest photo: a paired phone sends it, TuneBox itself accepts it (see server/rest-photo.js).
+app.post('/api/remote/rest-photo',express.raw({type:'image/jpeg',limit:restPhotoLimits.bytes}),(q,r)=>{if(!remoteOnly(q,r))return;try{const status=restPhoto.upload(q.body,remote.phone(q)?.name);debug.record('remote','rest-photo',{accepted:true});broadcast();r.json({pending:true,status});}catch(e){r.status(400).json({error:String(e.message).slice(0,120)});}});
+app.get('/api/rest-photo/:which',(q,r)=>{const file=['current','pending'].includes(q.params.which)?restPhoto.file(q.params.which):null;if(!file)return r.status(404).json({error:'No photo'});r.set({'Content-Type':'image/jpeg','Cache-Control':'no-cache'}).sendFile(file.path);});
+app.post('/api/rest-photo',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before changing the photo'});try{const status=restPhoto.act(q.body?.action);broadcast();r.json(status);}catch(e){r.status(409).json({error:e.message});}});
 app.get('/api/remote/state',(q,r)=>{if(!remoteOnly(q,r))return;r.set('Cache-Control','no-store').json(phoneView());});
 app.get('/api/remote/events',(q,r)=>{
  if(!remoteOnly(q,r))return;
@@ -690,6 +708,7 @@ const clock = setInterval(() => {
   if (runtime.sensors.heartbeatEnabled) runtime.sensors.lastHeartbeat = now;
   const before = runtime.device;
   presence.tick(preferences.get(),runtime,now);
+  const screenChanged=updateScreenOff(now);
   publishDisplay();
   const savedTimeout=runtime.displayTimeoutMs;
   if(presence.value.status==='ok')runtime.displayTimeoutMs=Infinity;
@@ -697,7 +716,7 @@ const clock = setInterval(() => {
   runtime.displayTimeoutMs=savedTimeout;
   if (
     before.mode !== runtime.device.mode ||
-    before.displayAwake !== runtime.device.displayAwake ||
+    before.displayAwake !== runtime.device.displayAwake || screenChanged ||
     (!music && runtime.playback.playing)
   )
     broadcast();
@@ -707,7 +726,7 @@ const inventoryClock = setInterval(() => {
   inventory = bootInventory();
 }, 30000);
 inventoryClock.unref();
-const hostClock=setInterval(()=>{host.sample();debug.record('host','sample',{cpuPercent:host.value.cpu.usagePercent,availableMiB:host.value.memory.availableBytes/1048576,temperatureC:host.value.cpu.temperatureC});broadcast();},5000);hostClock.unref();
+const hostClock=setInterval(()=>{host.sample();updatePowerHistory();debug.record('host','sample',{cpuPercent:host.value.cpu.usagePercent,availableMiB:host.value.memory.availableBytes/1048576,temperatureC:host.value.cpu.temperatureC});broadcast();},5000);hostClock.unref();
 const keepalive = setInterval(() => {
   for (const c of clients)
     if (!streamWriter.blocked(c)) streamWriter.write(c, ": heartbeat\n\n");

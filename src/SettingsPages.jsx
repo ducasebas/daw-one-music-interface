@@ -100,7 +100,7 @@ export function SettingsPages({
           {wall&&onReplayStartup&&<button onClick={onReplayStartup}>{tr('Replay startup')}</button>}
         </div>
       ) : pages[index] === "Schermrust" ? (
-        wall?<DisplaySettings prefs={prefs} update={update} offline={offline}/>:<ScreenSettings prefs={prefs} update={update}/>
+        wall?<DisplaySettings prefs={prefs} update={update} offline={offline} snapshot={snapshot}/>:<ScreenSettings prefs={prefs} update={update} snapshot={snapshot}/>
       ) : index===16 ? (
         <VideoSettings snapshot={snapshot} prefs={prefs} update={update} offline={offline}/>
       ) : index===17 ? (

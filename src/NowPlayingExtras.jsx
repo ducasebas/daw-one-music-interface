@@ -45,8 +45,21 @@ export function NowPlayingWidgets({snapshot,prefs,offline,onOpen}){
  const now=useMinuteClock(ids.includes('clock')||ids.includes('power'));
  const tiles=nowPlayingWidgets(ids,snapshot,{now,offline,network,hour12:snapshot.preferences?.clock?.hour12===true});
  if(!tiles.length)return null;
- return <section className="np-widgets" aria-label={tr('Now Playing widgets')} data-count={tiles.length}>
-  {tiles.map(tile=>{const body=<><Icon name={tile.icon} size={26}/><span className="np-widget-text"><small>{tr(tile.label)}</small><strong>{widgetText(tile.value,tile.params,tr)}</strong>{tile.detail&&<em>{widgetText(tile.detail,tile.params,tr)}</em>}</span></>;
+ return <section className="np-widgets" aria-label={tr('Now Playing widgets')} data-count={tiles.length} data-placement={prefs.widgetPlacement==='top'?'top':'bottom'}>
+  {tiles.map(tile=>{const body=<><Icon name={tile.icon} size={24}/><span className="np-widget-text"><small>{tr(tile.label)}</small><strong>{widgetText(tile.value,tile.params,tr)}</strong>{tile.detail&&<em>{widgetText(tile.detail,tile.params,tr)}</em>}</span></>;
    return tile.action?<button key={tile.id} className="np-widget" data-widget={tile.id} data-available={tile.available} onClick={()=>onOpen?.(tile.action)}>{body}</button>:<article key={tile.id} className="np-widget" data-widget={tile.id} data-available={tile.available}>{body}</article>;})}
  </section>;
+}
+/** Order of the chosen widgets: move a tile left or right; the Now Playing strip follows this order. */
+export function WidgetOrder({ids,names,onChange}){
+ if(ids.length<2)return null;
+ const move=(i,d)=>{const next=[...ids];[next[i],next[i+d]]=[next[i+d],next[i]];onChange(next);};
+ return <div className="np-widget-order" role="list" aria-label={tr('Widget order')}>
+  <small>{tr('Order')}</small>
+  {ids.map((id,i)=><span key={id} role="listitem" className="np-widget-order-item">
+   <button type="button" aria-label={tr('Move left')+': '+tr(names[id])} disabled={i===0} onClick={()=>move(i,-1)}><Icon name="back" size={18}/></button>
+   <strong>{i+1}. {tr(names[id])}</strong>
+   <button type="button" aria-label={tr('Move right')+': '+tr(names[id])} disabled={i===ids.length-1} onClick={()=>move(i,1)}><Icon name="back" size={18} className="np-flip"/></button>
+  </span>)}
+ </div>;
 }

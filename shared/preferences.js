@@ -4,13 +4,14 @@ import {normalizeThemePreferences} from './themes.js';
 import {speakerDefaults,speakerSettings} from './speaker-settings.js';
 
 export const dashboardMetrics=['cpu','cpu-temperature','case-temperature','fan','lux','brightness','wifi','memory','power','voltage','current','pd-power','volume'];
-export const preferenceDefaults=()=>({prefs:settings(),display:{...displayDefaults},themePreferences:normalizeThemePreferences(),language:'en',audioEnabled:false,clock:{timeZone:'Europe/Amsterdam',hour12:false,automatic:true},presence:{enabled:false,maximumDistance:3,sensitivity:'medium',absenceSeconds:120,nightEnabled:false,nightStart:'22:00',nightEnd:'07:00'},dashboard:{visible:[],requiredWatts:100},maxVolume:100,speakers:speakerDefaults(),buttonAction:'screen-rest',setupCompleted:false,setupDeferred:false});
+export const preferenceDefaults=()=>({prefs:settings(),display:{...displayDefaults},themePreferences:normalizeThemePreferences(),language:'en',audioEnabled:false,clock:{timeZone:'Europe/Amsterdam',hour12:false,automatic:true,place:''},presence:{enabled:false,maximumDistance:3,sensitivity:'medium',absenceSeconds:120,nightEnabled:false,nightStart:'22:00',nightEnd:'07:00'},dashboard:{visible:[],requiredWatts:100},maxVolume:100,speakers:speakerDefaults(),buttonAction:'screen-rest',setupCompleted:false,setupDeferred:false});
 export function validatePreferences(value){
  if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid preferences');
  const defaults=preferenceDefaults();if(Object.keys(value).some(k=>!Object.hasOwn(defaults,k)))throw Error('Unknown preference');
  const s={...defaults,...value};
  if(!['en','nl'].includes(s.language)||!['screen-rest','local-standby'].includes(s.buttonAction)||typeof s.audioEnabled!=='boolean'||typeof s.setupCompleted!=='boolean'||typeof s.setupDeferred!=='boolean'||!Number.isInteger(s.maxVolume)||s.maxVolume<1||s.maxVolume>100)throw Error('Invalid language or volume limit');
- if(!s.clock||Object.keys(s.clock).some(k=>!['timeZone','hour12','automatic'].includes(k))||typeof s.clock.timeZone!=='string'||s.clock.timeZone.length>80||typeof s.clock.hour12!=='boolean'||typeof s.clock.automatic!=='boolean')throw Error('Invalid clock settings');
+ s.clock={place:'',...s.clock};
+ if(!s.clock||Object.keys(s.clock).some(k=>!['timeZone','hour12','automatic','place'].includes(k))||typeof s.clock.timeZone!=='string'||s.clock.timeZone.length>80||typeof s.clock.hour12!=='boolean'||typeof s.clock.automatic!=='boolean'||typeof s.clock.place!=='string'||s.clock.place.length>60)throw Error('Invalid clock settings');
  try{new Intl.DateTimeFormat('en',{timeZone:s.clock.timeZone}).format();}catch{throw Error('Unknown time zone');}
  const p=s.presence;
  if(!p||Object.keys(p).some(k=>!Object.hasOwn(defaults.presence,k))||typeof p.enabled!=='boolean'||!Number.isFinite(p.maximumDistance)||p.maximumDistance<.5||p.maximumDistance>6||!['low','medium','high'].includes(p.sensitivity)||!Number.isInteger(p.absenceSeconds)||p.absenceSeconds<10||p.absenceSeconds>3600||typeof p.nightEnabled!=='boolean'||![p.nightStart,p.nightEnd].every(t=>typeof t==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(t)))throw Error('Invalid presence settings');

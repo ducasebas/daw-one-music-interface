@@ -14,7 +14,7 @@ test('production settings load for the first time after an offline reload',async
  await page.getByRole('button',{name:'Settings',exact:true}).click();
  const categories=page.getByRole('navigation',{name:'Settings categories'});await expect(categories).toBeVisible();
  await categories.getByRole('button',{name:'Display',exact:true}).click();
- await page.getByLabel('Screen rest view',{exact:true}).selectOption('black');
- await expect(page.getByLabel('Screen rest view',{exact:true})).toHaveValue('black');
+ const rest=page.getByRole('radiogroup',{name:'Screen rest view'});await rest.locator('button[data-mode=black]').click();
+ await expect(rest.locator('button[data-mode=black]')).toHaveAttribute('aria-checked','true');
  await expect(page.getByRole('button',{name:'Save',exact:true})).toBeDisabled();
 });

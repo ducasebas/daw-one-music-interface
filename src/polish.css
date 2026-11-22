@@ -214,3 +214,67 @@
 .queue-choice .queue-choice-actions .queue-choice-replace{border-color:color-mix(in srgb,#d9534f 70%,transparent)}.queue-choice .queue-choice-actions .queue-choice-replace .tb-icon{color:#e07a74}
 .queue-choice .queue-choice-cancel{width:100%;min-height:56px}
 .hub-confirm.queue-choice>h3{margin-top:0}.hub-confirm.queue-choice>p{margin:6px 0}
+/* GUI 3.16: calm track changes — the old cover stays with a progress ring until the new one has loaded. */
+.real-artwork{position:relative}
+.real-artwork[data-loading] img{filter:brightness(.72) saturate(.85);transition:filter .25s}
+.artwork-loading{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;border:4px solid color-mix(in srgb,#fff 30%,transparent);border-top-color:var(--accent,#c5a466);animation:artwork-spin .9s linear infinite;box-shadow:0 2px 16px #0008}
+.m2-current-cover .artwork-loading{width:26px;height:26px;margin:-13px 0 0 -13px;border-width:3px}
+.artwork-fade-in{animation:artwork-fade .35s ease-out}
+@keyframes artwork-spin{to{transform:rotate(360deg)}}@keyframes artwork-fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.artwork-loading{animation-duration:2.4s}.artwork-fade-in{animation:none}}
+
+/* 3.16 · Header slides up on the wall's Now Playing page; a small tab brings it back. */
+.music2[data-panel="wall-16-10"]{transition:grid-template-rows 320ms cubic-bezier(.2,.8,.2,1)}
+.music2[data-panel="wall-16-10"]>.m2-header{transition:transform 320ms cubic-bezier(.2,.8,.2,1),opacity 220ms ease}
+.music2[data-panel="wall-16-10"][data-header=hidden]{grid-template-rows:0 48px minmax(0,1fr) 178px}
+.music2[data-panel="wall-16-10"][data-header=hidden]>.m2-header{transform:translateY(-110%);opacity:0;pointer-events:none}
+.music2 .m2-header-pull{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:40;width:128px;height:40px;min-height:0;min-width:0;padding:0;display:flex;align-items:center;justify-content:center;border:2px solid color-mix(in srgb,var(--divider,var(--border-color)) 85%,transparent);border-top:0;border-radius:0 0 20px 20px;background:color-mix(in srgb,var(--panel,var(--surface)) 88%,transparent);color:var(--muted);animation:header-pull-in 260ms ease-out both}
+.music2 .m2-header-pull::before{content:"";position:absolute;inset:-6px -24px -20px}
+.music2 .m2-header-pull:active{color:var(--accent);border-color:var(--accent)}
+.m2-header-pull-icon{transform:rotate(-90deg)}
+@keyframes header-pull-in{from{transform:translate(-50%,-100%)}to{transform:translate(-50%,0)}}
+.music2[data-performance=pi3],.music2[data-performance=pi3]>.m2-header{transition:none}
+@media(prefers-reduced-motion:reduce){.music2[data-panel="wall-16-10"],.music2[data-panel="wall-16-10"]>.m2-header{transition:none}.music2 .m2-header-pull{animation:none}}
+
+/* 3.16 · Widgets: calmer chips, and Now Playing always fits above the footer, visualizer or not. */
+.music2 .np-widget,.np-widget{min-height:80px;padding:10px 16px;gap:12px;border:0;border-radius:18px;background:color-mix(in srgb,var(--panel,var(--surface)) 72%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 9%,transparent)}
+.music2[data-panel="wall-16-10"] .m2-playing .np-widget{border:0}
+.music2[data-panel="wall-16-10"] .m2-playing button.np-widget:active{box-shadow:inset 0 0 0 2px var(--accent)}
+.np-widget-text small{font-size:12px;letter-spacing:.08em}
+.np-widget-text strong{font-size:19px}
+.np-widget[data-available=false] .np-widget-text strong{color:var(--muted);font-weight:400}
+.music2[data-panel="wall-16-10"] .m2-playing:has(>.np-widgets){height:100%;min-height:0;overflow:hidden}
+.music2[data-panel="wall-16-10"] .m2-playing:has(>.np-widgets)>.np-widgets{grid-row:-2;grid-column:1/-1;align-self:end}
+.music2[data-panel="wall-16-10"] .m2-playing:not([data-visualizer=true]):has(>.np-widgets){grid-template-rows:minmax(0,1fr) auto}
+.music2[data-panel="wall-16-10"] .m2-playing:not([data-visualizer=true]):has(>.np-widgets)>:not(.np-widgets){grid-row:1}
+/* With the visualizer: track info on top, the visualizer takes whatever height is left, widgets at the bottom. */
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets){grid-template-rows:auto minmax(0,1fr) auto;align-items:stretch}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-cover,.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.real-artwork{grid-row:1/3;align-self:center}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-track{grid-row:1;grid-column:2}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>aside{grid-row:2;grid-column:2;min-height:0;height:100%;max-height:100%;overflow:hidden}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets) .real-audio{min-height:0;height:100%;max-height:100%}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets) .audio-spectrum{flex:1 1 auto;height:auto;min-height:0;max-height:none}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets) .audio-meter-pair,.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets) .audio-meter-pair svg{flex:1 1 auto;min-height:0;max-height:100%;height:100%}
+/* Widgets above the song. */
+.music2[data-panel="wall-16-10"] .m2-playing:has(>.np-widgets[data-placement=top])>.np-widgets{grid-row:1;align-self:start}
+.music2[data-panel="wall-16-10"] .m2-playing:not([data-visualizer=true]):has(>.np-widgets[data-placement=top]){grid-template-rows:auto minmax(0,1fr)}
+.music2[data-panel="wall-16-10"] .m2-playing:not([data-visualizer=true]):has(>.np-widgets[data-placement=top])>:not(.np-widgets){grid-row:2}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets[data-placement=top]){grid-template-rows:auto auto minmax(0,1fr)}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets[data-placement=top])>.m2-cover,.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets[data-placement=top])>.real-artwork{grid-row:2/4}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets[data-placement=top])>.m2-track{grid-row:2}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets[data-placement=top])>aside{grid-row:3}
+/* Widget order in Settings. */
+.np-widget-order{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0}
+.np-widget-order>small{color:var(--muted);font-size:14px;text-transform:uppercase;letter-spacing:.06em;margin-right:4px}
+.np-widget-order-item{display:inline-flex;align-items:center;gap:6px;padding:4px;border-radius:14px;box-shadow:inset 0 0 0 1px var(--divider,var(--border-color))}
+.np-widget-order-item>strong{font-size:16px;font-weight:500;padding:0 4px;white-space:nowrap}
+.np-widget-order-item>button{min-width:52px;min-height:52px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.np-flip{transform:scaleX(-1)}
+.music2[data-panel="wall-16-10"][data-header=hidden]>.m2-content{padding-top:46px;transition:padding-top 320ms cubic-bezier(.2,.8,.2,1)}
+/* Visualizer + widgets: tighter track block and gaps so the visualizer keeps at least ~250 px with the menu bar shown. */
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets){row-gap:8px}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-track h2{margin:0 0 4px}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-track p{margin:0}
+.music2[data-panel="wall-16-10"] .m2-playing:has(>.np-widgets)>.np-widgets{padding:0;margin:0}
+.music2[data-panel="wall-16-10"] .m2-playing:has(>.np-widgets) .np-widget{min-height:80px;max-height:80px}
+.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true]:has(>.np-widgets)>.m2-track .seek-control input{margin:4px 0}

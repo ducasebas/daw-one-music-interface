@@ -101,3 +101,10 @@ test('profile storage stays restart-readable and a failed disk write cannot acti
   const before=profiles.list();profiles.write=()=>{throw Error('disk full');};const fresh={...ctx,key:'f'.repeat(64)};assert.throws(()=>profiles.save(result(fresh),fresh),/disk full/);assert.deepEqual(profiles.list(),before);assert.equal(profiles.active(fresh),null);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
+
+test('3.16: a sync result measured from onsets can be saved like an energy result',()=>{
+ const dir=mkdtempSync(join(tmpdir(),'tunebox-sync-onsets-'));const ctx=context();
+ try{const profiles=new SyncProfiles(dir);profiles.save({...result(ctx),method:'pcm-microphone-onsets'},ctx);assert.equal(new SyncProfiles(dir).active(ctx).method,'pcm-microphone-onsets');
+  assert.throws(()=>profiles.save({...result(ctx),method:'guess'},ctx));}
+ finally{rmSync(dir,{recursive:true,force:true});}
+});
