@@ -23,7 +23,7 @@ export function ScreenSettings({prefs,update,snapshot}) {
  <p>{tr("Zonsondergang wordt lokaal berekend voor deze coördinaten, bij benadering. Geen locatie ingesteld betekent geen berekende zonsondergang. Coördinaten blijven in deze browser.")}</p>
  </div>;
 }
-export function SleepSurface({prefs,snapshot,offline,wake,waking=false}) {
+export function SleepSurface({prefs,snapshot,offline,wake,waking=false,armed=true}) {
  const [now,setNow]=useState(()=>new Date());const root=useRef(null);
  useEffect(()=>{const previous=document.activeElement;root.current?.focus();const timer=setInterval(()=>setNow(new Date()),30000);return()=>{clearInterval(timer);if(previous?.isConnected)previous.focus();};},[]);
  const screen=screenSettings(prefs.screen),track=snapshot.playback?.queue?.[snapshot.playback?.index];
@@ -38,7 +38,7 @@ export function SleepSurface({prefs,snapshot,offline,wake,waking=false}) {
  const time=now.toLocaleTimeString(locale,{...clockOptions,hour:'2-digit',minute:'2-digit'});
  const sunsetText=sunset?sunset.toLocaleTimeString(locale,{...clockOptions,hour:'2-digit',minute:'2-digit'}):'Location not set';
  const reading=(metric,digits,unit)=>!offline&&metric?.status==='ok'&&Number.isFinite(metric.value)?metric.value.toFixed(digits)+' '+unit:'Niet beschikbaar';
- return <button ref={root} className="sleep-surface" data-mode={off?'black':screen.mode} data-screen-off={off} data-backdrop={backdrop?.kind||'none'} data-waking={waking} aria-label={tr("Scherm wekken")} aria-busy={waking} onClick={wake}>
+ return <button ref={root} className="sleep-surface" data-mode={off?'black':screen.mode} data-screen-off={off} data-armed={armed} data-backdrop={backdrop?.kind||'none'} data-waking={waking} aria-label={tr("Scherm wekken")} aria-busy={waking} onClick={wake}>
  {snapshot.device.faults?.length>0&&!offline&&<span role="alert" className="sleep-fault"><Icon name="alert" size={28}/>{tr("Hardware alert · ")}{tr(snapshot.device.faults.join(', '))}</span>}
  <RestBackdrop backdrop={backdrop}/>
  {screen.mode!=='black'&&!off&&<>

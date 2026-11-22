@@ -45,14 +45,14 @@ test('clock fills the rest view; a single touch shows wake feedback and never to
  const sleep=page.getByRole('button',{name:'Wake display',exact:true});await expect(sleep).toBeVisible();expect(parseFloat(await sleep.locator('.sleep-clock').evaluate(e=>getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(220);expect(await sleep.innerText()).not.toContain('SCHERMRUST');
  await page.waitForTimeout(400);await page.screenshot({path:'test-results/touch-screen-rest.png'});
  await page.route('**/api/event',async route=>{if(route.request().postDataJSON()?.type==='activity')await new Promise(r=>setTimeout(r,650));await route.continue();});
- await sleep.tap();await expect(page.getByText('Waking…',{exact:true})).toBeVisible();await expect(sleep).not.toBeVisible();
+ await expect(sleep).toHaveAttribute('data-armed','true');await sleep.tap();await expect(page.getByText('Waking…',{exact:true})).toBeVisible();await expect(sleep).not.toBeVisible();
  const after=await(await page.request.get('/api/state')).json();expect(after.playback.playing).toBe(before.playback.playing);expect(after.device.amplifierEnabled).toBe(before.device.amplifierEnabled);
 });
 test('timeout saves on the backend and survives reload; all rest modes remain available',async({page})=>{
  await settings(page,'Display');await page.getByLabel('Screen timeout',{exact:true}).selectOption('600');await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('[data-saved="true"]')).toBeVisible();
  expect((await(await page.request.get('/api/display')).json()).settings.timeoutSeconds).toBe(600);
  await page.reload();await settings(page,'Display');await expect(page.getByLabel('Screen timeout',{exact:true})).toHaveValue('600');
- for(const mode of ['clock','widgets','sunset','glow','playing','black']){await page.getByRole('radiogroup',{name:'Screen rest view'}).locator(`button[data-mode=${mode}]`).click();await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByRole('button',{name:'Screen rest',exact:true}).click();const sleep=page.getByRole('button',{name:'Wake display',exact:true});await expect(sleep).toHaveAttribute('data-mode',mode);if(mode==='black')expect(await sleep.innerText()).toBe('');await sleep.tap();await expect(sleep).not.toBeVisible();}
+ for(const mode of ['clock','widgets','sunset','glow','playing','black']){await page.getByRole('radiogroup',{name:'Screen rest view'}).locator(`button[data-mode=${mode}]`).click();await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByRole('button',{name:'Screen rest',exact:true}).click();const sleep=page.getByRole('button',{name:'Wake display',exact:true});await expect(sleep).toHaveAttribute('data-mode',mode);if(mode==='black')expect(await sleep.innerText()).toBe('');await expect(sleep).toHaveAttribute('data-armed','true');await sleep.tap();await expect(sleep).not.toBeVisible();}
 });
 test('a real uploaded video replaces the mock and follows music pause and seek',async({page})=>{
  await page.request.post('/api/event',{data:{type:'pause'}});await page.request.post('/api/event',{data:{type:'seek',position:0}});
@@ -72,7 +72,20 @@ test('a real uploaded video replaces the mock and follows music pause and seek',
 test('notifications preserve modal focus and critical faults remain visible over black rest',async({page})=>{
  await page.getByRole('button',{name:'Notifications',exact:true}).click();const tray=page.getByRole('dialog',{name:'Notification panel'});for(const name of ['System report','Hardware alert','Newsletter','What’s new','Tutorial']){await tray.getByRole('button',{name,exact:true}).click();await expect(tray.getByRole('heading',{name,exact:true})).toBeVisible();}
  await page.keyboard.press('Escape');await expect(page.getByRole('button',{name:'Notifications',exact:true})).toBeFocused();
- await settings(page,'Display');await page.getByRole('radiogroup',{name:'Screen rest view'}).locator('button[data-mode=black]').click();await page.getByRole('button',{name:'Screen rest',exact:true}).click();await page.request.post('/api/event',{data:{type:'thermal-alarm'}});await expect(page.locator('.sleep-fault')).toContainText('thermal-alarm');await page.getByRole('button',{name:'Wake display',exact:true}).tap();await expect(page.locator('.sleep-surface')).not.toBeVisible();const state=await(await page.request.get('/api/state')).json();expect(state.device.amplifierEnabled).toBe(false);expect(state.device.faults).toContain('thermal-alarm');
+ await settings(page,'Display');await page.getByRole('radiogroup',{name:'Screen rest view'}).locator('button[data-mode=black]').click();await page.getByRole('button',{name:'Screen rest',exact:true}).click();await page.request.post('/api/event',{data:{type:'thermal-alarm'}});await expect(page.locator('.sleep-fault')).toContainText('thermal-alarm');await expect(page.getByRole('button',{name:'Wake display',exact:true})).toHaveAttribute('data-armed','true');await page.getByRole('button',{name:'Wake display',exact:true}).tap();await expect(page.locator('.sleep-surface')).not.toBeVisible();const state=await(await page.request.get('/api/state')).json();expect(state.device.amplifierEnabled).toBe(false);expect(state.device.faults).toContain('thermal-alarm');
+});
+test('3.16.1: screen rest started by a tap stays on; the same tap never wakes it a second later',async({page})=>{
+ await page.goto('/?gui=2&screen=1&display=dsi-production&panel=wall-16-10');
+ const rest=page.getByRole('button',{name:'Screen rest',exact:true});await expect(rest).toBeVisible();
+ await page.waitForTimeout(2200);// the previous activity report is older than the 2 s throttle
+ await rest.tap();
+ const sleep=page.getByRole('button',{name:'Wake display',exact:true});await expect(sleep).toBeVisible();
+ const late=[];page.on('request',q=>{if(q.url().endsWith('/api/activity'))late.push(q.url());});
+ // A stray touch right after the tap (panel bounce) is ignored…
+ await page.waitForTimeout(250);await page.touchscreen.tap(640,400);
+ await page.waitForTimeout(3500);await expect(sleep).toBeVisible();expect(late,'no delayed activity report from the rest tap').toEqual([]);
+ expect((await(await page.request.get('/api/state')).json()).device.displayAwake).toBe(false);
+ await expect(sleep).toHaveAttribute('data-armed','true');await sleep.tap();await expect(sleep).not.toBeVisible();
 });
 test('3.16: rest views show previews and a chosen background photo appears behind the clock',async({page})=>{
  await settings(page,'Display');const views=page.getByRole('radiogroup',{name:'Screen rest view'});
@@ -83,7 +96,7 @@ test('3.16: rest views show previews and a chosen background photo appears behin
  await page.getByRole('button',{name:'Save',exact:true}).click();await page.getByRole('button',{name:'Screen rest',exact:true}).click();
  const sleep=page.getByRole('button',{name:'Wake display',exact:true});await expect(sleep).toHaveAttribute('data-backdrop','photo');
  expect(await sleep.locator('.rest-backdrop>span').evaluate(e=>e.style.backgroundImage)).toContain('/rest/lake.jpg');
- expect((await page.request.get('/rest/lake.jpg')).status()).toBe(200);await sleep.tap();await expect(sleep).not.toBeVisible();
+ expect((await page.request.get('/rest/lake.jpg')).status()).toBe(200);await expect(sleep).toHaveAttribute('data-armed','true');await sleep.tap();await expect(sleep).not.toBeVisible();
 });
 test('startup preference offers a still image and animated WebP replay on the wall display',async({page})=>{
  await settings(page,'Playback');const choice=page.getByRole('combobox',{name:'Startup animation',exact:true});await choice.selectOption('still');await page.getByRole('button',{name:'Replay startup',exact:true}).click();const splash=page.getByRole('status',{name:'Startup animation',exact:true});await expect(splash).toHaveAttribute('data-renderer','still');await expect(splash.locator('video')).toHaveCount(0);await splash.click();await expect(splash).not.toBeVisible();await choice.selectOption('video');await page.getByRole('button',{name:'Replay startup',exact:true}).click();await expect(splash).toHaveAttribute('data-renderer','image-animation');const image=splash.locator('.startup-frame-animation');await expect(image).toHaveJSProperty('naturalWidth',1280);const first=await image.screenshot();await page.waitForTimeout(700);expect((await image.screenshot()).equals(first)).toBe(false);await expect(splash.locator('video')).toHaveCount(0);

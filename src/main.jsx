@@ -118,9 +118,15 @@ function App() {
       lastSent = performance.now();
       fetch("/api/activity", { method: "POST" }).catch(() => {});
     };
+    // Screen rest started by a tap: the rest of that same gesture must not report activity afterwards,
+    // or a delayed report wakes the display about a second later (owner, 22 November 2026).
+    let quietUntil = 0;
+    const rest = () => { clearTimeout(trailing); quietUntil = performance.now() + 1500; };
+    window.addEventListener("tunebox-screen-rest", rest);
     const activity = (event) => {
       if (event.type === "pointermove" && !event.buttons) return;
       if (!event.isTrusted) return;
+      if (performance.now() < quietUntil) return;
       clearTimeout(trailing);
       if (performance.now() - lastSent >= 2000) report();
       else trailing = setTimeout(report, 2000);
@@ -138,6 +144,7 @@ function App() {
     );
     return () => {
       clearTimeout(trailing);
+      window.removeEventListener("tunebox-screen-rest", rest);
       events.forEach((type) => document.removeEventListener(type, activity));
     };
   }, []);

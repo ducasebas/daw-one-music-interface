@@ -29,6 +29,7 @@ export function combineBands(bands,count){
  return Array.from({length:16},(_,i)=>{const values=bands.slice(i*2,i*2+2).filter(x=>typeof x==='number'&&Number.isFinite(x));return values.length?Math.min(0,10*Math.log10(values.reduce((sum,db)=>sum+Math.pow(10,db/10),0))):null;});
 }
 const number=value=>Number.isFinite(value)&&value>-95?value.toFixed(1):'−∞';
+export const meterFrameMs=33;
 /** Animate only the SVG/transform nodes, never FFT data or the whole React tree. */
 function useMeterMotion(targets){
  const nodes=useRef([]),values=useRef([]),target=useRef([]),frame=useRef(null),last=useRef(0);
@@ -36,6 +37,8 @@ function useMeterMotion(targets){
   target.current=targets;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const tick=time=>{
+   // At most ~30 fps: data arrives ten times a second, and on the Pi every frame costs main-thread time.
+   if(last.current&&time-last.current<meterFrameMs){frame.current=requestAnimationFrame(tick);return;}
    const dt=Math.min(64,last.current?time-last.current:16);last.current=time;let unsettled=false;
    targets.forEach((_,i)=>{
     const next=target.current[i]||0,previous=values.current[i]||0;

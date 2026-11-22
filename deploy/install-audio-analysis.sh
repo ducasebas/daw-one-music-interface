@@ -58,6 +58,7 @@ Environment=DAW_AUDIO_READER=/usr/local/lib/daw-one-audio/pcm-reader
 Environment=DAW_AUDIO_SHM_DIR=/run/daw-one-audio-shm
 Environment=DAW_AUDIO_PLAYER_ID=$player_id
 UNIT
+chmod 644 /etc/systemd/system/daw-one.service.d/audio-analysis.conf
 if [[ $export_change_needed == true ]]; then
  python3 "$repo/deploy/audio/player-export.py" write "$pid" "$player_id"
  systemctl daemon-reload

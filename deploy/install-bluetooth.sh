@@ -56,6 +56,7 @@ ReadWritePaths=/run/daw-one-bluetooth /var/lib/daw-one-bluetooth
 RestrictAddressFamilies=AF_UNIX
 MemoryMax=64M
 UNIT
+chmod 644 /etc/systemd/system/daw-one-bluetooth-agent.service
 cat > /etc/systemd/system/daw-one-bluealsa.service <<'UNIT'
 [Unit]
 Description=TuneBox Bluetooth A2DP sink
@@ -73,6 +74,7 @@ PrivateTmp=yes
 RestrictAddressFamilies=AF_UNIX AF_BLUETOOTH
 MemoryMax=64M
 UNIT
+chmod 644 /etc/systemd/system/daw-one-bluealsa.service
 cat > /etc/systemd/system/daw-one-bluetooth-audio.service <<'UNIT'
 [Unit]
 Description=TuneBox one-phone Bluetooth audio output
@@ -90,6 +92,7 @@ PrivateTmp=yes
 RestrictAddressFamilies=AF_UNIX
 MemoryMax=64M
 UNIT
+chmod 644 /etc/systemd/system/daw-one-bluetooth-audio.service
 cat > /etc/systemd/system/daw-one-bluetooth-recover.service <<'UNIT'
 [Unit]
 Description=Restore TuneBox gain controls after Bluetooth source use
@@ -112,6 +115,7 @@ ReadWritePaths=/var/lib/daw-one-manager /run/daw-one-bluetooth
 [Install]
 WantedBy=multi-user.target
 UNIT
+chmod 644 /etc/systemd/system/daw-one-bluetooth-recover.service
 for unit in tunebox-player.service squeezelite.service; do
  if systemctl cat "$unit" >/dev/null 2>&1; then
   install -d -m 755 "/etc/systemd/system/$unit.d"
@@ -120,6 +124,7 @@ for unit in tunebox-player.service squeezelite.service; do
 Requires=daw-one-bluetooth-recover.service
 After=daw-one-bluetooth-recover.service
 UNIT
+  chmod 644 "/etc/systemd/system/$unit.d/bluetooth-recovery.conf"
  fi
 done
 printf '{"verified":true,"output":"plughw:CARD=LouderRaspberry,DEV=0"}\n' > /etc/daw-one/bluetooth.json

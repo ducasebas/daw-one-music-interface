@@ -56,6 +56,7 @@ StandardError=journal
 [Install]
 WantedBy=multi-user.target
 UNIT
+chmod 644 /etc/systemd/system/daw-one-manager.service
 install -d -m 755 /etc/systemd/system/daw-one.service.d
 cat > /etc/systemd/system/daw-one.service.d/manager.conf <<'UNIT'
 [Unit]
@@ -65,6 +66,7 @@ After=daw-one-manager.service
 EnvironmentFile=-/etc/daw-one/connection.env
 SupplementaryGroups=dawcontrol
 UNIT
+chmod 644 /etc/systemd/system/daw-one.service.d/manager.conf
 install -d -m 700 /var/lib/daw-one
 cat > /etc/systemd/system/daw-one-local-ma-install.service <<'UNIT'
 [Unit]
@@ -83,6 +85,7 @@ ReadWritePaths=/etc/daw-one /var/lib/daw-one /var/lib/daw-one-manager
 StandardOutput=journal
 StandardError=journal
 UNIT
+chmod 644 /etc/systemd/system/daw-one-local-ma-install.service
 bash "$repo/deploy/install-sync.sh"
 bash "$repo/deploy/install-power.sh"
 systemctl daemon-reload
