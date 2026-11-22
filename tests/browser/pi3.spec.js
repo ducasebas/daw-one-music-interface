@@ -12,9 +12,10 @@ test("Pi3 profile shares playback and skins with video disabled and a fixed view
   await page
     .getByRole("button", { name: "Open Now Playing", exact: true })
     .click();
-  await expect(
-    page.getByRole("button", { name: "Video off · Pi 3 mode" }),
-  ).toBeDisabled();
+  // 3.16.2: without a configured video the button is hidden; with one, Pi 3 mode shows it disabled. Never usable here.
+  await expect(page.getByRole("button", { name: "Video Artwork", exact: true })).toHaveCount(0);
+  const pi3Video = page.getByRole("button", { name: "Video off · Pi 3 mode" });
+  if (await pi3Video.count()) await expect(pi3Video).toBeDisabled();
   expect(
     await page
       .locator(".music2")
