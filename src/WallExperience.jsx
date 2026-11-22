@@ -1,4 +1,4 @@
-import {tr} from "../shared/i18n.js";
+import {tr,translateFormat} from "../shared/i18n.js";
 import React,{useEffect,useRef,useState} from 'react';
 import {Icon} from './Icon.jsx';
 import {sleepModes,screenSettings,sunsetAt,wallNotifications} from '../shared/wall.js';
@@ -65,7 +65,7 @@ export function WallControls({snapshot,offline,updates,security,onSleep,onNaviga
  <dialog ref={dialog} className="wall-notifications" aria-label={tr("Meldingenpaneel")} onClose={()=>trigger.current?.focus()} onClick={e=>{if(e.target===e.currentTarget)dialog.current.close();}}>
  <div className="wall-tray"><header><h2>{tr("Meldingen")}</h2><button aria-label={tr("Meldingen sluiten")} onClick={()=>dialog.current.close()}><Icon name="close"/></button></header>
  <nav aria-label={tr("Meldingcategorieën")}>{notifications.map((n,i)=><button key={n.id} aria-label={tr(n.title)} aria-pressed={page===i} onClick={()=>setPage(i)}><Icon name={n.icon} size={25}/>{n.attention&&<i className="attention-dot"/>}</button>)}</nav>
- <article data-attention={item.attention||false}><Icon name={item.icon} size={36}/><h3>{tr(item.title)}</h3>{item.simulated&&<small>{tr("GESIMULEERDE HARDWARESTATUS")}</small>}<p>{tr(item.detail)}</p>
+ <article data-attention={item.attention||false}><Icon name={item.icon} size={36}/><h3>{tr(item.title)}</h3>{item.simulated&&<small>{tr("GESIMULEERDE HARDWARESTATUS")}</small>}<p>{item.params?translateFormat(item.detail,item.params):tr(item.detail)}</p>
  {item.label&&<p>{tr(item.label)}</p>}{item.action&&<button onClick={()=>navigate(item.action)}>{tr(item.id==='update'?'Open Updates':'Open ')}{item.id==='update'?null:tr(item.title)}</button>}{item.dismissible&&<button onClick={dismiss}>{tr('Dismiss')}</button>}
  {item.id==='status'&&<><p>{tr("Versterker: ")}{tr(snapshot.device?.verified?'simulatie geverifieerd':'niet geverifieerd')}{tr(" · fouten: ")}{tr(snapshot.device?.faults?.length||0)}</p><button onClick={()=>navigate('screen')}>{tr("Schermrust instellen")}</button></>}
  {item.id==='tutorial'&&<button onClick={()=>navigate('playing')}>{tr("Open Nu spelen")}</button>}

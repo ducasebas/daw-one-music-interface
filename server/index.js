@@ -2,6 +2,7 @@ import {settingsAttention} from '../shared/interface.js';
 import {LocalAudio} from './local-audio.js';
 import {screenOffDue} from '../shared/screen-off.js';
 import {RestPhoto,restPhotoLimits} from './rest-photo.js';
+import {nextPowerHistory,powerDrop} from '../shared/power-history.js';
 import {SyncProfiles,synchronizationContext,playbackRoute} from './sync-profiles.js';
 import {AutomaticSound} from './automatic-sound.js';
 import {AudioAnalysis} from "./audio-analysis.js";
@@ -56,6 +57,10 @@ const preferences=new PreferencesStore(stateDirectory,{display:displayConfigurat
 const security=new DeviceSecurity(stateDirectory);
 const remote=new RemoteAccess(stateDirectory);
 const restPhoto=new RestPhoto(stateDirectory);
+// Highest PD contract read on this TuneBox; a later lower contract gets an explanation (read-only, never requests power).
+const powerHistoryPath=join(stateDirectory,'power-history.json');
+let powerHistory=(()=>{try{return JSON.parse(readFileSync(powerHistoryPath,'utf8'));}catch{return {};}})();
+const updatePowerHistory=(now=Date.now())=>{const next=nextPowerHistory(powerHistory,host.value.power,now);if(next.highestWatts!==powerHistory.highestWatts){try{writeFileSync(powerHistoryPath+'.tmp',JSON.stringify({...next,lowerSince:null})+'\n',{mode:0o600});renameSync(powerHistoryPath+'.tmp',powerHistoryPath);}catch{}}powerHistory=next;};
 const host=new HostTelemetry();
 const debug=new DebugLog(stateDirectory);
 const presence=new PresencePolicy(process.env.DAW_PRESENCE_FILE);
@@ -96,6 +101,7 @@ const snapshot = () => {
     ...runtime.snapshot(),
     screenOff,
     restPhoto:restPhoto.status(),
+    powerHistory:{highestWatts:powerHistory.highestWatts??null,highestAt:powerHistory.highestAt??null,drop:powerDrop(powerHistory,host.value.power)},
     build: release,
     automaticDsp:publicAutomaticDsp(),
     localAudio:localAudio.get(),
@@ -720,7 +726,7 @@ const inventoryClock = setInterval(() => {
   inventory = bootInventory();
 }, 30000);
 inventoryClock.unref();
-const hostClock=setInterval(()=>{host.sample();debug.record('host','sample',{cpuPercent:host.value.cpu.usagePercent,availableMiB:host.value.memory.availableBytes/1048576,temperatureC:host.value.cpu.temperatureC});broadcast();},5000);hostClock.unref();
+const hostClock=setInterval(()=>{host.sample();updatePowerHistory();debug.record('host','sample',{cpuPercent:host.value.cpu.usagePercent,availableMiB:host.value.memory.availableBytes/1048576,temperatureC:host.value.cpu.temperatureC});broadcast();},5000);hostClock.unref();
 const keepalive = setInterval(() => {
   for (const c of clients)
     if (!streamWriter.blocked(c)) streamWriter.write(c, ": heartbeat\n\n");

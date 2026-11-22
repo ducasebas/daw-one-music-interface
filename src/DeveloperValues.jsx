@@ -54,6 +54,8 @@ export function DeveloperValues({snapshot,offline}){
    ['Offered by the supply',pd?.profiles?.length?pd.profiles.map(watts).join(' | '):'—'],
    ['Last response',pd&&Number.isInteger(pd.responseCode)?responses[pd.responseCode]||String(pd.responseCode):'—'],
    ['Measured at the input',power?.ina228?.status==='ok'?`${power.ina228.volts?.toFixed(2)} V · ${Number.isFinite(power.ina228.watts)?power.ina228.watts.toFixed(1)+' W':'—'}`:power?.ina228?.status||'—'],
+   ['Highest contract seen on this TuneBox',snapshot.powerHistory?.highestWatts?`${snapshot.powerHistory.highestWatts} W · ${when(snapshot.powerHistory.highestAt)}`:'—'],
+   ['All offers limited to 3 A',pd?.profiles?.length?pd.profiles.every(p=>p.amps<=3)?'Yes':'No':'—'],
    ['Verified profile on this TuneBox',manager?.verifiedProfile?watts(manager.verifiedProfile):'None'],
    ['Last power setup',manager?.lastPdRequest||'—'],
    ['Request at startup',manager?.settings?(manager.settings.startup100W?'100 W':manager.settings.startupMaximum20V?'Highest 20 V offer':manager.settings.startup20V?'Verified 20 V profile':'Off'):'—'],
