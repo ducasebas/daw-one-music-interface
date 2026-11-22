@@ -2,6 +2,10 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
+## GUI 3.16.0 REST — approved
+
+The owner approved publishing on 22 November 2026 with “ja voeg maar toe. en push maar” (add the power warning, then push). The scope is in [rest-3-16.md](rest-3-16.md): city location, calm skipping, screen preservation, rest previews and backgrounds with the owner's photos and phone upload, auto-hiding header, widget fit/order/position, Developer → Values, the onset sync save fix and the lower-PD-contract notice. The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full CI passes. It authorizes no live PD request or physical confirmation. The owner's readout that day showed every PD offer capped at 3 A; that is a supply/cable observation, not a confirmed cause.
+
 ## GUI 3.15.3 HOTFIX — published
 
 Merged via PR #20 as `73b45a089625317213f342ea26dc04cf6b8ea8f5` on 21 November 2026 after all six PR CI jobs passed. Verify on `main` (run 44894739774) passed. Publish signed preview (run 44895321505) signed and published release `ota-preview-73b45a089625317213f342ea26dc04cf6b8ea8f5`. Its public channel check got HTTP 403 on the shared runner, so the failed job was re-run once.
