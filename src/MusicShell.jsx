@@ -14,6 +14,7 @@ import { TouchVolume, useVolumeRequests } from "./TouchVolume.jsx";
 import {controlVolumeLimit} from '../shared/volume.js';
 import React, { useState, useRef, useEffect, useCallback } from "react";
 const headerHideMs = 6000;
+const restArmMs = 900;
 import { flushSync } from "react-dom";
 import { SkinPanel } from "./SkinPanel.jsx";
 import { presets } from "../shared/themes.js";
@@ -103,7 +104,12 @@ export function MusicShell({
     if(ok!==false)setSleepPreview(false);
     setWaking(false);
   };
+  // A touch panel can report a stray touch or bounce right after the tap that started rest; ignore input briefly.
+  const restStartedAt=useRef(-Infinity);
+  const restArmed=()=>performance.now()-restStartedAt.current>=restArmMs;
   const sleep = async () => {
+    restStartedAt.current=performance.now();
+    window.dispatchEvent(new Event("tunebox-screen-rest"));
     setSleepPreview(true);
     if(!offline&&await send({type:'display-timeout'})===false)setSleepPreview(false);
   };
@@ -287,8 +293,9 @@ export function MusicShell({
       data-panel={wall ? "wall-16-10" : "legacy-wide"}
       onContextMenu={e=>{if(!e.target.closest('input,textarea,[contenteditable="true"]'))e.preventDefault();}}
       onDragStart={e=>{if(e.target.tagName==='IMG')e.preventDefault();}}
-      onPointerDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();wake();}:undefined}
-      onKeyDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();wake();}:undefined}
+      onPointerDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();if(restArmed())wake();}:undefined}
+      onClickCapture={sleeping ? e=>{if(!restArmed()){e.preventDefault();e.stopPropagation();}}:undefined}
+      onKeyDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();if(restArmed())wake();}:undefined}
       data-theme={theme.id}
       data-page={page}
       data-header={autoHideHeader&&headerHidden?"hidden":"shown"}

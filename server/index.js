@@ -401,6 +401,8 @@ app.post('/api/display/ready', (q,r) => {
 });
 // User activity affects the shared display timer, never MA playback or verification.
 app.post("/api/activity", (_q, r) => {
+  // The tap that starts screen rest also reports activity; that report can arrive just after the rest request.
+  if(Date.now()-restRequestedAt<1200&&runtime.device.displayAwake===false)return r.json({ok:true,ignored:'screen-rest'});
   const awake = runtime.device.displayAwake;
   runtime.dispatch({ type: "activity" });
   if (awake !== runtime.device.displayAwake) broadcast();
@@ -580,8 +582,10 @@ async function playbackEvent(body){
     } else runtime.dispatch(body);
     broadcast();
 }
+let restRequestedAt=0;
 app.post("/api/event", async (q, r) => {
   try {
+    if(q.body?.type==='display-timeout')restRequestedAt=Date.now();
     await playbackEvent(q.body);
     r.json(snapshot());
   } catch (e) {

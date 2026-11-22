@@ -33,7 +33,9 @@ export function sourceQuality(format) {
 const unavailable = (base, detail) => ({...base, available: false, value: 'Not available', detail});
 
 /** One tile. `context` carries readings that are fetched elsewhere (network) and the clock. */
-export function nowPlayingWidget(id, snapshot = {}, {now = Date.now(), offline = false, network = null, hour12 = false} = {}) {
+/** How long the widget keeps showing the last good power reading when a new one is late (the sensor refreshes slowly). */
+export const powerHoldMs = 60000;
+export function nowPlayingWidget(id, snapshot = {}, {now = Date.now(), powerNow = now, lastPower = null, offline = false, network = null, hour12 = false} = {}) {
   const p = snapshot.playback || {}, simulated = snapshot.mode === 'simulation';
   switch (id) {
     case 'clock': {
@@ -81,8 +83,11 @@ export function nowPlayingWidget(id, snapshot = {}, {now = Date.now(), offline =
     }
     case 'power': {
       const base = {id, icon: 'hardware', label: 'Power', action: 'sensors'};
-      const power = snapshot.hostTelemetry?.power;
-      if (offline || !powerIsFresh(power, now)) return unavailable(base, 'No current power reading');
+      // Use the current reading, or the last good one for up to a minute; a slow refresh must not blank the tile.
+      const current = snapshot.hostTelemetry?.power;
+      const held = lastPower && Number.isFinite(lastPower.observedAt) && powerNow - lastPower.observedAt < powerHoldMs && lastPower.observedAt <= powerNow + 1000 ? lastPower : null;
+      const power = powerIsFresh(current, powerNow) ? current : held;
+      if (offline || !power) return unavailable(base, 'No current power reading');
       const contract = Number.isFinite(power.contractWatts) ? '{watts} W contract' : null;
       // Consumption only when the INA228 reading is confirmed and consistent (power.watts is null otherwise).
       const used = Number.isFinite(power.watts) ? '{used} W in use' : null;
