@@ -12,7 +12,8 @@ import { NetworkStatus } from "./NetworkStatus.jsx";
 import { BuildBadge } from "./BuildBadge.jsx";
 import { TouchVolume, useVolumeRequests } from "./TouchVolume.jsx";
 import {controlVolumeLimit} from '../shared/volume.js';
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+const headerHideMs = 6000;
 import { flushSync } from "react-dom";
 import { SkinPanel } from "./SkinPanel.jsx";
 import { presets } from "../shared/themes.js";
@@ -121,6 +122,13 @@ export function MusicShell({
     [pendingAction,setPendingAction]=useState(null),
     [searchCycle,setSearchCycle]=useState(0);
   const video=prefs.artwork==='video';
+  // 3.16: on the wall's Now Playing page the header slides up after a few quiet seconds; a small tab brings it back.
+  const headerOverride=(()=>{try{return localStorage.getItem('tunebox.headerAutoHide');}catch{return null;}})();
+  const autoHideHeader = wall && page === "playing" && !sleeping && prefs.headerAutoHide !== false && headerOverride !== "off";
+  const [headerHidden,setHeaderHidden]=useState(false);
+  const headerTimer=useRef(null);
+  const showHeader=useCallback(()=>{clearTimeout(headerTimer.current);setHeaderHidden(false);if(autoHideHeader)headerTimer.current=setTimeout(()=>setHeaderHidden(true),headerHideMs);},[autoHideHeader]);
+  useEffect(()=>{showHeader();return()=>clearTimeout(headerTimer.current);},[showHeader]);
   const prompted=useRef(false);
   useEffect(()=>{const manager=deviceUpdates?.info?.manager;if(!prompted.current&&manager?.managed&&!manager.simulated&&manager.setupComplete===false){prompted.current=true;setSettingsPage(13);setPage("settings");}},[deviceUpdates?.info?.manager?.managed,deviceUpdates?.info?.manager?.setupComplete]);
   const [favorites, setFavorites] = useState(() => {
@@ -283,6 +291,7 @@ export function MusicShell({
       onKeyDownCapture={sleeping ? e=>{e.preventDefault();e.stopPropagation();wake();}:undefined}
       data-theme={theme.id}
       data-page={page}
+      data-header={autoHideHeader&&headerHidden?"hidden":"shown"}
       data-performance={prefs.lowPower ? "pi3" : "standard"}
       data-skin={
         presets.some((p) => p.id === theme.id) ? theme.id : "reference-dark"
@@ -308,7 +317,8 @@ export function MusicShell({
         onComplete={setStartupReady}
       />
       <StartupJoin active={wall&&startupReady&&!offline&&!sleeping&&(!snapshot.onboardingRequired||snapshot.preferences?.setupDeferred)&&snapshot.mode==='music-assistant'&&!['settings','rooms'].includes(page)&&!['installing','restarting','checking-health','rolling-back'].includes(deviceUpdates.info?.status)} controlToken={deviceUpdates.info?.controlToken} onSnapshot={setSnapshot} onRooms={()=>go('rooms')} onUnlock={()=>{setSettingsPage(21);go('settings');}}/>
-      <header className="m2-header">
+      {autoHideHeader&&headerHidden&&<button className="m2-header-pull" aria-label={tr("Show menu")} onClick={showHeader}><Icon name="back" size={22} className="m2-header-pull-icon"/></button>}
+      <header className="m2-header" aria-hidden={autoHideHeader&&headerHidden?true:undefined} inert={autoHideHeader&&headerHidden} onPointerDownCapture={autoHideHeader?showHeader:undefined}>
         <button className="m2-brand" onClick={() => go("playing")} aria-label={tr("Now Playing")}>{tr("DAW ")}<b>{tr("TuneBox")}</b>
         </button>
         <nav aria-label={tr("Muzieknavigatie")}>
@@ -669,7 +679,7 @@ export function MusicShell({
             ) : (
               <Artwork src={shown.artwork} alt={shown.title} loading={skipLoading} />
             )}
-            <div>
+            <div className="m2-track">
               <small>
                 {tr(simulated ? "SIMULATIE" : "MUSIC ASSISTANT")} /{tr(" ")}
                 {tr(playback.playerName || "TuneBox")}

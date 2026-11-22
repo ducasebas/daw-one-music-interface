@@ -2289,5 +2289,14 @@
   "Discard": "Weggooien",
   "To add your own photo: open the phone remote and choose “Screen rest photo”. The phone shrinks the photo and removes its location data before sending it.": "Eigen foto toevoegen: open de telefoonafstandsbediening en kies „Schermrustfoto”. De telefoon verkleint de foto en verwijdert de locatiegegevens voordat hij wordt verstuurd.",
   "Remove your photo": "Je foto verwijderen",
-  "Sunday 22 November": "Zondag 22 november"
+  "Sunday 22 November": "Zondag 22 november",
+  "Hide the menu bar when idle": "Menubalk verbergen als niemand iets doet",
+  "Show menu": "Menu tonen",
+  "Widget position": "Positie van widgets",
+  "Below the song": "Onder het nummer",
+  "Above the song": "Boven het nummer",
+  "Widget order": "Volgorde van widgets",
+  "Order": "Volgorde",
+  "Move left": "Naar links",
+  "Move right": "Naar rechts"
 }

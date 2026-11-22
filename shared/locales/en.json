@@ -2289,5 +2289,14 @@
   "Discard": "Discard",
   "To add your own photo: open the phone remote and choose “Screen rest photo”. The phone shrinks the photo and removes its location data before sending it.": "To add your own photo: open the phone remote and choose “Screen rest photo”. The phone shrinks the photo and removes its location data before sending it.",
   "Remove your photo": "Remove your photo",
-  "Sunday 22 November": "Sunday 22 November"
+  "Sunday 22 November": "Sunday 22 November",
+  "Hide the menu bar when idle": "Hide the menu bar when idle",
+  "Show menu": "Show menu",
+  "Widget position": "Widget position",
+  "Below the song": "Below the song",
+  "Above the song": "Above the song",
+  "Widget order": "Widget order",
+  "Order": "Order",
+  "Move left": "Move left",
+  "Move right": "Move right"
 }
