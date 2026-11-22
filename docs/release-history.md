@@ -2,6 +2,10 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
+## GUI 3.16.2 PLAY — approved
+
+The owner approved on 22 November 2026 with “Ja pushy maar”, after the summary of the local candidate. The scope is in [update-3-16-2.md](update-3-16-2.md): widget editor, overlay header, hold to wake, Keep playing button, crossfade, SSH switch, leaving multiroom after a reboot, the Pi throttle card and the small fixes. The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full CI passes. It authorizes no live hardware experiment or physical confirmation.
+
 ## GUI 3.16.1 HOTFIX — published
 
 Merged via PR #22 as `cb95139b8831eca819282a98c91607840e1dbded` on 22 November 2026 after all six PR CI jobs passed on head `64b503b`. The first head failed only in WebKit: the new screen-rest test used a Chromium-only touch API. It was rewritten with the portable touchscreen and still fails on the old code. The owner's 30 fps CPU request was added before the merge. Verify on `main` (run 45037394541) passed. Publish signed preview (run 45038125406) passed, including its channel check.
