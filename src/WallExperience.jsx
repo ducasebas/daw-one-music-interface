@@ -2,6 +2,8 @@ import {tr} from "../shared/i18n.js";
 import React,{useEffect,useRef,useState} from 'react';
 import {Icon} from './Icon.jsx';
 import {sleepModes,screenSettings,sunsetAt,wallNotifications} from '../shared/wall.js';
+import {restBackdrop,RestBackdrop} from './RestBackdrop.jsx';
+import {RestPicker} from './RestPicker.jsx';
 import {trackUpdate,loadUpdateMemory,saveUpdateMemory} from '../shared/update-notice.js';
 import {settingsAttention} from '../shared/interface.js';
 import {useTemperatureDisplay} from './useTemperatureDisplay.js';
@@ -9,10 +11,10 @@ import {getLanguage} from '../shared/i18n.js';
 import {AudioVisualizer} from './AudioVisualizer.jsx';
 import {PowerOffButton} from './PowerControls.jsx';
 const labels={clock:'Klok & datum',widgets:'Widgets',sunset:'Zonsondergang',glow:'Glow',playing:'Now playing',black:'Black · backlight off'};
-export function ScreenSettings({prefs,update}) {
+export function ScreenSettings({prefs,update,snapshot}) {
  const screen=screenSettings(prefs.screen);
  const change=(key,value)=>update('screen',{...screen,[key]:value});
- return <div className="screen-settings control-grid"><label>{tr("Schermrust")}<select aria-label={tr("Schermrust weergave")} value={screen.mode} onChange={e=>change('mode',e.target.value)}>{sleepModes.map(id=><option key={id} value={id}>{tr(labels[id])}</option>)}</select></label>
+ return <div className="screen-settings control-grid"><RestPicker screen={prefs.screen} snapshot={snapshot} onChange={next=>update('screen',next)}/>
  <p className="screen-place">{tr(Number.isFinite(screen.latitude)?'Sunset follows the city chosen in Date & time.':'Choose your city in Date & time to use sunset.')}</p>
  <details className="screen-coordinates"><summary>{tr('Advanced: coordinates')}</summary>
  <label>{tr("Breedtegraad")}<input aria-label={tr("Breedtegraad")} type="number" min="-90" max="90" step="any" value={screen.latitude??''} onChange={e=>change('latitude',e.target.value===''?null:Number(e.target.value))}/></label>
@@ -31,12 +33,14 @@ export function SleepSurface({prefs,snapshot,offline,wake,waking=false}) {
  const clock=snapshot.preferences?.clock||{};
  const clockOptions={timeZone:clock.timeZone||'Europe/Amsterdam',hour12:clock.hour12===true};
  const off=snapshot.screenOff===true;
+ const backdrop=off?null:restBackdrop(screen,{artwork:track?.artwork,restPhoto:snapshot.restPhoto});
  const meters=!off&&['vu','bars','spectrum'].includes(screen.mode);
  const time=now.toLocaleTimeString(locale,{...clockOptions,hour:'2-digit',minute:'2-digit'});
  const sunsetText=sunset?sunset.toLocaleTimeString(locale,{...clockOptions,hour:'2-digit',minute:'2-digit'}):'Location not set';
  const reading=(metric,digits,unit)=>!offline&&metric?.status==='ok'&&Number.isFinite(metric.value)?metric.value.toFixed(digits)+' '+unit:'Niet beschikbaar';
- return <button ref={root} className="sleep-surface" data-mode={off?'black':screen.mode} data-screen-off={off} data-waking={waking} aria-label={tr("Scherm wekken")} aria-busy={waking} onClick={wake}>
+ return <button ref={root} className="sleep-surface" data-mode={off?'black':screen.mode} data-screen-off={off} data-backdrop={backdrop?.kind||'none'} data-waking={waking} aria-label={tr("Scherm wekken")} aria-busy={waking} onClick={wake}>
  {snapshot.device.faults?.length>0&&!offline&&<span role="alert" className="sleep-fault"><Icon name="alert" size={28}/>{tr("Hardware alert · ")}{tr(snapshot.device.faults.join(', '))}</span>}
+ <RestBackdrop backdrop={backdrop}/>
  {screen.mode!=='black'&&!off&&<>
  {meters&&<span className="sleep-meters" style={{'--meter-left':screen.leftColor||'var(--accent)','--meter-right':screen.rightColor||'var(--accent)'}}><AudioVisualizer timing={prefs.timing} timeline={snapshot.playback} mode={screen.mode} offline={offline} awake paused={!snapshot.playback?.playing} reference={screen.meterReference||-18}/></span>}
  {screen.mode!=='playing'&&!meters&&<><strong className="sleep-clock">{tr(time)}</strong>{screen.showDate!==false&&<span className="sleep-date">{tr(now.toLocaleDateString(locale,{...clockOptions,weekday:'long',day:'numeric',month:'long'}))}</span>}</>}

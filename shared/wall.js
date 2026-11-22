@@ -3,11 +3,16 @@ import {release,releaseTitle} from './release.js';
 import {powerStatus} from './power-status.js';
 /** Wall display presentation contracts. Never grant actuator permissions. */
 export const sleepModes = ['clock','widgets','sunset','glow','playing','black','vu','spectrum','bars'];
+/** Backgrounds for the dark rest views (clock, widgets, sunset, now playing). Bundled photos are the owner's own, copyright free. */
+export const restBackgrounds = ['black','art','gradient','fjord','lake','pines','own'];
+export const restPhotos = Object.freeze({fjord:'/rest/fjord.jpg',lake:'/rest/lake.jpg',pines:'/rest/pines.jpg'});
+export const backgroundModes = ['clock','widgets','sunset','playing'];
 export function screenSettings(value = {}) {
   value = value && typeof value === 'object' ? value : {};
   const extended=value.extended===true;
   return {
     mode: sleepModes.includes(value.mode) ? value.mode : 'clock',
+    background: restBackgrounds.includes(value.background) ? value.background : 'black',
     latitude: Number.isFinite(value.latitude) && Math.abs(value.latitude)<=90 ? value.latitude : null,
     longitude: Number.isFinite(value.longitude) && Math.abs(value.longitude)<=180 ? value.longitude : null,
     ...(extended?{extended:true,showDate:value.showDate!==false,showHint:value.showHint!==false,leftColor:/^#[a-f0-9]{6}$/i.test(value.leftColor||'')?value.leftColor:'#c8a56c',rightColor:/^#[a-f0-9]{6}$/i.test(value.rightColor||'')?value.rightColor:'#c8a56c',meterReference:[-24,-20,-18,-16,-14].includes(value.meterReference)?value.meterReference:-18}:{}),

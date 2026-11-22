@@ -18,7 +18,7 @@ export function SensorDashboard({snapshot,offline=false}) {
   </section>;
 }
 
-export function DisplaySettings({prefs,update,offline=false}) {
+export function DisplaySettings({prefs,update,offline=false,snapshot}) {
   const device=useDeviceUpdates();
   const [data,setData]=useState(null),[draft,setDraft]=useState(null),[notice,setNotice]=useState('');
   const timer=useRef(null),latest=useRef(null);
@@ -41,7 +41,7 @@ export function DisplaySettings({prefs,update,offline=false}) {
       {value.brightnessMode==='auto'&&<><label>{tr("Minimum brightness ")}<output>{tr(value.minimum)}%</output><input aria-label={tr("Minimum brightness")} type="range" min="5" max={value.maximum} value={value.minimum} disabled={disabled} onChange={e=>change('minimum',Number(e.target.value))}/></label><label>{tr("Maximum brightness ")}<output>{tr(value.maximum)}%</output><input aria-label={tr("Maximum brightness")} type="range" min={value.minimum} max="100" value={value.maximum} disabled={disabled} onChange={e=>change('maximum',Number(e.target.value))}/></label></>}
     </div>
     {!data?.backlight?.supported&&<p className="settings-note">{tr("Physical brightness control requires the display service on the Pi.")}</p>}
-    <ScreenSettings prefs={prefs} update={update}/>
+    <ScreenSettings prefs={prefs} update={update} snapshot={snapshot}/>
     <p role="status" className="settings-note">{tr(notice)}</p>
   </div>;
 }

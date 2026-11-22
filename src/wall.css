@@ -255,3 +255,14 @@ html[data-tunebox-kiosk="true"],html[data-tunebox-kiosk="true"] *{cursor:none!im
 .music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .real-audio{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto;justify-content:stretch;justify-items:stretch;min-height:0;overflow:hidden}
 .music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-spectrum,.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-meter-pair,.music2[data-panel="wall-16-10"] .m2-playing[data-visualizer=true] .audio-meter-pair svg{height:100%;min-height:0;max-height:none}
+/* 3.16 rest backgrounds: blurred cover, gradient or a photo behind the dark rest views, dimmed for legible text. */
+.music2 .sleep-surface{isolation:isolate;overflow:hidden}
+.sleep-surface>:not(.rest-backdrop):not(.sleep-fault):not(.sleep-wake-hint):not(.wake-feedback){position:relative}
+.sleep-surface>.rest-backdrop{position:absolute;inset:0;z-index:-1;pointer-events:none;background:#050608;font-size:0}
+.rest-backdrop>span{position:absolute;inset:0;background-size:cover;background-position:center}
+.rest-backdrop[data-kind=art]>span{inset:-60px;filter:blur(48px) saturate(1.25) brightness(.5)}
+.rest-backdrop[data-kind=photo]>span{filter:brightness(.62)}
+.rest-backdrop[data-kind=photo]::after,.rest-backdrop[data-kind=art]::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,.08),rgba(0,0,0,.5))}
+.rest-backdrop[data-kind=gradient]{background:radial-gradient(ellipse at 18% 12%,color-mix(in srgb,var(--accent) 48%,#050608) 0%,transparent 58%),radial-gradient(ellipse at 88% 92%,color-mix(in srgb,var(--accent) 22%,#1a2140) 0%,transparent 62%),#07080c}
+.sleep-surface[data-backdrop=photo] .sleep-clock,.sleep-surface[data-backdrop=photo] .sleep-date,.sleep-surface[data-backdrop=art] .sleep-clock{text-shadow:0 2px 24px rgba(0,0,0,.55)}
+.music2[data-performance=pi3] .rest-backdrop[data-kind=art]>span{filter:brightness(.4)}
