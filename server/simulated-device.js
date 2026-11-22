@@ -6,6 +6,7 @@ import {canUpdate,activate,restorePrevious} from '../deploy/ota/policy.mjs';
 import {powerDefaults} from '../shared/power-settings.js';
 import {release} from '../shared/release.js';
 export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,onEvent=()=>{}}={}){
+ let sshOn=false;
  let saved={};try{saved=JSON.parse(readFileSync(join(directory,'device.json'),'utf8'));}catch{}
  let localLevel=100,policy=updateSettings(saved.policy),current={release:release.id,commit:null},previous=null,progress={status:'up-to-date'},available=null,running=false;
  const save=()=>{mkdirSync(directory,{recursive:true});writeFileSync(join(directory,'device.json.tmp'),JSON.stringify({policy,setupComplete:saved.setupComplete})+'\n',{mode:0o600});renameSync(join(directory,'device.json.tmp'),join(directory,'device.json'));};
@@ -41,6 +42,8 @@ export function simulatedDevice({snapshot,directory='.tunebox-state',delay=350,o
    if(command==='hotspot-stop')return {stopped:true,simulated:true};
    if(command==='clock')return {supported:true,simulated:true,timeZone:'Europe/Amsterdam',automatic:true,synchronized:false,iso:new Date().toISOString()};
    if(command==='clock-set')return {saved:true,supported:true,simulated:true,...args};
+   if(command==='ssh-status')return {supported:true,simulated:true,enabled:sshOn,startsAtBoot:sshOn};
+   if(command==='ssh-set'){sshOn=args.enabled;return {saved:true,supported:true,simulated:true,enabled:sshOn,startsAtBoot:sshOn};}
    if(command==='local-standby')return {muted:args.enabled,simulated:true,supported:true};
    if(command==='local-volume'){localLevel=args.step===0?100:Math.max(0,Math.min(100,localLevel+args.step*10));return {level:localLevel,active:localLevel<100,supported:true,simulated:true};}
    if(command==='dsp')return {supported:false,simulated:true,controls:[],faults:[]};

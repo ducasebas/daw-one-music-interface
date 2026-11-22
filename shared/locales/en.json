@@ -2344,5 +2344,21 @@
   "The supply now offers {now} W; this TuneBox had {best} W before. Run power setup again, or check the charger and cable.": "The supply now offers {now} W; this TuneBox had {best} W before. Run power setup again, or check the charger and cable.",
   "Highest contract seen on this TuneBox": "Highest contract seen on this TuneBox",
   "All offers limited to 3 A": "All offers limited to 3 A",
-  "Screen rest no longer switches itself back on right after you start it, and the power widget keeps the last reading. Stability for Raspberry Pi 4 + Louder HAT: Squeezelite keeps the audio device open, 44.1–96 kHz rate protection, calmer automatic DSP changes, faster visualizer capture, steadier Chromium and Wi-Fi without power saving. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.": "Screen rest no longer switches itself back on right after you start it, and the power widget keeps the last reading. Stability for Raspberry Pi 4 + Louder HAT: Squeezelite keeps the audio device open, 44.1–96 kHz rate protection, calmer automatic DSP changes, faster visualizer capture, steadier Chromium and Wi-Fi without power saving. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once."
+  "Screen rest no longer switches itself back on right after you start it, and the power widget keeps the last reading. Stability for Raspberry Pi 4 + Louder HAT: Squeezelite keeps the audio device open, 44.1–96 kHz rate protection, calmer automatic DSP changes, faster visualizer capture, steadier Chromium and Wi-Fi without power saving. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.": "Screen rest no longer switches itself back on right after you start it, and the power widget keeps the last reading. Stability for Raspberry Pi 4 + Louder HAT: Squeezelite keeps the audio device open, 44.1–96 kHz rate protection, calmer automatic DSP changes, faster visualizer capture, steadier Chromium and Wi-Fi without power saving. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.",
+  "Party mode": "Party mode",
+  "Last reading {age} min ago": "Last reading {age} min ago",
+  "SSH": "SSH",
+  "SSH access": "SSH access",
+  "Lets a computer on your network log in to this TuneBox. Leave it off unless you are troubleshooting.": "Lets a computer on your network log in to this TuneBox. Leave it off unless you are troubleshooting.",
+  "SSH is not installed on this TuneBox.": "SSH is not installed on this TuneBox.",
+  "Turn SSH on?": "Turn SSH on?",
+  "Turn SSH off?": "Turn SSH off?",
+  "Turn SSH on? Anyone on your network with the password can then log in.": "Turn SSH on? Anyone on your network with the password can then log in.",
+  "Turn SSH off? New logins are refused; open sessions stay connected.": "Turn SSH off? New logins are refused; open sessions stay connected.",
+  "Turn on": "Turn on",
+  "Turn off": "Turn off",
+  "SSH is on.": "SSH is on.",
+  "SSH is off. Open sessions stay connected until they close.": "SSH is off. Open sessions stay connected until they close.",
+  "Hold to wake": "Hold to wake",
+  "Hide menu": "Hide menu"
 }

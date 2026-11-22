@@ -34,14 +34,14 @@ const unavailable = (base, detail) => ({...base, available: false, value: 'Not a
 
 /** One tile. `context` carries readings that are fetched elsewhere (network) and the clock. */
 /** How long the widget keeps showing the last good power reading when a new one is late (the sensor refreshes slowly). */
-export const powerHoldMs = 60000;
+export const powerHoldMs = 600000;
 export function nowPlayingWidget(id, snapshot = {}, {now = Date.now(), powerNow = now, lastPower = null, offline = false, network = null, hour12 = false} = {}) {
   const p = snapshot.playback || {}, simulated = snapshot.mode === 'simulation';
   switch (id) {
     case 'clock': {
       const d = new Date(now), h = d.getHours();
       const value = hour12 ? `${h % 12 || 12}:${pad(d.getMinutes())} ${h < 12 ? 'AM' : 'PM'}` : `${pad(h)}:${pad(d.getMinutes())}`;
-      return {id, icon: 'clock', label: 'Clock', available: true, value, detail: d.toISOString().slice(0, 10)};
+      return {id, icon: 'clock', label: 'Clock', action: 'date', available: true, value, detail: d.toISOString().slice(0, 10)};
     }
     case 'upnext': {
       const base = {id, icon: 'queue', label: 'Up next', action: 'queue'};
@@ -51,7 +51,7 @@ export function nowPlayingWidget(id, snapshot = {}, {now = Date.now(), powerNow 
       return next ? {...base, available: true, value: next.title || 'Unknown title', detail: next.artist || ''} : {...base, available: true, value: 'End of queue', detail: ''};
     }
     case 'source': {
-      const base = {id, icon: 'speaker', label: 'Source & quality'};
+      const base = {id, icon: 'speaker', label: 'Source & quality', action: 'audio'};
       if (offline) return unavailable(base, 'Offline');
       if (snapshot.bluetooth?.active) return {...base, available: true, value: 'Bluetooth', detail: 'Codec not reported'};
       if (simulated) return {...base, available: true, value: 'Simulation', detail: 'No audio'};
@@ -67,7 +67,7 @@ export function nowPlayingWidget(id, snapshot = {}, {now = Date.now(), powerNow 
       return {...base, available: true, value: rooms === 1 ? '{count} room' : '{count} rooms', params: {count: rooms}, detail: p.playerName || ''};
     }
     case 'temperature': {
-      const base = {id, icon: 'temperature', label: 'Temperature'};
+      const base = {id, icon: 'temperature', label: 'Temperature', action: 'sensors'};
       if (offline) return unavailable(base, 'Offline');
       const t = snapshot.hardwareTelemetry?.temperature, cpu = snapshot.hostTelemetry?.cpu?.temperatureC;
       if (t?.status === 'ok' && Number.isFinite(t.value)) return {...base, available: true, value: `${t.value.toFixed(1)} °C`, detail: 'Case'};
@@ -75,7 +75,7 @@ export function nowPlayingWidget(id, snapshot = {}, {now = Date.now(), powerNow 
       return unavailable(base, 'No sensor reading');
     }
     case 'wifi': {
-      const base = {id, icon: 'wifi', label: 'Wi-Fi'};
+      const base = {id, icon: 'wifi', label: 'Wi-Fi', action: 'connections'};
       if (offline) return unavailable(base, 'Offline');
       if (network?.simulated) return {...base, available: true, value: 'Simulation', detail: ''};
       if (network?.connected === false) return unavailable(base, 'Not connected');
@@ -83,7 +83,7 @@ export function nowPlayingWidget(id, snapshot = {}, {now = Date.now(), powerNow 
     }
     case 'power': {
       const base = {id, icon: 'hardware', label: 'Power', action: 'sensors'};
-      // Use the current reading, or the last good one for up to a minute; a slow refresh must not blank the tile.
+      // Use the current reading, or the last good one for up to ten minutes (with its age); a slow refresh must not blank the tile.
       const current = snapshot.hostTelemetry?.power;
       const held = lastPower && Number.isFinite(lastPower.observedAt) && powerNow - lastPower.observedAt < powerHoldMs && lastPower.observedAt <= powerNow + 1000 ? lastPower : null;
       const power = powerIsFresh(current, powerNow) ? current : held;
@@ -92,10 +92,12 @@ export function nowPlayingWidget(id, snapshot = {}, {now = Date.now(), powerNow 
       // Consumption only when the INA228 reading is confirmed and consistent (power.watts is null otherwise).
       const used = Number.isFinite(power.watts) ? '{used} W in use' : null;
       if (!contract && !used) return unavailable(base, 'PD contract unavailable');
+      const age = power === current ? 0 : Math.max(0, Math.round((powerNow - power.observedAt) / 60000));
+      if (age >= 1) return {...base, available: true, value: used || contract, detail: 'Last reading {age} min ago', params: {age, watts: Number.isFinite(power.contractWatts) ? Math.round(power.contractWatts) : null, used: Number.isFinite(power.watts) ? power.watts.toFixed(1) : null}};
       return {...base, available: true, value: used || contract, detail: used && contract ? contract : used ? '' : 'Consumption needs verified wiring', params: {watts: Number.isFinite(power.contractWatts) ? Math.round(power.contractWatts) : null, used: Number.isFinite(power.watts) ? power.watts.toFixed(1) : null}};
     }
     case 'party': {
-      const base = {id, icon: 'phone', label: 'Party', action: 'remote'};
+      const base = {id, icon: 'phone', label: 'Party mode', action: 'remote'};
       const phones = Number.isInteger(snapshot.remoteControl?.phones) ? snapshot.remoteControl.phones : null;
       if (phones === null) return unavailable(base, 'Phone remote unavailable');
       return {...base, available: true, value: phones === 1 ? '{count} phone' : '{count} phones', params: {count: phones}, detail: snapshot.remoteControl?.pairing ? 'Code on screen' : 'Tap to pair a phone'};

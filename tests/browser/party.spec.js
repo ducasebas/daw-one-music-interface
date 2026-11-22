@@ -9,7 +9,7 @@ test('the Party widget opens the phone code on Now Playing and explains PIN, pho
  await page.route('**/api/remote/party',async r=>{const action=r.request().postDataJSON().action;return r.fulfill({json:action==='start'?{phones:0,pairing:true,pinRequired:false,url:'http://192.168.1.20:3003/remote.html#pair='+'a'.repeat(48),expiresAt:Date.now()+600000}:{phones:0,pairing:false}});});
  await page.goto(url);await page.getByRole('button',{name:'Now Playing',exact:true}).first().click();
  await page.locator('.np-widgets [data-widget=party]').click();
- const sheet=page.getByRole('dialog',{name:'Party',exact:true});await expect(sheet).toBeVisible();
+ const sheet=page.getByRole('dialog',{name:'Party mode',exact:true});await expect(sheet).toBeVisible();
  await expect(sheet.getByRole('img',{name:'Scan with your phone camera'})).toBeVisible();
  await expect(sheet).toContainText('No PIN is set');await expect(sheet).toContainText('0 phones paired');await expect(sheet).toContainText('Other rooms are not affected');
  await expect(sheet).toContainText('Code valid for');

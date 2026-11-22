@@ -93,6 +93,9 @@ function syncContext(){
  return synchronizationContext({rooms,playback:music?.playback,audio,route:routeCache.value,connected:music?.status==='connected',bluetooth:bluetoothState().active,busy:multiroom.busy||music?.controlBusy===true});
 }
 let localStandby=false,localVolume={level:100,active:false};
+// Whether any video artwork can appear: an uploaded or linked video, or automatic YouTube videos with consent.
+let videoConfiguredCache={key:null,value:false};
+const videoConfigured=()=>{const y=youtube.get(),key=videoRevision+':'+(y.followCurrent&&y.consent);if(videoConfiguredCache.key!==key)videoConfiguredCache={key,value:!!(y.followCurrent&&y.consent)||Object.values(videos.entries()).some(e=>e&&!e.disabled&&typeof e.id==='string')};return videoConfiguredCache.value;};
 const snapshot = () => {
   const bluetooth=bluetoothState();
   const profileCount=syncProfiles.profiles.length,context=profileCount?syncContext():null;
@@ -113,6 +116,7 @@ const snapshot = () => {
     localControl:{standby:localStandby,level:localVolume.level,lowered:localVolume.active,needed:!!music&&music.status!=='connected'},
     playerBlocked:music?readPlayerStartupBlock(music.status==='connected'?(music.players||[]).some(p=>p.player_id===multiroom.localId):music.errorCode==='player-missing'?false:null):null,
     videoRevision,
+    videoConfigured:videoConfigured(),
     hardwareTelemetry: readSensorTelemetry(process.env.DAW_SENSOR_FILE),
     hostTelemetry:host.value,
     activity:{syncCalibration:synchronizationRunning(),roomMeasurement,roomControl:multiroom.busy||music?.controlBusy===true,localPlayback:multiroom.localPlayback(),localIndependent:multiroom.localIndependent(),localSelected:music?.playerId===multiroom.localId,bluetoothActive:bluetooth.active},

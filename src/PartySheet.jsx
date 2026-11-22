@@ -21,8 +21,8 @@ export function PartySheet({snapshot,onClose,onRooms}){
  // Multiroom awareness: grouped rooms play along with whatever the phones choose.
  // localIndependent is also false while Music Assistant is away, so only trust it when connected.
  const grouped=snapshot.mode==='music-assistant'&&snapshot.musicAssistant?.connected===true&&snapshot.activity?.localIndependent===false;
- return <Modal label="Party" onCancel={onClose} className="party-sheet">
-  <header><h3>{tr('Party')}</h3><button onClick={onClose}>{tr('Close')}</button></header>
+ return <Modal label="Party mode" onCancel={onClose} className="party-sheet">
+  <header><h3>{tr('Party mode')}</h3><button onClick={onClose}>{tr('Close')}</button></header>
   <div className="party-body">
    <div className="party-code">{pair&&left>0?<QrCode value={pair.url} label="Scan with your phone camera"/>:<p role="status">{tr(error||(pair?'This code has expired.':'Preparing the code…'))}</p>}
     {pair&&left===0&&<button onClick={show}>{tr('Show a new code')}</button>}</div>

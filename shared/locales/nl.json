@@ -2344,5 +2344,21 @@
   "The supply now offers {now} W; this TuneBox had {best} W before. Run power setup again, or check the charger and cable.": "De voeding biedt nu {now} W; deze TuneBox had eerder {best} W. Start de vermogensinstelling opnieuw, of controleer lader en kabel.",
   "Highest contract seen on this TuneBox": "Hoogste contract gezien op deze TuneBox",
   "All offers limited to 3 A": "Alle aanbiedingen beperkt tot 3 A",
-  "Screen rest no longer switches itself back on right after you start it, and the power widget keeps the last reading. Stability for Raspberry Pi 4 + Louder HAT: Squeezelite keeps the audio device open, 44.1–96 kHz rate protection, calmer automatic DSP changes, faster visualizer capture, steadier Chromium and Wi-Fi without power saving. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.": "Schermrust gaat niet meer vanzelf weer aan direct nadat je hem start, en de vermogenswidget houdt de laatste meting vast. Stabiliteit voor Raspberry Pi 4 + Louder HAT: Squeezelite houdt het audioapparaat open, 44,1–96 kHz-bescherming, rustigere automatische DSP-wijzigingen, snellere visualizer-meting, stabielere Chromium en wifi zonder energiebesparing. Vraagt eenmalig “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply”."
+  "Screen rest no longer switches itself back on right after you start it, and the power widget keeps the last reading. Stability for Raspberry Pi 4 + Louder HAT: Squeezelite keeps the audio device open, 44.1–96 kHz rate protection, calmer automatic DSP changes, faster visualizer capture, steadier Chromium and Wi-Fi without power saving. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.": "Schermrust gaat niet meer vanzelf weer aan direct nadat je hem start, en de vermogenswidget houdt de laatste meting vast. Stabiliteit voor Raspberry Pi 4 + Louder HAT: Squeezelite houdt het audioapparaat open, 44,1–96 kHz-bescherming, rustigere automatische DSP-wijzigingen, snellere visualizer-meting, stabielere Chromium en wifi zonder energiebesparing. Vraagt eenmalig “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply”.",
+  "Party mode": "Party mode",
+  "Last reading {age} min ago": "Laatste meting {age} min geleden",
+  "SSH": "SSH",
+  "SSH access": "SSH-toegang",
+  "Lets a computer on your network log in to this TuneBox. Leave it off unless you are troubleshooting.": "Laat een computer in je netwerk inloggen op deze TuneBox. Laat het uit, behalve als je problemen oplost.",
+  "SSH is not installed on this TuneBox.": "SSH is niet geïnstalleerd op deze TuneBox.",
+  "Turn SSH on?": "SSH aanzetten?",
+  "Turn SSH off?": "SSH uitzetten?",
+  "Turn SSH on? Anyone on your network with the password can then log in.": "SSH aanzetten? Iedereen in je netwerk met het wachtwoord kan dan inloggen.",
+  "Turn SSH off? New logins are refused; open sessions stay connected.": "SSH uitzetten? Nieuwe logins worden geweigerd; open sessies blijven verbonden.",
+  "Turn on": "Aanzetten",
+  "Turn off": "Uitzetten",
+  "SSH is on.": "SSH staat aan.",
+  "SSH is off. Open sessions stay connected until they close.": "SSH staat uit. Open sessies blijven verbonden tot ze sluiten.",
+  "Hold to wake": "Houd vast om te wekken",
+  "Hide menu": "Menu verbergen"
 }

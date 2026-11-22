@@ -23,7 +23,7 @@ const keepPlayingStatus=snapshot=>{const ma=snapshot.musicAssistant,k=ma?.keepPl
  return k.active?'On in Music Assistant for this TuneBox.':'Off in Music Assistant for this TuneBox.';};
 // Remembered for this session: reopening Settings (e.g. after unlocking) keeps Advanced as it was.
 const dspAdvancedOpen={value:false};
-const widgetNames={clock:'Clock',upnext:'Up next',source:'Source & quality',rooms:'Rooms',temperature:'Temperature',wifi:'Wi-Fi',power:'Power',party:'Party'};
+const widgetNames={clock:'Clock',upnext:'Up next',source:'Source & quality',rooms:'Rooms',temperature:'Temperature',wifi:'Wi-Fi',power:'Power',party:'Party mode'};
 import {Modal} from './Modal.jsx';
 import {Icon} from './Icon.jsx';
 import {BusyStatus} from './BusyStatus.jsx';

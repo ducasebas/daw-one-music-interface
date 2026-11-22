@@ -42,7 +42,7 @@ test('power never shows consumption without a confirmed reading, and never inven
  assert.equal(nowPlayingWidget('power',fresh({watts:20,contractWatts:60,observedAt:now-60000}),{now}).available,false,'stale readings are not shown');
 });
 
-test('3.16.1: the power tile keeps the last good reading for a minute and judges freshness with the real time',async()=>{
+test('3.16.1: the power tile keeps the last good reading for ten minutes and judges freshness with the real time',async()=>{
  const {nowPlayingWidget}=await import('../shared/now-playing.js');
  const t=1_800_000_000_000,reading={observedAt:t,source:'INA228 + HUSB238',watts:5.3,contractWatts:60};
  const live={mode:'music-assistant',hostTelemetry:{power:reading}};
@@ -52,6 +52,7 @@ test('3.16.1: the power tile keeps the last good reading for a minute and judges
  const stale={mode:'music-assistant',hostTelemetry:{power:{...reading,observedAt:t-20000}}};
  assert.equal(nowPlayingWidget('power',stale,{powerNow:t+30000,lastPower:reading}).available,true);
  // …but not for ever, and never while offline.
- assert.equal(nowPlayingWidget('power',stale,{powerNow:t+61000,lastPower:reading}).available,false);
+ assert.equal(nowPlayingWidget('power',stale,{powerNow:t+61000,lastPower:reading}).detail,'Last reading {age} min ago');
+ assert.equal(nowPlayingWidget('power',stale,{powerNow:t+601000,lastPower:reading}).available,false);
  assert.equal(nowPlayingWidget('power',stale,{powerNow:t+30000,lastPower:reading,offline:true}).available,false);
 });
