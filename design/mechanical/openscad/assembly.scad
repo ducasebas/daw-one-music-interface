@@ -169,23 +169,24 @@ module hat_local() {
         box([-25.6, 21.2, 0.4], [25.6, 27.8, 5.3]);                     // GPIO socket
         box([-23.3, -33.43, -1.1], [-13.2, -21.8, 8.8]);                // DC jack
     }
-    color([0.1, 0.35, 0.15]) box([-10.15, -28.6, 1.6], [10.15, -20.6, 11.6]); // 4-pole speaker terminal (position from drill file)
+    color([0.1, 0.35, 0.15]) box([-10.15, -28.6, -10], [10.15, -20.6, 0]);   // speaker terminals on the back, 10 mm (owner measured)
 }
-module hat_in_case() {     // flat back 4 mm from the plate, GPIO edge down
-    multmatrix([[-1, 0, 0, 25.6], [0, 0, -1, 23.56], [0, -1, 0, 30.88], [0, 0, 0, 1]]) hat_local();
+module hat_in_case() {     // back (with 10 mm terminals) 11 mm from the plate, GPIO edge down
+    multmatrix([[-1, 0, 0, 25.6], [0, 0, -1, 16.56], [0, -1, 0, 30.88], [0, 0, 0, 1]]) hat_local();
 }
 
 module pi4_in_case() {     // underside toward the screen, component side toward the HAT
-    color(c_pi) translate([-26.9, 2.16, 2.88]) cube([85, 1.4, 56]);
-    color([0.15, 0.15, 0.15]) translate([0.2, 3.56, 3.9]) cube([51, 8.5, 5]);   // GPIO header
+    // owner-measured stack: Pi underside to terminal tops 30 mm; underside 31 mm from the plate
+    color(c_pi) translate([-26.9, -1.44, 2.88]) cube([85, 1.4, 56]);
+    color([0.15, 0.15, 0.15]) translate([0.2, -0.04, 3.9]) cube([51, 8.5, 5]);   // GPIO header
     color("silver") {
-        translate([-29.9, 3.56, 4.0])  cube([21, 13.5, 16]);    // Ethernet
-        translate([-29.9, 3.56, 22.5]) cube([17.5, 16, 13.5]);  // USB 3
-        translate([-29.9, 3.56, 40.5]) cube([17.5, 16, 13.5]);  // USB 2
-        for (x = [29.5, 42.9]) translate([x - 3.5, 3.56, 56.2]) cube([7, 3, 3.9]); // micro-HDMI
-        translate([47.6, 3.56, 55.6]) cube([9, 3.2, 4.5]);      // USB-C
+        translate([-29.9, -0.04, 4.0])  cube([21, 13.5, 16]);    // Ethernet
+        translate([-29.9, -0.04, 22.5]) cube([17.5, 16, 13.5]);  // USB 3
+        translate([-29.9, -0.04, 40.5]) cube([17.5, 16, 13.5]);  // USB 2
+        for (x = [29.5, 42.9]) translate([x - 3.5, -0.04, 56.2]) cube([7, 3, 3.9]); // micro-HDMI
+        translate([47.6, -0.04, 55.6]) cube([9, 3.2, 4.5]);      // USB-C
     }
-    color([0.2, 0.2, 0.2]) translate([58.1, 0.9, 24]) cube([2.5, 1.2, 11]);   // SD card
+    color([0.2, 0.2, 0.2]) translate([58.1, -3.44, 24]) cube([2.5, 1.2, 11]);   // SD card
 }
 
 // Adafruit 5991 HUSB238, in its own coordinates (component side +Z, USB-C on the y = 27.81 edge)
