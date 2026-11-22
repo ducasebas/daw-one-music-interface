@@ -47,6 +47,17 @@ test('track changes select a new voicing but late metadata and paused or unrelat
   }
 });
 
+test('rapid track skips during the settle delay defer adjustment and avoid I2C/ALSA writes',async()=>{
+  const f=fixture();await f.controller.configure({enabled:true});const count=f.calls.length;
+  const sleeps=[];
+  f.controller.sleep=async ms=>{sleeps.push(ms);f.context.trackKey='skipped-during-settle';};
+  f.context.trackKey='intermediate';f.context.genres=['Electronic'];
+  const res=await f.controller.update();
+  assert.equal(res.deferred,true);
+  assert.equal(f.calls.length,count);
+  assert.deepEqual(sleeps,[2000]);
+});
+
 test('external EQ edits stop automation and disabling preserves those edits',async()=>{
   const f=fixture();await f.controller.configure({enabled:true});await f.dsp.set([{id:1,value:4}]);const count=f.calls.length;f.context.trackKey='changed';await f.controller.update();
   assert.equal(f.controller.publicStatus().settings.enabled,false);assert.match(f.controller.publicStatus().error,/equalizer changed/);assert.equal(f.calls.length,count);assert.equal(f.controls()[0].value,4);

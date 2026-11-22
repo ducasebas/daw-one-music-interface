@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.22-rest.1",
-  label: "GUI 3.16.0 · REST",
+  id: "2026.11.22-hotfix.1",
+  label: "GUI 3.16.1 · HOTFIX",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Choose your city for local time and sunset. Skipping keeps the cover with a loading ring. The screen can switch fully off after a while to protect it. Rest views get previews and backgrounds: blurred cover, gradient, photos or your own from the phone. The menu bar slides away on Now Playing and widgets always fit. TuneBox explains when the charger offers less power than before. Developer → Values shows sync and power. Full screen-off needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.",
+  notes: "Stability and audio tuning for Raspberry Pi 4 + Louder HAT: continuous Squeezelite playback without ALSA close hangs, 44.1–96 kHz sample-rate protection, settle delay and gentler DSP ramping, 60 fps visualizer capture, Chromium Wayland stability, and disabled Wi-Fi powersave.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

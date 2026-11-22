@@ -50,7 +50,7 @@ viewport=1280x400
 [[ $panel != wall-16-10 ]] || viewport=1280x800
 printf 'DAW ONE kiosk: %s, panel %s, logical viewport %s\n' "$mode" "$panel" "$viewport"
 exec /usr/bin/dbus-run-session -- /usr/bin/cage -- /usr/bin/chromium \
-  --ozone-platform=wayland --kiosk \
+  --ozone-platform=wayland --kiosk --disable-gpu \
   --force-device-scale-factor=1 --no-first-run --no-default-browser-check \
   --disable-session-crashed-bubble --noerrdialogs --disable-extensions \
   --disable-pinch --overscroll-history-navigation=0 \

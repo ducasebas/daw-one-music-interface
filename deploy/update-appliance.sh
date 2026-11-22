@@ -78,6 +78,27 @@ if [[ $target == pi4 ]]; then
   bash "$repo/deploy/install-display.sh"
   python3 "$repo/deploy/display/quiet-boot.py"
 fi
+if [[ $target == pi4 || $target == pi3-experimental ]]; then
+  install -d -m 755 /etc/NetworkManager/conf.d
+  cat > /etc/NetworkManager/conf.d/wifi-powersave-off.conf <<'CONF'
+[connection]
+wifi.powersave = 2
+CONF
+  chmod 644 /etc/NetworkManager/conf.d/wifi-powersave-off.conf
+  if command -v iw >/dev/null && iw dev wlan0 info &>/dev/null; then
+    iw dev wlan0 set power_save off || true
+  fi
+  install -d -m 755 /etc/systemd/system.conf.d
+  cat > /etc/systemd/system.conf.d/watchdog.conf <<'CONF'
+[Manager]
+RuntimeWatchdogSec=3min
+RebootWatchdogSec=5min
+CONF
+  chmod 644 /etc/systemd/system.conf.d/watchdog.conf
+  for timer in apt-daily.timer apt-daily-upgrade.timer man-db.timer e2scrub_all.timer; do
+    systemctl disable --now "$timer" 2>/dev/null || true
+  done
+fi
 install -d -m 755 /etc/systemd/journald.conf.d
 cat > /etc/systemd/journald.conf.d/tunebox-boot.conf <<'JOURNAL'
 [Journal]
@@ -86,8 +107,17 @@ SystemMaxUse=64M
 SystemKeepFree=256M
 RuntimeMaxUse=16M
 JOURNAL
+chmod 644 /etc/systemd/journald.conf.d/tunebox-boot.conf
 systemctl restart systemd-journald.service
 journalctl --flush
+if systemctl list-unit-files tunebox-player.service &>/dev/null || [[ -f /etc/systemd/system/tunebox-player.service || -d /etc/systemd/system/tunebox-player.service.d ]]; then
+  install -d -m 755 /etc/systemd/system/tunebox-player.service.d
+  cat > /etc/systemd/system/tunebox-player.service.d/10-timeout.conf <<'UNIT'
+[Service]
+TimeoutStopSec=5
+UNIT
+  chmod 644 /etc/systemd/system/tunebox-player.service.d/10-timeout.conf
+fi
 # The local player runs as a login user (Squeezelite -v writes /dev/shm/squeezelite-<mac>). logind's RemoveIPC
 # deletes that user's shared memory when their last session ends (e.g. closing SSH), which silently breaks PCM
 # analysis until the player restarts. Keep the export; restart the player once if it is already gone.

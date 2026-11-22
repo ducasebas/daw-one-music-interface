@@ -48,19 +48,44 @@ def existing_player_id(argv):
     if not re.fullmatch(r'[0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){5}',mac):raise ValueError('The configured -m value is not a complete player MAC')
     return mac.lower()
 
+def strip_close_delay(argv):
+    clean=[]
+    i=0
+    while i<len(argv):
+        a=argv[i]
+        if a=='-C':
+            i+=1
+            if i<len(argv) and not argv[i].startswith('-'):i+=1
+            continue
+        if a.startswith('-C') and len(a)>2 and not a.startswith('--'):
+            i+=1
+            continue
+        clean.append(a);i+=1
+    return clean
+
 def export_arguments(argv,player_id):
     if not re.fullmatch(r'[0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){5}',player_id):raise ValueError('Use the existing player MAC')
     if not argv or not os.path.isabs(argv[0]) or Path(argv[0]).name!='squeezelite':raise ValueError('Expected a direct Squeezelite service')
     if any(a.startswith('-D') or (a.startswith('-') and not a.startswith('--') and 'D' in a[1:]) for a in argv[1:]):raise ValueError('DSD/DoP output is not supported by the PCM visualizer')
     if existing_player_id(argv)!=player_id.lower():raise ValueError('Requested player ID differs from the running service')
-    return argv if '-v' in argv else argv+['-v']
+    clean=strip_close_delay(argv)
+    has_rate=any(a=='-r' or (a.startswith('-r') and len(a)>2) for a in clean[1:])
+    if not has_rate:
+        is_louder=any('LouderRaspberry' in a or 'tas58xx' in a for a in clean)
+        if not is_louder and Path('/proc/asound/cards').is_file():
+            try:
+                cards=Path('/proc/asound/cards').read_text()
+                is_louder='LouderRaspberry' in cards or 'tas58xx' in cards
+            except Exception:pass
+        if is_louder:clean.extend(['-r','44100-96000'])
+    return clean if '-v' in clean else clean+['-v']
 
 def systemd_override(argv):
     def quote(value):
         if any(ord(c)<32 or ord(c)==127 for c in value):raise ValueError('Control character in player argument')
         return '"'+value.replace('\\','\\\\').replace('"','\\"').replace('%','%%')+'"'
     # ':' disables systemd environment expansion; %% prevents specifier expansion.
-    return '[Service]\nExecStart=\nExecStart=:'+ ' '.join(quote(a) for a in argv)+'\n'
+    return '[Service]\nExecStart=\nExecStart=:'+ ' '.join(quote(a) for a in argv)+'\nTimeoutStopSec=5\n'
 
 if __name__=='__main__':
     try:
@@ -78,7 +103,7 @@ if __name__=='__main__':
         if action=='write' and updated!=argv:
             target=Path('/etc/systemd/system/tunebox-player.service.d/90-tunebox-analysis.conf')
             target.parent.mkdir(parents=True,exist_ok=True)
-            target.write_text(systemd_override(updated));target.chmod(0o600)
+            target.write_text(systemd_override(updated));target.chmod(0o644)
         print('Export already enabled' if updated==argv else 'Export supported; only -v is added')
     except Exception as error:
         print(str(error),file=sys.stderr);sys.exit(1)

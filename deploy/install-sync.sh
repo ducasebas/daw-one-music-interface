@@ -32,6 +32,7 @@ RestrictAddressFamilies=AF_INET AF_UNIX
 StandardOutput=journal
 StandardError=journal
 UNIT
+chmod 644 /etc/systemd/system/daw-one-sync.service
 systemctl daemon-reload
 # The manager only gets write access to optional state directories that existed when it
 # started (ReadWritePaths=-/var/lib/daw-one-sync). Restart it so a fresh install is writable (EROFS otherwise).

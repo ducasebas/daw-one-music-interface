@@ -34,6 +34,7 @@ ReadOnlyPaths=-/run/daw-one-sensors -/var/lib/daw-one-state
 [Install]
 WantedBy=multi-user.target
 UNIT
+chmod 644 /etc/systemd/system/daw-one-display.service
 cat > /etc/systemd/system/daw-one.service.d/display.conf <<'UNIT'
 [Unit]
 Wants=daw-one-display.service
@@ -41,6 +42,7 @@ After=daw-one-display.service
 [Service]
 ReadWritePaths=-/run/daw-one-display
 UNIT
+chmod 644 /etc/systemd/system/daw-one.service.d/display.conf
 systemctl daemon-reload
 systemctl enable --now daw-one-display.service
 echo 'DSI backlight controller enabled. Initial firmware/kernel frames need the optional quiet-boot configuration.'
