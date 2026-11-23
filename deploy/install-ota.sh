@@ -35,7 +35,11 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/flock -n /run/daw-one-update.lock /usr/bin/node /usr/local/lib/daw-one-updater/update.mjs
+# A run that failed, timed out or was killed halfway through activation restores the previous version at once
+# (pending.json is the activation journal); otherwise that would wait for the next timer run or boot.
+ExecStopPost=/bin/sh -c 'if [ "$$SERVICE_RESULT" != success ] && [ -f /var/lib/daw-one-updater/pending.json ]; then exec /usr/bin/flock -w 30 /run/daw-one-update.lock /usr/bin/node /usr/local/lib/daw-one-updater/update.mjs --recover; fi'
 TimeoutStartSec=10min
+TimeoutStopSec=4min
 Nice=10
 UMask=0077
 ProtectHome=yes

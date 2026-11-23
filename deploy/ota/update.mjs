@@ -71,6 +71,9 @@ const host={
 let manualInstall=false;
 const idleNow=async()=>{const state=await local('/api/state');return manualInstall?canInstallManually(state,localOutputIdle()):canUpdate(state);};
 async function prepareDisplay(){report('installing');await new Promise(resolve=>setTimeout(resolve,5000));if(!await idleNow())throw Error('Playback/state changed before activation; update deferred');}
+// Never leave the screen waiting for ever: after 9 minutes the run stops with a clear error. If activation had
+// started, the unit's ExecStopPost restores the previous version from pending.json straight away.
+const watchdog=setTimeout(()=>{report('error',{error:'The update took too long and was stopped; the previous version is restored if needed',failedPhase:lastPhase});process.exit(1);},9*60000);watchdog.unref();
 try{
  if(existsSync(base+'/pending.json')){
   const pending=json(base+'/pending.json');kiosk=pending.kiosk===true;report('rolling-back');await host.stop();await host.select(pending.previous);await host.start();if(!await host.healthy(null))throw Error('Recovery requires manual service repair');await host.clearJournal();report('rolled-back');process.exit(0);
