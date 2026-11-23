@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.22-play.1",
-  label: "GUI 3.16.2 · PLAY",
+  id: "2026.11.23-safe.1",
+  label: "GUI 3.16.3 · SAFE UPDATE",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Drag widgets onto Now Playing and the rest screen. The menu bar slides away without moving anything. Hold to wake the screen. Keep playing (∞) next to mute, crossfade when Music Assistant offers it, mute rests the meters. Remove phones in Party mode, Pi throttling in Sensors, SSH switch for developers. After a restart TuneBox leaves multiroom and says so. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once for SSH.",
+  notes: "Fixes the update that kept the screen on “Waiting for the update service”: a missing system file stopped the TuneBox manager. Updates now check every system file before installing, stop themselves after nine minutes and return to the previous version straight away if something goes wrong. The update screen keeps its clock running and offers a way back. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

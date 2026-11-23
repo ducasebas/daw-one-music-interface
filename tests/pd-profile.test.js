@@ -4,7 +4,7 @@ import {offeredPdProfile,qualifiedPdProfile,pdRequestAmps} from '../shared/pd-pr
 import {validateRequest,DeviceManager} from '../shared/device-manager.js';
 import {powerDefaults,powerSettings} from '../shared/power-settings.js';
 import {powerMonitoring,powerResponse} from '../deploy/manager/power-telemetry.mjs';
-import {readFileSync} from 'node:fs';
+import {existsSync,readFileSync} from 'node:fs';
 const settingsPath='/etc/daw-one-power/settings.json',proofPath='/var/lib/daw-one-power/qualification.json',runtime='/run/daw-one-pd';
 const args={confirmed:true,amps:3,cable5AVerified:false,startup:false};
 const proof=(amps=3)=>({status:'ready',phase:'ready',qualified:true,cable5AVerified:amps>3,source:'HUSB238',volts:20,amps,watts:20*amps,observedAt:10000,requestId:'a'.repeat(32)});
@@ -86,6 +86,7 @@ test('new power requests use the existing busy gate and deployment includes the 
  const p=m.request({command:'power-request-20v',args});await assert.rejects(m.request({command:'power-request-100w',args:{confirmed:true,cable5AVerified:true,startup:false}}),/already running/);
  assert.deepEqual(await m.request({command:'power-status'}),{});finish({});await p;
  const install=readFileSync('deploy/install-manager.sh','utf8'),root=readFileSync('deploy/manager/root-adapter.mjs','utf8');
- assert.match(install,/shared\/\{power-settings.js,pd-profile.js/);
+ // 3.16.3: every shared module is installed (shared/*.js), so the profile policy always travels with the manager.
+ assert.match(install,/"\$repo"\/shared\/\*\.js "\$stage\/shared\/"/);assert.ok(existsSync('shared/pd-profile.js')&&existsSync('shared/power-settings.js'));
  assert.match(root,/\['power-config','power-request-100w','power-request-20v'/);
 });
