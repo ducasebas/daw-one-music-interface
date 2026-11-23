@@ -2,6 +2,10 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
+## GUI 3.16.3 SAFE UPDATE — approved
+
+The owner approved on 23 November 2026 with “push maar”, and reported that searching for updates is greyed out. That fits a manager that is not running after the 3.16.2 update. The scope is in [hotfix-3-16-3.md](hotfix-3-16-3.md): staged manager install with an import check, a CI test for installed host trees, the updater time limit with immediate rollback, and an update page that keeps counting. The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full CI passes. It authorizes no live hardware experiment or physical confirmation.
+
 ## GUI 3.16.2 PLAY — published
 
 Merged via PR #23 as `4ef3d3adc06d6f675a6cd7522c177db5df614e07` on 22 November 2026 after all six PR CI jobs passed on head `9bc8d46`. Three CI failures on earlier heads were fixed within scope:
