@@ -138,7 +138,8 @@ export function MusicShell({
   const video=prefs.artwork==='video';
   // 3.16: on the wall's Now Playing page the header slides up after a few quiet seconds; a small tab brings it back.
   const headerOverride=(()=>{try{return localStorage.getItem('tunebox.headerAutoHide');}catch{return null;}})();
-  const autoHideHeader = wall && startupReady && page === "playing" && !sleeping && prefs.headerAutoHide !== false && headerOverride !== "off";
+  const overlayHeader = wall && page === "playing" && prefs.headerAutoHide !== false && headerOverride !== "off";
+  const autoHideHeader = overlayHeader && startupReady && !sleeping;
   const [headerHidden,setHeaderHidden]=useState(false);
   const headerTimer=useRef(null);
   const showHeader=useCallback(()=>{clearTimeout(headerTimer.current);setHeaderHidden(false);if(autoHideHeader)headerTimer.current=setTimeout(()=>setHeaderHidden(true),headerHideMs);},[autoHideHeader]);
@@ -319,6 +320,7 @@ export function MusicShell({
       data-page={page}
       data-header={autoHideHeader&&headerHidden?"hidden":"shown"}
       data-header-mode={autoHideHeader?"auto":"fixed"}
+      data-header-layout={overlayHeader?"overlay":"flow"}
       data-performance={prefs.lowPower ? "pi3" : "standard"}
       data-skin={
         presets.some((p) => p.id === theme.id) ? theme.id : "reference-dark"
@@ -331,7 +333,7 @@ export function MusicShell({
       data-motion={direction}
     >
       <GlobalUpdateProgress />
-      {wall&&(page==='settings'||page==='playing'&&!bluetoothActive&&!video)&&<NowPlayingBackdrop snapshot={snapshot} prefs={prefs} offline={offline}/>}
+      {wall&&(page==='settings'||page==='playing'&&!bluetoothActive&&!video)&&<NowPlayingBackdrop snapshot={snapshot} prefs={prefs} offline={offline} ready={startupReady}/>}
       {(sleeping||waking) && <SleepSurface prefs={prefs} snapshot={snapshot} offline={offline} wake={wake} waking={waking} armed={restReady} hold={wakeHold} holdMs={wakeHoldMs} />}
 
       <StartupScreen
@@ -732,7 +734,7 @@ export function MusicShell({
                   <VideoArtwork snapshot={snapshot} prefs={prefs} offline={offline} onConfigure={()=>{setSettingsPage(16);go('settings');}}/>
                 </div>
               ) : prefs.visualizer!=="off" ? (
-                <AudioVisualizer timing={prefs.timing} timeline={playback} mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline} awake={device.displayAwake!==false&&!sleeping} paused={!playback.playing||playback.muted===true}/>
+                <AudioVisualizer timing={prefs.timing} timeline={playback} mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline} awake={startupReady&&device.displayAwake!==false&&!sleeping} paused={!playback.playing||playback.muted===true}/>
               ) : wall ? null : (
                 <SkinPanel
                   skin={

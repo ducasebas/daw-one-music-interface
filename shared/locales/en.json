@@ -2401,5 +2401,12 @@
   "Today": "Today",
   "Choose your city in Date & time": "Choose your city in Date & time",
   "No sunset today": "No sunset today",
-  "Drag widgets onto Now Playing and the rest screen. The menu bar slides away without moving anything. Hold to wake the screen. Keep playing (∞) next to mute, crossfade when Music Assistant offers it, mute rests the meters. Remove phones in Party mode, Pi throttling in Sensors, SSH switch for developers. After a restart TuneBox leaves multiroom and says so. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once for SSH.": "Drag widgets onto Now Playing and the rest screen. The menu bar slides away without moving anything. Hold to wake the screen. Keep playing (∞) next to mute, crossfade when Music Assistant offers it, mute rests the meters. Remove phones in Party mode, Pi throttling in Sensors, SSH switch for developers. After a restart TuneBox leaves multiroom and says so. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once for SSH."
+  "Choose widgets": "Choose widgets",
+  "No widgets selected": "No widgets selected",
+  "Tap to add a widget. Use the grip to drag; swipe elsewhere to scroll.": "Tap to add a widget. Use the grip to drag; swipe elsewhere to scroll.",
+  "Apply your selection, then Save in Settings to keep it.": "Apply your selection, then Save in Settings to keep it.",
+  "Apply selection": "Apply selection",
+  "Drag widget": "Drag widget",
+  "Tap a widget to add it, or drag its grip to a place.": "Tap a widget to add it, or drag its grip to a place.",
+  "Repairs stalled updates and checks system modules before installation. A screen-wide menu keeps the song and visualizer in place. Choose widgets in a scrollable popup. Local PCM analysis runs separately, with a live meter feed and less work during startup. Failed updates return to the previous version. The system helpers need “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once if automatic appliance maintenance is not enabled.": "Repairs stalled updates and checks system modules before installation. A screen-wide menu keeps the song and visualizer in place. Choose widgets in a scrollable popup. Local PCM analysis runs separately, with a live meter feed and less work during startup. Failed updates return to the previous version. The system helpers need “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once if automatic appliance maintenance is not enabled."
 }

@@ -6,6 +6,7 @@ import {nextPowerHistory,powerDrop} from '../shared/power-history.js';
 import {SyncProfiles,synchronizationContext,playbackRoute} from './sync-profiles.js';
 import {AutomaticSound} from './automatic-sound.js';
 import {AudioAnalysis} from "./audio-analysis.js";
+import {AudioFrames} from './audio-frames.js';
 import { DisplayStore } from './display-store.js';
 import { VideoLibrary } from './video-library.js';
 import {YoutubeService} from './youtube-service.js';
@@ -334,7 +335,14 @@ app.post("/api/device",async(q,r)=>{
  }catch(error){debug.record('device','rejected');if(q.body.command==='hotspot-start'&&phoneServer){phoneServer.close();phoneServer=null;await manage({command:'hotspot-stop',args:{}}).catch(()=>{});}r.status(409).json({error:String(error.message).slice(0,180),...(error.code==='update-group-confirmation'?{code:error.code,rooms:error.rooms,roomsRevision:error.roomsRevision}:{})});}
 });
 app.get('/api/bluetooth',(_q,r)=>r.set('Cache-Control','no-store').json(bluetoothState()));
-app.get("/api/audio",(q,r)=>{if(bluetoothState().active)return r.set('Cache-Control','no-store').json({enabled:false,configured:audioAnalysis.configured,status:'source-unavailable',source:'bluetooth',simulated:false,measurement:null});r.set("Cache-Control","no-store").json(audioAnalysis.get({watch:q.query.watch==="1",awake:!screenOff&&(runtime.device.displayAwake||['vu','bars','spectrum'].includes(preferences.get().prefs.screen.mode))&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId}));});
+function audioSnapshot(watch=false){
+ if(bluetoothState().active)return {enabled:false,configured:audioAnalysis.configured,status:'source-unavailable',source:'bluetooth',simulated:false,measurement:null};
+ const value=audioAnalysis.get({watch,awake:!screenOff&&(runtime.device.displayAwake||['vu','bars','spectrum'].includes(preferences.get().prefs.screen.mode))&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId});
+ return value.configured&&value.enabled?{...value,streamUrl:'/api/audio/events'}:value;
+}
+const audioFrames=new AudioFrames({read:()=>audioSnapshot()});
+app.get('/api/audio/events',(q,r)=>audioFrames.add(q,r));
+app.get('/api/audio',(q,r)=>r.set('Cache-Control','no-store').json(audioSnapshot(q.query.watch==='1')));
 app.post("/api/audio/settings",(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:"Reload TuneBox before changing measurement settings"});
  try{if(!q.body||Object.keys(q.body).length!==1||!Object.hasOwn(q.body,"enabled"))throw Error("Only enabled can be changed");audioAnalysis.setEnabled(q.body.enabled);preferences.save(preferences.get().revision,{audioEnabled:q.body.enabled});r.json(audioAnalysis.get());}catch(error){r.status(400).json({error:error.message});}
@@ -755,7 +763,7 @@ for (const signal of ["SIGINT", "SIGTERM"])
     phoneServer?.close();
     for(const c of remoteClients)c.end();remoteServer?.close();
     music?.stop();
-    audioAnalysis.close();automaticSound.close();localAudio.close();
+    audioFrames.close();audioAnalysis.close();automaticSound.close();localAudio.close();
     for (const c of clients) c.end();
     clearInterval(clock);
     clearInterval(inventoryClock);

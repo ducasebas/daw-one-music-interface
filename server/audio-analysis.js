@@ -1,8 +1,8 @@
 import {spawn} from 'node:child_process';
 import {existsSync,readFileSync,mkdirSync,writeFileSync,renameSync} from 'node:fs';
 import {join} from 'node:path';
-import {performance} from 'node:perf_hooks';
-import {PcmAnalyser,FFT_SIZE} from '../shared/audio-analysis.js';
+import {FFT_SIZE} from '../shared/audio-analysis.js';
+import {LatestPcmAnalysis} from './pcm-analysis-worker-client.js';
 export class PcmPackets{
  constructor(){this.buffer=Buffer.alloc(0);}
  push(chunk){
@@ -19,7 +19,7 @@ export class PcmPackets{
 const statuses=['source-missing','idle','pcm','stale','busy','incompatible'];
 export class AudioAnalysis{
  constructor({reader=process.env.DAW_AUDIO_READER,directory=process.env.DAW_AUDIO_SHM_DIR,playerId=process.env.DAW_AUDIO_PLAYER_ID,stateDir=process.env.DAW_STATE_DIR||'.tunebox-state',onStatus=()=>{}}={}){
-  this.reader=reader;this.directory=directory;this.playerId=playerId?.toLowerCase();this.stateDir=stateDir;this.onStatus=onStatus;this.analyser=new PcmAnalyser();this.enabled=false;this.child=null;this.latest=null;this.status='disabled';this.demandUntil=0;this.lastPacket=0;this.retryAt=0;
+  this.reader=reader;this.directory=directory;this.playerId=playerId?.toLowerCase();this.stateDir=stateDir;this.onStatus=onStatus;this.analysis=null;this.analysisEpoch=0;this.enabled=false;this.child=null;this.latest=null;this.status='disabled';this.demandUntil=0;this.lastPacket=0;this.retryAt=0;
   try{const raw=readFileSync(join(stateDir,'audio-analysis.json'),'utf8');if(raw.length<1024)this.enabled=JSON.parse(raw).enabled===true;}catch{}
   this.clock=setInterval(()=>{if(this.child&&(Date.now()>this.demandUntil||!this.enabled))this.stop('inactive');},500);this.clock.unref();
  }
@@ -34,19 +34,25 @@ export class AudioAnalysis{
   if(this.child||Date.now()<this.retryAt||!this.enabled||!this.configured)return;
   this.retryAt=Date.now()+2000;const child=spawn(this.reader,[this.directory,this.playerId],{stdio:['ignore','pipe','ignore']});this.child=child;this.startedAt=Date.now();this.lastPacket=0;const packets=new PcmPackets();this.latest=null;this.change('starting');
   child.stdout.on('data',chunk=>{if(this.child!==child)return;const packet=packets.push(chunk);if(!packet)return;this.lastPacket=Date.now();
-   if(packet.status!==2){this.latest=null;this.change(statuses[packet.status]);return;}
-   const now=Date.now();if(packet.sourceTime*1000>now+2000||now-packet.sourceTime*1000>3000){this.latest=null;this.change('stale');return;}
-   const before=performance.now();const data=this.analyser.analyse(packet.samples,packet.rate);this.lastSampleRate=packet.rate;this.latest={...data,capturedMonotonicMs:Number(process.hrtime.bigint())/1e6,capturedAt:now,sourceUpdatedAt:packet.sourceTime*1000,processingMs:Math.round((performance.now()-before)*100)/100};this.change(data.silent?'silence':'pcm');
+   if(packet.status!==2){this.analysisEpoch++;this.latest=null;this.change(statuses[packet.status]);return;}
+   const now=Date.now();if(packet.sourceTime*1000>now+2000||now-packet.sourceTime*1000>3000){this.analysisEpoch++;this.latest=null;this.change('stale');return;}
+   if(!this.analysis)this.analysis=new LatestPcmAnalysis({onResult:(data,context)=>{
+    if(this.child!==child||context.epoch!==this.analysisEpoch||Number(process.hrtime.bigint())/1e6-context.capturedMonotonicMs>=750)return;
+    this.lastSampleRate=data.sampleRate;
+    const {epoch,...stamp}=context;this.latest={...data,...stamp};this.change(data.silent?'silence':'pcm');
+   },onError:()=>{if(this.child===child)this.stop('reader-error');}});
+   this.analysis.submit(packet.samples,packet.rate,{epoch:this.analysisEpoch,capturedMonotonicMs:Number(process.hrtime.bigint())/1e6,capturedAt:now,sourceUpdatedAt:packet.sourceTime*1000});
   });
-  const failed=()=>{if(this.child===child){this.child=null;this.latest=null;this.change('reader-error');}};child.on('error',failed);child.on('exit',failed);
+  const failed=()=>{if(this.child===child){this.child=null;this.analysisEpoch++;this.analysis?.close();this.analysis=null;this.latest=null;this.change('reader-error');}};child.on('error',failed);child.on('exit',failed);
  }
- stop(status='inactive'){const child=this.child;this.child=null;if(child){child.kill('SIGTERM');const kill=setTimeout(()=>{if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');},500);kill.unref();child.once('exit',()=>clearTimeout(kill));}this.latest=null;this.demandUntil=0;this.change(this.enabled?status:'disabled');}
+ stop(status='inactive'){const child=this.child;this.child=null;this.analysisEpoch++;this.analysis?.close();this.analysis=null;if(child){child.kill('SIGTERM');const kill=setTimeout(()=>{if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');},500);kill.unref();child.once('exit',()=>clearTimeout(kill));}this.latest=null;this.demandUntil=0;this.change(this.enabled?status:'disabled');}
  get({watch=false,awake=true,selectedId}={}){
   if(!awake&&this.child)this.stop('sleeping');
   if(watch&&awake&&this.enabled&&this.configured){this.demandUntil=Date.now()+3000;this.start();}
   const fresh=this.child&&Date.now()-this.lastPacket<750;
-  const status=!this.configured?'not-configured':!this.enabled?'disabled':!awake?'sleeping':this.child&&!fresh&&Date.now()-this.startedAt>750?'stale':this.status;
-  return {enabled:this.enabled,configured:this.configured,status,source:'squeezelite-pcm',simulated:false,playerId:this.playerId||null,matchesSelected:!!selectedId&&selectedId.toLowerCase()===this.playerId,sampleRate:this.lastSampleRate||null,precisionBits:16,unit:'dBFS',measurement:['pcm','silence'].includes(status)&&fresh?this.latest:null};
+  const measurementFresh=this.latest&&Number(process.hrtime.bigint())/1e6-this.latest.capturedMonotonicMs<750;
+  const status=!this.configured?'not-configured':!this.enabled?'disabled':!awake?'sleeping':this.child&&(!fresh||['pcm','silence'].includes(this.status)&&!measurementFresh)&&Date.now()-this.startedAt>750?'stale':this.status;
+  return {enabled:this.enabled,configured:this.configured,status,source:'squeezelite-pcm',simulated:false,playerId:this.playerId||null,matchesSelected:!!selectedId&&selectedId.toLowerCase()===this.playerId,sampleRate:this.lastSampleRate||null,precisionBits:16,unit:'dBFS',measurement:['pcm','silence'].includes(status)&&fresh&&measurementFresh?this.latest:null};
  }
  close(){clearInterval(this.clock);this.stop();}
 }

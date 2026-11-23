@@ -2401,5 +2401,12 @@
   "Today": "Vandaag",
   "Choose your city in Date & time": "Kies je stad bij Datum en tijd",
   "No sunset today": "Vandaag geen zonsondergang",
-  "Drag widgets onto Now Playing and the rest screen. The menu bar slides away without moving anything. Hold to wake the screen. Keep playing (∞) next to mute, crossfade when Music Assistant offers it, mute rests the meters. Remove phones in Party mode, Pi throttling in Sensors, SSH switch for developers. After a restart TuneBox leaves multiroom and says so. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once for SSH.": "Sleep widgets naar Speelt nu en het rustscherm. De menubalk schuift weg zonder dat er iets verspringt. Houd vast om het scherm te wekken. Blijven spelen (∞) naast dempen, crossfade als Music Assistant het aanbiedt, dempen zet de meters in rust. Telefoons verwijderen in Party mode, Pi-throttling bij Sensoren, SSH-schakelaar voor ontwikkelaars. Na een herstart verlaat TuneBox multiroom en meldt dat. Vraagt eenmalig “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” voor SSH."
+  "Choose widgets": "Widgets kiezen",
+  "No widgets selected": "Geen widgets gekozen",
+  "Tap to add a widget. Use the grip to drag; swipe elsewhere to scroll.": "Tik om een widget toe te voegen. Sleep met de greep; veeg elders om te scrollen.",
+  "Apply your selection, then Save in Settings to keep it.": "Pas je selectie toe en tik daarna op Opslaan in Instellingen om die te bewaren.",
+  "Apply selection": "Selectie toepassen",
+  "Drag widget": "Widget slepen",
+  "Tap a widget to add it, or drag its grip to a place.": "Tik om een widget toe te voegen of sleep de greep naar een plek.",
+  "Repairs stalled updates and checks system modules before installation. A screen-wide menu keeps the song and visualizer in place. Choose widgets in a scrollable popup. Local PCM analysis runs separately, with a live meter feed and less work during startup. Failed updates return to the previous version. The system helpers need “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once if automatic appliance maintenance is not enabled.": "Herstelt vastgelopen updates en controleert systeembestanden vóór de installatie. Het schermbrede menu houdt het nummer en de visualizer op hun plek. Kies widgets in een scrollbaar venster. Lokale audiometing draait apart, met een doorlopende meterverbinding en minder werk tijdens het opstarten. Een mislukte update zet de vorige versie terug. De systeemhulpen vragen eenmalig “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” als automatisch systeemonderhoud niet aanstaat."
 }

@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.22-play.1",
-  label: "GUI 3.16.2 · PLAY",
+  id: "2026.11.23-safe.1",
+  label: "GUI 3.16.3 · SAFE UPDATE",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Drag widgets onto Now Playing and the rest screen. The menu bar slides away without moving anything. Hold to wake the screen. Keep playing (∞) next to mute, crossfade when Music Assistant offers it, mute rests the meters. Remove phones in Party mode, Pi throttling in Sensors, SSH switch for developers. After a restart TuneBox leaves multiroom and says so. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once for SSH.",
+  notes: "Repairs stalled updates and checks system modules before installation. A screen-wide menu keeps the song and visualizer in place. Choose widgets in a scrollable popup. Local PCM analysis runs separately, with a live meter feed and less work during startup. Failed updates return to the previous version. The system helpers need “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once if automatic appliance maintenance is not enabled.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {
