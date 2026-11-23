@@ -1,0 +1,271 @@
+{
+  "baselineSource": "2bd52c3aa2bc0150c38848cadba20390e0b6a80d",
+  "candidateBranch": "codex/3.16.3-smooth",
+  "measurement": "Single paired ten-second windows per timing setting; controlled simulator with a synthetic native shared-memory source, not a physical device or a confidence interval.",
+  "results": [
+    {
+      "name": "baseline",
+      "build": {
+        "id": "2026.11.23-safe.1",
+        "label": "GUI 3.16.3 \u00b7 SAFE UPDATE",
+        "notes": "Fixes the update that kept the screen on \u201cWaiting for the update service\u201d: a missing system file stopped the TuneBox manager. Updates now check every system file before installing, stop themselves after nine minutes and return to the previous version straight away if something goes wrong. The update screen keeps its clock running and offers a way back. Needs \u201csudo bash /opt/daw-one/deploy/update-appliance.sh --apply\u201d once."
+      },
+      "environment": "Local Chromium production simulation at 1280x800, 4x CPU throttling, real native reader of an explicitly synthetic shared-memory PCM ring; no audio device; no Pi measurement",
+      "recordedAt": "2026-11-23T21:21:06.480Z",
+      "cold": {
+        "fcp": 1060,
+        "js": [
+          {
+            "path": "/appliance.js",
+            "bytes": 8524
+          },
+          {
+            "path": "/boot-status.js",
+            "bytes": 651
+          },
+          {
+            "path": "/assets/main-DIeVLiWp.js",
+            "bytes": 651841
+          },
+          {
+            "path": "/assets/client-D0oIWFjX.js",
+            "bytes": 246960
+          }
+        ],
+        "longTasks": 7
+      },
+      "playing": {
+        "seconds": 10,
+        "commits": 221,
+        "longTasks": 0,
+        "frameP95Ms": 16.799999999999272,
+        "frameMaxMs": 50,
+        "scriptMs": 1374.204,
+        "taskMs": 5030.013,
+        "layoutMs": 615.462,
+        "heapMiB": 6.500175476074219,
+        "apiRequests": {
+          "/api/updates": 1,
+          "/api/audio": 81
+        }
+      },
+      "navigation": [
+        {
+          "title": "Queue",
+          "ms": 552.516477000001
+        },
+        {
+          "title": "Now Playing",
+          "ms": 299.881688999998
+        },
+        {
+          "title": "Rooms",
+          "ms": 329.1239830000013
+        },
+        {
+          "title": "Now Playing",
+          "ms": 247.06672700000126
+        }
+      ],
+      "durationSeconds": 17.975
+    },
+    {
+      "name": "candidate",
+      "build": {
+        "id": "2026.11.23-safe.1",
+        "label": "GUI 3.16.3 \u00b7 SAFE UPDATE",
+        "notes": "Repairs stalled updates and checks system modules before installation. A screen-wide menu keeps the song and visualizer in place. Choose widgets in a scrollable popup. Local PCM analysis runs separately, with a live meter feed and less work during startup. Failed updates return to the previous version. The system helpers need \u201csudo bash /opt/daw-one/deploy/update-appliance.sh --apply\u201d once if automatic appliance maintenance is not enabled."
+      },
+      "environment": "Local Chromium production simulation at 1280x800, 4x CPU throttling, real native reader of an explicitly synthetic shared-memory PCM ring; no audio device; no Pi measurement",
+      "recordedAt": "2026-11-23T21:21:23.395Z",
+      "cold": {
+        "fcp": 516,
+        "js": [
+          {
+            "path": "/appliance.js",
+            "bytes": 8524
+          },
+          {
+            "path": "/boot-status.js",
+            "bytes": 651
+          },
+          {
+            "path": "/assets/main-Ce2U77Yo.js",
+            "bytes": 656978
+          },
+          {
+            "path": "/assets/client-D0oIWFjX.js",
+            "bytes": 246960
+          }
+        ],
+        "longTasks": 4
+      },
+      "playing": {
+        "seconds": 10,
+        "commits": 61,
+        "longTasks": 0,
+        "frameP95Ms": 16.799999999999272,
+        "frameMaxMs": 116.69999999999982,
+        "scriptMs": 855.168,
+        "taskMs": 4115.964,
+        "layoutMs": 576.006,
+        "heapMiB": 6.221111297607422,
+        "apiRequests": {
+          "/api/updates": 1,
+          "/api/audio": 7
+        }
+      },
+      "navigation": [
+        {
+          "title": "Queue",
+          "ms": 494.7976789999957
+        },
+        {
+          "title": "Now Playing",
+          "ms": 263.43288899999607
+        },
+        {
+          "title": "Rooms",
+          "ms": 301.1874519999983
+        },
+        {
+          "title": "Now Playing",
+          "ms": 218.72025000000576
+        }
+      ],
+      "durationSeconds": 15.891
+    },
+    {
+      "name": "baseline-delay",
+      "build": {
+        "id": "2026.11.23-safe.1",
+        "label": "GUI 3.16.3 \u00b7 SAFE UPDATE",
+        "notes": "Fixes the update that kept the screen on \u201cWaiting for the update service\u201d: a missing system file stopped the TuneBox manager. Updates now check every system file before installing, stop themselves after nine minutes and return to the previous version straight away if something goes wrong. The update screen keeps its clock running and offers a way back. Needs \u201csudo bash /opt/daw-one/deploy/update-appliance.sh --apply\u201d once."
+      },
+      "environment": "Local Chromium production simulation at 1280x800, 4x CPU throttling, real native reader of an explicitly synthetic shared-memory PCM ring; no audio device; no Pi measurement",
+      "recordedAt": "2026-11-23T21:21:41.379Z",
+      "cold": {
+        "fcp": 640,
+        "js": [
+          {
+            "path": "/appliance.js",
+            "bytes": 8524
+          },
+          {
+            "path": "/boot-status.js",
+            "bytes": 651
+          },
+          {
+            "path": "/assets/main-DIeVLiWp.js",
+            "bytes": 651841
+          },
+          {
+            "path": "/assets/client-D0oIWFjX.js",
+            "bytes": 246960
+          }
+        ],
+        "longTasks": 4
+      },
+      "playing": {
+        "seconds": 10,
+        "commits": 205,
+        "longTasks": 2,
+        "frameP95Ms": 16.80000000000109,
+        "frameMaxMs": 116.69999999999891,
+        "scriptMs": 1539.26,
+        "taskMs": 5460.0610000000015,
+        "layoutMs": 616.436,
+        "heapMiB": 6.315513610839844,
+        "apiRequests": {
+          "/api/updates": 1,
+          "/api/audio": 75
+        }
+      },
+      "navigation": [
+        {
+          "title": "Queue",
+          "ms": 639.2718550000063
+        },
+        {
+          "title": "Now Playing",
+          "ms": 251.6781189999965
+        },
+        {
+          "title": "Rooms",
+          "ms": 232.76953700000013
+        },
+        {
+          "title": "Now Playing",
+          "ms": 209.75966399999743
+        }
+      ],
+      "durationSeconds": 16.92
+    },
+    {
+      "name": "candidate-delay",
+      "build": {
+        "id": "2026.11.23-safe.1",
+        "label": "GUI 3.16.3 \u00b7 SAFE UPDATE",
+        "notes": "Repairs stalled updates and checks system modules before installation. A screen-wide menu keeps the song and visualizer in place. Choose widgets in a scrollable popup. Local PCM analysis runs separately, with a live meter feed and less work during startup. Failed updates return to the previous version. The system helpers need \u201csudo bash /opt/daw-one/deploy/update-appliance.sh --apply\u201d once if automatic appliance maintenance is not enabled."
+      },
+      "environment": "Local Chromium production simulation at 1280x800, 4x CPU throttling, real native reader of an explicitly synthetic shared-memory PCM ring; no audio device; no Pi measurement",
+      "recordedAt": "2026-11-23T21:21:59.536Z",
+      "cold": {
+        "fcp": 636,
+        "js": [
+          {
+            "path": "/appliance.js",
+            "bytes": 8524
+          },
+          {
+            "path": "/boot-status.js",
+            "bytes": 651
+          },
+          {
+            "path": "/assets/main-Ce2U77Yo.js",
+            "bytes": 656978
+          },
+          {
+            "path": "/assets/client-D0oIWFjX.js",
+            "bytes": 246960
+          }
+        ],
+        "longTasks": 4
+      },
+      "playing": {
+        "seconds": 10,
+        "commits": 63,
+        "longTasks": 0,
+        "frameP95Ms": 16.700000000000728,
+        "frameMaxMs": 99.89999999999964,
+        "scriptMs": 903.6359999999999,
+        "taskMs": 4036.0320000000006,
+        "layoutMs": 569.062,
+        "heapMiB": 6.193225860595703,
+        "apiRequests": {
+          "/api/updates": 1,
+          "/api/audio": 6
+        }
+      },
+      "navigation": [
+        {
+          "title": "Queue",
+          "ms": 606.3109530000074
+        },
+        {
+          "title": "Now Playing",
+          "ms": 268.21306500000355
+        },
+        {
+          "title": "Rooms",
+          "ms": 316.41971300001023
+        },
+        {
+          "title": "Now Playing",
+          "ms": 267.50875000000815
+        }
+      ],
+      "durationSeconds": 17.024
+    }
+  ]
+}

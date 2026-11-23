@@ -37,7 +37,7 @@ export function WidgetEditor({title,ids,limit,onChange,snapshot,hint}){
  const targetAt=(x,y)=>{const el=document.elementFromPoint(x,y)?.closest?.('[data-we-target]');return el&&root.current?.contains(el)?el.dataset.weTarget:null;};
  function start(e,id,from){
   if(e.button!==undefined&&e.button!==0)return;
-  const rect=e.currentTarget.getBoundingClientRect();
+ const rect=(e.currentTarget.closest('.we-placed,.we-shelf-item')||e.currentTarget).getBoundingClientRect();
   setDrag({id,from,x:e.clientX,y:e.clientY,dx:e.clientX-rect.left,dy:e.clientY-rect.top,w:rect.width,h:rect.height,moved:false,pointer:e.pointerId});
   e.currentTarget.setPointerCapture?.(e.pointerId);
  }
@@ -48,7 +48,7 @@ export function WidgetEditor({title,ids,limit,onChange,snapshot,hint}){
   if(drag.moved){
    if(target==='shelf'&&drag.from==='slot')remove(drag.id);
    else if(target?.startsWith('slot-'))place(drag.id,Number(target.slice(5)));
-  }else if(drag.from==='shelf')add(drag.id);
+  }
   setDrag(null);setOver(null);
  }
  useEffect(()=>{if(!drag)return;const cancel=()=>{setDrag(null);setOver(null);};window.addEventListener('blur',cancel);return()=>window.removeEventListener('blur',cancel);},[drag]);
@@ -58,7 +58,8 @@ export function WidgetEditor({title,ids,limit,onChange,snapshot,hint}){
   {hint&&<p className="we-hint">{tr(hint)}</p>}
   <ol className="we-slots" data-count={limit}>
    {slots.map((id,i)=><li key={i} data-we-target={'slot-'+i} data-over={over==='slot-'+i} data-empty={!id}>
-    {id?<div className="we-placed" data-dragged={drag?.moved&&drag.id===id} onPointerDown={e=>start(e,id,'slot')}>
+    {id?<div className="we-placed" data-dragged={drag?.moved&&drag.id===id}>
+      <button type="button" className="we-grip" aria-label={tr('Drag widget')+': '+tr(widgetNames[id])} onPointerDown={e=>start(e,id,'slot')}><span aria-hidden="true">⠿</span></button>
       <Tile id={id} snapshot={snapshot}/>
       <span className="we-actions">
        <button type="button" aria-label={tr('Move left')+': '+tr(widgetNames[id])} disabled={i===0} onPointerDown={e=>e.stopPropagation()} onClick={()=>{const n=[...ids];[n[i-1],n[i]]=[n[i],n[i-1]];onChange(n);}}><Icon name="back" size={16}/></button>
@@ -69,8 +70,8 @@ export function WidgetEditor({title,ids,limit,onChange,snapshot,hint}){
    </li>)}
   </ol>
   <div className="we-shelf" data-we-target="shelf" data-over={over==='shelf'}>
-   <small>{tr(free.length?(ids.length>=limit?'All places are full: drag a widget back here or remove one first.':'Drag a widget to a place, or tap it to add it.'):'Every widget is in use.')}</small>
-   <div className="we-shelf-items">{free.map(id=><button type="button" key={id} className="we-shelf-item" aria-label={translateFormat('Add {name}',{name:tr(widgetNames[id])})} disabled={ids.length>=limit&&!drag} data-dragged={drag?.moved&&drag.id===id} onPointerDown={e=>start(e,id,'shelf')} onClick={e=>{if(e.detail===0)add(id);}}><Tile id={id} snapshot={snapshot} compact/></button>)}</div>
+   <small>{tr(free.length?(ids.length>=limit?'All places are full: drag a widget back here or remove one first.':'Tap a widget to add it, or drag its grip to a place.'):'Every widget is in use.')}</small>
+   <div className="we-shelf-items">{free.map(id=><div key={id} className="we-shelf-item" data-dragged={drag?.moved&&drag.id===id}><button type="button" className="we-add" aria-label={translateFormat('Add {name}',{name:tr(widgetNames[id])})} disabled={ids.length>=limit} onClick={()=>add(id)}><Tile id={id} snapshot={snapshot} compact/></button><button type="button" className="we-grip" aria-label={tr('Drag widget')+': '+tr(widgetNames[id])} onPointerDown={e=>start(e,id,'shelf')}><span aria-hidden="true">⠿</span></button></div>)}</div>
   </div>
   {drag?.moved&&<div className="we-ghost" aria-hidden="true" style={{left:drag.x-drag.dx,top:drag.y-drag.dy,width:drag.w}}><Tile id={drag.id} snapshot={snapshot}/></div>}
  </section>;

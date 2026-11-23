@@ -2401,5 +2401,12 @@
   "Today": "Vandaag",
   "Choose your city in Date & time": "Kies je stad bij Datum en tijd",
   "No sunset today": "Vandaag geen zonsondergang",
-  "Fixes the update that kept the screen on “Waiting for the update service”: a missing system file stopped the TuneBox manager. Updates now check every system file before installing, stop themselves after nine minutes and return to the previous version straight away if something goes wrong. The update screen keeps its clock running and offers a way back. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.": "Herstelt de update die bleef hangen op „Waiting for the update service”: een ontbrekend systeembestand stopte de TuneBox-manager. Updates controleren nu elk systeembestand vóór het installeren, stoppen zichzelf na negen minuten en zetten bij problemen meteen de vorige versie terug. Het updatescherm laat de tijd doorlopen en biedt een weg terug. Vraagt eenmalig „sudo bash /opt/daw-one/deploy/update-appliance.sh --apply”."
+  "Choose widgets": "Widgets kiezen",
+  "No widgets selected": "Geen widgets gekozen",
+  "Tap to add a widget. Use the grip to drag; swipe elsewhere to scroll.": "Tik om een widget toe te voegen. Sleep met de greep; veeg elders om te scrollen.",
+  "Apply your selection, then Save in Settings to keep it.": "Pas je selectie toe en tik daarna op Opslaan in Instellingen om die te bewaren.",
+  "Apply selection": "Selectie toepassen",
+  "Drag widget": "Widget slepen",
+  "Tap a widget to add it, or drag its grip to a place.": "Tik om een widget toe te voegen of sleep de greep naar een plek.",
+  "Repairs stalled updates and checks system modules before installation. A screen-wide menu keeps the song and visualizer in place. Choose widgets in a scrollable popup. Local PCM analysis runs separately, with a live meter feed and less work during startup. Failed updates return to the previous version. The system helpers need “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once if automatic appliance maintenance is not enabled.": "Herstelt vastgelopen updates en controleert systeembestanden vóór de installatie. Het schermbrede menu houdt het nummer en de visualizer op hun plek. Kies widgets in een scrollbaar venster. Lokale audiometing draait apart, met een doorlopende meterverbinding en minder werk tijdens het opstarten. Een mislukte update zet de vorige versie terug. De systeemhulpen vragen eenmalig “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” als automatisch systeemonderhoud niet aanstaat."
 }

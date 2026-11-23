@@ -4,7 +4,11 @@ Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it e
 
 ## GUI 3.16.3 SAFE UPDATE — approved
 
+The owner explicitly approved the combined candidate on 23 November 2026 with “push wanneer klaar”, after the local interface, native audio, offline and WebKit checks. This covers the original SAFE UPDATE hotfix plus the requested header, widget chooser, local-frame/FFT and startup amendments, the review branch, full configured CI, in-scope fixes, merge and signed preview publication. Amplifier diagnosis stays deferred; no live hardware action is authorized by this release approval.
+
 The owner approved on 23 November 2026 with “push maar”, and reported that searching for updates is greyed out. That fits a manager that is not running after the 3.16.2 update. The scope is in [hotfix-3-16-3.md](hotfix-3-16-3.md): staged manager install with an import check, a CI test for installed host trees, the updater time limit with immediate rollback, and an update page that keeps counting. The approval covers the review branch, required CI and fixes within this scope, merge and signed preview publication after the full CI passes. It authorizes no live hardware experiment or physical confirmation.
+
+Additional owner-requested scope for the same 3.16.3 candidate on 23 November: a full-width header without movement of the visualizer, a scrollable widget chooser popup, local PCM presentation with bounded work and less startup contention. These amendments preserve the complete SAFE UPDATE hotfix on a separate Codex branch; [validation](hotfix-3-16-3-validation.md) distinguishes software checks from device acceptance. The owner deferred amplifier-output readings to the next session while TuneBox is off; see [the retained checks](hardware-next-session.md). No amplifier gain, headroom or power limit is changed.
 
 ## GUI 3.16.2 PLAY — published
 

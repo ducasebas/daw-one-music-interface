@@ -3,7 +3,7 @@ export const release = Object.freeze({
   id: "2026.11.23-safe.1",
   label: "GUI 3.16.3 · SAFE UPDATE",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Fixes the update that kept the screen on “Waiting for the update service”: a missing system file stopped the TuneBox manager. Updates now check every system file before installing, stop themselves after nine minutes and return to the previous version straight away if something goes wrong. The update screen keeps its clock running and offers a way back. Needs “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.",
+  notes: "Repairs stalled updates and checks system modules before installation. A screen-wide menu keeps the song and visualizer in place. Choose widgets in a scrollable popup. Local PCM analysis runs separately, with a live meter feed and less work during startup. Failed updates return to the previous version. The system helpers need “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once if automatic appliance maintenance is not enabled.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

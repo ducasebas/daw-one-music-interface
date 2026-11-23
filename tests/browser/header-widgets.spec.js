@@ -27,7 +27,8 @@ test('3.16: widgets stay above the footer with every visualizer, in either posit
 test('3.16: widget order can be changed in Settings',async({page})=>{
  await prefs(page,{widgets:['clock','upnext','source']});await page.goto(wall);
  await chooseSettingsSection(page,'Display',{open:true});
- await page.getByRole('button',{name:'Move right: Clock',exact:true}).click();
+ await page.getByRole('button',{name:'Choose widgets: Now Playing widgets',exact:true}).click();
+ await page.getByRole('button',{name:'Move right: Clock',exact:true}).click();await page.getByRole('button',{name:'Apply selection',exact:true}).click();
  await page.getByRole('button',{name:'Save',exact:true}).click();
  await expect.poll(async()=>(await(await page.request.get('/api/preferences')).json()).prefs.widgets).toEqual(['upnext','clock','source']);
  await page.getByRole('combobox',{name:'Widget position',exact:true}).selectOption('top');await page.getByRole('button',{name:'Save',exact:true}).click();
@@ -42,14 +43,14 @@ test('3.16: Developer → Values reads the timing and power values without chang
 test('3.16.2: widgets are dragged from the shelf onto a place, and rest widgets are chosen the same way',async({page})=>{
  await prefs(page,{widgets:['clock','upnext','source'],restWidgets:['temperature','light','sunset']});await page.goto(wall);
  await chooseSettingsSection(page,'Display',{open:true});
- const editor=page.locator('.widget-editor').first();await editor.scrollIntoViewIfNeeded();
+ await page.getByRole('button',{name:'Choose widgets: Now Playing widgets',exact:true}).click();const editor=page.locator('.widget-editor');
  // Every unused widget shows a preview; unavailable ones are marked as a demo.
  await expect(editor.locator('.we-shelf-item')).toHaveCount(7);await expect(editor.locator('.we-shelf-item .we-demo').first()).toBeVisible();
- const from=await editor.getByRole('button',{name:'Add Wi-Fi',exact:true}).boundingBox(),to=await editor.locator('.we-slots>li').nth(3).boundingBox();
+ const from=await editor.getByRole('button',{name:'Drag widget: Wi-Fi',exact:true}).boundingBox(),to=await editor.locator('.we-slots>li').nth(3).boundingBox();
  await page.mouse.move(from.x+30,from.y+20);await page.mouse.down();await page.mouse.move(from.x+50,from.y+10,{steps:3});await page.mouse.move(to.x+40,to.y+40,{steps:8});
  await expect(editor.locator('.we-slots>li').nth(3)).toHaveAttribute('data-over','true');await page.mouse.up();
  await expect(editor.locator('.we-slots>li').nth(3)).toContainText('Wi-Fi');
- const rest=page.locator('.widget-editor').nth(1);await rest.getByRole('button',{name:'Remove: Sunset',exact:true}).click();await rest.getByRole('button',{name:'Add Clock',exact:true}).click();
+ await page.getByRole('button',{name:'Apply selection',exact:true}).click();await page.getByRole('button',{name:'Choose widgets: Screen rest widgets',exact:true}).click();const rest=page.locator('.widget-editor');await rest.getByRole('button',{name:'Remove: Sunset',exact:true}).click();await rest.getByRole('button',{name:'Add Clock',exact:true}).click();await page.getByRole('button',{name:'Apply selection',exact:true}).click();
  await page.getByRole('button',{name:'Save',exact:true}).click();
  await expect.poll(async()=>(await(await page.request.get('/api/preferences')).json()).prefs.widgets).toEqual(['clock','upnext','source','wifi']);
  await expect.poll(async()=>(await(await page.request.get('/api/preferences')).json()).prefs.restWidgets).toEqual(['temperature','light','clock']);

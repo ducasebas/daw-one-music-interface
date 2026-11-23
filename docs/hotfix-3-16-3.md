@@ -28,3 +28,18 @@ The new manager files arrive with 3.16.3, but installing an update through the s
 ## Host-helper refresh
 
 All of this is host code. It reaches the Pi through OTA plus `sudo bash /opt/daw-one/deploy/update-appliance.sh --apply`, or automatically on later OTAs when appliance updates are enabled.
+
+## Interface amendments requested on 23 November
+
+These changes extend the same 3.16.3 candidate on a separate `codex/3.16.3-smooth` branch based on the complete SAFE UPDATE hotfix. The original staged-manager checks, rollback limits and independent update page stay included.
+
+- The wall music header reaches both screen edges. Its overlay geometry is established before the splash finishes, so the track, widgets and visualizer keep their coordinates when the menu collapses or becomes ready. The compact Settings status header keeps its own layout.
+- Display settings open an owned widget chooser with Cancel and Apply selection. Settings Save remains the persistence step. Swiping the chooser scrolls; only the explicit grips capture dragging. The fixed footer remains reachable on the legacy 1280×400 display.
+- The visualizer already reads local Squeezelite shared-memory PCM, not an internet music stream. FFT analysis now runs in a lazy Node worker, with at most one frame in progress and the newest waiting frame. Intermediate frames are discarded instead of accumulating delay. It never changes the player, output route or producer memory.
+- The browser receives analysis values over one local `/api/audio/events` connection, with a bounded HTTP fallback for older/offline helpers. A small request every 1.5 seconds renews the existing three-second capture lease. An open event connection alone cannot keep capture running. Pausing the local player, hiding the page or leaving the visualizer releases it; a paused selected remote room cannot stop local PCM.
+- A small client frame source separates changing measurements from React status. Only the meter nodes receive live targets; the music shell, Settings controls and SVG scales no longer render for each frame. The existing bounded presentation-delay queue still clears on pause, source/track/seek changes and stale input. Meter motion keeps one animation clock, capped at roughly 30 fps, while new values update its targets.
+- PCM demand and optional artwork decoration wait for the first usable music screen. No fixed delay was added to the owner's splash. The Pi's `--disable-gpu` stability setting stays in place; actual boot background load still needs a physical observation.
+
+The owner deferred amplifier-output diagnosis while TuneBox is off. The reported approximately 15 W at 90% volume does not establish an output-power ceiling. The retained readings, unknowns and read-only commands are in [hardware-next-session.md](hardware-next-session.md). No amplifier gain, EQ headroom, volume ceiling, power negotiation or audio route is changed by these amendments.
+
+The owner approved publishing the combined candidate on 23 November with “push wanneer klaar”. See [validation and physical limits](hotfix-3-16-3-validation.md). Source readiness, signed publication and installation on the Pi are separate states.

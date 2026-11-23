@@ -7,20 +7,20 @@ import {powerIsFresh} from '../shared/power-status.js';
 /** Blurred, enlarged, darkened artwork behind Now Playing. The new cover fades in over the
  * old one once it has loaded, so a slow image never leaves a blank or flashing background.
  * Only transform/opacity animate; the blur is computed on a small layer and scaled up. */
-export function NowPlayingBackdrop({snapshot,prefs,offline}){
+export function NowPlayingBackdrop({snapshot,prefs,offline,ready=true}){
  const {mode,src,key}=backdropSource({snapshot,prefs,offline});
- const [layers,setLayers]=useState(()=>src&&mode==='live'?[{key,src}]:[]);
+ const [layers,setLayers]=useState(()=>ready&&src&&mode==='live'?[{key,src}]:[]);
  const generation=useRef(0);
  useEffect(()=>{
-  if(mode!=='live')return;
+  if(mode!=='live'||!ready)return;
   const own=++generation.current;
   if(!src){setLayers(old=>old.length?[]:old);return;}
-  let image=new Image();
-  image.onload=()=>{if(own!==generation.current)return;setLayers(old=>old.at(-1)?.src===src?old:[...old.slice(-1),{key,src}]);};
-  image.onerror=()=>{if(own===generation.current)setLayers([]);};
-  image.src=src;
-  return()=>{image.onload=image.onerror=null;image=null;};
- },[src,mode]);
+  let image,idle,timer;
+  const load=()=>{image=new Image();image.onload=()=>{if(own!==generation.current)return;setLayers(old=>old.at(-1)?.src===src?old:[...old.slice(-1),{key,src}]);};image.onerror=()=>{if(own===generation.current)setLayers([]);};image.src=src;};
+  // Decode optional decoration after the first usable screen, with a bounded idle wait.
+  if(typeof requestIdleCallback==='function')idle=requestIdleCallback(load,{timeout:1500});else timer=setTimeout(load,100);
+  return()=>{if(idle!==undefined)cancelIdleCallback(idle);clearTimeout(timer);if(image)image.onload=image.onerror=null;image=null;};
+ },[src,mode,ready]);
  if(mode==='off')return null;
  return <div className="np-backdrop" data-mode={mode} data-artwork={layers.length?'true':'false'} aria-hidden="true">
   {mode==='live'&&layers.map((layer,i)=><div key={layer.key} className="np-backdrop-layer" data-current={i===layers.length-1} style={{backgroundImage:`url("${layer.src.replace(/["\\]/g,'')}")`}} onAnimationEnd={()=>{if(i===layers.length-1)setLayers(old=>old.slice(-1));}}/>)}
