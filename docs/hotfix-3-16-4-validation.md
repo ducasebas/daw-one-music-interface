@@ -1,6 +1,6 @@
 # GUI 3.16.4 INTEGRITY: validation
 
-Candidate on `codex/3.16.4-file-integrity`, based on published `df8dd7ccef2eff3d1a2e224e48de9fa14d036b43`. This file records local software checks; physical recovery and a successful OTA on the Pi are not yet observed. See [scope and limitations](hotfix-3-16-4.md).
+Candidate on `codex/3.16.4-file-integrity`, based on published `df8dd7ccef2eff3d1a2e224e48de9fa14d036b43`. This file records local software checks; the owner has since confirmed recovery of the screen service and activity wake through device API readbacks. A successful OTA to 3.16.4 on the Pi is not yet observed. See [scope and limitations](hotfix-3-16-4.md).
 
 ## Fault reproduction and regression coverage
 
@@ -22,4 +22,10 @@ Local Linux results on 24 November 2026:
 - `npm audit --omit=dev --audit-level=high`: **0 known vulnerabilities**.
 - Shell syntax and `git diff --check`: passed. The fixture-generated display unit also passed `systemd-analyze verify`.
 
-Full configured GitHub CI (including both Node versions and WebKit) and signed-publication verification remain required after explicit approval; local checks do not mean the OTA is published. The local package is unsigned and is not a deployment instruction. Recovery of the currently installed controller, brightness behavior on the Pi and a successful device update remain unobserved. No new physical power or thermal conclusion is inferred from these results.
+Full configured GitHub CI (including both Node versions and WebKit) and signed-publication verification remain required after explicit approval; local checks do not mean the OTA is published. The local package is unsigned and is not a deployment instruction. Subsequent readbacks confirm the recovered controller, live lux and automatic brightness at 34% after activity wake. Visual acceptance of the interface and a successful 3.16.4 device update remain unobserved. No new physical power or thermal conclusion is inferred from these results.
+
+## Publication CI follow-up
+
+The initial review head `8588095b1aafa99119d45e1af7f58b5bf305c2fc` passed both Node/Python/audit jobs, two Chromium shards and offline/WebKit. Chromium shard 1 exposed an intermittent older settings-save race at the second widget Save. With the first POST response deliberately held after persistence, the regression test deterministically failed: a new `top` placement reverted to `bottom`. This was an actual lost edit, not a justification to increase a timeout or rerun until green.
+
+The correction preserves edits made after submission, takes the confirmed server revision for the next Save, keeps the unsaved indication and defers queued navigation until the new draft is rendered. The full JavaScript suite passed again with 486 tests, including five pure merge tests. Both delayed-response browser paths passed, as did the originally failing widget-order case. Installed-module and privacy checks also passed. The complete configured CI must pass again on the corrected head before publication.

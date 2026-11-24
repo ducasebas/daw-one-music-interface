@@ -18,6 +18,10 @@ This hotfix adds a separate check at that host-installation boundary:
 
 The whole multi-file host layer is **not** an atomic slot switch. A process interruption between individual renames can leave a mixed tree, which the startup inventory check rejects; rerunning a verified installation repairs it. These checks do not establish why the Pi rebooted, repair faulty storage or guarantee behavior under every electrical fault. The existing application-slot journal, signed verification, idle gates and rollback remain in force.
 
+## CI correction: edits made during Save
+
+The full Chromium run exposed an existing settings race: the first Save could update the backend before its response reached the browser. Editing widget placement in that interval was then silently overwritten by the old acknowledgement, hiding Save. A deterministic held-response test reproduced the loss. The acknowledgement now adopts canonical saved values and the confirmed revision while retaining newer edits, including reordered widget arrays. Those edits remain explicitly unsaved. Queued navigation runs after the acknowledged draft renders and still asks before abandoning newer edits.
+
 ## Device recovery and installation
 
 Recover the currently empty controller first using the separately supplied pinned-checksum recovery block. Its original source is identical in 3.16.2 and 3.16.3. Do not treat the repair as completed until `daw-one-display.service` is active and `/api/display` reports `backlight.supported: true`. Close and reopen Display settings after recovery; the current screen reads that capability when it opens.
