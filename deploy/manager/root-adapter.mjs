@@ -13,6 +13,7 @@ import {atomicJson,readJson,boundedJson} from './io.mjs';
 import {powerController} from './power.mjs';
 import {networkController,networkStatus as readNetworkStatus,assertConnectionChange} from './network.mjs';
 import {clockController} from './clock.mjs';
+import {sshController} from './ssh.mjs';
 import {measurementController} from './measurement.mjs';
 import {localMaController} from './local-ma.mjs';
 import {dspController} from './dsp.mjs';
@@ -40,7 +41,7 @@ async function trigger(action){
  atomicJson(base+'/request.json',{action});
  try{await run('/usr/bin/systemctl',['start','--no-block','daw-one-update.service']);}catch{rmSync(base+'/request.json',{force:true});throw Error('Update service unavailable; rerun the OTA installer');}return {queued:true};
 }
-export function rootAdapter(){const powerReader=powerMonitoring({run,context:()=>localState(),hardwareIdle:playbackHardwareIdle});const power=powerController({run}),network=networkController({run}),clock=clockController({run}),dsp=dspController({run}),localMa=localMaController({run}),measurement=measurementController({run}),bluetooth=bluetoothController({run});
+export function rootAdapter(){const powerReader=powerMonitoring({run,context:()=>localState(),hardwareIdle:playbackHardwareIdle});const power=powerController({run}),network=networkController({run}),clock=clockController({run}),ssh=sshController({run}),dsp=dspController({run}),localMa=localMaController({run}),measurement=measurementController({run}),bluetooth=bluetoothController({run});
  const localState=async()=>boundedJson(await fetch('http://127.0.0.1:3001/api/state',{signal:AbortSignal.timeout(3000)}));
  const automatic=new AutomaticDsp({dsp,context:async()=>{const s=await localState();return {ready:s.device?.mode==='ready'&&!s.device?.faults?.length&&!s.activity?.roomMeasurement&&!s.activity?.syncCalibration&&!s.activity?.roomControl&&!existsSync('/var/lib/daw-one-manager/standby.json')&&(s.bluetooth?.active||s.mode!=='music-assistant'||s.localAudio?.available===true),playing:s.localAudio?.playing===true,selectedLocal:s.localAudio?.ready===true,bluetooth:s.bluetooth?.active===true,trackKey:s.localAudio?.trackKey||null,genres:s.localAudio?.genres||[]};}});
  atomicJson('/run/daw-one-dsp/status.json',automatic.publicStatus(),0o644);
@@ -101,6 +102,8 @@ export function rootAdapter(){const powerReader=powerMonitoring({run,context:()=
   if(command==='hotspot-stop')return network.stop();
   if(command==='clock')return clock.get();
   if(command==='clock-set')return clock.set(args);
+  if(command==='ssh-status')return ssh.get();
+  if(command==='ssh-set')return ssh.set(args.enabled);
   if(command==='dsp')return dsp.get();
   if(command==='local-standby')return dsp.standby(args.enabled);
   if(command==='local-volume')return dsp.localVolume(args.step);

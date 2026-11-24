@@ -38,7 +38,7 @@ export function DeveloperSettings({snapshot,offline,onDirty,actionsRef,onBeforeN
   {tab==='Hardware'&&<><AmplifierHealth offline={offline}/><p>{tr('Only confirm wiring after checking the physical connections. Changing a checkbox does not connect a sensor.')}</p>{powerSettings||<p>{tr('Hardware setup is available in the main Settings menu on TuneBox.')}</p>}<dl className="system-facts"><dt>{tr('Physical power button')}</dt><dd>{tr('Requires an explicitly assigned free GPIO. GPIO3 wake shares the sensor I²C clock; confirm wiring before installation.')}</dd></dl></>}
   {tab==='Audio'&&soundSettings}
   {tab==='Startup'&&startupSettings}
-  {tab==='Services'&&<>{serverSettings}<RestartControls snapshot={snapshot} offline={offline}/></>}
+  {tab==='Services'&&<>{serverSettings}<SshControl offline={offline}/><RestartControls snapshot={snapshot} offline={offline}/></>}
   {tab==='Updates'&&<UpdateSettings onDirty={onDirty} actionsRef={actionsRef}/>}
   {tab==='Debug'&&<section><h3>{tr('Debug capture')}</h3><p>{tr('Capture system information to investigate a problem. Passwords, access tokens, Wi-Fi names and audio recordings are excluded. Recording stops after 30 minutes or a restart.')}</p><BusyStatus busy={loading||pending} label={pending?'Saving debug settings…':'Loading debug status…'}/><button disabled={!info||offline||loading||pending} onClick={()=>change({enabled:!info.enabled})}>{tr(info?.enabled?'Stop debug capture':'Start debug capture')}</button><a className="hub-download" href="/api/debug/download" download="tunebox-debug.json">{tr('Download debug report')}</a><button disabled={!info||offline||loading||pending} onClick={()=>change({clear:true})}>{tr('Clear debug log')}</button>{!loading&&!info&&<button disabled={offline} onClick={read}>{tr('Try again')}</button>}<p role="status">{tr(info?.enabled?'Debug capture is running':'Debug capture is off')}</p></section>}
   <p role="status">{tr(notice)}</p>
@@ -78,5 +78,19 @@ export function RestartControls({snapshot,offline}){
    {action&&<><h3>{tr(copy[action].title)}</h3><p>{tr(copy[action].body)}</p>{manager.simulated&&<p>{tr('Simulation — nothing will be restarted.')}</p>}{notice&&<p role="alert">{tr(notice)}</p>}
    <button autoFocus disabled={pending} onClick={()=>dialog.current?.close()}>{tr('Cancel')}</button><button disabled={pending||!usable&&!pending} onClick={run}>{tr(pending?copy[action].busy:copy[action].confirm)}</button></>}
   </dialog>
+ </section>;
+}
+/** SSH for developers: off unless switched on here (behind the settings PIN). Open sessions survive switching off. */
+export function SshControl({offline}){
+ const device=useDeviceUpdates(),[state,setState]=useState(null),[pending,setPending]=useState(false),[notice,setNotice]=useState(''),[confirm,setConfirm]=useState(null);
+ const usable=!offline&&!!device?.info?.controlToken&&!pending;
+ useEffect(()=>{let live=true;if(offline||!device?.action)return;device.action('ssh-status').then(v=>{if(live)setState(v);}).catch(e=>{if(live)setNotice(e.message);});return()=>{live=false;};},[offline]);
+ async function apply(enabled){setConfirm(null);setPending(true);setNotice('');try{const v=await device.action('ssh-set',{enabled,confirmed:true});setState(v);setNotice(enabled?'SSH is on.':'SSH is off. Open sessions stay connected until they close.');}catch(e){setNotice(e.message);}finally{setPending(false);}}
+ return <section className="ssh-control" aria-label={tr('SSH')}>
+  <label className="setting-switch"><span>{tr('SSH access')}<small>{tr('Lets a computer on your network log in to this TuneBox. Leave it off unless you are troubleshooting.')}</small></span>
+   <input type="checkbox" role="switch" aria-label={tr('SSH access')} disabled={!usable||!state?.supported} checked={state?.enabled===true} onChange={e=>setConfirm(e.target.checked)}/></label>
+  {state&&!state.supported&&<p className="settings-note">{tr('SSH is not installed on this TuneBox.')}</p>}
+  {confirm!==null&&<div className="ssh-confirm" role="alertdialog" aria-label={tr(confirm?'Turn SSH on?':'Turn SSH off?')}><p>{tr(confirm?'Turn SSH on? Anyone on your network with the password can then log in.':'Turn SSH off? New logins are refused; open sessions stay connected.')}</p><button type="button" onClick={()=>setConfirm(null)}>{tr('Cancel')}</button><button type="button" onClick={()=>apply(confirm)}>{tr(confirm?'Turn on':'Turn off')}</button></div>}
+  {notice&&<p role="status" className="settings-note">{tr(notice)}</p>}
  </section>;
 }

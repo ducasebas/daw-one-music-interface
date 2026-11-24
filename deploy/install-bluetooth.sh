@@ -30,8 +30,10 @@ usermod -aG audio,dawone dawbluetooth
 base=/usr/local/lib/daw-one-control
 install -d -m 755 "$base/deploy/bluetooth" "$base/deploy/manager" "$base/shared"
 install -m 644 "$repo"/deploy/bluetooth/{agent.py,control.py,approved.py,audio.mjs,recover.mjs} "$base/deploy/bluetooth/"
-install -m 644 "$repo"/deploy/manager/{bluetooth.mjs,dsp.mjs,io.mjs} "$base/deploy/manager/"
-install -m 644 "$repo/shared/bluetooth.js" "$base/shared/"
+for file in bluetooth.mjs dsp.mjs io.mjs; do
+  python3 "$repo/deploy/host-files.py" file "$repo/deploy/manager/$file" "$base/deploy/manager/$file"
+done
+python3 "$repo/deploy/host-files.py" file "$repo/shared/bluetooth.js" "$base/shared/bluetooth.js"
 install -d -m 750 -o root -g dawone /run/daw-one-bluetooth
 install -d -m 700 -o root -g root /var/lib/daw-one-bluetooth
 cat > /etc/systemd/system/daw-one-bluetooth-agent.service <<'UNIT'

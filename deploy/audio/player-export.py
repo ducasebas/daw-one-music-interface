@@ -103,7 +103,7 @@ if __name__=='__main__':
         if action=='write' and updated!=argv:
             target=Path('/etc/systemd/system/tunebox-player.service.d/90-tunebox-analysis.conf')
             target.parent.mkdir(parents=True,exist_ok=True)
-            target.write_text(systemd_override(updated));target.chmod(0o644)
+            target.write_text(systemd_override(updated));target.chmod(0o644)  # systemd warns about world-inaccessible unit files; it holds no secret
         print('Export already enabled' if updated==argv else 'Export supported; only -v is added')
     except Exception as error:
         print(str(error),file=sys.stderr);sys.exit(1)

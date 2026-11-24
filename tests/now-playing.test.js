@@ -8,7 +8,7 @@ const live={mode:'music-assistant',musicAssistant:{connected:true,players:[{id:'
 
 test('widget choice is bounded, known and unique',()=>{
  assert.deepEqual(widgetSelection(['power','power','nope','clock','wifi','rooms','party']),['power','clock','wifi','rooms']);
- assert.equal(widgetSelection('x').length>0,true);assert.equal(widgetLimit,4);assert.equal(widgetCatalog.length,8);
+ assert.equal(widgetSelection('x').length>0,true);assert.equal(widgetLimit,4);assert.equal(widgetCatalog.length,10);
 });
 test('the backdrop uses only local artwork and turns static in low-power mode',()=>{
  assert.deepEqual(backdropSource({snapshot:live}).src,'/api/artwork/'+'a'.repeat(64));
@@ -40,4 +40,31 @@ test('power never shows consumption without a confirmed reading, and never inven
  const both=nowPlayingWidget('power',fresh({watts:23.46,contractWatts:60}),{now});assert.equal(widgetText(both.value,both.params),'23.5 W in use');assert.equal(widgetText(both.detail,both.params),'60 W contract');
  assert.equal(nowPlayingWidget('power',fresh({watts:null,contractWatts:null}),{now}).available,false);
  assert.equal(nowPlayingWidget('power',fresh({watts:20,contractWatts:60,observedAt:now-60000}),{now}).available,false,'stale readings are not shown');
+});
+
+test('3.16.1: the power tile keeps the last good reading for ten minutes and judges freshness with the real time',async()=>{
+ const {nowPlayingWidget}=await import('../shared/now-playing.js');
+ const t=1_800_000_000_000,reading={observedAt:t,source:'INA228 + HUSB238',watts:5.3,contractWatts:60};
+ const live={mode:'music-assistant',hostTelemetry:{power:reading}};
+ // A reading newer than the minute clock is still current.
+ assert.equal(nowPlayingWidget('power',live,{now:t-50000,powerNow:t+500}).available,true);
+ // Late refresh: current reading stale, last good one is kept…
+ const stale={mode:'music-assistant',hostTelemetry:{power:{...reading,observedAt:t-20000}}};
+ assert.equal(nowPlayingWidget('power',stale,{powerNow:t+30000,lastPower:reading}).available,true);
+ // …but not for ever, and never while offline.
+ assert.equal(nowPlayingWidget('power',stale,{powerNow:t+61000,lastPower:reading}).detail,'Last reading {age} min ago');
+ assert.equal(nowPlayingWidget('power',stale,{powerNow:t+601000,lastPower:reading}).available,false);
+ assert.equal(nowPlayingWidget('power',stale,{powerNow:t+30000,lastPower:reading,offline:true}).available,false);
+});
+
+test('3.16.2: rest widgets are chosen separately (three), light and sunset tiles, demo values for every widget',async()=>{
+ const {restWidgetSelection,restWidgets,widgetDemo,widgetCatalog,nowPlayingWidget}=await import('../shared/now-playing.js');
+ assert.deepEqual(restWidgetSelection(undefined),['temperature','light','sunset']);
+ assert.deepEqual(restWidgetSelection(['clock','clock','sunset','power','wifi']),['clock','sunset','power']);
+ for(const id of widgetCatalog)assert.ok(widgetDemo[id]?.value,id);
+ const snap={mode:'music-assistant',hardwareTelemetry:{light:{status:'ok',value:118.6}},preferences:{clock:{timeZone:'Europe/Amsterdam'},prefs:{screen:{latitude:52.37,longitude:4.9}}}};
+ assert.equal(nowPlayingWidget('light',snap,{}).value,'119 lux');
+ const sun=nowPlayingWidget('sunset',snap,{now:Date.UTC(2026,10,22,12)});assert.match(sun.value,/^16:\d\d$/);
+ assert.equal(nowPlayingWidget('sunset',{preferences:{prefs:{screen:{}}}},{}).available,false);
+ assert.equal(restWidgets(['light'],snap,{}).length,1);
 });

@@ -1,4 +1,8 @@
-> **Published GUI 3.9.2 · HOTFIX**, `2026.11.19-update-flow.2`, at `f3a7e37a0fb22e9dd47e332bb84d944bdf62bc15`: room-measurement sweep detection in reverberant rooms, robust SNR, missing-dB tip and an optional 6 dB louder retry.
+> **Published preview: GUI 3.16.3 · SAFE UPDATE**, `2026.11.23-safe.1`, commit `df8dd7ccef2eff3d1a2e224e48de9fa14d036b43`. **Approved, unpublished candidate: GUI 3.16.4 · INTEGRITY**, `2026.11.24-integrity.1`, cache 71: checked atomic installation of screen, manager and updater program files, startup checksum checks and a live screen-controller health check. See [scope and recovery](docs/hotfix-3-16-4.md) and [validation](docs/hotfix-3-16-4-validation.md). Includes all 3.16.3 interface/local-meter improvements. Complete host-helper improvements require the appliance refresh if automatic maintenance is disabled. [Amplifier checks](docs/hardware-next-session.md) remain deferred; no gain or power limits change.
+
+Earlier release notes follow; their unverified hardware observations describe those earlier dates. The INA228 voltage-sense connection was confirmed on 20 November. Current approval/publication records are in [release history](docs/release-history.md).
+
+> **Earlier GUI 3.9.2 · HOTFIX**, `2026.11.19-update-flow.2`, at `f3a7e37a0fb22e9dd47e332bb84d944bdf62bc15`: room-measurement sweep detection in reverberant rooms, robust SNR, missing-dB tip and an optional 6 dB louder retry.
 
 > GUI 3.9.1 · UPDATE FLOW, `2026.11.19-update-flow.1`, at `d7e96962f83f70db4568e0d3a23f4f801432b559`. Manual install works while Music Assistant is offline if the local audio output is silent; the Install button always responds; Now Playing explains when the power setup keeps the player stopped; clearer Music Assistant errors; the measurement installer makes its state directory writable.
 

@@ -6,6 +6,19 @@ import {useDeviceUpdates} from './DeviceUpdates.jsx';
 
 /** Party: show the phone-remote code right on Now Playing. With a settings PIN, guests
  * also need that PIN on their phone, so the code alone never hands over control. */
+/** Paired phones with a Remove button each; removed phones need a new code to come back. */
+function PairedPhones({token,count}){
+ const [list,setList]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState('');
+ const read=()=>fetch('/api/remote/phones',{cache:'no-store'}).then(async r=>{const v=await r.json().catch(()=>({}));if(!r.ok)throw Error(v.error||'Unlock settings to manage phones');setList(v.phones||[]);setError('');}).catch(e=>setError(e.message));
+ useEffect(()=>{read();},[count]);
+ async function remove(phone){setBusy(phone.id);setError('');try{const r=await fetch('/api/remote/forget',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':token||''},body:JSON.stringify({id:phone.id})});const v=await r.json().catch(()=>({}));if(!r.ok)throw Error(v.error||'The phone could not be removed');setList(v.phones||list.filter(p=>p.id!==phone.id));}catch(e){setError(e.message);}finally{setBusy('');}}
+ if(!list&&!error)return null;
+ return <div className="party-phones"><h4>{tr('Paired phones')}</h4>
+  {list?.length===0&&<p>{tr('No phones are paired.')}</p>}
+  {list?.length>0&&<ul>{list.map(p=><li key={p.id}><span>{p.name||tr('Phone')}</span><button type="button" disabled={!!busy} aria-label={tr('Remove')+': '+(p.name||tr('Phone'))} onClick={()=>remove(p)}>{tr(busy===p.id?'Removing…':'Remove')}</button></li>)}</ul>}
+  {error&&<p role="alert" className="settings-note">{tr(error)}</p>}
+ </div>;
+}
 export function PartySheet({snapshot,onClose,onRooms}){
  const device=useDeviceUpdates(),token=device.info?.controlToken;
  const [pair,setPair]=useState(null),[error,setError]=useState(''),[now,setNow]=useState(Date.now()),open=useRef(false);
@@ -21,8 +34,8 @@ export function PartySheet({snapshot,onClose,onRooms}){
  // Multiroom awareness: grouped rooms play along with whatever the phones choose.
  // localIndependent is also false while Music Assistant is away, so only trust it when connected.
  const grouped=snapshot.mode==='music-assistant'&&snapshot.musicAssistant?.connected===true&&snapshot.activity?.localIndependent===false;
- return <Modal label="Party" onCancel={onClose} className="party-sheet">
-  <header><h3>{tr('Party')}</h3><button onClick={onClose}>{tr('Close')}</button></header>
+ return <Modal label="Party mode" onCancel={onClose} className="party-sheet">
+  <header><h3>{tr('Party mode')}</h3><button onClick={onClose}>{tr('Close')}</button></header>
   <div className="party-body">
    <div className="party-code">{pair&&left>0?<QrCode value={pair.url} label="Scan with your phone camera"/>:<p role="status">{tr(error||(pair?'This code has expired.':'Preparing the code…'))}</p>}
     {pair&&left===0&&<button onClick={show}>{tr('Show a new code')}</button>}</div>
@@ -35,6 +48,7 @@ export function PartySheet({snapshot,onClose,onRooms}){
      <li>{grouped?translateFormat('Phones control the group that {room} plays in. Other rooms in that group play along.',{room}):translateFormat('Phones control {room} only. Other rooms are not affected.',{room})}</li>
     </ul>
     {pair&&left>0&&<p className="party-countdown">{tr('Code valid for')} {Math.floor(left/60)}:{String(left%60).padStart(2,'0')}</p>}
+    <PairedPhones token={token} count={phones}/>
     <button onClick={()=>{onClose();onRooms?.();}}>{tr('Rooms')}</button>
    </div>
   </div>

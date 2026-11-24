@@ -20,19 +20,25 @@ base=/usr/local/lib/daw-one-control
 install -d -m 755 "$base"/{deploy/manager,deploy/measurement,deploy/ota,shared,server,public} /var/lib/daw-one-update-status
 install -d -m 700 /var/lib/daw-one-manager /var/lib/daw-one-updater /etc/daw-one-updater /etc/NetworkManager/system-connections
 install -d -m 750 -o root -g dawone /etc/daw-one
-install -m 644 "$repo"/deploy/manager/{starting-sound.mjs,automatic-dsp.mjs,audio-idle.mjs,sync.mjs,service.mjs,root-adapter.mjs,update-lock.mjs,music-credentials.mjs,bluetooth.mjs,io.mjs,progress-server.mjs,progress.html,power.mjs,power-telemetry.mjs,network.mjs,clock.mjs,dsp.mjs,local-ma.mjs,local-ma-job.mjs,measurement.mjs} "$base/deploy/manager/"
-install -m 644 "$repo"/dist/{appliance.js,appliance.css} "$base/public/"
-install -m 755 "$repo/deploy/manager/power-off.sh" "$base/deploy/manager/power-off.sh"
-install -m 755 "$repo/deploy/manager/reboot.sh" "$base/deploy/manager/reboot.sh"
-install -m 644 "$repo"/deploy/ota/policy.mjs "$base/deploy/ota/"
-install -m 644 "$repo"/shared/{power-settings.js,pd-profile.js,automatic-dsp.js,dsp-settings.js,sync-calibration.js,presentation-timing.js,device-manager.js,bluetooth.js,update-settings.js,host-capacity.js,room-measurement.js,room-targets.js} "$base/shared/"
-install -m 644 "$repo"/server/{update-status.js,ma-transport.js} "$base/server/"
-install -m 644 "$repo"/deploy/measurement/devices.mjs "$base/deploy/measurement/"
-install -m 644 "$repo"/deploy/{host-capacity.js,music-assistant-local.sh,music-assistant.compose.yml} "$base/deploy/"
-printf '{"type":"module"}\n' > "$base/package.json"
+# Stage the root manager first and refuse to replace it when any imported module is missing (GUI 3.16.2 shipped
+# root-adapter.mjs importing ssh.mjs, which this list did not copy, so the manager and its update page stopped).
+stage=$(mktemp -d /usr/local/lib/.daw-one-control.XXXXXX)
+trap 'rm -rf "$stage"' EXIT
+install -d -m 755 "$stage"/{deploy/manager,deploy/measurement,deploy/ota,shared,server,public}
+install -m 644 "$repo"/deploy/manager/*.mjs "$repo"/deploy/manager/progress.html "$stage/deploy/manager/"
+install -m 755 "$repo"/deploy/manager/{power-off.sh,reboot.sh} "$stage/deploy/manager/"
+install -m 644 "$repo"/dist/{appliance.js,appliance.css} "$stage/public/"
+install -m 644 "$repo"/deploy/ota/policy.mjs "$stage/deploy/ota/"
+install -m 644 "$repo"/shared/*.js "$stage/shared/"
+install -m 644 "$repo"/server/{update-status.js,ma-transport.js} "$stage/server/"
+install -m 644 "$repo"/deploy/measurement/devices.mjs "$stage/deploy/measurement/"
+install -m 644 "$repo"/deploy/{host-capacity.js,music-assistant-local.sh,music-assistant.compose.yml} "$stage/deploy/"
+printf '{"type":"module"}\n' > "$stage/package.json"
+node "$repo/deploy/manager/check-imports.mjs" "$stage" $(cd "$stage" && ls deploy/manager/*.mjs)
+python3 "$repo/deploy/host-files.py" tree "$stage" "$base" --inventory manager.sha256
 id dawaudiotest >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin dawaudiotest
 usermod -aG audio dawaudiotest
-cat > /etc/systemd/system/daw-one-manager.service <<'UNIT'
+cat > "$stage/manager.service" <<'UNIT'
 [Unit]
 Description=TuneBox bounded device setup and update control
 After=network.target daw-one-pd-startup.service
@@ -40,6 +46,7 @@ After=network.target daw-one-pd-startup.service
 Type=simple
 User=root
 Group=dawcontrol
+ExecStartPre=/usr/bin/sha256sum --strict --check --quiet /usr/local/lib/daw-one-control/manager.sha256
 ExecStart=/usr/bin/env node /usr/local/lib/daw-one-control/deploy/manager/service.mjs
 Restart=on-failure
 RuntimeDirectory=daw-one-manager
@@ -56,9 +63,9 @@ StandardError=journal
 [Install]
 WantedBy=multi-user.target
 UNIT
-chmod 644 /etc/systemd/system/daw-one-manager.service
+python3 "$repo/deploy/host-files.py" file "$stage/manager.service" /etc/systemd/system/daw-one-manager.service
 install -d -m 755 /etc/systemd/system/daw-one.service.d
-cat > /etc/systemd/system/daw-one.service.d/manager.conf <<'UNIT'
+cat > "$stage/backend.conf" <<'UNIT'
 [Unit]
 Wants=daw-one-manager.service
 After=daw-one-manager.service
@@ -66,9 +73,9 @@ After=daw-one-manager.service
 EnvironmentFile=-/etc/daw-one/connection.env
 SupplementaryGroups=dawcontrol
 UNIT
-chmod 644 /etc/systemd/system/daw-one.service.d/manager.conf
+python3 "$repo/deploy/host-files.py" file "$stage/backend.conf" /etc/systemd/system/daw-one.service.d/manager.conf
 install -d -m 700 /var/lib/daw-one
-cat > /etc/systemd/system/daw-one-local-ma-install.service <<'UNIT'
+cat > "$stage/local-ma.service" <<'UNIT'
 [Unit]
 Description=TuneBox explicitly requested local Music Assistant installation
 After=network-online.target docker.service
@@ -85,9 +92,17 @@ ReadWritePaths=/etc/daw-one /var/lib/daw-one /var/lib/daw-one-manager
 StandardOutput=journal
 StandardError=journal
 UNIT
-chmod 644 /etc/systemd/system/daw-one-local-ma-install.service
+python3 "$repo/deploy/host-files.py" file "$stage/local-ma.service" /etc/systemd/system/daw-one-local-ma-install.service
 bash "$repo/deploy/install-sync.sh"
 bash "$repo/deploy/install-power.sh"
 systemctl daemon-reload
 systemctl enable daw-one-manager.service
 systemctl restart daw-one-manager.service
+# The manager serves the update progress page; confirm it is answering again before reporting success.
+for attempt in $(seq 1 20); do
+  if curl --fail --silent --max-time 1 http://127.0.0.1:3002/status >/dev/null; then echo 'TuneBox manager running'; exit 0; fi
+  sleep 1
+done
+journalctl -u daw-one-manager.service -n 20 --no-pager || true
+echo 'The TuneBox manager did not start; see the log above.' >&2
+exit 1

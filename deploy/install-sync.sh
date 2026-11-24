@@ -5,8 +5,11 @@ repo=$(cd "$(dirname "$0")/.." && pwd)
 base=/usr/local/lib/daw-one-control
 install -d -m 755 "$base/deploy/sync" "$base/deploy/measurement" "$base/shared"
 install -m 644 "$repo"/deploy/sync/{capture.mjs,session.mjs} "$base/deploy/sync/"
-install -m 644 "$repo/deploy/measurement/devices.mjs" "$base/deploy/measurement/"
-install -m 644 "$repo"/shared/{sync-calibration.js,presentation-timing.js} "$base/shared/"
+# These files are also in the manager's inventory. Never truncate them in place.
+python3 "$repo/deploy/host-files.py" file "$repo/deploy/measurement/devices.mjs" "$base/deploy/measurement/devices.mjs"
+for file in sync-calibration.js presentation-timing.js; do
+  python3 "$repo/deploy/host-files.py" file "$repo/shared/$file" "$base/shared/$file"
+done
 install -d -m 750 -o dawaudiotest -g dawone /var/lib/daw-one-sync
 cat > /etc/systemd/system/daw-one-sync.service <<'UNIT'
 [Unit]

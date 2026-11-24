@@ -6,6 +6,7 @@ import {nextPowerHistory,powerDrop} from '../shared/power-history.js';
 import {SyncProfiles,synchronizationContext,playbackRoute} from './sync-profiles.js';
 import {AutomaticSound} from './automatic-sound.js';
 import {AudioAnalysis} from "./audio-analysis.js";
+import {AudioFrames} from './audio-frames.js';
 import { DisplayStore } from './display-store.js';
 import { VideoLibrary } from './video-library.js';
 import {YoutubeService} from './youtube-service.js';
@@ -43,6 +44,8 @@ import { DeviceRuntime, runScenario, scenarios } from "../shared/runtime.js";
 import { musicConfig } from "./ma-config.js";
 import { LiveMusicService } from "./ma-service.js";
 import {MultiroomService} from './multiroom.js';
+import {BootRooms} from './boot-rooms.js';
+import {crossfadeState,crossfadeValues} from '../shared/crossfade.js';
 import {savedVolumeLimit} from '../shared/volume.js';
 const startupStore = new BootStore(
   process.env.DAW_STATE_DIR || ".tunebox-state",
@@ -77,6 +80,9 @@ if(music)music.setVolumeLimit(savedVolumeLimit(preferences.get(),music.defaultVo
 music?.wantKeepPlaying(preferences.get().prefs?.keepPlaying!==false);
 const audioAnalysis=new AudioAnalysis({onStatus:status=>{runtime.record(Date.now(),"audio-analysis",runtime.device.mode,"Local PCM measurement: "+status);broadcast();}});
 const multiroom = new MultiroomService(music,{localId:audioAnalysis.playerId||config.playerId});
+// Owner 22 Nov 2026: after a reboot leave multiroom and control the own player again; show a notice.
+const bootRooms=new BootRooms({multiroom,directory:stateDirectory});
+music?.on('change',()=>{if(bootRooms.pending())bootRooms.check().then(r=>{if(r)broadcast();}).catch(()=>{});});
 const library = music ? new MusicLibrary(music) : null;
 const localAudio=new LocalAudio(music,multiroom,{onChange:()=>{automaticSound.schedule();broadcast();}});
 const youtube = new YoutubeService(music,stateDirectory);
@@ -93,6 +99,9 @@ function syncContext(){
  return synchronizationContext({rooms,playback:music?.playback,audio,route:routeCache.value,connected:music?.status==='connected',bluetooth:bluetoothState().active,busy:multiroom.busy||music?.controlBusy===true});
 }
 let localStandby=false,localVolume={level:100,active:false};
+// Whether any video artwork can appear: an uploaded or linked video, or automatic YouTube videos with consent.
+let videoConfiguredCache={key:null,value:false};
+const videoConfigured=()=>{const y=youtube.get(),key=videoRevision+':'+(y.followCurrent&&y.consent);if(videoConfiguredCache.key!==key)videoConfiguredCache={key,value:!!(y.followCurrent&&y.consent)||Object.values(videos.entries()).some(e=>e&&!e.disabled&&typeof e.id==='string')};return videoConfiguredCache.value;};
 const snapshot = () => {
   const bluetooth=bluetoothState();
   const profileCount=syncProfiles.profiles.length,context=profileCount?syncContext():null;
@@ -101,6 +110,7 @@ const snapshot = () => {
     ...runtime.snapshot(),
     screenOff,
     restPhoto:restPhoto.status(),
+    roomsReset:bootRooms.notice(),
     powerHistory:{highestWatts:powerHistory.highestWatts??null,highestAt:powerHistory.highestAt??null,drop:powerDrop(powerHistory,host.value.power)},
     build: release,
     automaticDsp:publicAutomaticDsp(),
@@ -113,6 +123,7 @@ const snapshot = () => {
     localControl:{standby:localStandby,level:localVolume.level,lowered:localVolume.active,needed:!!music&&music.status!=='connected'},
     playerBlocked:music?readPlayerStartupBlock(music.status==='connected'?(music.players||[]).some(p=>p.player_id===multiroom.localId):music.errorCode==='player-missing'?false:null):null,
     videoRevision,
+    videoConfigured:videoConfigured(),
     hardwareTelemetry: readSensorTelemetry(process.env.DAW_SENSOR_FILE),
     hostTelemetry:host.value,
     activity:{syncCalibration:synchronizationRunning(),roomMeasurement,roomControl:multiroom.busy||music?.controlBusy===true,localPlayback:multiroom.localPlayback(),localIndependent:multiroom.localIndependent(),localSelected:music?.playerId===multiroom.localId,bluetoothActive:bluetooth.active},
@@ -202,7 +213,7 @@ app.use('/api',(q,r,next)=>{
    if(!allowed)return r.status(403).json({error:'This setup connection only controls Wi-Fi'});
    if(mutating&&path!=='/setup/pair'&&security.session(q)?.role!=='provision')return r.status(423).json({error:'Scan the setup link shown on the TuneBox'});
   }
-   const admin=mutating&&(['/remote/pairing','/remote/forget','/rest-photo','/device','/preferences','/music/keep-playing/check','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/video/youtube','/youtube/settings','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/rooms'&&['group','leave','transfer','join'].includes(q.body?.action)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
+   const admin=mutating&&(['/remote/pairing','/remote/forget','/rest-photo','/device','/preferences','/music/keep-playing/check','/music/crossfade','/reset','/display','/audio/settings','/video','/video/upload','/video/timing','/video/youtube','/youtube/settings','/boot/settings','/debug','/measurement/profile'].includes(path)||path==='/rooms'&&['group','leave','transfer','join'].includes(q.body?.action)||path==='/event'&&!['play','pause','next','previous','seek','volume','mute','queue-select','queue-remove','activity','display-timeout'].includes(q.body?.type));
   if(admin&&!(q.provisioning&&path==='/device'&&provisionCommands.includes(q.body?.command)))security.requireAdmin(q);
   next();
  }catch(e){r.status(e.status||423).json({error:e.message});}
@@ -247,6 +258,9 @@ app.post('/api/setup/defer',(q,r)=>{
 app.post('/api/setup/pair',(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload setup'});try{r.json(security.pair(q.body.token,r));}catch(e){r.status(403).json({error:e.message});}});
 function applyPreferences(value){if(value.audioEnabled!==audioAnalysis.enabled)audioAnalysis.setEnabled(value.audioEnabled);if(music)music.setVolumeLimit(savedVolumeLimit(value,music.defaultVolumeLimit));music?.wantKeepPlaying?.(value.prefs?.keepPlaying!==false);displayConfiguration=value.display;runtime.displayTimeoutMs=value.display.timeoutSeconds===0?Infinity:value.display.timeoutSeconds*1000;broadcast();}
 app.get('/api/preferences',(_q,r)=>r.set('Cache-Control','no-store').json(preferences.get()));
+// Crossfade: Music Assistant's own player setting for this TuneBox's player; offered only when MA reports it.
+app.get('/api/music/crossfade',async(_q,r)=>{try{if(!music||music.status!=='connected'||!music.config.playerId)return r.json({supported:false,reason:'not-connected'});r.set('Cache-Control','no-store').json(crossfadeState(await music.transport.playerConfig(music.config.playerId)));}catch{r.json({supported:false,reason:'unavailable'});}});
+app.post('/api/music/crossfade',async(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before changing crossfade.'});try{if(!music||music.status!=='connected'||!music.config.controlEnabled)throw Error('Connect Music Assistant with control enabled first.');if(!q.body||Object.keys(q.body).some(k=>!['enabled','seconds'].includes(k)))throw Error('Invalid crossfade request');const id=music.config.playerId,state=crossfadeState(await music.transport.playerConfig(id));await music.transport.savePlayerConfig(id,crossfadeValues(state,q.body));r.json(crossfadeState(await music.transport.playerConfig(id)));}catch(e){r.status(409).json({error:String(e.message).slice(0,160)});}});
 app.post('/api/music/keep-playing/check',async(q,r)=>{if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before checking.'});try{r.set('Cache-Control','no-store').json(music?await music.checkKeepPlaying():{ok:false,reason:'no-music'});}catch{r.status(502).json({ok:false,reason:'check-failed'});}});
 app.post('/api/preferences',(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload before saving settings'});
@@ -321,7 +335,14 @@ app.post("/api/device",async(q,r)=>{
  }catch(error){debug.record('device','rejected');if(q.body.command==='hotspot-start'&&phoneServer){phoneServer.close();phoneServer=null;await manage({command:'hotspot-stop',args:{}}).catch(()=>{});}r.status(409).json({error:String(error.message).slice(0,180),...(error.code==='update-group-confirmation'?{code:error.code,rooms:error.rooms,roomsRevision:error.roomsRevision}:{})});}
 });
 app.get('/api/bluetooth',(_q,r)=>r.set('Cache-Control','no-store').json(bluetoothState()));
-app.get("/api/audio",(q,r)=>{if(bluetoothState().active)return r.set('Cache-Control','no-store').json({enabled:false,configured:audioAnalysis.configured,status:'source-unavailable',source:'bluetooth',simulated:false,measurement:null});r.set("Cache-Control","no-store").json(audioAnalysis.get({watch:q.query.watch==="1",awake:!screenOff&&(runtime.device.displayAwake||['vu','bars','spectrum'].includes(preferences.get().prefs.screen.mode))&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId}));});
+function audioSnapshot(watch=false){
+ if(bluetoothState().active)return {enabled:false,configured:audioAnalysis.configured,status:'source-unavailable',source:'bluetooth',simulated:false,measurement:null};
+ const value=audioAnalysis.get({watch,awake:!screenOff&&(runtime.device.displayAwake||['vu','bars','spectrum'].includes(preferences.get().prefs.screen.mode))&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId});
+ return value.configured&&value.enabled?{...value,streamUrl:'/api/audio/events'}:value;
+}
+const audioFrames=new AudioFrames({read:()=>audioSnapshot()});
+app.get('/api/audio/events',(q,r)=>audioFrames.add(q,r));
+app.get('/api/audio',(q,r)=>r.set('Cache-Control','no-store').json(audioSnapshot(q.query.watch==='1')));
 app.post("/api/audio/settings",(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:"Reload TuneBox before changing measurement settings"});
  try{if(!q.body||Object.keys(q.body).length!==1||!Object.hasOwn(q.body,"enabled"))throw Error("Only enabled can be changed");audioAnalysis.setEnabled(q.body.enabled);preferences.save(preferences.get().revision,{audioEnabled:q.body.enabled});r.json(audioAnalysis.get());}catch(error){r.status(400).json({error:error.message});}
@@ -742,7 +763,7 @@ for (const signal of ["SIGINT", "SIGTERM"])
     phoneServer?.close();
     for(const c of remoteClients)c.end();remoteServer?.close();
     music?.stop();
-    audioAnalysis.close();automaticSound.close();localAudio.close();
+    audioFrames.close();audioAnalysis.close();automaticSound.close();localAudio.close();
     for (const c of clients) c.end();
     clearInterval(clock);
     clearInterval(inventoryClock);

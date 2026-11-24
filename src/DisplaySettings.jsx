@@ -7,6 +7,15 @@ import {ScreenSettings} from './WallExperience.jsx';
 import {useTemperatureDisplay} from './useTemperatureDisplay.js';
 import {Icon} from './Icon.jsx';
 
+const throttleLabels=[['underVoltage','Under-voltage'],['frequencyCapped','CPU speed capped'],['throttled','Throttled'],['softTemperatureLimit','Temperature limit']];
+/** Raspberry Pi firmware flags: problems right now, and what happened since the last start. */
+export function ThrottleCard({throttle}){
+ const now=throttle?throttleLabels.filter(([k])=>throttle.now[k]).map(([,l])=>l):[],past=throttle?throttleLabels.filter(([k])=>throttle.sinceBoot[k]&&!throttle.now[k]).map(([,l])=>l):[];
+ const state=!throttle?'unknown':now.length?'now':past.length?'past':'ok';
+ return <article className="throttle-card" data-state={state}><Icon name="hardware" size={34}/><span>{tr('Raspberry Pi power & throttling')}</span>
+  <strong>{!throttle?tr('Not reported'):now.length?now.map(tr).join(' · '):tr('OK')}</strong>
+  <small>{!throttle?tr('The firmware does not report throttling here.'):past.length?tr('Since start')+': '+past.map(tr).join(' · '):tr('No throttling since start')} · {throttle?.raw||''}</small></article>;
+}
 export function SensorDashboard({snapshot,offline=false}) {
   const telemetry=snapshot.hardwareTelemetry;
   const temperature=useTemperatureDisplay(telemetry?.temperature,offline);
@@ -14,6 +23,7 @@ export function SensorDashboard({snapshot,offline=false}) {
   return <section className="sensor-dashboard" aria-label={tr("Sensors")}>
     <article><Icon name="temperature" size={34}/><span>{tr("Ambient temperature")}</span><strong>{tr(reading(telemetry?.temperature,1,'°C',temperature))}</strong><small>{tr("PCT2075 · I²C")}</small></article>
     <article><Icon name="sun" size={34}/><span>{tr("Ambient light")}</span><strong>{tr(reading(telemetry?.light,0,'lux'))}</strong><small>{tr("TSL2591 · I²C")}</small></article>
+    <ThrottleCard throttle={offline?null:snapshot.hostTelemetry?.throttle}/>
     <p role="status">{tr(offline?'Connection lost. Sensor readings are unavailable.':telemetry?.enabled?'Live sensor readings. Temperature changes are gently filtered.':'Sensor service is not connected. Run the sensor installer on the Pi.')}</p>
   </section>;
 }

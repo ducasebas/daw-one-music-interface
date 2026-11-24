@@ -121,6 +121,8 @@ fi
 # The local player runs as a login user (Squeezelite -v writes /dev/shm/squeezelite-<mac>). logind's RemoveIPC
 # deletes that user's shared memory when their last session ends (e.g. closing SSH), which silently breaks PCM
 # analysis until the player restarts. Keep the export; restart the player once if it is already gone.
+# systemd logs "marked world-inaccessible" for drop-ins without read access; they hold no secret.
+for unit in /etc/systemd/system/tunebox-player.service.d/*.conf; do if [[ -f $unit ]]; then chmod go+r "$unit"; fi; done
 if [[ -f /etc/systemd/system/tunebox-player.service.d/90-tunebox-analysis.conf ]]; then
   install -d -m 755 /etc/systemd/logind.conf.d
   printf '[Login]\nRemoveIPC=no\n' > /etc/systemd/logind.conf.d/tunebox-player-ipc.conf

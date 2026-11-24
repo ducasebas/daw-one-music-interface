@@ -63,11 +63,22 @@ test('HTTP audio API uses the real native pipe, requires its nonce, rejects sour
   const updates=await(await fetch(origin+'/api/updates')).json();
   const post=(body,token)=>fetch(origin+'/api/audio/settings',{method:'POST',headers:{'Content-Type':'application/json',...(token?{'X-TuneBox-Control':token}:{})},body:JSON.stringify(body)});
   assert.equal((await post({enabled:true})).status,403);assert.equal((await post({enabled:true,reader:'/evil'},updates.controlToken)).status,400);
-  make('running');assert.equal((await post({enabled:true},updates.controlToken)).status,200);
+  make('running');const producerBefore=readFileSync(source);assert.equal((await post({enabled:true},updates.controlToken)).status,200);
+  const feedAbort=new AbortController(),feedTimeout=setTimeout(()=>feedAbort.abort(),7000);
+  const feed=await fetch(origin+'/api/audio/events',{signal:feedAbort.signal});assert.match(feed.headers.get('content-type'),/^text\/event-stream/);assert.equal(feed.headers.get('cache-control'),'no-store');
+  const reader=feed.body.getReader(),decoder=new TextDecoder();let buffered='';
+  const nextFrame=async()=>{for(;;){const end=buffered.indexOf('\n\n');if(end>=0){const frame=buffered.slice(0,end);buffered=buffered.slice(end+2);if(frame.startsWith('data: '))return JSON.parse(frame.slice(6));continue;}const part=await reader.read();assert.equal(part.done,false);buffered+=decoder.decode(part.value,{stream:true});}};
+  try{
+  const idle=await nextFrame();assert.equal(idle.status,'inactive');assert.equal(idle.measurement,null);
   let data;for(let i=0;i<70;i++){data=await(await fetch(origin+'/api/audio?watch=1')).json();if(data.measurement)break;await new Promise(r=>setTimeout(r,30));}
-  assert.ok(Math.abs(data.measurement.channels[0].rmsDb+9.0309)<.02);assert.equal(data.simulated,false);
+  assert.ok(Math.abs(data.measurement.channels[0].rmsDb+9.0309)<.02);assert.equal(data.simulated,false);assert.equal(data.streamUrl,'/api/audio/events');
+  let streamed;for(let i=0;i<30;i++){streamed=await nextFrame();if(streamed.measurement)break;}
+  assert.ok(Math.abs(streamed.measurement.channels[0].rmsDb+9.0309)<.02);assert.equal(streamed.source,'squeezelite-pcm');
+  // Merely keeping SSE connected cannot keep the native reader running after the UI lease expires.
+  await new Promise(resolve=>setTimeout(resolve,3600));assert.equal((await(await fetch(origin+'/api/audio')).json()).status,'inactive');assert.deepEqual(readFileSync(source),producerBefore);
   assert.equal((await(await fetch(origin+'/api/state')).json()).device.amplifierEnabled,false);
   assert.equal((await post({enabled:false},updates.controlToken)).status,200);assert.equal((await(await fetch(origin+'/api/audio?watch=1')).json()).measurement,null);
+  }finally{clearTimeout(feedTimeout);feedAbort.abort();await reader.cancel().catch(()=>{});}
  }finally{child.kill('SIGTERM');await new Promise(resolve=>{if(child.exitCode!==null)return resolve();const timer=setTimeout(()=>{child.kill('SIGKILL');resolve();},1500);child.once('exit',()=>{clearTimeout(timer);resolve();});});}
 });
 

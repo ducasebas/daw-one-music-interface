@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.22-hotfix.1",
-  label: "GUI 3.16.1 · HOTFIX",
+  id: "2026.11.24-integrity.1",
+  label: "GUI 3.16.4 · INTEGRITY",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Stability and audio tuning for Raspberry Pi 4 + Louder HAT: continuous Squeezelite playback without ALSA close hangs, 44.1–96 kHz sample-rate protection, settle delay and gentler DSP ramping, 60 fps visualizer capture, Chromium Wayland stability, and disabled Wi-Fi powersave.",
+  notes: "Checks system files before and after installation. Empty or damaged files are refused. The screen controller must keep running before installation can finish. Screen, manager and updater files are also checked when their services start. Includes the 3.16.3 interface and visualizer improvements. If automatic system maintenance is off, run “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

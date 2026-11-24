@@ -42,8 +42,9 @@ test('widgets are chosen in Display (max 4), show real values, say Not available
  await expect(widgets.locator('.np-widget')).toHaveCount(3);
  await expect(widgets.locator('[data-widget=upnext]')).toContainText('Second');await expect(widgets.locator('[data-widget=source]')).toContainText('FLAC · 44.1 kHz · 16-bit');
  await chooseSettingsSection(page,'Display',{open:true});
- const group=page.getByRole('group',{name:'Now Playing',exact:true});
- await group.getByLabel('Power',{exact:true}).check();await expect(group.getByLabel('Rooms',{exact:true})).toBeDisabled();
+ await page.getByRole('button',{name:'Choose widgets: Now Playing widgets',exact:true}).click();
+ const group=page.getByRole('region',{name:'Now Playing widgets',exact:true}).and(page.locator('.widget-editor'));
+ await group.getByRole('button',{name:'Add Power',exact:true}).click();await expect(group.getByRole('button',{name:'Add Rooms',exact:true})).toBeDisabled();await page.getByRole('button',{name:'Apply selection',exact:true}).click();
  await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('[data-saved=true]')).toBeVisible();
  await page.getByRole('button',{name:'Open Now Playing',exact:true}).click();
  await expect(widgets.locator('.np-widget')).toHaveCount(4);
