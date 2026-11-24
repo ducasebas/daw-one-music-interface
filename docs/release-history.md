@@ -2,7 +2,17 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
-## GUI 3.16.3 SAFE UPDATE — approved
+## GUI 3.16.4 INTEGRITY — publication approved
+
+On 24 November 2026 the owner requested implementation of an installed-file validation hotfix after the display controller was confirmed empty. After the completed candidate and 656 local checks were presented for publication approval, the owner requested publication with “Wat nu? Publiceren?”. This authorizes the 3.16.4 review branch, full configured CI and in-scope corrections, merge and signed preview publication after the checks pass. It does not authorize a live Pi installation, power experiment or hardware confirmation. Scope and results are in [the hotfix guide](hotfix-3-16-4.md) and [validation](hotfix-3-16-4-validation.md). Recovery of the current display service and the original reboot cause remain unconfirmed; confirm the display repair before starting the device update.
+
+## GUI 3.16.3 SAFE UPDATE — published
+
+Merged through PR #24 as `df8dd7ccef2eff3d1a2e224e48de9fa14d036b43` after all six PR Verify jobs passed on `bd65bc79fcb956209aca5afcd97fc212cfb5f722` (run 45270949676). All six main Verify jobs passed in run 45272304785. Signed preview run 45273481100 passed, including public channel selection. The immutable release is `ota-preview-df8dd7ccef2eff3d1a2e224e48de9fa14d036b43`, GUI 3.16.3 · SAFE UPDATE / `2026.11.23-safe.1`, cache 70.
+
+Independent verification confirms the unchanged project key, Ed25519 signature, archive SHA-256 `0e1ad3e6574ede3e30bf5af62a5272347a98e20063c998667962661549e45388`, full 426-file inventory, changed packaged source, frontend revision and cache. The owner's four splash files are byte-identical. The installed selector selects this commit and sequence 45273481100 from the real public inventory. Node fetch in the cloud runner could not retrieve the manifests; the independent selector check used the same real inventory through the GitHub connector and immutable downloads through curl. The publication workflow's own normal channel check also passed.
+
+The public verification record is in [PR #24](https://github.com/ducasebas/daw-one-music-interface/pull/24). Pi installation, host-helper refresh and physical acceptance were not observed; amplifier readings remain deferred.
 
 The owner explicitly approved the combined candidate on 23 November 2026 with “push wanneer klaar”, after the local interface, native audio, offline and WebKit checks. This covers the original SAFE UPDATE hotfix plus the requested header, widget chooser, local-frame/FFT and startup amendments, the review branch, full configured CI, in-scope fixes, merge and signed preview publication. Amplifier diagnosis stays deferred; no live hardware action is authorized by this release approval.
 

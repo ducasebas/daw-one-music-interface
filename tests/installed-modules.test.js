@@ -37,9 +37,9 @@ test('the updater directory has every module update.mjs imports',()=>{
  const root=mkdtempSync(join(tmpdir(),'tunebox-updater-'));
  try{
   const ota=readFileSync('deploy/install-ota.sh','utf8');
-  const list=ota.match(/"\$repo"\/deploy\/ota\/\{([^}]+)\} \/usr\/local\/lib\/daw-one-updater\//)[1].split(',');
+  const list=ota.match(/"\$repo"\/deploy\/ota\/\{([^}]+)\} "\$stage\/"/)[1].split(',');
   for(const f of list)copyFileSync(join('deploy/ota',f),join(root,f));
-  assert.match(ota,/"\$repo\/shared\/update-settings\.js" \/usr\/local\/lib\/daw-one-updater\/settings\.mjs/);copyFileSync('shared/update-settings.js',join(root,'settings.mjs'));
+  assert.match(ota,/"\$repo\/shared\/update-settings\.js" "\$stage\/settings\.mjs"/);copyFileSync('shared/update-settings.js',join(root,'settings.mjs'));
   writeFileSync(join(root,'package.json'),'{"type":"module"}\n');
   assert.deepEqual(missingImports(root,['update.mjs']),[]);
  }finally{rmSync(root,{recursive:true,force:true});}
@@ -59,6 +59,6 @@ test('3.16.3: the updater unit restores the previous version straight after a fa
 });
 test('3.16.3: installing the manager stages it, checks its imports and waits until it answers',()=>{
  const s=readFileSync('deploy/install-manager.sh','utf8');
- assert.match(s,/check-imports\.mjs" "\$stage"/);assert.ok(s.indexOf('check-imports.mjs')<s.indexOf('cp -a "$stage"/. "$base"/'));
+ assert.match(s,/check-imports\.mjs" "\$stage"/);assert.ok(s.indexOf('check-imports.mjs')<s.indexOf('host-files.py" tree "$stage" "$base"'));
  assert.match(s,/http:\/\/127\.0\.0\.1:3002\/status/);assert.match(s,/install -m 644 "\$repo"\/deploy\/manager\/\*\.mjs/);
 });

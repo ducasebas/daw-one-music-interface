@@ -4,11 +4,16 @@ set -euo pipefail
 repo=$(cd "$(dirname "$0")/.." && pwd)
 [[ -d /sys/class/backlight/10-0045 ]] || { echo 'Waveshare DSI backlight 10-0045 not detected; display control not installed.'; exit 0; }
 install -d -m 755 /usr/local/lib/daw-one-display /etc/systemd/system/daw-one.service.d
-install -m 644 "$repo/deploy/display/control.py" /usr/local/lib/daw-one-display/control.py
+stage=$(mktemp -d /usr/local/lib/.daw-one-display.XXXXXX)
+trap 'rm -rf "$stage"' EXIT
+install -d -m 755 "$stage/controller"
+install -m 644 "$repo/deploy/display/control.py" "$stage/controller/control.py"
+python3 "$repo/deploy/host-files.py" tree "$stage/controller" /usr/local/lib/daw-one-display --inventory controller.sha256 --display
 install -d -m 755 /etc/tmpfiles.d
-printf 'd /run/daw-one-display 0770 root dawone -\n' > /etc/tmpfiles.d/daw-one-display.conf
+printf 'd /run/daw-one-display 0770 root dawone -\n' > "$stage/tmpfiles.conf"
+python3 "$repo/deploy/host-files.py" file "$stage/tmpfiles.conf" /etc/tmpfiles.d/daw-one-display.conf
 systemd-tmpfiles --create /etc/tmpfiles.d/daw-one-display.conf
-cat > /etc/systemd/system/daw-one-display.service <<'UNIT'
+cat > "$stage/display.service" <<'UNIT'
 [Unit]
 Description=TuneBox Waveshare DSI brightness and startup reveal
 After=systemd-udevd.service
@@ -17,6 +22,7 @@ Before=daw-one-kiosk.service
 Type=simple
 User=root
 Group=dawone
+ExecStartPre=/usr/bin/sha256sum --strict --check --quiet /usr/local/lib/daw-one-display/controller.sha256
 ExecStartPre=/usr/bin/python3 /usr/local/lib/daw-one-display/control.py --hide
 ExecStart=/usr/bin/python3 /usr/local/lib/daw-one-display/control.py
 ExecStopPost=/usr/bin/python3 /usr/local/lib/daw-one-display/control.py --restore
@@ -34,15 +40,20 @@ ReadOnlyPaths=-/run/daw-one-sensors -/var/lib/daw-one-state
 [Install]
 WantedBy=multi-user.target
 UNIT
-chmod 644 /etc/systemd/system/daw-one-display.service
-cat > /etc/systemd/system/daw-one.service.d/display.conf <<'UNIT'
+python3 "$repo/deploy/host-files.py" file "$stage/display.service" /etc/systemd/system/daw-one-display.service
+cat > "$stage/backend.conf" <<'UNIT'
 [Unit]
 Wants=daw-one-display.service
 After=daw-one-display.service
 [Service]
 ReadWritePaths=-/run/daw-one-display
 UNIT
-chmod 644 /etc/systemd/system/daw-one.service.d/display.conf
+python3 "$repo/deploy/host-files.py" file "$stage/backend.conf" /etc/systemd/system/daw-one.service.d/display.conf
 systemctl daemon-reload
-systemctl enable --now daw-one-display.service
+systemctl enable daw-one-display.service
+systemctl restart daw-one-display.service
+if ! python3 "$repo/deploy/host-files.py" wait-display; then
+  journalctl -u daw-one-display.service -n 20 --no-pager || true
+  exit 1
+fi
 echo 'DSI backlight controller enabled. Initial firmware/kernel frames need the optional quiet-boot configuration.'
