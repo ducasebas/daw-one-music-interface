@@ -34,6 +34,29 @@ test('3.16: widget order can be changed in Settings',async({page})=>{
  await page.getByRole('combobox',{name:'Widget position',exact:true}).selectOption('top');await page.getByRole('button',{name:'Save',exact:true}).click();
  await expect.poll(async()=>(await(await page.request.get('/api/preferences')).json()).prefs.widgetPlacement).toBe('top');
 });
+for(const navigateDuringSave of [false,true])test('a late Save response preserves newer widget edits'+(navigateDuringSave?' and queued navigation asks before leaving':''),async({page})=>{
+ await prefs(page,{widgets:['clock','upnext','source'],widgetPlacement:'bottom'});await page.goto(wall);
+ await chooseSettingsSection(page,'Display',{open:true});
+ await page.getByRole('button',{name:'Choose widgets: Now Playing widgets',exact:true}).click();
+ await page.getByRole('button',{name:'Move right: Clock',exact:true}).click();await page.getByRole('button',{name:'Apply selection',exact:true}).click();
+ let stored=false,first=true,release;const hold=new Promise(resolve=>{release=resolve;});
+ await page.route('**/api/preferences',async route=>{
+  if(route.request().method()!=='POST'||!first)return route.continue();first=false;
+  const response=await route.fetch();stored=true;await hold;await route.fulfill({response});
+ });
+ try{
+  await page.getByRole('button',{name:'Save',exact:true}).click();await expect.poll(()=>stored).toBe(true);
+  await expect(page.getByRole('button',{name:'Saving…',exact:true})).toBeDisabled();
+  const position=page.getByRole('combobox',{name:'Widget position',exact:true});await position.selectOption('top');
+  if(navigateDuringSave)await page.getByRole('button',{name:'All settings',exact:true}).click();
+  release();await expect(page.getByRole('button',{name:'Saving…',exact:true})).not.toBeVisible();
+  if(navigateDuringSave){const dialog=page.getByRole('dialog',{name:'Unsaved changes',exact:true});await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:'Stay here',exact:true}).click();}
+  await expect(position).toHaveValue('top');await expect(page.locator('.hub-savebar')).toContainText('Unsaved changes');
+  await expect(page.locator('.hub-savebar [data-saved=true]')).toHaveCount(0);
+  await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('.hub-savebar [data-saved=true]')).toBeVisible();
+  const saved=await(await page.request.get('/api/preferences')).json();expect(saved.prefs.widgets).toEqual(['upnext','clock','source']);expect(saved.prefs.widgetPlacement).toBe('top');
+ }finally{release();}
+});
 test('3.16: Developer → Values reads the timing and power values without changing them',async({page})=>{
  await page.goto(wall);
  const {chooseDeveloperTopic}=await import('./settings-helpers.js');await chooseDeveloperTopic(page,'Values',{open:true});

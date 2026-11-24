@@ -35,11 +35,10 @@ install -m 644 "$repo"/deploy/measurement/devices.mjs "$stage/deploy/measurement
 install -m 644 "$repo"/deploy/{host-capacity.js,music-assistant-local.sh,music-assistant.compose.yml} "$stage/deploy/"
 printf '{"type":"module"}\n' > "$stage/package.json"
 node "$repo/deploy/manager/check-imports.mjs" "$stage" $(cd "$stage" && ls deploy/manager/*.mjs)
-cp -a "$stage"/. "$base"/
-printf '{"type":"module"}\n' > "$base/package.json"
+python3 "$repo/deploy/host-files.py" tree "$stage" "$base" --inventory manager.sha256
 id dawaudiotest >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin dawaudiotest
 usermod -aG audio dawaudiotest
-cat > /etc/systemd/system/daw-one-manager.service <<'UNIT'
+cat > "$stage/manager.service" <<'UNIT'
 [Unit]
 Description=TuneBox bounded device setup and update control
 After=network.target daw-one-pd-startup.service
@@ -47,6 +46,7 @@ After=network.target daw-one-pd-startup.service
 Type=simple
 User=root
 Group=dawcontrol
+ExecStartPre=/usr/bin/sha256sum --strict --check --quiet /usr/local/lib/daw-one-control/manager.sha256
 ExecStart=/usr/bin/env node /usr/local/lib/daw-one-control/deploy/manager/service.mjs
 Restart=on-failure
 RuntimeDirectory=daw-one-manager
@@ -63,9 +63,9 @@ StandardError=journal
 [Install]
 WantedBy=multi-user.target
 UNIT
-chmod 644 /etc/systemd/system/daw-one-manager.service
+python3 "$repo/deploy/host-files.py" file "$stage/manager.service" /etc/systemd/system/daw-one-manager.service
 install -d -m 755 /etc/systemd/system/daw-one.service.d
-cat > /etc/systemd/system/daw-one.service.d/manager.conf <<'UNIT'
+cat > "$stage/backend.conf" <<'UNIT'
 [Unit]
 Wants=daw-one-manager.service
 After=daw-one-manager.service
@@ -73,9 +73,9 @@ After=daw-one-manager.service
 EnvironmentFile=-/etc/daw-one/connection.env
 SupplementaryGroups=dawcontrol
 UNIT
-chmod 644 /etc/systemd/system/daw-one.service.d/manager.conf
+python3 "$repo/deploy/host-files.py" file "$stage/backend.conf" /etc/systemd/system/daw-one.service.d/manager.conf
 install -d -m 700 /var/lib/daw-one
-cat > /etc/systemd/system/daw-one-local-ma-install.service <<'UNIT'
+cat > "$stage/local-ma.service" <<'UNIT'
 [Unit]
 Description=TuneBox explicitly requested local Music Assistant installation
 After=network-online.target docker.service
@@ -92,7 +92,7 @@ ReadWritePaths=/etc/daw-one /var/lib/daw-one /var/lib/daw-one-manager
 StandardOutput=journal
 StandardError=journal
 UNIT
-chmod 644 /etc/systemd/system/daw-one-local-ma-install.service
+python3 "$repo/deploy/host-files.py" file "$stage/local-ma.service" /etc/systemd/system/daw-one-local-ma-install.service
 bash "$repo/deploy/install-sync.sh"
 bash "$repo/deploy/install-power.sh"
 systemctl daemon-reload

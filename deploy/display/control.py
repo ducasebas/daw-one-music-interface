@@ -32,6 +32,7 @@ def target(settings, telemetry, now):
     return round(s['brightness']), 'sensor-unavailable' if s['brightnessMode'] == 'auto' else 'manual', None
 
 def write_status(value):
+    value = {**value, 'pid':os.getpid()}
     STATE.parent.mkdir(parents=True,exist_ok=True)
     temp = STATE.with_suffix('.tmp')
     temp.write_text(json.dumps(value)+'\n')

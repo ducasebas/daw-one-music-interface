@@ -24,20 +24,25 @@ import {writeFileSync,readFileSync} from 'node:fs';
 const path='/etc/daw-one-updater/config.json';let previous={};try{previous=JSON.parse(readFileSync(path,'utf8'));}catch{}
 writeFileSync(path,JSON.stringify({...previous,channel:process.argv[2],policy:{mode:process.argv[3],windowEnabled:false,start:'02:00',end:'05:00',timeZone:'Europe/Amsterdam',...previous.policy,mode:process.argv[3]}})+'\n',{mode:0o600});
 JS
-install -m 644 "$repo"/deploy/ota/{update.mjs,policy.mjs,appliance.mjs,prepare-runtime.mjs,local-http.mjs,releases.mjs,verify-tree.mjs,safe-extract.py} /usr/local/lib/daw-one-updater/
-install -m 644 "$repo/shared/update-settings.js" /usr/local/lib/daw-one-updater/settings.mjs
+stage=$(mktemp -d /usr/local/lib/.daw-one-updater.XXXXXX)
+trap 'rm -rf "$stage"' EXIT
+install -m 644 "$repo"/deploy/ota/{update.mjs,policy.mjs,appliance.mjs,prepare-runtime.mjs,local-http.mjs,releases.mjs,verify-tree.mjs,safe-extract.py} "$stage/"
+install -m 644 "$repo/shared/update-settings.js" "$stage/settings.mjs"
+node "$repo/deploy/manager/check-imports.mjs" "$stage" update.mjs
+python3 "$repo/deploy/host-files.py" tree "$stage" /usr/local/lib/daw-one-updater --inventory updater.sha256
 if [[ -f /etc/systemd/system/daw-one-kiosk.service ]]; then python3 "$repo/deploy/ota/migrate-kiosk.py"; fi
-cat > /etc/systemd/system/daw-one-update.service <<'UNIT'
+cat > "$stage/update.service" <<'UNIT'
 [Unit]
 Description=TuneBox signed release update (idle only)
 After=network-online.target daw-one.service
 Wants=network-online.target
 [Service]
 Type=oneshot
+ExecStartPre=/usr/bin/sha256sum --strict --check --quiet /usr/local/lib/daw-one-updater/updater.sha256
 ExecStart=/usr/bin/flock -n /run/daw-one-update.lock /usr/bin/node /usr/local/lib/daw-one-updater/update.mjs
 # A run that failed, timed out or was killed halfway through activation restores the previous version at once
 # (pending.json is the activation journal); otherwise that would wait for the next timer run or boot.
-ExecStopPost=/bin/sh -c 'if [ "$$SERVICE_RESULT" != success ] && [ -f /var/lib/daw-one-updater/pending.json ]; then exec /usr/bin/flock -w 30 /run/daw-one-update.lock /usr/bin/node /usr/local/lib/daw-one-updater/update.mjs --recover; fi'
+ExecStopPost=/bin/sh -c 'if [ "$$SERVICE_RESULT" != success ] && [ -f /var/lib/daw-one-updater/pending.json ]; then /usr/bin/sha256sum --strict --check --quiet /usr/local/lib/daw-one-updater/updater.sha256 && exec /usr/bin/flock -w 30 /run/daw-one-update.lock /usr/bin/node /usr/local/lib/daw-one-updater/update.mjs --recover; fi'
 TimeoutStartSec=10min
 TimeoutStopSec=4min
 Nice=10
@@ -45,8 +50,8 @@ UMask=0077
 ProtectHome=yes
 PrivateTmp=yes
 UNIT
-chmod 644 /etc/systemd/system/daw-one-update.service
-cat > /etc/systemd/system/daw-one-update.timer <<'UNIT'
+python3 "$repo/deploy/host-files.py" file "$stage/update.service" /etc/systemd/system/daw-one-update.service
+cat > "$stage/update.timer" <<'UNIT'
 [Unit]
 Description=Check TuneBox signed update channel
 [Timer]
@@ -56,7 +61,7 @@ RandomizedDelaySec=60
 [Install]
 WantedBy=timers.target
 UNIT
-chmod 644 /etc/systemd/system/daw-one-update.timer
+python3 "$repo/deploy/host-files.py" file "$stage/update.timer" /etc/systemd/system/daw-one-update.timer
 bash "$repo/deploy/install-manager.sh"
 systemctl daemon-reload
 systemctl enable --now daw-one-update.timer

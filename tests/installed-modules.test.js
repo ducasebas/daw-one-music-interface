@@ -37,9 +37,9 @@ test('the updater directory has every module update.mjs imports',()=>{
  const root=mkdtempSync(join(tmpdir(),'tunebox-updater-'));
  try{
   const ota=readFileSync('deploy/install-ota.sh','utf8');
-  const list=ota.match(/"\$repo"\/deploy\/ota\/\{([^}]+)\} \/usr\/local\/lib\/daw-one-updater\//)[1].split(',');
+  const list=ota.match(/"\$repo"\/deploy\/ota\/\{([^}]+)\} "\$stage\/"/)[1].split(',');
   for(const f of list)copyFileSync(join('deploy/ota',f),join(root,f));
-  assert.match(ota,/"\$repo\/shared\/update-settings\.js" \/usr\/local\/lib\/daw-one-updater\/settings\.mjs/);copyFileSync('shared/update-settings.js',join(root,'settings.mjs'));
+  assert.match(ota,/"\$repo\/shared\/update-settings\.js" "\$stage\/settings\.mjs"/);copyFileSync('shared/update-settings.js',join(root,'settings.mjs'));
   writeFileSync(join(root,'package.json'),'{"type":"module"}\n');
   assert.deepEqual(missingImports(root,['update.mjs']),[]);
  }finally{rmSync(root,{recursive:true,force:true});}
@@ -51,7 +51,7 @@ test('the import check reports a missing manager module (the 3.16.2 failure)',()
 });
 test('3.16.3: the updater unit restores the previous version straight after a failed or killed run, and the run has its own time limit',()=>{
  const ota=readFileSync('deploy/install-ota.sh','utf8'),update=readFileSync('deploy/ota/update.mjs','utf8');
- assert.match(ota,/ExecStopPost=\/bin\/sh -c 'if \[ "\$\$SERVICE_RESULT" != success \] && \[ -f \/var\/lib\/daw-one-updater\/pending\.json \]; then exec \/usr\/bin\/flock -w 30 \/run\/daw-one-update\.lock \/usr\/bin\/node \/usr\/local\/lib\/daw-one-updater\/update\.mjs --recover; fi'/);
+ assert.match(ota,/ExecStopPost=\/bin\/sh -c 'if \[ "\$\$SERVICE_RESULT" != success \] && \[ -f \/var\/lib\/daw-one-updater\/pending\.json \]; then \/usr\/bin\/sha256sum --strict --check --quiet \/usr\/local\/lib\/daw-one-updater\/updater\.sha256 && exec \/usr\/bin\/flock -w 30 \/run\/daw-one-update\.lock \/usr\/bin\/node \/usr\/local\/lib\/daw-one-updater\/update\.mjs --recover; fi'/);
  assert.match(ota,/TimeoutStopSec=4min/);
  assert.match(update,/const watchdog=setTimeout\(\(\)=>\{report\('error',.*process\.exit\(1\);\},9\*60000\);watchdog\.unref\(\);/);
  // The recovery path runs before anything else when the activation journal exists.
@@ -59,6 +59,6 @@ test('3.16.3: the updater unit restores the previous version straight after a fa
 });
 test('3.16.3: installing the manager stages it, checks its imports and waits until it answers',()=>{
  const s=readFileSync('deploy/install-manager.sh','utf8');
- assert.match(s,/check-imports\.mjs" "\$stage"/);assert.ok(s.indexOf('check-imports.mjs')<s.indexOf('cp -a "$stage"/. "$base"/'));
+ assert.match(s,/check-imports\.mjs" "\$stage"/);assert.ok(s.indexOf('check-imports.mjs')<s.indexOf('host-files.py" tree "$stage" "$base"'));
  assert.match(s,/http:\/\/127\.0\.0\.1:3002\/status/);assert.match(s,/install -m 644 "\$repo"\/deploy\/manager\/\*\.mjs/);
 });
