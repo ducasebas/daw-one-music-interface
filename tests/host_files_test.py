@@ -4,6 +4,8 @@ import json
 import os
 from pathlib import Path
 import signal
+import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -147,6 +149,31 @@ host.install_tree(Path(sys.argv[2]),Path(sys.argv[3]),'controller.sha256',displa
             host.install_tree(self.source, self.target, 'controller.sha256', display=True)
         self.assertFalse((self.target/'controller.sha256').exists())
         self.assert_no_temporary_files()
+
+    def test_updater_recovery_does_not_execute_changed_code_or_discard_the_journal(self):
+        source, target = self.root/'updater-source', self.root/'updater'
+        source.mkdir(); (source/'update.mjs').write_text('export const valid=true;\n')
+        host.install_tree(source, target, 'updater.sha256')
+        marker = self.root/'unverified-updater-ran'
+        (target/'update.mjs').write_text('import {writeFileSync} from "node:fs";writeFileSync('+json.dumps(str(marker))+',"ran");\n')
+        journal = self.root/'state/pending.json'; journal.parent.mkdir(); journal.write_text('{}')
+        text = (ROOT/'deploy/install-ota.sh').read_text()
+        stop = next(line.split('=', 1)[1] for line in text.splitlines() if line.startswith('ExecStopPost='))
+        stop = stop.replace('/usr/local/lib/daw-one-updater', str(target)).replace('/var/lib/daw-one-updater', str(journal.parent))
+        stop = stop.replace('/run/daw-one-update.lock', str(self.root/'lock')).replace('$$SERVICE_RESULT', '$SERVICE_RESULT')
+        stop = stop.replace('/usr/bin/node', shutil.which('node'))
+        result = subprocess.run(shlex.split(stop), env={**os.environ, 'SERVICE_RESULT':'exit-code'},
+                                text=True, capture_output=True, timeout=5)
+        self.assertFalse(marker.exists(), 'Recovery must not execute files the startup check rejects')
+        self.assertTrue(journal.exists())
+        self.assertNotEqual(result.returncode, 0)
+        # Prove that the checksum guard blocked execution, rather than a missing test runtime.
+        guard = '/usr/bin/sha256sum --strict --check --quiet '+str(target/'updater.sha256')+' && '
+        self.assertIn(guard, stop)
+        unguarded = subprocess.run(shlex.split(stop.replace(guard, '', 1)),
+                                  env={**os.environ, 'SERVICE_RESULT':'exit-code'}, capture_output=True, timeout=5)
+        self.assertEqual(unguarded.returncode, 0, unguarded.stderr)
+        self.assertTrue(marker.exists())
 
     def test_replacement_failure_retains_old_file_and_cleans_staging_files(self):
         path = self.controller(); path.write_bytes(b'old\n')

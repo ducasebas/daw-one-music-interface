@@ -51,7 +51,7 @@ test('the import check reports a missing manager module (the 3.16.2 failure)',()
 });
 test('3.16.3: the updater unit restores the previous version straight after a failed or killed run, and the run has its own time limit',()=>{
  const ota=readFileSync('deploy/install-ota.sh','utf8'),update=readFileSync('deploy/ota/update.mjs','utf8');
- assert.match(ota,/ExecStopPost=\/bin\/sh -c 'if \[ "\$\$SERVICE_RESULT" != success \] && \[ -f \/var\/lib\/daw-one-updater\/pending\.json \]; then exec \/usr\/bin\/flock -w 30 \/run\/daw-one-update\.lock \/usr\/bin\/node \/usr\/local\/lib\/daw-one-updater\/update\.mjs --recover; fi'/);
+ assert.match(ota,/ExecStopPost=\/bin\/sh -c 'if \[ "\$\$SERVICE_RESULT" != success \] && \[ -f \/var\/lib\/daw-one-updater\/pending\.json \]; then \/usr\/bin\/sha256sum --strict --check --quiet \/usr\/local\/lib\/daw-one-updater\/updater\.sha256 && exec \/usr\/bin\/flock -w 30 \/run\/daw-one-update\.lock \/usr\/bin\/node \/usr\/local\/lib\/daw-one-updater\/update\.mjs --recover; fi'/);
  assert.match(ota,/TimeoutStopSec=4min/);
  assert.match(update,/const watchdog=setTimeout\(\(\)=>\{report\('error',.*process\.exit\(1\);\},9\*60000\);watchdog\.unref\(\);/);
  // The recovery path runs before anything else when the activation journal exists.

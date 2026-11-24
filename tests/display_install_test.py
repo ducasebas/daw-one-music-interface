@@ -116,6 +116,19 @@ elif args[0]=='is-active':
         self.assertIn('did not produce live backlight status', result.stderr)
         self.assertNotIn('DSI backlight controller enabled', result.stdout)
 
+    def test_stop_hook_cannot_execute_a_controller_rejected_by_its_inventory(self):
+        root, source, env = self.fixture()
+        result = self.run_install(source, env)
+        self.assertEqual(result.returncode, 0, result.stdout+result.stderr)
+        marker = root/'unverified-controller-ran'
+        controller = root/'usr/local/lib/daw-one-display/control.py'
+        controller.write_text('from pathlib import Path\nPath('+repr(str(marker))+').write_text("ran")\n')
+        unit = (root/'etc/systemd/system/daw-one-display.service').read_text()
+        stop = next(line.split('=', 1)[1] for line in unit.splitlines() if line.startswith('ExecStopPost='))
+        result = subprocess.run(shlex.split(stop), capture_output=True, text=True, timeout=5)
+        self.assertFalse(marker.exists(), 'A failed startup check must not be bypassed by ExecStopPost')
+        self.assertNotEqual(result.returncode, 0)
+
     def test_host_without_this_panel_skips_installation(self):
         root, source, env = self.fixture(detected=False)
         result = self.run_install(source, env)

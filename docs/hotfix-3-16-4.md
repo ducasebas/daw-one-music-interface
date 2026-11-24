@@ -12,7 +12,7 @@ This hotfix adds a separate check at that host-installation boundary:
 
 - Read and validate every candidate helper before replacement. Refuse empty files, symlinks/special files and invalid Python. The display controller must also contain its complete daemon entry point: syntax validity alone cannot distinguish an empty script or a valid partial script.
 - Stage all files in the destination filesystem, set permissions, flush and `fsync`, and compare SHA-256 before replacing anything. Replace each file by rename, sync its directory and verify the installed bytes. A staging/space/short-write failure leaves every prior live file intact.
-- Write the expected checksum inventory last. The display, manager and updater units check that inventory before running. A partial batch, missing file, zero-length file or changed bytes cannot silently pass the next service start.
+- Write the expected checksum inventory last. The display, manager and updater units check that inventory before running. A partial batch, missing file, zero-length file or changed bytes cannot silently pass the next service start. The display stop/restore hook and updater recovery hook also verify their code before execution; a failed startup check cannot be bypassed by `ExecStopPost`.
 - Restart the display controller after installation, including on an already active service. Require two advancing, recent status samples with the actual systemd MainPID and working backlight access before reporting success. A process exiting 0 is an installation failure.
 - Publish the affected service definitions atomically as well. Optional sync, measurement and Bluetooth installers use atomic copies for files shared with the manager so they cannot truncate those checked files in place.
 
