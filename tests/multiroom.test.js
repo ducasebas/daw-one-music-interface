@@ -3,6 +3,11 @@ import assert from 'node:assert/strict';
 import {canUpdate} from '../deploy/ota/policy.mjs';
 import {LiveMusicService} from '../server/ma-service.js';
 import {MultiroomService} from '../server/multiroom.js';
+import {RoomSelection} from '../server/room-selection.js';
+import {BootRooms} from '../server/boot-rooms.js';
+import {mkdtempSync,rmSync,writeFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {normalizeRooms, roomLeader, roomOutputs, groupCandidate, groupVolumeTargets, groupVolume, roomRequest} from '../shared/multiroom.js';
 
 const features=['volume_set','volume_mute','pause','seek','set_members'];
@@ -40,6 +45,41 @@ async function fixture(extra={}){
   await music.start();const rooms=new MultiroomService(music);
   return {transport,music,rooms,act:body=>rooms.act({revision:rooms.status().revision,...body}),writes:()=>transport.calls.filter(c=>c.name.startsWith('players/cmd/')||c.name==='player_queues/transfer')};
 }
+
+function restartFixture(t){
+ const directory=mkdtempSync(join(tmpdir(),'tunebox-room-restart-'));t.after(()=>rmSync(directory,{recursive:true,force:true}));
+ const transport=new RoomTransport();transport.players.push(player('everywhere',{type:'group'}));transport.queues.push(queue('everywhere'));
+ const config={playerId:'everywhere',controlEnabled:true,volumeLimit:40,url:'ws://music.local/ws'},context={serverUrl:config.url,localId:'pi',fallbackId:config.playerId};
+ const launch=async currentBoot=>{
+  const selection=new RoomSelection({directory,currentBoot});
+  const music=new LiveMusicService(config,{transport,initialPlayerId:selection.initial(context),startupFallbackId:'pi'});
+  t.after(()=>music.stop());music.on('player-selected',id=>selection.save(context,id));
+  await music.start();const rooms=new MultiroomService(music,{localId:'pi'}),boot=new BootRooms({multiroom:rooms,directory,currentBoot});
+  await boot.check();
+  return {music,rooms,boot,select:id=>rooms.act({action:'select',playerId:id,revision:rooms.status().revision})};
+ };
+ return {directory,transport,config,context,launch};
+}
+
+test('the successful select-only boot marker survives an OTA app restart without reverting to the configured group',async t=>{
+ const f=restartFixture(t);writeFileSync(join(f.directory,'rooms-boot.json'),JSON.stringify({bootId:'boot-1',changed:false,left:['select']}));
+ const first=await f.launch('boot-1');assert.equal(first.rooms.status().selectedId,'pi');assert.equal(first.boot.pending(),false);first.music.stop();
+ const second=await f.launch('boot-1');assert.equal(second.rooms.status().selectedId,'pi');assert.equal(second.music.config.playerId,'everywhere');
+ assert.equal(f.transport.calls.some(c=>c.name.startsWith('players/cmd/')||c.name==='player_queues/transfer'),false);
+});
+test('an intentional group choice survives a warm restart, but a new Pi boot controls TuneBox again without restarting Rivo',async t=>{
+ const f=restartFixture(t),before=structuredClone(f.transport.players.find(p=>p.player_id==='rivo'));
+ const first=await f.launch('boot-1');await first.select('everywhere');first.music.stop();
+ const second=await f.launch('boot-1');assert.equal(second.rooms.status().selectedId,'everywhere');second.music.stop();
+ const third=await f.launch('boot-2');assert.equal(third.rooms.status().selectedId,'pi');
+ assert.deepEqual(f.transport.players.find(p=>p.player_id==='rivo'),before);
+ assert.equal(f.transport.calls.some(c=>c.name.startsWith('players/cmd/')||c.name==='player_queues/transfer'),false);
+});
+test('a deleted saved room falls back to the available local output instead of blocking Music Assistant startup',async t=>{
+ const f=restartFixture(t);new RoomSelection({directory:f.directory,currentBoot:'boot-1'}).save(f.context,'deleted');
+ const app=await f.launch('boot-1');assert.equal(app.music.status,'connected');assert.equal(app.rooms.status().selectedId,'pi');
+ assert.equal(new RoomSelection({directory:f.directory,currentBoot:'boot-1'}).initial(f.context),'pi');
+});
 
 test('room inventory hides private/protocol targets and never exposes media URLs or fabricated measurements',()=>{
  const rooms=normalizeRooms([player('pi',{current_media:{title:'Song',uri:'http://secret/token',image_url:'http://secret'},volume_level:null}),player('hidden',{hide_in_ui:true}),player('private',{private:true}),player('source',{type:'source'}),player('protocol',{type:'protocol'}),player('pi')],'pi');

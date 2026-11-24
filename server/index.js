@@ -45,6 +45,7 @@ import { musicConfig } from "./ma-config.js";
 import { LiveMusicService } from "./ma-service.js";
 import {MultiroomService} from './multiroom.js';
 import {BootRooms} from './boot-rooms.js';
+import {RoomSelection} from './room-selection.js';
 import {crossfadeState,crossfadeValues} from '../shared/crossfade.js';
 import {savedVolumeLimit} from '../shared/volume.js';
 const startupStore = new BootStore(
@@ -74,12 +75,16 @@ const config = musicConfig(),
   runtime = new DeviceRuntime(Date.now(), startupStore.load()),
   clients = new Set();
 runtime.displayTimeoutMs = displayConfiguration.timeoutSeconds === 0 ? Infinity : displayConfiguration.timeoutSeconds * 1000;
+const audioAnalysis=new AudioAnalysis({onStatus:status=>{runtime.record(Date.now(),"audio-analysis",runtime.device.mode,"Local PCM measurement: "+status);broadcast();}});
+const localPlayerId=audioAnalysis.playerId||config.playerId;
+const roomSelection=new RoomSelection({directory:stateDirectory});
+const selectionContext=()=>({serverUrl:config.url,localId:localPlayerId,fallbackId:config.playerId});
 const music =
-  config.mode === "music-assistant" ? new LiveMusicService(config) : null;
+  config.mode === "music-assistant" ? new LiveMusicService(config,{initialPlayerId:roomSelection.initial(selectionContext()),startupFallbackId:localPlayerId}) : null;
+music?.on('player-selected',id=>roomSelection.save(selectionContext(),id));
 if(music)music.setVolumeLimit(savedVolumeLimit(preferences.get(),music.defaultVolumeLimit));
 music?.wantKeepPlaying(preferences.get().prefs?.keepPlaying!==false);
-const audioAnalysis=new AudioAnalysis({onStatus:status=>{runtime.record(Date.now(),"audio-analysis",runtime.device.mode,"Local PCM measurement: "+status);broadcast();}});
-const multiroom = new MultiroomService(music,{localId:audioAnalysis.playerId||config.playerId});
+const multiroom = new MultiroomService(music,{localId:localPlayerId});
 // Owner 22 Nov 2026: after a reboot leave multiroom and control the own player again; show a notice.
 const bootRooms=new BootRooms({multiroom,directory:stateDirectory});
 music?.on('change',()=>{if(bootRooms.pending())bootRooms.check().then(r=>{if(r)broadcast();}).catch(()=>{});});

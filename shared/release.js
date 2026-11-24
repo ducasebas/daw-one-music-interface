@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.24-integrity.1",
-  label: "GUI 3.16.4 · INTEGRITY",
+  id: "2026.11.24-selection.1",
+  label: "GUI 3.16.5 · ROOMS",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Checks system files before and after installation. Empty or damaged files are refused. The screen controller must keep running before installation can finish. Screen, manager and updater files are also checked when their services start. Includes the 3.16.3 interface and visualizer improvements. If automatic system maintenance is off, run “sudo bash /opt/daw-one/deploy/update-appliance.sh --apply” once.",
+  notes: "After a full restart TuneBox controls its own player. App and OTA restarts remember the room you selected. Playback feedback stays on the pressed button and large artwork; the extra footer loading ring is removed.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

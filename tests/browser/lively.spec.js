@@ -18,6 +18,9 @@ async function live(page){
  return state;
 }
 test.beforeEach(async({page})=>{await page.request.post('/api/reset',{headers:{'X-TuneBox-Control':await token(page)},data:{kind:'preferences',confirmed:true}});await prefs(page);});
+// A mocked state request can still be reading its response when the page finishes.
+// Drain those handlers before Playwright disposes the page's API request context.
+test.afterEach(async({page})=>{await page.unrouteAll({behavior:'wait'});});
 test.afterAll(async({request})=>{const t=(await(await request.get('/api/updates')).json()).controlToken;await request.post('/api/reset',{headers:{'X-TuneBox-Control':t},data:{kind:'preferences',confirmed:true}});});
 
 test('Now Playing shows the blurred artwork backdrop and cross-fades to the next cover',async({page})=>{

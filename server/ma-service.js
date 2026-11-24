@@ -84,7 +84,7 @@ export function normalizeMusic(
 export class LiveMusicService extends EventEmitter {
   constructor(
     config,
-    { transport = new MusicAssistantTransport(config), retryMs = 1000 } = {},
+    { transport = new MusicAssistantTransport(config), retryMs = 1000, initialPlayerId = config.playerId, startupFallbackId = null } = {},
   ) {
     super();
     this.config = {...config};
@@ -108,7 +108,8 @@ export class LiveMusicService extends EventEmitter {
     this.keepPlayingError = null;
     this.queueActive = false;
     this.players = [];
-    this.playerId = config.playerId;
+    this.playerId = initialPlayerId || config.playerId;
+    this.startupFallbackId = startupFallbackId;
     this.status = "disconnected";
     this.error = null;
     this.errorCode = null;
@@ -182,6 +183,7 @@ export class LiveMusicService extends EventEmitter {
       this.pollTimer = setInterval(() => this.scheduleRefresh(),5000);
       this.pollTimer.unref?.();
       this.notify();
+      this.emit('player-selected',this.playerId);
     } catch (error) {
       const auth = {
         20: [
@@ -245,6 +247,10 @@ export class LiveMusicService extends EventEmitter {
         const players = await this.transport.command("players/all", {}, {maxItems:256});
         if (!Array.isArray(players)) throw Error("Invalid player list");
         this.players = players;
+        if(this.startupFallbackId){
+          if(!players.some(p=>p.player_id===this.playerId)&&players.some(p=>p.player_id===this.startupFallbackId&&p.available===true))this.playerId=this.startupFallbackId;
+          if(players.some(p=>p.player_id===this.playerId))this.startupFallbackId=null;
+        }
         if (this.playerId) {
           if (!players.some((p) => p.player_id === this.playerId))
             throw Error("Configured player unavailable");
@@ -285,6 +291,7 @@ export class LiveMusicService extends EventEmitter {
     this.playback = { ...this.playback, connected: false, playing: false };
     await this.refresh();
     this.notify();
+    this.emit('player-selected',this.playerId);
   }
   async control(event) {
     if(this.roomCommandBusy)throw Error('Wait for the room change to finish.');
