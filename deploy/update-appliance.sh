@@ -46,6 +46,16 @@ const {canUpdate}=await import(pathToFileURL(root+'/deploy/ota/policy.mjs'));
 const response=await localHttp('/api/state');
 if(!response.ok||!canUpdate(JSON.parse(response.body)))throw Error('Pause music and finish device changes before the complete device update.');
 JS
+# BEGIN TUNEBOX OTA CONTROL
+if [[ ${TUNEBOX_APPLIANCE_OTA:-0} == 1 ]]; then
+  if node "$repo/deploy/ota/maintenance.mjs" bridge "$repo"; then
+    exit 0
+  else
+    tunebox_maintenance_result=$?
+    [[ $tunebox_maintenance_result == 3 ]] || exit "$tunebox_maintenance_result"
+  fi
+fi
+# END TUNEBOX OTA CONTROL
 # Existing managers already block shutdown/update requests while request.json exists.
 # Exclusive creation prevents overwriting a request that arrived during preflight.
 maintenance_id="appliance-$$-$(date +%s)"
@@ -68,6 +78,9 @@ except (FileNotFoundError,ValueError):pass
 PYTHON
 }
 trap cleanup_request EXIT
+# BEGIN TUNEBOX OTA CONTROL
+node "$repo/deploy/ota/maintenance.mjs" step browser
+# END TUNEBOX OTA CONTROL
 python3 "$repo/deploy/chromium/configure.py"
 install -d -m 755 /usr/local/share/icons
 python3 "$repo/deploy/display/cursor-theme.py"
@@ -75,9 +88,15 @@ install -m 755 "$repo/deploy/kiosk.sh" "$repo/kiosk.sh"
 install -m 755 "$repo/deploy/set-panel-profile.sh" "$repo/set-panel-profile.sh"
 python3 "$repo/deploy/ota/migrate-kiosk.py"
 if [[ $target == pi4 ]]; then
+# BEGIN TUNEBOX OTA CONTROL
+  node "$repo/deploy/ota/maintenance.mjs" step display
+# END TUNEBOX OTA CONTROL
   bash "$repo/deploy/install-display.sh"
   python3 "$repo/deploy/display/quiet-boot.py"
 fi
+# BEGIN TUNEBOX OTA CONTROL
+node "$repo/deploy/ota/maintenance.mjs" step network
+# END TUNEBOX OTA CONTROL
 if [[ $target == pi4 || $target == pi3-experimental ]]; then
   install -d -m 755 /etc/NetworkManager/conf.d
   cat > /etc/NetworkManager/conf.d/wifi-powersave-off.conf <<'CONF'
@@ -129,6 +148,9 @@ if [[ -f /etc/systemd/system/tunebox-player.service.d/90-tunebox-analysis.conf ]
   chmod 644 /etc/systemd/logind.conf.d/tunebox-player-ipc.conf
   if systemctl is-active --quiet tunebox-player.service && ! compgen -G '/dev/shm/squeezelite-*' >/dev/null; then systemctl restart tunebox-player.service; fi
 fi
+# BEGIN TUNEBOX OTA CONTROL
+node "$repo/deploy/ota/maintenance.mjs" step manager
+# END TUNEBOX OTA CONTROL
 if [[ -f /etc/daw-one-updater/public.pem && -f /etc/daw-one-updater/config.json ]]; then
   read -r channel mode < <(node --input-type=module <<'JS'
 import {readFileSync} from 'node:fs';
@@ -147,6 +169,9 @@ else
   bash "$repo/deploy/install-manager.sh"
 fi
 # Refresh a capability that was explicitly installed before; do not install new audio services.
+# BEGIN TUNEBOX OTA CONTROL
+node "$repo/deploy/ota/maintenance.mjs" step measurement
+# END TUNEBOX OTA CONTROL
 if [[ -f /etc/systemd/system/daw-one-measurement.service && -f /etc/daw-one/measurement.json ]]; then
   tunebox_measurement_output=$(node --input-type=module <<'JS'
 import {readFileSync} from 'node:fs';
@@ -172,4 +197,7 @@ if [[ ${TUNEBOX_APPLIANCE_OTA:-0} != 1 ]]; then
   curl --fail --silent --retry 8 --retry-connrefused --retry-delay 1 --max-time 2 http://127.0.0.1:3001/api/health >/dev/null
   systemctl restart daw-one-kiosk.service
 fi
+# BEGIN TUNEBOX OTA CONTROL
+node "$repo/deploy/ota/maintenance.mjs" step complete complete
+# END TUNEBOX OTA CONTROL
 echo 'Complete device update applied. Quiet boot takes effect after the next restart. Network, Music Assistant, PCM and audio routing were preserved.'

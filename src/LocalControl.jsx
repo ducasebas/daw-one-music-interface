@@ -1,26 +1,23 @@
-import React,{useState} from 'react';
-import {tr,translateFormat} from '../shared/i18n.js';
+import React,{useEffect,useRef,useState} from 'react';
+import {tr} from '../shared/i18n.js';
 import {Icon} from './Icon.jsx';
 
-/** GUI 3.13 OFFLINE: when Music Assistant is unreachable, this TuneBox's own amplifier can
- * still pause and change volume (never above the level when local control began). */
-export function LocalControl({snapshot,token}){
- const local=snapshot.localControl,[busy,setBusy]=useState(''),[error,setError]=useState('');
- if(!local||!(local.needed||local.lowered||local.standby))return null;
- const send=async action=>{if(busy)return;setBusy(action);setError('');
-  try{const r=await fetch('/api/local',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':token||''},body:JSON.stringify({action})});const v=await r.json().catch(()=>({}));if(!r.ok)throw Error(v.error||'Local control failed');}
-  catch(e){setError(e.message);}finally{setBusy('');}};
- const away=local.needed;
+/** The server pauses only the local amplifier. Testing a connection never resumes it. */
+export function LocalControl({snapshot,token,onSnapshot,offline=false}){
+ const local=snapshot.localControl,phase=local?.recovery?.phase,[busy,setBusy]=useState(''),[error,setError]=useState(''),working=useRef(false);
+ useEffect(()=>{if(!local?.needed)setError('');},[local?.needed]);
+ if(snapshot.bluetooth?.active||!local||!(local.needed||local.lowered||local.standby||phase==='pausing'))return null;
+ const send=async action=>{if(working.current)return;working.current=true;setBusy(action);setError('');
+  try{const r=await fetch(action==='reconnect'?'/api/music/reconnect':'/api/local',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':token||''},body:JSON.stringify(action==='reconnect'?{}:{action}),signal:AbortSignal.timeout(30000)});const v=await r.json().catch(()=>({}));if(v.snapshot)onSnapshot?.(v.snapshot);else if(v.localControl)onSnapshot?.(v);if(!r.ok)throw Error(v.error||'Local control failed');}
+  catch(e){setError(e.name==='TimeoutError'?'The connection test took too long. Try again.':e.message);}finally{working.current=false;setBusy('');}};
+ const away=local.needed,pausing=phase==='pausing',unavailable=!!busy||offline||!token;
  return <section className="local-control" aria-label={tr('Local control')} data-away={away||undefined}>
   <div className="local-control-text"><strong>{tr(away?'Music Assistant is unavailable':'Local amplifier settings are active')}</strong>
-   <span>{tr(away?'Pause and volume still work on this TuneBox. Other rooms and the queue are not changed.':local.standby?'The amplifier is paused locally.':'The local volume is lower than before. Restore it when you are ready.')}</span></div>
+   <span role="status">{pausing&&<span className="ui-spinner" aria-hidden="true"/>}{tr(pausing?'Pausing this TuneBox automatically…':away?local.standby?'TuneBox is paused locally. Other rooms and the queue are unchanged.':phase==='failed'?'Automatic local pause failed. Try again.':phase==='unaffected'?'Your current audio source is unchanged.':'Connecting to Music Assistant…':local.standby?'The amplifier is paused locally.':'The local volume is lower than before. Restore it when you are ready.')}</span></div>
   <div className="local-control-actions">
-   <button disabled={!!busy} aria-pressed={local.standby} onClick={()=>send(local.standby?'resume':'pause')}><Icon name={local.standby?'play':'pause'} size={22}/>{tr(local.standby?'Resume locally':'Pause locally')}</button>
-   {away&&<><button disabled={!!busy||local.standby||local.level<=0} onClick={()=>send('quieter')} aria-label={tr('Quieter')}>−</button>
-   <output aria-label={tr('Local volume')}>{translateFormat('{level}%',{level:local.level})}</output>
-   <button disabled={!!busy||local.standby||local.level>=100} onClick={()=>send('louder')} aria-label={tr('Louder, up to the previous level')}>+</button></>}
-   {!away&&local.lowered&&<button disabled={!!busy} onClick={()=>send('restore')}>{tr('Restore local volume')}</button>}
+   {away?<><button disabled={unavailable} aria-busy={busy==='reconnect'} onClick={()=>send('reconnect')}><Icon name="update" className={busy==='reconnect'?'is-spinning':''} size={24}/>{tr(busy==='reconnect'?'Checking connection…':'Test connection again')}</button>{phase==='failed'&&!local.standby&&<button disabled={unavailable} onClick={()=>send('pause')}>{tr('Retry local pause')}</button>}</>:local.standby?<button disabled={unavailable||pausing} onClick={()=>send('resume')}><Icon name="play" size={24}/>{tr('Resume locally')}</button>:local.lowered?<button disabled={unavailable} onClick={()=>send('restore')}>{tr('Restore local volume')}</button>:null}
   </div>
+  {busy&&<p role="status">{tr(busy==='reconnect'?'Checking connection…':'Working…')}</p>}
   {error&&<p role="alert">{tr(error)}</p>}
  </section>;
 }

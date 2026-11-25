@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.24-selection.1",
-  label: "GUI 3.16.5 · ROOMS",
+  id: "2026.11.25-updates.1",
+  label: "GUI 3.16.6 · UPDATES",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "After a full restart TuneBox controls its own player. App and OTA restarts remember the room you selected. Playback feedback stays on the pressed button and large artwork; the extra footer loading ring is removed.",
+  notes: "GUI updates keep unchanged system services running. Update tools have a smaller repair path, with clear progress after interrupted maintenance. If Music Assistant disconnects, TuneBox pauses its own amplifier automatically. The simpler message offers a connection test and no volume controls. Reconnecting keeps local audio paused until you choose Resume locally.",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {

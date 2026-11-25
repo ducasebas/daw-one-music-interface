@@ -98,6 +98,7 @@ export class LiveMusicService extends EventEmitter {
     this.dirty = false;
     this.timer = null;
     this.retryTimer = null;
+    this.startPromise = null;
     this.pollTimer = null;
     this.queueIds = [];
     // Mute for players without native mute: the volume to restore, kept in memory only.
@@ -165,6 +166,17 @@ export class LiveMusicService extends EventEmitter {
     this.config.volumeLimit=value;
   }
   async start() {
+    if(this.startPromise)return this.startPromise;
+    this.startPromise=this.connect();
+    try{return await this.startPromise;}finally{this.startPromise=null;}
+  }
+  async reconnect(){
+    if(this.status==='connected'){
+      try{await this.refresh();}catch{this.failed('State refresh failed');}
+    }else await this.start();
+    return this.status==='connected';
+  }
+  async connect() {
     this.stopped = false;
     clearInterval(this.pollTimer);
     clearTimeout(this.retryTimer);

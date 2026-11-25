@@ -25,3 +25,11 @@ test('a running update covers the screen with progress, elapsed time, estimate, 
  await expect(sheet.getByRole('listitem').filter({hasText:'Room correction is now a guided wizard.'})).toBeVisible();await expect(sheet.getByText(/can go dark or flicker for a few seconds/)).toBeVisible();
  await shot(page,'update-running');
 });
+test('a maintenance failure remains visible on the update settings page after a check',async({page})=>{
+ await updates(page,{status:'available',error:null,maintenance:{step:'interrupted',status:'interrupted',label:'System maintenance was interrupted'}});
+ await page.goto(url);await page.getByRole('button',{name:'Settings',exact:true}).click();
+ await page.getByRole('navigation',{name:'Settings categories'}).getByRole('button',{name:'System',exact:true}).click();
+ await page.getByRole('navigation',{name:'In this section'}).getByRole('button',{name:'Updates',exact:true}).click();
+ await expect(page.getByRole('alert').filter({hasText:'System maintenance was interrupted'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Install update',exact:true})).toBeEnabled();
+});

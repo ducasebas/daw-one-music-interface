@@ -17,18 +17,18 @@ test('the Party widget opens the phone code on Now Playing and explains PIN, pho
  await sheet.getByRole('button',{name:'Close',exact:true}).click();await expect(sheet).toHaveCount(0);
  await expect.poll(()=>calls).toEqual(['start','cancel']);
 });
-test('with Music Assistant away, Now Playing offers local pause and volume that never goes above the previous level',async({page})=>{
+test('with Music Assistant away, Now Playing shows the automatic local pause and a connection test without volume controls',async({page})=>{
  const state=await(await page.request.get('/api/state')).json();
- Object.assign(state,{mode:'music-assistant',musicAssistant:{connected:false,status:'disconnected',players:[]},localControl:{needed:true,standby:false,level:100,lowered:false}});
+ Object.assign(state,{mode:'music-assistant',musicAssistant:{connected:false,status:'disconnected',players:[]},localControl:{needed:true,standby:true,level:100,lowered:false,recovery:{phase:'paused'}}});
  state.playback={...state.playback,connected:false};const sent=[];
  await page.route('**/api/events',r=>r.abort());await page.route('**/api/state',r=>r.fulfill({json:state}));
  await page.route('**/api/local',r=>{const a=r.request().postDataJSON().action;sent.push(a);const l=state.localControl;if(a==='pause')l.standby=true;if(a==='resume')l.standby=false;if(a==='quieter')l.level=Math.max(0,l.level-10);if(a==='louder')l.level=Math.min(100,l.level+10);l.lowered=l.level<100;return r.fulfill({json:state});});
  await page.goto(url);await page.getByRole('button',{name:'Now Playing',exact:true}).first().click();
  const bar=page.getByRole('region',{name:'Local control',exact:true});await expect(bar).toContainText('Music Assistant is unavailable');
- const louder=bar.getByRole('button',{name:'Louder, up to the previous level',exact:true});await expect(louder).toBeDisabled();
- await bar.getByRole('button',{name:'Quieter',exact:true}).click();await expect.poll(()=>sent).toEqual(['quieter']);
+ await expect(bar).toContainText('TuneBox is paused locally.');await expect(bar.getByRole('button',{name:'Test connection again',exact:true})).toBeVisible();
+ await expect(bar.getByRole('button',{name:'Quieter',exact:true})).toHaveCount(0);await expect(bar.getByRole('button',{name:'Louder, up to the previous level',exact:true})).toHaveCount(0);await expect(bar.getByLabel('Local volume',{exact:true})).toHaveCount(0);
  await page.screenshot({path:'test-results/local-control.png'});
- await bar.getByRole('button',{name:'Pause locally',exact:true}).click();await expect.poll(()=>sent.at(-1)).toBe('pause');
+ expect(sent).toEqual([]);
 });
 test('a ready local Music Assistant shows a setup QR and connects TuneBox with the local address prefilled',async({page})=>{
  await page.route('**/api/device',async r=>{const b=r.request().postDataJSON();if(b.command==='local-ma-status')return r.fulfill({json:{simulated:false,capacity:{eligible:true,reasons:[]},dockerAvailable:true,installing:false,job:{phase:'ready'}}});return r.continue();});

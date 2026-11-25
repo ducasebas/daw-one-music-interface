@@ -20,6 +20,7 @@ Measure navigation feedback, main-thread work, large UI rerenders, API requests,
 - Use monotonic clocks for local watchdogs and timing windows, so changing the system time cannot stall recovery or extend fast polling indefinitely.
 - Preserve the local PCM/selected-remote distinction. Optimize display work without changing audio timing, routing, group queues or volume limits as a side effect.
 - Compare bundle size, idle CPU work and memory against the accepted baseline. Investigate a sustained regression of more than 10% in main-thread work or startup code before accepting it. Timing estimates are review signals, not flaky timing-only CI assertions.
+- For each OTA candidate, compare its maintenance plan with the published device baseline and record whether it needs no host changes, update-tool repair or a real system refresh. A GUI version bump must not by itself reinstall display, network or audio services. Test the first repair through the installed updater as well as the new updater; the code that delivers a repair is part of the acceptance path. Preserve watchdog and installed-file checks while investigating resets.
 - Use deterministic regression checks for request counts, bounded rerenders, stale-response handling and safe gestures. Stop an accidental jump to maximum volume at the input layer.
 
 ## 4. Validate one candidate
