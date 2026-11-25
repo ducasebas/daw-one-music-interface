@@ -8,6 +8,7 @@ import {prepareRuntime} from './prepare-runtime.mjs';
 import {localHttp} from './local-http.mjs';
 import {selectRelease,releaseIsCurrent} from './releases.mjs';
 import {maintainAppliance} from './appliance.mjs';
+import {maintenanceState,interruptedMaintenance,maintenanceFailure} from './maintenance.mjs';
 const base='/var/lib/daw-one-updater',slots='/opt/daw-one-releases',app='/opt/daw-one';
 const run=(cmd,args)=>execFileSync(cmd,args,{stdio:'pipe',timeout:180000});
 const json=(path,fallback={})=>{try{return JSON.parse(readFileSync(path,'utf8'));}catch{return fallback;}};
@@ -22,7 +23,9 @@ function report(status,extra={}){
  if(status!=='error')lastPhase=status;
  if(status==='downloading'&&!startedAt)startedAt=new Date().toISOString();
  const path='/var/lib/daw-one-update-status/status.json';
- atomic(path,{status,channel,checkedAt:new Date().toISOString(),current:{release:current.release,commit:current.commit},available,percent:null,...(startedAt?{startedAt}:{}),...(typicalSeconds?{typicalSeconds}:{}),...extra});run('chmod',['644',path]);
+ const lastMaintenance=maintenanceState();
+ const maintenance=lastMaintenance&&(['failed','interrupted'].includes(lastMaintenance.status)||lastMaintenance.release===available?.release&&['installing','restarting','checking-health','installed'].includes(status))?lastMaintenance:null;
+ atomic(path,{status,channel,checkedAt:new Date().toISOString(),current:{release:current.release,commit:current.commit},available,percent:null,...(maintenance?{maintenance:{step:maintenance.step,status:maintenance.status,label:maintenance.label,failedStep:maintenance.failedStep}}:{}),...(startedAt?{startedAt}:{}),...(typicalSeconds?{typicalSeconds}:{}),...extra});run('chmod',['644',path]);
  console.log(JSON.stringify({component:'tunebox-update',status,commit:available?.commit||current.commit||null,percent:extra.percent??null,...(extra.error?{error:extra.error,failedPhase:extra.failedPhase}:{})}));
 }
 async function download(url,max,onProgress){
@@ -79,7 +82,11 @@ try{
   const pending=json(base+'/pending.json');kiosk=pending.kiosk===true;report('rolling-back');await host.stop();await host.select(pending.previous);await host.start();if(!await host.healthy(null))throw Error('Recovery requires manual service repair');await host.clearJournal();report('rolled-back');process.exit(0);
  }
  if(process.argv.includes('--recover'))process.exit(0);
+ const interrupted=interruptedMaintenance();
  const request=json(base+'/request.json',{action:'auto'});rmSync(base+'/request.json',{force:true});
+ if(interrupted&&(request.action==='device-maintenance'||request.action==='auto'&&config.applianceUpdates===true)){
+  report('error',{error:maintenanceFailure(interrupted),failedPhase:'system-maintenance'});process.exit(0);
+ }
  if(!['auto','check','install','rollback'].includes(request.action))throw Error('Invalid update action');
  manualInstall=request.action==='install';
  if(!['preview','stable'].includes(channel))throw Error('Invalid channel');

@@ -251,6 +251,19 @@ test("player must be selected explicitly; events and reconnect resynchronize wit
   assert.equal(s.playback.volume, 22);
   s.stop();
 });
+test('manual connection tests share an ongoing handshake and never replay playback, grouping or volume',async()=>{
+ FixtureSocket.calls=[];
+ const t=transport(),connect=t.connect.bind(t);let release,count=0;
+ const wait=new Promise(r=>release=r);t.connect=async()=>{count++;await wait;return connect();};
+ const s=new LiveMusicService(configuration,{transport:t,retryMs:1000});
+ try{
+  const initial=s.start(),a=s.reconnect(),b=s.reconnect();assert.equal(count,1);release();await Promise.all([initial,a,b]);
+  assert.equal(s.status,'connected');assert.equal(s.playerId,'pi');assert.equal(await s.reconnect(),true);
+  s.failed('Connection lost');const attempts=[s.reconnect(),s.reconnect(),s.reconnect()];await Promise.all(attempts);
+  assert.equal(count,2);assert.equal(s.playerId,'pi');assert.equal(s.status,'connected');
+  assert.equal(FixtureSocket.calls.some(c=>c.command.startsWith('players/cmd/')||c.command.startsWith('player_queues/cmd/')),false);
+ }finally{s.stop();}
+});
 test("invalid config fails closed and simulation needs no credentials", () => {
   assert.deepEqual(musicConfig({}), { mode: "simulation" });
   assert.throws(() => musicConfig({ DAW_PLAYBACK_MODE: "music-assistant" }));

@@ -2,11 +2,23 @@
 
 Moved verbatim from `AGENTS.md` on 19 November 2026 so agents do not reload it every turn. Newest first. These records document past scope and approvals; none of them authorizes a later update. Standing rules live in `AGENTS.md`.
 
+## GUI 3.16.6 UPDATES — publication approved
+
+Local prevention candidate on `codex/3.16.6-update-maintenance`, based on published `a7700b5e9eb2ce25d73bba867fa957d0a5d3d20e`. Scope: [conditional system maintenance, minimal updater repair and Music Assistant disconnection hotfix](update-3-16-6.md); evidence: [validation](update-3-16-6-validation.md). On 25 November 2026, after the completed candidate and its local validation were presented, the owner approved publication with “Oké push maar”. This authorizes this review branch, full configured GitHub CI and in-scope corrections, merge and signed preview publication. It does not authorize live hardware experiments or establish the earlier reset cause. The prepared application code is local commit `b80f573e7a133a7c536e8a4c52e2779c5b6743c5`; review and publication records will follow. The successful 3.16.5 GUI-only recovery is an observation, not proof of a watchdog or power root cause. The candidate does not automatically raise normal amplifier gains or remove the observed -9 dB attenuation. On Music Assistant disconnection, its existing local standby command temporarily mutes only the local amplifier; a simpler message offers a connection test, with explicit resume after recovery.
+
+## GUI 3.16.5 ROOMS — published
+
+Published on 25 November 2026 through PR #26, merged as `a7700b5e9eb2ce25d73bba867fa957d0a5d3d20e`. All six review Verify jobs passed on `11695fc2ae670f06f6acda3fb5a9b42d2b6886a9` (45492486597), followed by all six main jobs (45566163055). Signed preview run 45567217715 completed successfully on attempt 2, including the public-channel check selecting this commit and release `2026.11.24-selection.1`. Cache 72; immutable tag `ota-preview-a7700b5e9eb2ce25d73bba867fa957d0a5d3d20e`.
+
+The first publication attempt uploaded the signed assets successfully, then received HTTP 403 when reading the public release inventory. A failed-job retry on the unchanged tested source completed the channel verification. The public manifest names GUI 3.16.5 ROOMS, a 20,129,555-byte archive and SHA-256 `37ffcaee76b1a817cf1585290d08bfede3463bac971061f2382ddb2c32ce70d2`.
+
+On 25 November a normal Pi installation was interrupted during host maintenance before app activation; the next boot still ran 3.16.4. The system watchdog was configured for three minutes, but bootstatus 0 did not establish a watchdog reset and the retained step trace was from 24 November. A locally tested recovery route temporarily disables optional host maintenance only when the staged and current host payloads match and current helper inventories verify. It preserves the normal signed OTA, idle gates, app health check and rollback. The owner subsequently reported that the update succeeded. Final API readback, restoration of the original maintenance setting and TuneBox/Rivo acceptance remain pending. The reset cause remains unresolved. This post-publication record is retained locally for the next authorized source update; it does not require another OTA.
+
 ## GUI 3.16.5 ROOMS — publication approved
 
 On 24 November 2026, after the completed selection/footer correction and its local validation were presented, the owner authorized publication with “Push maar”. This approval covers the review branch, full configured CI and in-scope fixes, merge and signed preview publication. It does not authorize live hardware experiments or certify the earlier spontaneous reboot cause. Scope: [selection and footer correction](hotfix-3-16-5.md); evidence: [validation](hotfix-3-16-5-validation.md).
 
-The reviewed local change preserves room choice across app/OTA restarts within one kernel boot, defaults to the known local endpoint on a new Pi boot and removes the separate footer pending ring. Local results are 498 JavaScript checks, 260 Chromium, 14 WebKit and 16 production/offline cases, with a clear production audit. GitHub CI and signed publication still need to pass on the final source.
+The reviewed local change preserves room choice across app/OTA restarts within one kernel boot, defaults to the known local endpoint on a new Pi boot and removes the separate footer pending ring. Local results are 498 JavaScript checks, 260 Chromium, 14 WebKit and 16 production/offline cases, with a clear production audit. GitHub CI and signed publication subsequently passed as recorded above.
 
 ## GUI 3.16.4 INTEGRITY — published
 

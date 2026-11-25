@@ -755,7 +755,7 @@ export function MusicShell({
       {party&&<PartySheet snapshot={snapshot} onClose={()=>setParty(false)} onRooms={()=>go('rooms')}/>}
       <BluetoothPairing state={snapshot.bluetooth}/>
       {snapshot.playerBlocked&&page!=='settings'&&<div className="player-blocked" role="alert"><div><strong>{tr('Local player stopped: automatic power setup is blocked')}</strong><span>{tr('Last attempt')}: {tr(snapshot.playerBlocked.reason)}</span><span>{tr('Repair power setup, or turn off “Keep these settings after restart”, in Sensors.')}</span></div><button onClick={()=>{setSettingsPage(17);go('settings');}}>{tr('Open Sensors')}</button></div>}
-      {page!=='settings'&&<LocalControl snapshot={snapshot} token={deviceUpdates?.info?.controlToken}/>}
+      {page!=='settings'&&<LocalControl snapshot={snapshot} token={deviceUpdates?.info?.controlToken} onSnapshot={setSnapshot} offline={offline}/>}
       <footer className="m2-player">
         {!(wall&&page==='playing')&&(
         <button

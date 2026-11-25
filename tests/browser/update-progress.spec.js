@@ -20,3 +20,17 @@ test('the update page keeps counting and offers a way back when the update servi
  expect(await page.evaluate(()=>document.documentElement.dataset.tuneboxKiosk)).toBe('true');
  up=true;await page.clock.runFor(2000);await expect(page.locator('#phase')).toHaveText('Installing update');await expect(page.locator('#retry')).toBeHidden();
 });
+test('system maintenance shows its current step and retains an actionable failure after the old app recovers',async({page})=>{
+ let state={status:'installing',appReady:false,maintenance:{step:'progress',status:'running',label:'Updating the update screen'}};
+ await page.route('http://tunebox.test/**',route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(path==='/')return route.fulfill({contentType:'text/html',body:html});
+  if(path==='/status')return route.fulfill({json:state});return route.fulfill({status:204,body:''});
+ });
+ await page.goto('http://tunebox.test/?display=dsi-production&panel=wall-16-10');
+ await expect(page.locator('#phase')).toHaveText('Installing update');await expect(page.locator('#detail')).toHaveText('Updating the update screen');
+ state={status:'error',appReady:true,error:'System maintenance stopped: Updating display services. The previous app remains available.',maintenance:{step:'failed',status:'failed',label:'System maintenance failed'}};
+ await expect(page.locator('#phase')).toHaveText('Update incomplete');await expect(page.locator('#detail')).toHaveText(state.error);
+ await expect(page.getByRole('button',{name:'Back to TuneBox'})).toBeVisible();await expect(page).toHaveURL(/tunebox\.test/);
+ await expect(page.locator('progress')).toBeVisible();
+});

@@ -55,7 +55,7 @@ export function UpdateSheet({info}){
  return <Sheet className="update-sheet" label="Software update">
   <header><small>{tr(info?.manager?.simulated?'SIMULATED UPDATE · NO SOFTWARE CHANGE':'DAW TUNEBOX · SOFTWARE UPDATE')}</small><h2>{info?.available?.label||tr('Software update')}</h2></header>
   <div className="tb-sheet-body">
-   <section className="tb-sheet-status" aria-live="polite"><h3>{tr(phaseLabels[info?.status]||info?.status)}</h3><progress aria-label={tr('Update progress')} max="100" {...(percent!==null&&info?.status==='downloading'?{value:percent}:{})}/>
+   <section className="tb-sheet-status" aria-live="polite"><h3>{tr(phaseLabels[info?.status]||info?.status)}</h3>{info?.maintenance?.label&&<p role="status">{tr(info.maintenance.label)}</p>}<progress aria-label={tr('Update progress')} max="100" {...(percent!==null&&info?.status==='downloading'?{value:percent}:{})}/>
     <div className="tb-sheet-time">{timing.elapsedSeconds!==null&&<span>{tr('Elapsed')}: <b>{formatDuration(timing.elapsedSeconds)}</b></span>}<span>{timing.typicalSeconds?<>{tr('Usually takes')}: <b>{formatDuration(timing.typicalSeconds)}</b> <small>{tr('(from earlier updates on this TuneBox)')}</small></>:tr('Usually a few minutes; the download depends on your internet connection.')}</span></div>
     <ol className="update-steps" aria-label={tr('Update steps')}>{['downloading','verifying','preparing','installing','restarting','checking-health'].map((phase,i)=><li key={phase} aria-current={info.status===phase?'step':undefined}>{i+1}<span>{tr(phaseLabels[phase])}</span></li>)}</ol></section>
    {items.length>0&&<section><h3>{tr('What’s new')}</h3><ul>{items.map(item=><li key={item}>{tr(item)}</li>)}</ul></section>}
