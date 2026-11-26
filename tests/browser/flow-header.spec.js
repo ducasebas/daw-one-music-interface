@@ -27,7 +27,7 @@ test('the larger header leaves every visualizer control clear of widgets in both
  for(const language of ['en','nl'])for(const headerAutoHide of [false,true])for(const widgetPlacement of ['top','bottom'])for(const visualizer of ['spectrum','meters']){
   await configure(page,{language,headerAutoHide,widgetPlacement,visualizer});await page.goto(url);const aside=page.locator('.m2-playing>aside'),controls=aside.locator('.m2-artwork-controls>button');await expect(controls).toHaveCount(3);
   const area=await aside.boundingBox(),widgets=await page.locator('.np-widgets').boundingBox();
-  const plot=await aside.locator('.real-audio').boundingBox();expect(plot.width).toBeGreaterThanOrEqual(390);expect(plot.height).toBeGreaterThanOrEqual(250);
+  const plot=await aside.locator('.real-audio').boundingBox();expect(plot.width).toBeGreaterThan(500);expect(plot.height).toBeGreaterThanOrEqual(250);
   for(const button of await controls.all()){
    const b=await button.boundingBox();expect(b.height).toBeGreaterThanOrEqual(56);expect(b.y).toBeGreaterThanOrEqual(area.y-1);expect(b.y+b.height).toBeLessThanOrEqual(area.y+area.height+1);expect(b.x+b.width).toBeLessThanOrEqual(1257);
    expect(widgetPlacement==='top'?b.y>=widgets.y+widgets.height:b.y+b.height<=widgets.y).toBe(true);
