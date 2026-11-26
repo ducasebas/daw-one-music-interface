@@ -19,12 +19,12 @@ const cleanName=value=>typeof value==='string'?value.replace(/[\x00-\x1f\x7f<>]/
 
 export class RemoteAccess{
  constructor(directory,{now=Date.now}={}){
-  this.directory=directory;this.path=join(directory,'remote.json');this.now=now;this.pair=null;this.invalid=false;this.phones=[];
+  this.directory=directory;this.path=join(directory,'remote.json');this.now=now;this.pair=null;this.invalid=false;this.phones=[];this.revision=0;
   try{const raw=readFileSync(this.path,'utf8');if(raw.length>16384)throw Error();const data=JSON.parse(raw);if(!Array.isArray(data?.phones))throw Error();
    this.phones=data.phones.filter(p=>/^[a-f0-9]{16}$/.test(p?.id)&&/^[a-f0-9]{64}$/.test(p?.hash)).slice(0,remoteLimits.phones).map(p=>({id:p.id,hash:p.hash,name:cleanName(p.name)||'Phone',createdAt:Number(p.createdAt)||0,lastSeenAt:Number(p.lastSeenAt)||0}));}
   catch(e){this.invalid=e.code!=='ENOENT';this.phones=[];}
  }
- persist(){mkdirSync(this.directory,{recursive:true,mode:0o700});writeFileSync(this.path+'.tmp',JSON.stringify({phones:this.phones})+'\n',{mode:0o600});renameSync(this.path+'.tmp',this.path);this.invalid=false;}
+ persist(){mkdirSync(this.directory,{recursive:true,mode:0o700});writeFileSync(this.path+'.tmp',JSON.stringify({phones:this.phones})+'\n',{mode:0o600});renameSync(this.path+'.tmp',this.path);this.invalid=false;this.revision++;}
  /** One active QR code at a time; showing a new code invalidates the previous one. */
  createPair(){if(this.phones.length>=remoteLimits.phones)throw Error('Forget a phone before pairing another one');const token=randomBytes(24).toString('hex');this.pair={key:hash(token),expires:this.now()+remoteLimits.pairMs};return {token,expiresAt:this.pair.expires};}
  cancelPair(){this.pair=null;}
@@ -48,6 +48,7 @@ export class RemoteAccess{
  }
  cookie(credential){return `tunebox_remote=${credential}; HttpOnly; SameSite=Strict; Path=/; Max-Age=315360000`;}
  list(){return this.phones.map(({id,name,createdAt,lastSeenAt})=>({id,name,createdAt,lastSeenAt}));}
+ rename(id,name){const value=cleanName(name);if(!value)throw Error('Choose a name for this phone');const phone=this.phones.find(p=>p.id===id);if(!phone)throw Error('This phone is no longer paired');const previous=phone.name;phone.name=value;try{this.persist();}catch(e){phone.name=previous;throw e;}return {name:value};}
  forget(id){const before=this.phones.length;this.phones=this.phones.filter(p=>p.id!==id);if(this.phones.length===before)throw Error('This phone is no longer paired');this.persist();return this.list();}
  forgetAll(){this.phones=[];this.pair=null;this.persist();return [];}
 }

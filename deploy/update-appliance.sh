@@ -199,5 +199,8 @@ if [[ ${TUNEBOX_APPLIANCE_OTA:-0} != 1 ]]; then
 fi
 # BEGIN TUNEBOX OTA CONTROL
 node "$repo/deploy/ota/maintenance.mjs" step complete complete
+if [[ ${TUNEBOX_APPLIANCE_OTA:-0} == 1 ]]; then
+  node "$repo/deploy/ota/post-update.mjs" schedule "$repo"
+fi
 # END TUNEBOX OTA CONTROL
 echo 'Complete device update applied. Quiet boot takes effect after the next restart. Network, Music Assistant, PCM and audio routing were preserved.'

@@ -5,15 +5,14 @@ import {positionAt} from '../shared/playback.js';
 export function PlaybackSeekControl({playback,...props}){
  const [now,setNow]=useState(Date.now);
  useEffect(()=>{
-  let timer;
-  const visible=()=>{
-   clearInterval(timer);
-   setNow(Date.now());
-   if(playback.playing&&!document.hidden)timer=setInterval(()=>setNow(Date.now()),250);
-  };
+  let frame,timer,last=0;
+  // Monotonic elapsed time keeps a clock correction from jumping a playing bar.
+  const wall=Date.now(),anchor=performance.now();
+  const tick=time=>{if(time-last>=32){last=time;setNow(wall+time-anchor);}frame=requestAnimationFrame(tick);};
+  const visible=()=>{cancelAnimationFrame(frame);clearInterval(timer);setNow(Date.now());if(playback.playing&&!document.hidden){if(Number.isFinite(props.duration)&&props.duration>0)frame=requestAnimationFrame(tick);else timer=setInterval(()=>setNow(Date.now()),1000);}};
   visible();document.addEventListener('visibilitychange',visible);
-  return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',visible);};
- },[playback.playing]);
+  return()=>{cancelAnimationFrame(frame);clearInterval(timer);document.removeEventListener('visibilitychange',visible);};
+ },[playback.playing,playback.position,playback.observedAt,props.duration]);
  const position=positionAt(playback,Math.max(now,playback.observedAt||0));
  return <SeekControl {...props} position={position}/>;
 }
@@ -22,7 +21,7 @@ const time=n=>`${Math.floor(n/60)}:${String(Math.floor(n%60)).padStart(2,'0')}`;
 export function seekValueAt(clientX,rect,duration,inset=0){
  const width=Math.max(1,rect.width-2*inset);
  const along=Math.max(0,Math.min(1,(clientX-rect.left-inset)/width));
- return Math.round(along*Math.max(0,duration||0));
+ const maximum=Math.max(0,duration||0);return Math.min(maximum,Math.round(along*maximum));
 }
 /** Preview during drag, commit the final seek once on release. Metadata updates cannot fight it:
  * after release the chosen position stays on screen until playback reports it (or 3 s pass). */
@@ -39,8 +38,8 @@ export function SeekControl({position,duration,disabled,onSeek}) {
   held.current={value,timer:setTimeout(()=>{held.current=null;setDraft(null);},3000)};
   setDraft(value);onSeek(Number(value));
  };
- const at=(e)=>seekValueAt(e.clientX,e.currentTarget.getBoundingClientRect(),duration,10);
- return <div className="seek-control" data-dragging={dragging||undefined}><input aria-label={tr('Afspeelpositie')} type="range" min={0} max={duration||1} step={1} value={duration?Math.max(0,Math.min(duration,shown||0)):0} disabled={disabled}
+ const at=(e)=>seekValueAt(e.clientX,e.currentTarget.getBoundingClientRect(),duration,12);
+ return <div className="seek-control" data-dragging={dragging||undefined}><input style={{'--seek-position':`${duration?Math.max(0,Math.min(100,100*(shown||0)/duration)):0}%`}} aria-label={tr('Afspeelpositie')} aria-valuetext={time(Math.max(0,shown||0))} type="range" min={0} max={duration||1} step={0.01} value={duration?Math.max(0,Math.min(duration,shown||0)):0} disabled={disabled}
   onPointerDown={e=>{if(disabled||!duration||e.button>0)return;e.preventDefault();e.currentTarget.focus({preventScroll:true});e.currentTarget.setPointerCapture?.(e.pointerId);drag.current={id:e.pointerId};setDragging(true);setDraft(at(e));}}
   onPointerMove={e=>{if(drag.current?.id!==e.pointerId)return;setDraft(at(e));}}
   onPointerUp={e=>{if(drag.current?.id!==e.pointerId)return;commit(at(e));}}

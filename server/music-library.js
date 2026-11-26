@@ -133,7 +133,20 @@ export class MusicLibrary {
     const q = this.service.playback?.queue;
     return Array.isArray(q) ? q.filter((t, i) => i > 0 && t && t.id !== "none").length : 0;
   }
-  async enqueue(id, option, {confirmReplace = false} = {}) {
+  async startRadio(mediaKey,{confirmReplace=false}={}){
+    const s=this.service,current=s.playback?.queue?.[s.playback?.index||0];
+    if(typeof mediaKey!=='string'||!/^[a-f0-9]{64}$/.test(mediaKey)||mediaKey!==current?.mediaKey)throw Error('The song changed. Open radio again.');
+    if(s.status!=='connected'||!s.config.controlEnabled||!s.queueId)throw Error('Music Assistant is unavailable or read-only');
+    const playerId=s.playerId,queueId=s.queueId;
+    const queue=await s.transport.command('player_queues/get',{queue_id:queueId});
+    if(s.playerId!==playerId||s.queueId!==queueId||s.playback?.queue?.[s.playback?.index||0]?.mediaKey!==mediaKey)throw Error('The song or room changed. Open radio again.');
+    const item=queue?.current_item?.media_item;
+    if(!item||item.media_type!=='track'||typeof item.uri!=='string'||createHash('sha256').update(item.uri).digest('hex')!==mediaKey)throw Error('Radio needs the current Music Assistant song.');
+    const seed=this.remember(item);if(!seed)throw Error('This song cannot be used for radio.');
+    // enqueue rechecks every room's volume and the shared queue immediately before the mutation.
+    return this.enqueue(seed.id,'replace',{confirmReplace,radioMode:true});
+  }
+  async enqueue(id, option, {confirmReplace = false,radioMode=false} = {}) {
     if (!["replace", "next", "add"].includes(option))
       throw Error("Onbekende wachtrijactie");
     // Someone may have queued music: replacing it needs an explicit choice.
@@ -177,6 +190,7 @@ export class MusicLibrary {
       queue_id: queue,
       media: item.uri,
       option,
+      ...(radioMode?{radio_mode:true}:{}),
     });
     await s.refresh();
     return { ok: true }; // Mutations are never retried.

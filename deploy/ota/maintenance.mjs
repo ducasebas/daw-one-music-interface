@@ -1,3 +1,4 @@
+import {scheduleReboot} from './post-update.mjs';
 import {readFileSync,writeFileSync,existsSync,lstatSync,readdirSync,mkdtempSync,mkdirSync,copyFileSync,renameSync,rmSync,openSync,closeSync,fsyncSync,fchmodSync} from 'node:fs';
 import {createHash,randomUUID} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
@@ -5,8 +6,8 @@ import {join,dirname,basename,posix} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {uptime} from 'node:os';
 
-export const updaterFiles=Object.freeze(['update.mjs','policy.mjs','appliance.mjs','maintenance.mjs','prepare-runtime.mjs','local-http.mjs','releases.mjs','verify-tree.mjs','safe-extract.py']);
-const updaterOnly=new Set(['update.mjs','appliance.mjs','maintenance.mjs','prepare-runtime.mjs','local-http.mjs','releases.mjs','verify-tree.mjs','safe-extract.py'].map(n=>'deploy/ota/'+n));
+export const updaterFiles=Object.freeze(['post-update.mjs','update.mjs','policy.mjs','appliance.mjs','maintenance.mjs','prepare-runtime.mjs','local-http.mjs','releases.mjs','verify-tree.mjs','safe-extract.py']);
+const updaterOnly=new Set(['post-update.mjs','update.mjs','appliance.mjs','maintenance.mjs','prepare-runtime.mjs','local-http.mjs','releases.mjs','verify-tree.mjs','safe-extract.py'].map(n=>'deploy/ota/'+n));
 const progressOnly=new Set(['deploy/manager/progress.html','server/update-status.js','dist/appliance.js','dist/appliance.css']);
 const publisherOnly=new Set(['deploy/release-bundle.js','deploy/ota/sign.mjs','deploy/ota/keygen.mjs','deploy/ota/export-public.mjs','deploy/ota/check-channel.mjs','deploy/ota/setup-project.sh']);
 const hostPath=(p,dependencies)=>p.startsWith('deploy/')&&!publisherOnly.has(p)||dependencies.has(p)&&p!=='shared/release.js'||['shared/update-settings.js','server/ma-transport.js','server/update-status.js','dist/appliance.js','dist/appliance.css'].includes(p);
@@ -171,7 +172,7 @@ export function maintainSoftware(candidate,run=execute,{paths=maintenancePaths}=
 if(process.argv[1]===fileURLToPath(import.meta.url)){
  try{
   const [action,candidate]=process.argv.slice(2);
-  if(action==='bridge')process.exitCode=maintainSoftware(candidate)===null?3:0;
+  if(action==='bridge'){const changed=maintainSoftware(candidate);if(changed!==null)scheduleReboot(candidate);process.exitCode=changed===null?3:0;}
   else if(action==='step'){
    const root=dirname(dirname(dirname(fileURLToPath(import.meta.url))));
    recordMaintenance(candidate,process.argv[4]||'running',{release:json(join(root,'release-manifest.json')).release});

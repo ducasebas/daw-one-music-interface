@@ -26,7 +26,7 @@ writeFileSync(path,JSON.stringify({...previous,channel:process.argv[2],policy:{m
 JS
 stage=$(mktemp -d /usr/local/lib/.daw-one-updater.XXXXXX)
 trap 'rm -rf "$stage"' EXIT
-install -m 644 "$repo"/deploy/ota/{update.mjs,policy.mjs,appliance.mjs,maintenance.mjs,prepare-runtime.mjs,local-http.mjs,releases.mjs,verify-tree.mjs,safe-extract.py} "$stage/"
+install -m 644 "$repo"/deploy/ota/{post-update.mjs,update.mjs,policy.mjs,appliance.mjs,maintenance.mjs,prepare-runtime.mjs,local-http.mjs,releases.mjs,verify-tree.mjs,safe-extract.py} "$stage/"
 install -m 644 "$repo/shared/update-settings.js" "$stage/settings.mjs"
 node "$repo/deploy/manager/check-imports.mjs" "$stage" update.mjs
 python3 "$repo/deploy/host-files.py" tree "$stage" /usr/local/lib/daw-one-updater --inventory updater.sha256

@@ -1,6 +1,6 @@
 # GUI 3.16.6 UPDATES: maintain only the system components that changed
 
-Local candidate `2026.11.25-updates.1`, cache 73, based on published 3.16.5 (`a7700b5e9eb2ce25d73bba867fa957d0a5d3d20e`). Publication approved on 25 November 2026; GitHub CI and signed publication are pending. Validation is recorded in [update-3-16-6-validation.md](update-3-16-6-validation.md).
+Published preview `2026.11.25-updates.1`, cache 73, based on published 3.16.5 (`a7700b5e9eb2ce25d73bba867fa957d0a5d3d20e`). Published through PR #27 as `6ecd80f3ad5d511ba501863443532bd6b834929f` after all six review/main Verify jobs and signing/channel verification passed. Physical acceptance remains separate. Validation is recorded in [update-3-16-6-validation.md](update-3-16-6-validation.md).
 
 ## Problem and device evidence
 

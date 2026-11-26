@@ -26,6 +26,9 @@ async function openRemoteWizard(page){
  await expect(wizard.locator('code')).not.toContainText('#pair=');
  return {wizard,url:pair.url};
 }
+async function namePhone(remote){
+ const dialog=remote.getByRole('dialog',{name:'Phone name',exact:true});await expect(dialog).toBeVisible();await dialog.getByRole('textbox',{name:'Phone name',exact:true}).fill('Guest one');await dialog.getByRole('button',{name:'Save',exact:true}).click();await expect(dialog).toHaveCount(0);
+}
 
 test('the wall wizard pairs a phone by QR code and the phone controls playback with bounded volume',async({page,browser})=>{
  await freshWall(page);
@@ -33,12 +36,12 @@ test('the wall wizard pairs a phone by QR code and the phone controls playback w
  expect(url).toMatch(/\/remote\.html#pair=[a-f0-9]{48}$/);
  const context=await browser.newContext(phone),remote=await context.newPage();
  try{
-  await remote.goto(url);
+  await remote.goto(url);await namePhone(remote);
   await expect(remote.getByRole('button',{name:/^(Play|Pause)$/})).toBeVisible();
   expect(new URL(remote.url()).hash).toBe('');
   await expect(wizard.getByText('Your phone is paired')).toBeVisible();
   await wizard.getByRole('button',{name:'Done',exact:true}).click();
-  await expect(page.getByText(/^(iPhone|Phone)$/).first()).toBeVisible();
+  await expect(page.getByText('Guest one',{exact:true}).first()).toBeVisible();
   const meter=remote.getByRole('meter',{name:'Volume'}),before=Number(await meter.getAttribute('aria-valuenow'));
   await remote.getByRole('button',{name:'Volume up'}).click();
   await expect(meter).toHaveAttribute('aria-valuenow',String(before+5));
@@ -61,7 +64,7 @@ test('forgetting the phone on the wall revokes it, and a phone can unpair itself
  const {url}=await openRemoteWizard(page);
  const context=await browser.newContext(phone),remote=await context.newPage();
  try{
-  await remote.goto(url);await expect(remote.getByRole('button',{name:'Next',exact:true})).toBeVisible();
+  await remote.goto(url);await namePhone(remote);await expect(remote.getByRole('button',{name:'Next',exact:true})).toBeVisible();
   const id=(await(await page.request.get('/api/remote/phones')).json()).phones[0].id;
   await page.request.post('/api/remote/forget',{headers,data:{id}});
   await remote.getByRole('button',{name:'Next',exact:true}).click();
@@ -70,7 +73,7 @@ test('forgetting the phone on the wall revokes it, and a phone can unpair itself
   await page.keyboard.press('Escape');
   const shown=await(await page.request.post('/api/remote/pairing',{headers,data:{action:'start'}})).json();
   // A camera scan opens the code as a new page load.
-  await remote.goto('about:blank');await remote.goto(shown.url);await expect(remote.getByRole('button',{name:'Next',exact:true})).toBeVisible();
+  await remote.goto('about:blank');await remote.goto(shown.url);await namePhone(remote);await expect(remote.getByRole('button',{name:'Next',exact:true})).toBeVisible();
   await remote.getByRole('button',{name:'Unpair this phone'}).click();
   await remote.getByRole('dialog',{name:'Unpair this phone'}).getByRole('button',{name:'Unpair',exact:true}).click();
   await expect(remote.getByRole('heading',{name:'Scan the QR code on TuneBox'})).toBeVisible();
@@ -83,7 +86,7 @@ test('phone search offers play now and add to queue with owned pending feedback'
  const shown=await(await page.request.post('/api/remote/pairing',{headers,data:{action:'start'}})).json();
  const context=await browser.newContext(phone),remote=await context.newPage();
  try{
-  const state=await(async()=>{await remote.goto(shown.url);await expect(remote.getByRole('button',{name:'Next',exact:true})).toBeVisible();return remote.evaluate(()=>fetch('/api/remote/state').then(r=>r.json()));})();
+  const state=await(async()=>{await remote.goto(shown.url);await namePhone(remote);await expect(remote.getByRole('button',{name:'Next',exact:true})).toBeVisible();return remote.evaluate(()=>fetch('/api/remote/state').then(r=>r.json()));})();
   const view={...state,mode:'music-assistant',searchAvailable:true};
   await remote.route('**/api/remote/events',route=>route.fulfill({status:200,headers:{'Content-Type':'text/event-stream'},body:`data: ${JSON.stringify(view)}\n\n`}));
   const plays=[];let release;const gate=new Promise(r=>release=r);

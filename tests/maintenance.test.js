@@ -39,6 +39,9 @@ function fixture(t,{tools=false,progress=true}={}){
   'deploy/display/control.py':'def loop(): pass\n',
   'deploy/ota/appliance.mjs':legacy('appliance.mjs'),
   'deploy/ota/update.mjs':"import './appliance.mjs';\n",
+  'deploy/ota/post-update.mjs':source('deploy/ota/post-update.mjs'),
+  'deploy/ota/policy.mjs':source('deploy/ota/policy.mjs'),
+  'deploy/ota/local-http.mjs':source('deploy/ota/local-http.mjs'),
   'server/update-status.js':legacy('update-status.js'),
   'server/ma-transport.js':'export const transport=true;\n',
   'shared/update-settings.js':'export const updateSettings=()=>({});\n',
@@ -60,8 +63,9 @@ function fixture(t,{tools=false,progress=true}={}){
  inventory(paths.updater,'updater.sha256');inventory(paths.manager,'manager.sha256');inventory(paths.display,'controller.sha256');
  const before=systemPayload(paths.current);
  put(join(paths.units,'daw-one-update.service'),before.service);put(join(paths.units,'daw-one-update.timer'),before.timer);
- const candidate=join(root,'candidate'),next={...files,'shared/release.js':'export const release={id:"new"};\n','shared/locales/en.json':'{"hello":"Welcome"}','dist/assets/app.js':'// new GUI\n'};
+ const candidate=join(root,'b'.repeat(40)),next={...files,'shared/release.js':'export const release={id:"new"};\n','shared/locales/en.json':'{"hello":"Welcome"}','dist/assets/app.js':'// new GUI\n'};
  if(tools){
+  for(const p of ['deploy/ota/post-update.mjs','deploy/ota/policy.mjs','deploy/ota/local-http.mjs'])next[p]=source(p);
   for(const p of ['deploy/update-appliance.sh','deploy/install-ota.sh','deploy/ota/appliance.mjs','deploy/ota/maintenance.mjs'])next[p]=source(p);
   if(progress){next['deploy/manager/progress.html']=source('deploy/manager/progress.html');next['server/update-status.js']=source('server/update-status.js');}
  }
@@ -172,10 +176,11 @@ test('the unchanged legacy caller reaches the minimal bridge instead of a full h
 test('the real candidate bridge exits before full maintenance when invoked by the legacy caller',{skip:!linux},t=>{
  const f=fixture(t,{tools:true});
  const replacements={"'/opt/daw-one'":JSON.stringify(f.paths.current),"'/usr/local/lib/daw-one-updater'":JSON.stringify(f.paths.updater),"'/usr/local/lib/daw-one-control'":JSON.stringify(f.paths.manager),"'/usr/local/lib/daw-one-display'":JSON.stringify(f.paths.display),"'/etc/systemd/system'":JSON.stringify(f.paths.units),"'/var/lib/daw-one-updater/maintenance.json'":JSON.stringify(f.paths.state),"'/var/lib/daw-one-update-status/status.json'":JSON.stringify(f.paths.status)};
+ for(const path of ['deploy/ota/post-update.mjs']){let content=f.next[path].replaceAll("'/var/lib/daw-one-updater/reboot.json'",JSON.stringify(join(f.root,'state/reboot.json'))).replaceAll("'/var/lib/daw-one-update-status/reboot.json'",JSON.stringify(join(f.root,'status/reboot.json')));f.next[path]=content;}
  let module=f.next['deploy/ota/maintenance.mjs'];for(const [a,b] of Object.entries(replacements))module=module.replaceAll(a,b);f.next['deploy/ota/maintenance.mjs']=module;f.update();
  const guard=join(f.root,'bridge-guard.mjs'),calls=join(f.root,'bridge-calls.jsonl'),full=join(f.root,'full-maintenance-started');
  put(guard,`import cp from 'node:child_process';import {syncBuiltinESMExports} from 'node:module';import {appendFileSync} from 'node:fs';
-const real=cp.execFileSync;cp.execFileSync=(cmd,args,options)=>{appendFileSync(${JSON.stringify(calls)},JSON.stringify({cmd,args})+'\\n');if(cmd==='/usr/bin/logger'||cmd==='/usr/bin/curl')return Buffer.from('');if(cmd==='/usr/bin/systemctl'){if(JSON.stringify(args)!=='["restart","daw-one-manager.service"]')throw Error('Unexpected service command');return Buffer.from('');}if(!['/usr/bin/node','/usr/bin/python3','/usr/bin/sha256sum'].includes(cmd))throw Error('Unexpected command: '+cmd);return real(cmd==='/usr/bin/node'?process.execPath:cmd,args,options);};syncBuiltinESMExports();`);
+const real=cp.execFileSync;cp.execFileSync=(cmd,args,options)=>{appendFileSync(${JSON.stringify(calls)},JSON.stringify({cmd,args})+'\\n');if(cmd==='/usr/bin/logger'||cmd==='/usr/bin/curl'||cmd==='/usr/bin/systemd-run')return Buffer.from('');if(cmd==='/usr/bin/systemctl'){if(JSON.stringify(args)!=='["restart","daw-one-manager.service"]')throw Error('Unexpected service command');return Buffer.from('');}if(!['/usr/bin/node','/usr/bin/python3','/usr/bin/sha256sum'].includes(cmd))throw Error('Unexpected command: '+cmd);return real(cmd==='/usr/bin/node'?process.execPath:cmd,args,options);};syncBuiltinESMExports();`);
  const match=source('deploy/update-appliance.sh').match(/# BEGIN TUNEBOX OTA CONTROL\n([\s\S]*?)# END TUNEBOX OTA CONTROL/);assert.ok(match);
  const script='set -euo pipefail\nrepo=$1\n'+match[1]+'\nprintf full > "$2"\n';
  const run=(_cmd,args)=>{

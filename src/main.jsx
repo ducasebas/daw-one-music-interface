@@ -41,6 +41,7 @@ import "./settings-hub.css";
 import "./appliance-layout.css";
 import "./sync.css";
 import "./polish.css";
+import "./flow.css";
 import "./typography.css";
 import "./sheets.css";
 import "./search.css";
@@ -64,7 +65,6 @@ function loadThemes() {
     return normalizeThemePreferences();
   }
 }
-const profile = deviceProfile(location.search);
 function App() {
   useLanguage();
   const deviceUpdates=useDeviceUpdates();
@@ -92,6 +92,7 @@ function App() {
     [videoAvailable, setVideoAvailable] = useState(true),
     [matched, setMatched] = useState(true),
     [scenario, setScenario] = useState("Cold boot");
+  const profile = deviceProfile(location.search,storedPrefs,snapshot.hostTelemetry?.hardware?.model);
   const prefs = calibratedPresentation(profileSettings(storedPrefs, profile),snapshot.sync?.active);
   useEffect(()=>{if(panelProfile(location.search)!=='wall-16-10')return;const value=snapshot.preferences;if(!value||value.revision===0)return;setPrefs(normalize(value.prefs));setThemePreferences(normalizeThemePreferences(value.themePreferences));setLanguage(value.language);},[snapshot.preferences?.revision]);
   useEffect(() => {

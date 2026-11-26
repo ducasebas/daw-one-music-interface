@@ -7,10 +7,10 @@ import {useDeviceUpdates} from './DeviceUpdates.jsx';
 /** Party: show the phone-remote code right on Now Playing. With a settings PIN, guests
  * also need that PIN on their phone, so the code alone never hands over control. */
 /** Paired phones with a Remove button each; removed phones need a new code to come back. */
-function PairedPhones({token,count}){
+function PairedPhones({token,count,revision}){
  const [list,setList]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState('');
  const read=()=>fetch('/api/remote/phones',{cache:'no-store'}).then(async r=>{const v=await r.json().catch(()=>({}));if(!r.ok)throw Error(v.error||'Unlock settings to manage phones');setList(v.phones||[]);setError('');}).catch(e=>setError(e.message));
- useEffect(()=>{read();},[count]);
+ useEffect(()=>{read();},[count,revision]);
  async function remove(phone){setBusy(phone.id);setError('');try{const r=await fetch('/api/remote/forget',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':token||''},body:JSON.stringify({id:phone.id})});const v=await r.json().catch(()=>({}));if(!r.ok)throw Error(v.error||'The phone could not be removed');setList(v.phones||list.filter(p=>p.id!==phone.id));}catch(e){setError(e.message);}finally{setBusy('');}}
  if(!list&&!error)return null;
  return <div className="party-phones"><h4>{tr('Paired phones')}</h4>
@@ -48,7 +48,7 @@ export function PartySheet({snapshot,onClose,onRooms}){
      <li>{grouped?translateFormat('Phones control the group that {room} plays in. Other rooms in that group play along.',{room}):translateFormat('Phones control {room} only. Other rooms are not affected.',{room})}</li>
     </ul>
     {pair&&left>0&&<p className="party-countdown">{tr('Code valid for')} {Math.floor(left/60)}:{String(left%60).padStart(2,'0')}</p>}
-    <PairedPhones token={token} count={phones}/>
+    <PairedPhones revision={snapshot.remoteControl?.revision} token={token} count={phones}/>
     <button onClick={()=>{onClose();onRooms?.();}}>{tr('Rooms')}</button>
    </div>
   </div>

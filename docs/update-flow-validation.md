@@ -1,0 +1,54 @@
+# FLOW validation
+
+Local candidate only. Publication and physical Pi acceptance are separate; the owner approved publication on 26 November 2026, including the header refinement. Required GitHub checks and signed publication are pending.
+
+## Evidence retained locally
+
+The comparison starts from published main `6ecd80f3ad5d511ba501863443532bd6b834929f` (GUI 3.16.6). Cloud browser runs use 1280×800 and the retained 1280×400 compatibility journeys. They use simulated/fixture audio, not real loudspeakers, a Pi or a real reboot.
+
+- Full local JavaScript suite: **544 passed**, plus a successful production build.
+- Existing Python hardware/installer suite: **137 passed**.
+- Broader Chromium journeys: **84 passed**. Covers all skins, routes, first-start recovery, room changes, volume, long names, playback recovery, visualizers, header/widget layout, offline state fallback, seek, sleep/wake, startup fallback and power confirmation.
+- WebKit: **24 passed**, covering FLOW, playback recovery and the existing volume journeys.
+- Final affected-flow reruns: **14 Chromium and 14 WebKit passed** after clock caching, the explicit seek appearance/fractional-duration clamp, the live-station timer limit and authoritative restart countdown. An additional **22 Chromium** cases covered all settings skins, saving, scrolling, no text selection, media sizes and source wake behavior.
+- Built production/offline journeys: **16 passed**, including real phone naming/pairing/revocation, phone playback, never-visited lazy settings/wizards, cached reloads, byte ranges and offline WebP playback.
+- Final focused JavaScript/privacy/remote HTTP receipt: **30 passed**. Local runtime: Node **24.19.0**.
+- Production dependency audit: **0 reported vulnerabilities**.
+
+Early browser runs caught a compact-layout overflow, a missing return in the new recovery dialog and a startup-to-dialog measurement race. Those were fixed; the broader runs above passed. Audio fixtures were updated to accept the additional levels-only lease query. Remote HTTP checks now verify that a phone can rename itself, cannot supply another phone id and cannot reach device settings. Production testing also caught the settings phone list retaining its old name; it now refreshes on the same safe revision signal as Party mode. The production journeys complete the new naming step and verify the visible name.
+
+## Approved header refinement, 26 November
+
+The fixed and collapsing wall headers are transparent and 96 px high, with 36 px symbols and 80 px navigation targets. Settings retain the compact header. No backdrop blur was added. The visualizer's controls use two rows so the taller header cannot clip the last button behind the floating widgets.
+
+The JavaScript suite passed again (**544**), followed by a successful production build. The shared FLOW/header/widget journeys passed **19 WebKit** cases. The Chromium shared-shell run passed **30 cases**; its six-mode rest journey exceeded the overall 30-second test deadline during concurrent browser/build work. That journey subsequently passed in **28 seconds**, with all save/reload/wake assertions retained. Its overall deadline is now 60 seconds; individual assertion deadlines are unchanged.
+
+Final header checks passed **four Chromium and four WebKit** cases, covering both languages, all six skins, fixed/collapsing headers, top/bottom widget positions, spectrum/meters, optional video controls and stationary content during header hiding. The Chromium final run also included the passing rest-mode journey (**five cases total**). Screenshot inspection confirmed that the visualizer controls are no longer clipped. The existing production/offline checks above are retained; the complete GitHub workflow will rebuild and check this exact candidate before publication.
+
+## Maintenance path
+
+The signed pipeline exports the project public key before packaging. The local comparison includes that same public key, checked against its existing SHA-256 SPKI fingerprint; no private key was used. Comparing a local source bundle without that generated public file would misleadingly classify its removal as a system change.
+
+With matching packaging, the actual old/new inventory comparison selects **`update-tools`**, with seven changed host paths: `deploy/install-ota.sh`, `deploy/manager/progress.html`, `deploy/ota/appliance.mjs`, `deploy/ota/maintenance.mjs`, `deploy/ota/post-update.mjs`, `deploy/update-appliance.sh`, and `server/update-status.js`. The complete display/network/audio refresh remains unnecessary. Regression tests exercise the repair through the previous updater's compatibility bridge as well as the new updater.
+
+The post-update helper is tested with injected I/O and a stub command runner. No real `systemctl reboot`, PD request, gain adjustment or physical audio test was performed. It requires a successful updater outcome, committed exact build, healthy backend, painted UI acknowledgement, idle playback and no pending request/journal. A failed/rolled-back install, unacknowledged warning, interrupted helper, changed slot or busy device cannot loop into an automatic reboot. Public restart progress expires to a manual restart notice if its helper disappears.
+
+## Performance measurements
+
+Results are cloud comparisons, not Pi performance claims. The meter-only analyser preserves the same RMS/peak/clipping values and skips both FFTs. A synthetic 48 kHz, 4096-frame stereo benchmark (five batches of 300 windows) measured median **90.68 ms with FFT** versus **9.85 ms for levels only**. This measures analysis work only, not total CPU, audible latency or power use.
+
+The final GUI observation uses a working SSE proxy, Chromium with `--disable-gpu`, a 4-second warm-up and a 10-second paused observation. Earlier measurements with a non-streaming interception or concurrent builds are excluded from the comparison.
+
+| Observation | Published baseline | FLOW candidate |
+| --- | ---: | ---: |
+| Main-thread task time in 10 s | 43.34 ms | 52.16 ms |
+| Script time in 10 s | 32.11 ms | 39.15 ms |
+| Retained JS heap after explicit GC | 6,469,188 bytes | 6,632,484 bytes |
+| API requests during observation | 3 | 3 |
+| Largest main JS entry, uncompressed | 666,828 bytes | 685,851 bytes |
+
+The initial extra clock formatting was investigated and replaced by bounded formatter reuse and a memoized header clock. The remaining task-time difference is about 9 ms over 10 seconds with the extra UI; this short observation does not establish a sustained CPU regression or a speed gain. Retained JS heap rises about 2.5% and the largest entry about 2.9%, with no extra polling. The existing chunk-size advisory remains; its limit was not raised. Browser regressions check bounded shell renders, analysis demand and hidden-work cleanup. Live stations without a seekable duration update elapsed time once per second instead of animating an unusable bar. Real Pi response, total process memory and long-run listening remain acceptance work.
+
+## Remaining acceptance
+
+GitHub CI and signed publication are required for this approved candidate; their results will be recorded after they finish. Physical touch response, uninterrupted listening during visualizer changes, song-radio provider compatibility, named phones on the home network and one ordinary OTA/reboot must still be confirmed on the Pi after publication approval. The unresolved earlier power/reset issue was not reproduced. The temporary appliance-maintenance opt-out and amplifier gain changes have not been confirmed on the device; no hardware state is invented here.

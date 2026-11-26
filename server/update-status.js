@@ -1,4 +1,15 @@
 import {readFileSync} from 'node:fs';
+import {uptime} from 'node:os';
+export const restartBlocksControls=(value,current)=>!!current&&value?.commit===current&&['countdown','rebooting'].includes(value.phase);
+export function updateRestart(path='/var/lib/daw-one-update-status/reboot.json',currentBoot){
+ try{const raw=readFileSync(path,'utf8');if(raw.length>4096)return null;const v=JSON.parse(raw);if(v.schema!==1||!/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/.test(v.bootId)||!/^[a-f0-9]{40}$/.test(v.commit)||!['waiting','await-screen','countdown','rebooting','required','complete','cancelled'].includes(v.phase)||typeof v.release!=='string'||v.release.length>100)return null;
+  const boot=currentBoot??readFileSync('/proc/sys/kernel/random/boot_id','utf8').trim();
+  const limit=v.phase==='waiting'?780:v.phase==='await-screen'?120:60;
+  const expired=['waiting','await-screen','countdown','rebooting'].includes(v.phase)&&Number.isFinite(v.updatedUptime)&&uptime()-v.updatedUptime>limit;
+  const phase=boot!==v.bootId?'complete':expired?'required':v.phase;
+  return {phase,commit:v.commit,release:v.release,...(phase==='countdown'&&Number.isFinite(v.deadlineUptime)?{remainingSeconds:Math.max(0,Math.min(10,Math.ceil(v.deadlineUptime-uptime())))}:{})};
+ }catch{return null;}
+}
 const commit=v=>/^[a-f0-9]{40}$/.test(v)?v:null;
 const text=(v,max=100)=>typeof v==='string'?v.slice(0,max):null;
 const version=v=>v&&typeof v==='object'?{release:text(v.release),label:text(v.label,80),commit:commit(v.commit),notes:text(v.notes,500)}:null;
@@ -22,6 +33,6 @@ export function publicUpdateStatus(v={}) {
  return {status:text(v.status,40)||'unknown',channel:['preview','stable'].includes(v.channel)?v.channel:null,commit:commit(v.commit),release:text(v.release),checkedAt:typeof v.checkedAt==='string'&&Number.isFinite(Date.parse(v.checkedAt))?v.checkedAt:null,percent:typeof v.percent==='number'&&Number.isFinite(v.percent)?Math.min(100,Math.max(0,Math.floor(v.percent))):null,downloadedBytes:Number.isSafeInteger(v.downloadedBytes)?Math.max(0,v.downloadedBytes):null,totalBytes:Number.isSafeInteger(v.totalBytes)?Math.max(0,v.totalBytes):null,current:version(v.current),available:version(v.available),startedAt:typeof v.startedAt==='string'&&Number.isFinite(Date.parse(v.startedAt))?v.startedAt:null,typicalSeconds:Number.isInteger(v.typicalSeconds)&&v.typicalSeconds>0&&v.typicalSeconds<7200?v.typicalSeconds:null,...(error?{error}:{}),failedPhase:Object.hasOwn(failurePhases,v.failedPhase)?v.failedPhase:null,maintenance};
 }
 export function updateStatus(path='/var/lib/daw-one-update-status/status.json'){
- try{const raw=readFileSync(path,'utf8');if(raw.length>4096)throw Error();return publicUpdateStatus(JSON.parse(raw));}catch{return publicUpdateStatus({status:'not-configured'});}
+ try{const raw=readFileSync(path,'utf8');if(raw.length>4096)throw Error();return {...publicUpdateStatus(JSON.parse(raw)),restart:updateRestart()};}catch{return publicUpdateStatus({status:'not-configured'});}
 }
 export function deploymentCommit(){try{const v=JSON.parse(readFileSync(new URL('../deployment-ota.json',import.meta.url),'utf8'));return commit(v.commit);}catch{return null;}}

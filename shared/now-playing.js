@@ -1,3 +1,4 @@
+import {clockText} from './clock-format.js';
 import {powerIsFresh} from './power-status.js';
 import {sunsetAt as sunsetTime} from './wall.js';
 /** Now Playing presentation for GUI 3.11 LIVELY: the artwork backdrop and the widget tiles.
@@ -50,6 +51,10 @@ export function nowPlayingWidget(id, snapshot = {}, {now = Date.now(), powerNow 
   const p = snapshot.playback || {}, simulated = snapshot.mode === 'simulation';
   switch (id) {
     case 'clock': {
+      if(snapshot.preferences?.clock?.timeZone){
+       const formatted=clockText(now,{timeZone:snapshot.preferences.clock.timeZone,hour12});
+       return {id,icon:'clock',label:'Clock',action:'date',available:true,value:formatted.time,detail:formatted.date};
+      }
       const d = new Date(now), h = d.getHours();
       const value = hour12 ? `${h % 12 || 12}:${pad(d.getMinutes())} ${h < 12 ? 'AM' : 'PM'}` : `${pad(h)}:${pad(d.getMinutes())}`;
       return {id, icon: 'clock', label: 'Clock', action: 'date', available: true, value, detail: d.toISOString().slice(0, 10)};

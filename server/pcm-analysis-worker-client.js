@@ -24,7 +24,7 @@ export class LatestPcmAnalysis{
  flush(){
   if(this.closed||!this.worker||this.inFlight||!this.pending)return;
   const frame=this.pending;this.pending=null;
-  try{const samples=Uint8Array.from(frame.samples);this.inFlight={id:++this.nextId,context:frame.context};this.worker.postMessage({id:this.inFlight.id,samples,rate:frame.rate},[samples.buffer]);}
+  try{const samples=Uint8Array.from(frame.samples);this.inFlight={id:++this.nextId,context:frame.context};this.worker.postMessage({id:this.inFlight.id,samples,rate:frame.rate,...(frame.context?.spectrum===false?{spectrum:false}:{})},[samples.buffer]);}
   catch{this.fail(this.worker);}
  }
  fail(worker){if(this.worker!==worker||this.closed)return;this.close();this.onError?.();}

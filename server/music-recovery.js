@@ -24,17 +24,17 @@ export class MusicRecovery {
  update(){
   if(this.closed)return;
   const c=this.context();
-  if(!c.configured||c.status==='connected'){this.attempted=false;if(!this.pending)this.phase='idle';return;}
+  if(!c.configured||c.status==='connected'&&!c.playbackFailed){this.attempted=false;if(!this.pending)this.phase='idle';return;}
   if(c.blocked){if(!this.pending)this.phase='unaffected';return;}
   if(c.standby){if(!this.pending)this.phase='paused';return;}
   // An ordinary initial handshake is not a lost connection. Once a failure occurs,
   // automatic reconnect attempts belong to the same outage, not new pause requests.
-  if(!this.attempted&&c.status==='disconnected'&&c.failed)void this.pause().catch(()=>{});
+  if(!this.attempted&&(c.playbackFailed||c.status==='disconnected'&&c.failed))void this.pause().catch(()=>{});
  }
  pause(){
   if(this.pending)return this.pending;
   const c=this.context();
-  if(this.closed||!c.configured||c.status==='connected'||c.blocked)return Promise.reject(Error('Local pause is not available for the current audio source.'));
+  if(this.closed||!c.configured||c.status==='connected'&&!c.playbackFailed||c.blocked)return Promise.reject(Error('Local pause is not available for the current audio source.'));
   if(c.standby){this.phase='paused';return Promise.resolve();}
   this.attempted=true;this.phase='pausing';this.onChange();
   this.pending=Promise.resolve().then(()=>this.pauseLocal()).then(()=>{this.phase='paused';},()=>{this.phase='failed';throw Error('Automatic local pause failed. Try again.');}).finally(()=>{this.pending=null;if(!this.closed)this.onChange();});

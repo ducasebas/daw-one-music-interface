@@ -32,10 +32,11 @@ export class PcmAnalyser{
   }
   return powers;
  }
- analyse(samples,rate){
+ analyse(samples,rate,{spectrum=true}={}){
   if(!Buffer.isBuffer(samples)||samples.length!==FFT_SIZE*4||!Number.isInteger(rate)||rate<8000||rate>1536000)throw Error('Unsupported stereo PCM frame');
   const channels=[];
   for(let channel=0;channel<2;channel++){let squares=0,peak=0,clipped=0;for(let i=0;i<FFT_SIZE;i++){const raw=samples.readInt16LE(i*4+channel*2),value=raw/32768;squares+=value*value;peak=Math.max(peak,Math.abs(value));if(raw===32767||raw===-32768)clipped++;}channels.push({rmsDb:amplitudeDb(Math.sqrt(squares/FFT_SIZE)),peakDb:amplitudeDb(peak),clippedSamples:clipped});}
+  if(!spectrum)return {channels,bandsDb:Array(BAND_COUNT).fill(null),spectrumComputed:false,sampleRate:rate,windowFrames:FFT_SIZE,windowMs:1000*FFT_SIZE/rate,silent:channels.every(c=>c.peakDb===DB_FLOOR)};
   const left=this.spectrum(samples,0,rate),right=this.spectrum(samples,1,rate);
   return {channels,bandsDb:left.map((power,i)=>power===null||right[i]===null?null:amplitudeDb(Math.sqrt((power+right[i])/2))),sampleRate:rate,windowFrames:FFT_SIZE,windowMs:1000*FFT_SIZE/rate,silent:channels.every(c=>c.peakDb===DB_FLOOR)};
  }

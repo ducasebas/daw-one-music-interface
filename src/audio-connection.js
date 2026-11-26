@@ -1,8 +1,9 @@
 /** Local analysis frames use one live feed; HTTP remains the compatible, bounded fallback. */
-export function connectAudio({active=true,paused=false,onAudio},environment=globalThis){
+export function connectAudio({active=true,paused=false,spectrum=true,onAudio},environment=globalThis){
  const document=environment.document,now=()=>environment.performance?.now?.()??environment.Date.now();
  const requests=new Map();
  let stopped=false,epoch=0,watch=true,stream=null,pollTimer=null,renewTimer=null,deadline=null,watchdog=null,retryAt=0,lastMessage=0,latest=null;
+ const watchUrl=()=>'/api/audio?watch=1'+(spectrum?'':'&spectrum=0');
  const emit=value=>{latest=typeof value.enabled==='boolean'?value:{...latest,...value};onAudio(latest);};
  const allowed=value=>value?.enabled===true&&value?.configured===true&&(!paused||value.matchesSelected===false);
  const current=own=>!stopped&&epoch===own&&active&&!document?.hidden;
@@ -29,7 +30,7 @@ export function connectAudio({active=true,paused=false,onAudio},environment=glob
    try{
     // This small heartbeat renews the existing three-second reader lease. A frozen
     // or hidden browser cannot keep native capture alive merely by leaving SSE open.
-    const value=await read('/api/audio?watch=1');
+    const value=await read(watchUrl());
     if(!current(own)||stream!==connection)return;
     if(!allowed(value)){emit(value);closeStream();watch=false;schedule(2000);return;}
     renewTimer=environment.setTimeout(renew,1500);
@@ -52,7 +53,7 @@ export function connectAudio({active=true,paused=false,onAudio},environment=glob
  async function poll(){
   const own=epoch;pollTimer=null;if(!current(own))return;
   try{
-   const value=await read(watch?'/api/audio?watch=1':'/api/audio');if(!current(own))return;
+   const value=await read(watch?watchUrl():'/api/audio');if(!current(own))return;
    emit(value);watch=!paused||value.matchesSelected===false;
    if(allowed(value)&&value.streamUrl==='/api/audio/events'&&typeof environment.EventSource==='function'&&now()>=retryAt){openStream(own);return;}
    schedule(allowed(value)?100:2000);
@@ -65,5 +66,5 @@ export function connectAudio({active=true,paused=false,onAudio},environment=glob
   poll();
  }
  document?.addEventListener('visibilitychange',refresh);refresh();
- return {refresh,stop(){stopped=true;epoch++;environment.clearTimeout(pollTimer);closeStream();abortRequests();document?.removeEventListener('visibilitychange',refresh);}};
+ return {refresh,setSpectrum(value){spectrum=value!==false;},stop(){stopped=true;epoch++;environment.clearTimeout(pollTimer);closeStream();abortRequests();document?.removeEventListener('visibilitychange',refresh);}};
 }

@@ -1,7 +1,7 @@
 /** What an owner can expect from an update, from the device's own data only. */
 export const updateExpectations=Object.freeze([
  'Music on this TuneBox pauses and stays paused afterwards. Other rooms keep playing.',
- 'The Pi does not reboot. While the app restarts, the screen switches to the update page and can go dark or flicker for a few seconds; a little longer when the display layer is updated.',
+ 'After the update passes its startup check, TuneBox shows a restart countdown and reboots. Keep the power connected. If automatic system updates are disabled, a manual restart may be needed.',
  'Your settings and Music Assistant configuration are kept.',
  'If the new version does not start correctly, TuneBox automatically returns to the previous version.',
 ]);
