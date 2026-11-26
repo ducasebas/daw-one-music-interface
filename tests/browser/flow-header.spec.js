@@ -23,9 +23,11 @@ test('the larger header leaves every visualizer control clear of widgets in both
  // Include the optional video control even when a previous journey has no linked video.
  await page.route('**/api/events',route=>route.abort());
  await page.route('**/api/state',async route=>{const state=await(await page.request.get('/api/state')).json();await route.fulfill({json:{...state,videoConfigured:true}});});
+ await page.route('**/api/audio?*',route=>route.fulfill({json:{configured:true,enabled:true,status:'idle',measurement:null,matchesSelected:true}}));
  for(const language of ['en','nl'])for(const headerAutoHide of [false,true])for(const widgetPlacement of ['top','bottom'])for(const visualizer of ['spectrum','meters']){
   await configure(page,{language,headerAutoHide,widgetPlacement,visualizer});await page.goto(url);const aside=page.locator('.m2-playing>aside'),controls=aside.locator('.m2-artwork-controls>button');await expect(controls).toHaveCount(3);
   const area=await aside.boundingBox(),widgets=await page.locator('.np-widgets').boundingBox();
+  const plot=await aside.locator('.real-audio').boundingBox();expect(plot.width).toBeGreaterThanOrEqual(390);expect(plot.height).toBeGreaterThanOrEqual(250);
   for(const button of await controls.all()){
    const b=await button.boundingBox();expect(b.height).toBeGreaterThanOrEqual(56);expect(b.y).toBeGreaterThanOrEqual(area.y-1);expect(b.y+b.height).toBeLessThanOrEqual(area.y+area.height+1);expect(b.x+b.width).toBeLessThanOrEqual(1257);
    expect(widgetPlacement==='top'?b.y>=widgets.y+widgets.height:b.y+b.height<=widgets.y).toBe(true);

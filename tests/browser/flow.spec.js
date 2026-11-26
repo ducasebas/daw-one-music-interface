@@ -1,6 +1,7 @@
 import {test,expect,devices} from '@playwright/test';
 import {chooseSettingsSection} from './settings-helpers.js';
 import {remoteView} from '../../server/remote-control.js';
+import {holdToWake} from './wake-helper.js';
 const url='/?gui=2&screen=1&display=dsi-production&panel=wall-16-10';
 test.use({viewport:{width:1280,height:800}});
 async function configure(page,patch={}){
@@ -80,4 +81,13 @@ test('a live station keeps elapsed time without running a frame animation for an
  await page.route('**/api/state',r=>r.fulfill({json:state}));await page.route('**/api/events',r=>r.fulfill({contentType:'text/event-stream',body:'data: '+JSON.stringify(state)+'\n\n'}));
  await page.addInitScript(()=>{const raf=window.requestAnimationFrame.bind(window);window.__rafRequests=0;window.requestAnimationFrame=fn=>{window.__rafRequests++;return raf(fn);};});
  await page.goto(url);await expect(page.getByRole('slider',{name:'Playback position',exact:true})).toBeDisabled();await page.waitForTimeout(4000);await page.evaluate(()=>window.__rafRequests=0);const before=await page.locator('.m2-times span').first().textContent();await page.waitForTimeout(1200);expect(await page.evaluate(()=>window.__rafRequests)).toBeLessThanOrEqual(8);await expect(page.locator('.m2-times span').first()).not.toHaveText(before);
+});
+test('the playhead moves between server snapshots, rests without animation work, and catches up after wake',async({page})=>{
+ await configure(page);await page.request.post('/api/scenario',{data:{name:'Playback'}});await page.request.post('/api/event',{data:{type:'play'}});
+ await page.addInitScript(()=>{const raf=window.requestAnimationFrame.bind(window);window.__frames=0;window.requestAnimationFrame=fn=>{window.__frames++;return raf(fn);};});
+ await page.goto(url);const bar=page.getByRole('slider',{name:'Playback position',exact:true});
+ const first=Number(await bar.inputValue());await page.waitForTimeout(250);expect(Number(await bar.inputValue())).toBeGreaterThan(first);
+ await page.getByRole('button',{name:'Screen rest',exact:true}).click();const rest=page.getByRole('button',{name:'Wake display',exact:true});await expect(rest).toBeVisible();await page.waitForTimeout(200);await page.evaluate(()=>window.__frames=0);await page.waitForTimeout(650);expect(await page.evaluate(()=>window.__frames)).toBeLessThanOrEqual(2);
+ expect((await(await page.request.get('/api/state')).json()).playback.playing).toBe(true);
+ await holdToWake(page,rest);await expect(rest).toHaveCount(0);expect(Number(await bar.inputValue())).toBeGreaterThan(first+.8);
 });

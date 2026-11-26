@@ -19,11 +19,13 @@ Early browser runs caught a compact-layout overflow, a missing return in the new
 
 ## Approved header refinement, 26 November
 
-The fixed and collapsing wall headers are transparent and 96 px high, with 36 px symbols and 80 px navigation targets. Settings retain the compact header. No backdrop blur was added. The visualizer's controls use two rows so the taller header cannot clip the last button behind the floating widgets.
+The fixed and collapsing wall headers are transparent and 96 px high, with 36 px symbols and 80 px navigation targets. Settings retain the compact header. No backdrop blur was added. Artwork, metadata and the visualizer use three columns. The graph retains at least 390 × 250 px while its controls and the floating widgets stay visible.
 
 The JavaScript suite passed again (**544**), followed by a successful production build. The shared FLOW/header/widget journeys passed **19 WebKit** cases. The Chromium shared-shell run passed **30 cases**; its six-mode rest journey exceeded the overall 30-second test deadline during concurrent browser/build work. That journey subsequently passed in **28 seconds**, with all save/reload/wake assertions retained. Its overall deadline is now 60 seconds; individual assertion deadlines are unchanged.
 
 Final header checks passed **four Chromium and four WebKit** cases, covering both languages, all six skins, fixed/collapsing headers, top/bottom widget positions, spectrum/meters, optional video controls and stationary content during header hiding. The Chromium final run also included the passing rest-mode journey (**five cases total**). Screenshot inspection confirmed that the visualizer controls are no longer clipped. The existing production/offline checks above are retained; the complete GitHub workflow will rebuild and check this exact candidate before publication.
+
+The first review CI run (45776601406) passed both Node versions and production/offline + WebKit, but caught a graph-height regression and unnecessary React commits from the new smooth playhead. The layout now gives the visualizer its own full-height column; the playhead paints only the native range and elapsed label. The original minimum graph size and bounded-render assertions are retained. An older outage test also tried to click the page behind the new modal; it now verifies and closes the owned recovery dialog while retaining all local-pause, no-volume and no-command checks. A focused Chromium rerun passed all ten affected cases, and 13 WebKit journeys passed. The final playhead also stops its frame/timer work during startup and screen rest, then catches up on wake. Five further Chromium and three WebKit cases passed for seeking, live stations, resting/waking, the recovery dialog and the original render-budget guard. A final focused JavaScript/privacy run passed 36 cases, followed by a successful production build. Final review/main results remain pending.
 
 ## Maintenance path
 

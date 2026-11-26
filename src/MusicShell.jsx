@@ -723,7 +723,7 @@ export function MusicShell({
               <TrackText as="h2" text={shown.title} kind="title"/>
               <TrackText text={shown.artist} kind="artist"/>
               <TrackText text={shown.album} kind="album"/>
-              <PlaybackSeekControl playback={playback} duration={current.duration} disabled={!control||!current.duration||prefs.seekEnabled===false||(!simulated&&!['seek','queue_seek'].some(c=>playback.capabilities?.includes(c)))} onSeek={value=>command({type:'seek',position:value})}/>
+              <PlaybackSeekControl active={startupReady&&device.displayAwake!==false&&!sleeping} playback={playback} duration={current.duration} disabled={!control||!current.duration||prefs.seekEnabled===false||(!simulated&&!['seek','queue_seek'].some(c=>playback.capabilities?.includes(c)))} onSeek={value=>command({type:'seek',position:value})}/>
             </div>
             <aside>
               <div className="m2-artwork-controls"><SongRadio snapshot={snapshot} offline={offline} onSnapshot={setSnapshot}/>{(video||snapshot.videoConfigured!==false)&&<button
