@@ -117,6 +117,12 @@ test('HTTP: the remote listener pairs from the wall QR code and only reaches pla
   assert.equal(paired.status,200);const cookie=paired.headers['set-cookie'][0].split(';')[0];
   assert.equal((await call(remotePort,'/api/remote/pair',{method:'POST',body:{token:pair,name:'Again'}})).status,403);
   const phone={Cookie:cookie};
+  assert.equal((await call(remotePort,'/api/remote/name',{method:'POST',body:{name:'Guest one'}})).status,401);
+  const renamed=await call(remotePort,'/api/remote/name',{method:'POST',headers:phone,body:{name:'Guest one'}});assert.equal(renamed.status,200);assert.equal(renamed.json.name,'Guest one');
+  assert.equal((await call(remotePort,'/api/remote/session',{headers:phone})).json.name,'Guest one');
+  assert.equal((await call(remotePort,'/api/remote/name',{method:'POST',headers:phone,body:{name:'Other',id:'forged'}})).status,400);
+  assert.equal((await call(port,'/api/remote/name',{method:'POST',headers:wall,body:{name:'Other'}})).status,404);
+
   // GUI 3.15: a paired phone can invite one more phone with a fresh single-use code; unpaired callers cannot.
   assert.equal((await call(remotePort,'/api/remote/invite',{method:'POST',body:{}})).status,401);
   const invite=await call(remotePort,'/api/remote/invite',{method:'POST',headers:phone,body:{}});assert.equal(invite.status,200);assert.match(invite.json.url,new RegExp(`^http://127\\.0\\.0\\.1:${remotePort}/remote\\.html#pair=[a-f0-9]{48}$`));assert.equal(invite.json.pinRequired,false);
@@ -127,7 +133,7 @@ test('HTTP: the remote listener pairs from the wall QR code and only reaches pla
   const photo=Buffer.concat([Buffer.from([0xff,0xd8,0xff,0xe1,0x00,0x08]),Buffer.from('Exif\0\0'),Buffer.from([0xff,0xdb,0x00,0x04,1,2,0xff,0xda,0x00,0x02]),Buffer.alloc(400,7),Buffer.from([0xff,0xd9])]);
   const raw=(path,headers)=>new Promise((resolve,reject)=>{const q=request({host:'127.0.0.1',port:remotePort,path,method:'POST',headers:{'Content-Type':'image/jpeg','Content-Length':photo.length,...headers}},r=>{let text='';r.on('data',c=>text+=c);r.on('end',()=>resolve({status:r.statusCode,json:JSON.parse(text||'null')}));});q.on('error',reject);q.end(photo);});
   assert.equal((await raw('/api/remote/rest-photo',{})).status,401);
-  const sent=await raw('/api/remote/rest-photo',phone);assert.equal(sent.status,200);assert.equal(sent.json.status.pending.from,'Phone');assert.equal(sent.json.status.current,null);
+  const sent=await raw('/api/remote/rest-photo',phone);assert.equal(sent.status,200);assert.equal(sent.json.status.pending.from,'Guest one');assert.equal(sent.json.status.current,null);
   assert.equal((await call(remotePort,'/api/rest-photo',{method:'POST',headers:phone,body:{action:'accept'}})).status,403);
   assert.equal((await call(port,'/api/rest-photo',{method:'POST',body:{action:'accept'}})).status,403);
   const accepted=await call(port,'/api/rest-photo',{method:'POST',headers:wall,body:{action:'accept'}});assert.equal(accepted.status,200);assert.equal(accepted.json.current.revision,1);assert.equal(accepted.json.pending,null);
@@ -141,7 +147,7 @@ test('HTTP: the remote listener pairs from the wall QR code and only reaches pla
   assert.equal((await call(remotePort,'/api/remote/event',{method:'POST',headers:phone,body:{type:'seek',position:9}})).status,409);
   assert.equal((await call(remotePort,'/api/remote/event',{method:'POST',headers:{...phone,Origin:'http://attacker.example'},body:{type:'pause'}})).status,403);
   assert.equal((await call(remotePort,'/api/remote/search?q=x',{headers:phone})).json.error,'Search needs Music Assistant');
-  const listed=await call(port,'/api/remote/phones');assert.equal(listed.json.phones.length,1);assert.equal(listed.json.phones[0].name,'Phone');
+  const listed=await call(port,'/api/remote/phones');assert.equal(listed.json.phones.length,1);assert.equal(listed.json.phones[0].name,'Guest one');
   assert.equal(JSON.stringify(listed.json).includes(cookie.split('.')[1]),false);
   const forgot=await call(port,'/api/remote/forget',{method:'POST',headers:wall,body:{id:listed.json.phones[0].id}});assert.equal(forgot.status,200);assert.deepEqual(forgot.json.phones,[]);
   // Briefly, a revoked phone is told to scan again; then the LAN listener closes.

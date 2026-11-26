@@ -1,4 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
+import {clockText} from '../shared/clock-format.js';
 import {tr} from '../shared/i18n.js';
 import {Icon} from './Icon.jsx';
 import {backdropSource,nowPlayingWidgets,widgetSelection,widgetText} from '../shared/now-playing.js';
@@ -34,11 +35,15 @@ function useNetworkReading(enabled){
   read();const timer=setInterval(read,30000);return()=>{live=false;clearInterval(timer);controller.abort();};},[enabled]);
  return value;
 }
-function useMinuteClock(enabled){
+export function useMinuteClock(enabled){
  const [now,setNow]=useState(Date.now);
  useEffect(()=>{if(!enabled)return;let timer;const tick=()=>{setNow(Date.now());timer=setTimeout(tick,60000-Date.now()%60000+50);};tick();return()=>clearTimeout(timer);},[enabled]);
  return now;
 }
+export const HeaderClock=React.memo(function HeaderClock({timeZone,hour12,label=tr('Clock')}){
+ const now=useMinuteClock(true),text=clockText(now,{timeZone,hour12}).time;
+ return <time className="header-clock" aria-label={label}>{text}</time>;
+});
 /** Compact tiles chosen in Settings → Display. Tiles with somewhere to go are buttons. */
 export function NowPlayingWidgets({snapshot,prefs,offline,onOpen}){
  const ids=widgetSelection(prefs.widgets);
@@ -50,8 +55,8 @@ export function NowPlayingWidgets({snapshot,prefs,offline,onOpen}){
  const tiles=nowPlayingWidgets(ids,snapshot,{now,powerNow,lastPower:lastPower.current,offline,network,hour12:snapshot.preferences?.clock?.hour12===true});
  if(!tiles.length)return null;
  return <section className="np-widgets" aria-label={tr('Now Playing widgets')} data-count={tiles.length} data-placement={prefs.widgetPlacement==='top'?'top':'bottom'}>
-  {tiles.map(tile=>{const body=<><Icon name={tile.icon} size={24}/><span className="np-widget-text"><small>{tr(tile.label)}</small><strong>{widgetText(tile.value,tile.params,tr)}</strong>{tile.detail&&<em>{widgetText(tile.detail,tile.params,tr)}</em>}</span></>;
-   return tile.action?<button key={tile.id} className="np-widget" data-widget={tile.id} data-available={tile.available} onClick={()=>onOpen?.(tile.action)}>{body}</button>:<article key={tile.id} className="np-widget" data-widget={tile.id} data-available={tile.available}>{body}</article>;})}
+  {tiles.map(tile=>{const body=<><Icon name={tile.icon} size={34}/><span className="np-widget-text"><strong>{widgetText(tile.value,tile.params,tr)}</strong>{tile.detail&&<em>{widgetText(tile.detail,tile.params,tr)}</em>}</span></>;
+   return tile.action?<button key={tile.id} className="np-widget" aria-label={tr(tile.label)+': '+widgetText(tile.value,tile.params,tr)} data-widget={tile.id} data-available={tile.available} onClick={()=>onOpen?.(tile.action)}>{body}</button>:<article key={tile.id} className="np-widget" aria-label={tr(tile.label)} data-widget={tile.id} data-available={tile.available}>{body}</article>;})}
  </section>;
 }
 /** Order of the chosen widgets: move a tile left or right; the Now Playing strip follows this order. */

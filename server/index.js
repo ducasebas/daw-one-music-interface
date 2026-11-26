@@ -1,3 +1,5 @@
+import {updateRestart,restartBlocksControls} from './update-status.js';
+import {PlaybackDiagnostics} from './playback-diagnostics.js';
 import {settingsAttention} from '../shared/interface.js';
 import {LocalAudio} from './local-audio.js';
 import {LocalPauseStore,MusicRecovery} from './music-recovery.js';
@@ -106,7 +108,7 @@ function syncContext(){
  return synchronizationContext({rooms,playback:music?.playback,audio,route:routeCache.value,connected:music?.status==='connected',bluetooth:bluetoothState().active,busy:multiroom.busy||music?.controlBusy===true});
 }
 const localPauseStore=new LocalPauseStore({directory:stateDirectory});
-let localStandby=localPauseStore.value,localVolume={level:100,active:false},musicRecovery=null;
+let localStandby=localPauseStore.value,localVolume={level:100,active:false},musicRecovery=null,playbackDiagnostics=null;
 function rememberLocalStandby(value){localStandby=value===true;if(!localPauseStore.save(localStandby))console.warn('Local pause state could not be saved.');}
 // Whether any video artwork can appear: an uploaded or linked video, or automatic YouTube videos with consent.
 let videoConfiguredCache={key:null,value:false};
@@ -128,8 +130,8 @@ const snapshot = () => {
     navigation:{buttonWakeId},
     youtube:youtube.get(),
     bluetooth,
-    remoteControl:{phones:remote.phones.length,pairing:remote.pairing(),pinRequired:remotePinRequired()},
-    localControl:{standby:localStandby,level:localVolume.level,lowered:localVolume.active,needed:!!music&&music.status!=='connected'&&!bluetooth.active,recovery:musicRecovery?.status()||{phase:'idle'}},
+    remoteControl:{revision:remote.revision,phones:remote.phones.length,pairing:remote.pairing(),pinRequired:remotePinRequired()},
+    localControl:{standby:localStandby,level:localVolume.level,lowered:localVolume.active,playbackFault:playbackDiagnostics?.active===true,needed:!!music&&(music.status!=='connected'||playbackDiagnostics?.active===true)&&!bluetooth.active,recovery:musicRecovery?.status()||{phase:'idle'}},
     playerBlocked:music?readPlayerStartupBlock(music.status==='connected'?(music.players||[]).some(p=>p.player_id===multiroom.localId):music.errorCode==='player-missing'?false:null):null,
     videoRevision,
     videoConfigured:videoConfigured(),
@@ -209,9 +211,10 @@ const provisionCommands=['network','wifi-scan','wifi','hotspot-stop'];
 app.use('/api',(q,r,next)=>{
  try{
   const mutating=!['GET','HEAD','OPTIONS'].includes(q.method),path=q.path;
+  if(mutating&&path!=='/updates/reboot-ready'&&restartBlocksControls(updateRestart(),deploymentCommit()))return r.status(503).json({error:'TuneBox is finishing the update restart. Please wait.'});
   if(q.remote){
    const open=q.method==='GET'&&path==='/remote/session'||q.method==='POST'&&path==='/remote/pair';
-   const paired=q.method==='GET'&&(['/remote/state','/remote/events','/remote/search'].includes(path)||/^\/artwork\/[^/]+$/.test(path))||q.method==='POST'&&['/remote/event','/remote/play','/remote/leave','/remote/invite','/remote/rest-photo'].includes(path);
+   const paired=q.method==='GET'&&(['/remote/state','/remote/events','/remote/search'].includes(path)||/^\/artwork\/[^/]+$/.test(path))||q.method==='POST'&&['/remote/event','/remote/play','/remote/leave','/remote/invite','/remote/rest-photo','/remote/name'].includes(path);
    if(!open&&!paired)return r.status(403).json({error:'This remote can only control playback'});
    if(paired&&!remote.phone(q))return r.status(401).json({error:'Scan the remote code shown on TuneBox'});
    return next();
@@ -234,10 +237,10 @@ app.post('/api/local',async(q,r)=>{
  const action=q.body?.action;
  try{
   if(!['pause','resume','quieter','louder','restore'].includes(action)||Object.keys(q.body).length!==1)throw Error('Choose pause, resume, quieter, louder or restore');
-  const away=!!music&&music.status!=='connected';
+  const away=!!music&&(music.status!=='connected'||playbackDiagnostics?.active===true);
   if(['pause','quieter','louder'].includes(action)&&!away)throw Error('Music Assistant is connected: use the normal controls.');
   if(action==='pause')await musicRecovery.pause();
-  else if(action==='resume'){if(musicRecovery.pending)throw Error('Wait for the local pause to finish.');const state=await manage({command:'local-standby',args:{enabled:false}});rememberLocalStandby(state.muted);}
+  else if(action==='resume'){if(musicRecovery.pending)throw Error('Wait for the local pause to finish.');const state=await manage({command:'local-standby',args:{enabled:false}});rememberLocalStandby(state.muted);playbackDiagnostics?.acknowledge();musicRecovery.update();}
   else{const state=await manage({command:'local-volume',args:{step:action==='quieter'?-1:action==='louder'?1:0}});localVolume={level:Number.isInteger(state.level)?state.level:100,active:state.active===true};}
   broadcast();r.set('Cache-Control','no-store').json(snapshot());
  }catch(e){r.status(409).json({error:e.message});}
@@ -306,10 +309,17 @@ async function readUpdates(){
 }
 const manualUpdate=new ManualUpdate({snapshot,status:readUpdates,manage,music,multiroom,pauseSimulation:()=>{runtime.dispatch({type:'pause'});broadcast();}});
 musicRecovery=new MusicRecovery({
- context:()=>({configured:!!music&&!!localPlayerId,status:music?.status,failed:!!music?.error,standby:localStandby,blocked:bluetoothState().active||synchronizationRunning()||roomMeasurementRunning()||manualUpdate.busy||['shutting-down','updating','fault'].includes(runtime.device.mode)}),
+ context:()=>({configured:!!music&&!!localPlayerId,status:music?.status,failed:!!music?.error,playbackFailed:playbackDiagnostics?.active===true,standby:localStandby,blocked:bluetoothState().active||synchronizationRunning()||roomMeasurementRunning()||manualUpdate.busy||['shutting-down','updating','fault'].includes(runtime.device.mode)}),
  pause:async()=>{const value=await manage({command:'local-standby',args:{enabled:true}});if(value.muted!==true)throw Error('Local pause was not confirmed');rememberLocalStandby(true);},
  onChange:broadcast,
 });
+playbackDiagnostics=new PlaybackDiagnostics({context:()=>({localPlaying:!!music&&music.status==='connected'&&multiroom.localPlayback()&&!bluetoothState().active,blocked:synchronizationRunning()||roomMeasurementRunning()||manualUpdate.busy||['shutting-down','updating','fault'].includes(runtime.device.mode)}),onFault:()=>{musicRecovery.update();broadcast();}});
+app.post('/api/updates/reboot-ready',(q,r)=>{
+ if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before confirming restart.'});
+ const job=updateRestart(),body=q.body;if(!job||job.phase!=='await-screen'||!body||Object.keys(body).some(k=>!['commit','release'].includes(k))||body.commit!==job.commit||body.release!==job.release||deploymentCommit()!==job.commit||release.id!==job.release)return r.status(409).json({error:'This restart does not match the running update.'});
+ try{const path='/run/daw-one-display/reboot-ready.json';writeFileSync(path+'.tmp',JSON.stringify({commit:job.commit,release:job.release})+'\n',{mode:0o660});renameSync(path+'.tmp',path);r.json({ready:true});}catch{r.status(503).json({error:'Restart readiness could not be saved.'});}
+});
+app.get('/api/playback/diagnostics',(q,r)=>{r.set('Cache-Control','no-store').json(playbackDiagnostics.sample(true));});
 music?.on('change',()=>musicRecovery.update());
 app.post('/api/music/reconnect',async(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before testing the connection.'});
@@ -358,14 +368,14 @@ app.post("/api/device",async(q,r)=>{
  }catch(error){debug.record('device','rejected');if(q.body.command==='hotspot-start'&&phoneServer){phoneServer.close();phoneServer=null;await manage({command:'hotspot-stop',args:{}}).catch(()=>{});}r.status(409).json({error:String(error.message).slice(0,180),...(error.code==='update-group-confirmation'?{code:error.code,rooms:error.rooms,roomsRevision:error.roomsRevision}:{})});}
 });
 app.get('/api/bluetooth',(_q,r)=>r.set('Cache-Control','no-store').json(bluetoothState()));
-function audioSnapshot(watch=false){
+function audioSnapshot(watch=false,spectrum=true){
  if(bluetoothState().active)return {enabled:false,configured:audioAnalysis.configured,status:'source-unavailable',source:'bluetooth',simulated:false,measurement:null};
- const value=audioAnalysis.get({watch,awake:!screenOff&&(runtime.device.displayAwake||['vu','bars','spectrum'].includes(preferences.get().prefs.screen.mode))&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId});
+ const value=audioAnalysis.get({watch,spectrum,awake:!screenOff&&(runtime.device.displayAwake||['vu','bars','spectrum'].includes(preferences.get().prefs.screen.mode))&&runtime.device.mode!=="shutdown",selectedId:music?.publicStatus().playerId});
  return value.configured&&value.enabled?{...value,streamUrl:'/api/audio/events'}:value;
 }
 const audioFrames=new AudioFrames({read:()=>audioSnapshot()});
 app.get('/api/audio/events',(q,r)=>audioFrames.add(q,r));
-app.get('/api/audio',(q,r)=>r.set('Cache-Control','no-store').json(audioSnapshot(q.query.watch==='1')));
+app.get('/api/audio',(q,r)=>r.set('Cache-Control','no-store').json(audioSnapshot(q.query.watch==='1',q.query.spectrum!=='0')));
 app.post("/api/audio/settings",(q,r)=>{
  if(!validDeviceRequest(q))return r.status(403).json({error:"Reload TuneBox before changing measurement settings"});
  try{if(!q.body||Object.keys(q.body).length!==1||!Object.hasOwn(q.body,"enabled"))throw Error("Only enabled can be changed");audioAnalysis.setEnabled(q.body.enabled);preferences.save(preferences.get().revision,{audioEnabled:q.body.enabled});r.json(audioAnalysis.get());}catch(error){r.status(400).json({error:error.message});}
@@ -500,6 +510,11 @@ async function musicControl(run){
   music.controlBusy=true;
   try{return await run();}finally{music.controlBusy=false;}
 }
+app.post('/api/library/radio',async(q,r)=>{
+ if(!validDeviceRequest(q))return r.status(403).json({error:'Reload TuneBox before starting radio.'});
+ try{if(!q.body||Object.keys(q.body).some(k=>!['mediaKey','confirmReplace'].includes(k))||typeof q.body.confirmReplace!=='boolean')throw Error('Unexpected radio request');if(!library)throw Error('Connect Music Assistant to start radio.');await musicControl(()=>library.startRadio(q.body.mediaKey,{confirmReplace:q.body.confirmReplace}));r.json(snapshot());}
+ catch(e){r.status(409).json({error:e.code==='queue-not-empty'?e.message:'Radio could not start. Check Music Assistant and whether this provider supports similar songs.',...(e.code==='queue-not-empty'?{code:e.code,upcoming:e.upcoming}:{})});}
+});
 app.post("/api/library/play", async (q, r) => {
   if (!library)
     return r.status(409).json({ error: "Live bibliotheek niet actief" });
@@ -693,6 +708,7 @@ app.post('/api/remote/pair',(q,r)=>{
 });
 // A paired phone can invite another phone: a new single-use code (10 minutes). A settings PIN still applies when the new phone pairs.
 app.post('/api/remote/invite',(q,r)=>{if(!remoteOnly(q,r))return;try{if(q.body&&Object.keys(q.body).length)throw Error('Unexpected invite request');const address=process.env.DAW_REMOTE_ADDRESS||remoteAddress();if(!address)throw Error('TuneBox is not on the home network');const pair=remote.createPair();clearTimeout(remoteExpiry);remoteExpiry=setTimeout(stopRemoteServerWhenUnused,pair.expiresAt-Date.now()+1000);remoteExpiry.unref();debug.record('remote','invite',{accepted:true});broadcast();r.set('Cache-Control','no-store').json({url:`http://${address}:${remotePort}/remote.html#pair=${pair.token}`,expiresAt:pair.expiresAt,pinRequired:remotePinRequired()});}catch(e){r.status(409).json({error:e.message});}});
+app.post('/api/remote/name',(q,r)=>{if(!remoteOnly(q,r))return;try{if(!q.body||Object.keys(q.body).some(k=>k!=='name'))throw Error('Unexpected phone name request');const result=remote.rename(remote.phone(q).id,q.body.name);broadcast();r.set('Cache-Control','no-store').json(result);}catch(e){r.status(400).json({error:e.message});}});
 app.post('/api/remote/leave',(q,r)=>{if(!remoteOnly(q,r))return;try{remote.forget(remote.phone(q).id);}catch{}r.setHeader('Set-Cookie','tunebox_remote=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');setTimeout(stopRemoteServerWhenUnused,250).unref();r.json({paired:false});});
 // Own screen-rest photo: a paired phone sends it, TuneBox itself accepts it (see server/rest-photo.js).
 app.post('/api/remote/rest-photo',express.raw({type:'image/jpeg',limit:restPhotoLimits.bytes}),(q,r)=>{if(!remoteOnly(q,r))return;try{const status=restPhoto.upload(q.body,remote.phone(q)?.name);debug.record('remote','rest-photo',{accepted:true});broadcast();r.json({pending:true,status});}catch(e){r.status(400).json({error:String(e.message).slice(0,120)});}});
@@ -785,7 +801,7 @@ for (const signal of ["SIGINT", "SIGTERM"])
   process.on(signal, () => {
     phoneServer?.close();
     for(const c of remoteClients)c.end();remoteServer?.close();
-    musicRecovery.close();music?.stop();
+    playbackDiagnostics.close();musicRecovery.close();music?.stop();
     audioFrames.close();audioAnalysis.close();automaticSound.close();localAudio.close();
     for (const c of clients) c.end();
     clearInterval(clock);

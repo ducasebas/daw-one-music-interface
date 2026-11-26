@@ -19,7 +19,7 @@ export class PcmPackets{
 const statuses=['source-missing','idle','pcm','stale','busy','incompatible'];
 export class AudioAnalysis{
  constructor({reader=process.env.DAW_AUDIO_READER,directory=process.env.DAW_AUDIO_SHM_DIR,playerId=process.env.DAW_AUDIO_PLAYER_ID,stateDir=process.env.DAW_STATE_DIR||'.tunebox-state',onStatus=()=>{}}={}){
-  this.reader=reader;this.directory=directory;this.playerId=playerId?.toLowerCase();this.stateDir=stateDir;this.onStatus=onStatus;this.analysis=null;this.analysisEpoch=0;this.enabled=false;this.child=null;this.latest=null;this.status='disabled';this.demandUntil=0;this.lastPacket=0;this.retryAt=0;
+  this.reader=reader;this.directory=directory;this.playerId=playerId?.toLowerCase();this.stateDir=stateDir;this.onStatus=onStatus;this.analysis=null;this.analysisEpoch=0;this.enabled=false;this.child=null;this.latest=null;this.status='disabled';this.demandUntil=0;this.spectrumUntil=0;this.lastPacket=0;this.retryAt=0;
   try{const raw=readFileSync(join(stateDir,'audio-analysis.json'),'utf8');if(raw.length<1024)this.enabled=JSON.parse(raw).enabled===true;}catch{}
   this.clock=setInterval(()=>{if(this.child&&(Date.now()>this.demandUntil||!this.enabled))this.stop('inactive');},500);this.clock.unref();
  }
@@ -41,14 +41,14 @@ export class AudioAnalysis{
     this.lastSampleRate=data.sampleRate;
     const {epoch,...stamp}=context;this.latest={...data,...stamp};this.change(data.silent?'silence':'pcm');
    },onError:()=>{if(this.child===child)this.stop('reader-error');}});
-   this.analysis.submit(packet.samples,packet.rate,{epoch:this.analysisEpoch,capturedMonotonicMs:Number(process.hrtime.bigint())/1e6,capturedAt:now,sourceUpdatedAt:packet.sourceTime*1000});
+   this.analysis.submit(packet.samples,packet.rate,{spectrum:Date.now()<this.spectrumUntil,epoch:this.analysisEpoch,capturedMonotonicMs:Number(process.hrtime.bigint())/1e6,capturedAt:now,sourceUpdatedAt:packet.sourceTime*1000});
   });
   const failed=()=>{if(this.child===child){this.child=null;this.analysisEpoch++;this.analysis?.close();this.analysis=null;this.latest=null;this.change('reader-error');}};child.on('error',failed);child.on('exit',failed);
  }
  stop(status='inactive'){const child=this.child;this.child=null;this.analysisEpoch++;this.analysis?.close();this.analysis=null;if(child){child.kill('SIGTERM');const kill=setTimeout(()=>{if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');},500);kill.unref();child.once('exit',()=>clearTimeout(kill));}this.latest=null;this.demandUntil=0;this.change(this.enabled?status:'disabled');}
- get({watch=false,awake=true,selectedId}={}){
+ get({watch=false,awake=true,selectedId,spectrum=true}={}){
   if(!awake&&this.child)this.stop('sleeping');
-  if(watch&&awake&&this.enabled&&this.configured){this.demandUntil=Date.now()+3000;this.start();}
+  if(watch&&awake&&this.enabled&&this.configured){this.demandUntil=Date.now()+3000;if(spectrum)this.spectrumUntil=this.demandUntil;this.start();}
   const fresh=this.child&&Date.now()-this.lastPacket<750;
   const measurementFresh=this.latest&&Number(process.hrtime.bigint())/1e6-this.latest.capturedMonotonicMs<750;
   const status=!this.configured?'not-configured':!this.enabled?'disabled':!awake?'sleeping':this.child&&(!fresh||['pcm','silence'].includes(this.status)&&!measurementFresh)&&Date.now()-this.startedAt>750?'stale':this.status;

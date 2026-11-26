@@ -1,3 +1,4 @@
+import {PlaybackDiagnostics} from './PlaybackDiagnostics.jsx';
 import {AmplifierHealth} from './AmplifierHealth.jsx';
 import {DeveloperValues} from './DeveloperValues.jsx';
 import React,{useEffect,useRef,useState} from 'react';
@@ -36,7 +37,7 @@ export function DeveloperSettings({snapshot,offline,onDirty,actionsRef,onBeforeN
   {tab==='Values'&&<DeveloperValues snapshot={snapshot} offline={offline}/>}
   {tab==='History'&&<ol className="system-history">{[...(snapshot.log||[])].reverse().slice(0,100).map(row=><li key={row.id}><time>{new Date(row.at).toLocaleTimeString()}</time><strong>{row.type}</strong><span>{row.state}</span><small>{row.reason}</small></li>)}</ol>}
   {tab==='Hardware'&&<><AmplifierHealth offline={offline}/><p>{tr('Only confirm wiring after checking the physical connections. Changing a checkbox does not connect a sensor.')}</p>{powerSettings||<p>{tr('Hardware setup is available in the main Settings menu on TuneBox.')}</p>}<dl className="system-facts"><dt>{tr('Physical power button')}</dt><dd>{tr('Requires an explicitly assigned free GPIO. GPIO3 wake shares the sensor I²C clock; confirm wiring before installation.')}</dd></dl></>}
-  {tab==='Audio'&&soundSettings}
+  {tab==='Audio'&&<><PlaybackDiagnostics offline={offline}/>{soundSettings}</>}
   {tab==='Startup'&&startupSettings}
   {tab==='Services'&&<>{serverSettings}<SshControl offline={offline}/><RestartControls snapshot={snapshot} offline={offline}/></>}
   {tab==='Updates'&&<UpdateSettings onDirty={onDirty} actionsRef={actionsRef}/>}

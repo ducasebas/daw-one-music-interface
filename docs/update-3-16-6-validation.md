@@ -1,6 +1,6 @@
 # GUI 3.16.6 validation
 
-Publication approved on 25 November 2026. GitHub CI and signed publication are pending; physical Pi acceptance remains separate.
+Published through PR #27 on 25 November 2026; physical Pi acceptance remains separate.
 
 ## Completed targeted checks
 
@@ -27,7 +27,7 @@ The first hotfix browser run found the banner extending 20 pixels beyond the sho
 
 The first broad JavaScript run exposed an existing intentional security boundary: arbitrary updater errors must not be published. The correction derives user-visible copy from fixed phase codes and leaves the original exclusion assertion intact. A separate umask regression covers the service's `0077` setting: public progress remains `0644`, private diagnostics `0600`, and atomic writes flush both file and parent directory.
 
-GitHub CI, signing and publication are pending after the explicit approval on 25 November 2026. Full configured CI must pass before merge and signed publication.
+All six review Verify jobs passed on `940dda19d29f4ad1987c95c9be1a0d2bc84dcd42` (45697726922), including 268 Chromium scenarios. All six main jobs passed on `6ecd80f3ad5d511ba501863443532bd6b834929f` (45699167113). The merged tree exactly matches the reviewed tree. Signed preview 45700442947 succeeded, including the public-channel check selecting commit `6ecd80f3ad5d511ba501863443532bd6b834929f` and release `2026.11.25-updates.1`. Three public assets are present; the archive is 20,150,931 bytes with SHA-256 `d7efe4d6af10fc7ddbc6e0d34c371a61d2763efefe417d5f926fcd7711f2098e`. The configured packaging/signature/channel checks passed; no additional independent archive download was performed.
 
 ## Physical limits
 

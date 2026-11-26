@@ -12,7 +12,7 @@ test('Install opens a full-screen review with duration, changelog and what to ex
  await page.getByRole('button',{name:'Install update',exact:true}).click();
  const sheet=page.getByRole('dialog',{name:'Install this update?'});await expect(sheet.getByRole('heading',{name:'GUI 9.9.9 · TEST'})).toBeVisible();
  await expect(sheet.getByText('Usually takes: 2:34 min')).toBeVisible();await expect(sheet.getByRole('listitem').filter({hasText:'Bluetooth shows the real codec and bitrate.'})).toBeVisible();
- await expect(sheet.getByText(/The Pi does not reboot/)).toBeVisible();expect(installs).toHaveLength(0);
+ await expect(sheet.getByText(/TuneBox shows a restart countdown/)).toBeVisible();expect(installs).toHaveLength(0);
  const box=await sheet.boundingBox();expect(box.width).toBe(1280);expect(box.height).toBe(800);await shot(page,'update-review');
  await sheet.getByRole('button',{name:'Not now',exact:true}).click();await expect(sheet).toHaveCount(0);expect(installs).toHaveLength(0);
  await page.getByRole('button',{name:'Install update',exact:true}).click();await page.getByRole('button',{name:'Install now',exact:true}).click();await expect.poll(()=>installs.length).toBe(1);
@@ -22,7 +22,7 @@ test('a running update covers the screen with progress, elapsed time, estimate, 
  await page.goto(url);const sheet=page.getByRole('dialog',{name:'Software update'});
  await expect(sheet.getByRole('heading',{name:'GUI 9.9.9 · TEST'})).toBeVisible();await expect(sheet.getByRole('progressbar',{name:'Update progress'})).toHaveJSProperty('value',42);
  await expect(sheet.getByText(/Elapsed: 1:0\d min/)).toBeVisible();await expect(sheet.getByText('Usually takes: 3:00 min')).toBeVisible();
- await expect(sheet.getByRole('listitem').filter({hasText:'Room correction is now a guided wizard.'})).toBeVisible();await expect(sheet.getByText(/can go dark or flicker for a few seconds/)).toBeVisible();
+ await expect(sheet.getByRole('listitem').filter({hasText:'Room correction is now a guided wizard.'})).toBeVisible();await expect(sheet.getByText(/TuneBox shows a restart countdown/)).toBeVisible();
  await shot(page,'update-running');
 });
 test('a maintenance failure remains visible on the update settings page after a check',async({page})=>{

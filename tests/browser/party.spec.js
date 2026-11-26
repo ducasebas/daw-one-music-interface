@@ -23,12 +23,13 @@ test('with Music Assistant away, Now Playing shows the automatic local pause and
  state.playback={...state.playback,connected:false};const sent=[];
  await page.route('**/api/events',r=>r.abort());await page.route('**/api/state',r=>r.fulfill({json:state}));
  await page.route('**/api/local',r=>{const a=r.request().postDataJSON().action;sent.push(a);const l=state.localControl;if(a==='pause')l.standby=true;if(a==='resume')l.standby=false;if(a==='quieter')l.level=Math.max(0,l.level-10);if(a==='louder')l.level=Math.min(100,l.level+10);l.lowered=l.level<100;return r.fulfill({json:state});});
- await page.goto(url);await page.getByRole('button',{name:'Now Playing',exact:true}).first().click();
- const bar=page.getByRole('region',{name:'Local control',exact:true});await expect(bar).toContainText('Music Assistant is unavailable');
+ await page.goto(url);const dialog=page.getByRole('dialog',{name:'Music Assistant is unavailable',exact:true});await expect(dialog).toBeVisible();
+ const bar=dialog.getByRole('region',{name:'Local control',exact:true});await expect(bar).toContainText('Music Assistant is unavailable');
  await expect(bar).toContainText('TuneBox is paused locally.');await expect(bar.getByRole('button',{name:'Test connection again',exact:true})).toBeVisible();
  await expect(bar.getByRole('button',{name:'Quieter',exact:true})).toHaveCount(0);await expect(bar.getByRole('button',{name:'Louder, up to the previous level',exact:true})).toHaveCount(0);await expect(bar.getByLabel('Local volume',{exact:true})).toHaveCount(0);
  await page.screenshot({path:'test-results/local-control.png'});
  expect(sent).toEqual([]);
+ await dialog.getByRole('button',{name:'Close',exact:true}).click();await expect(dialog).toHaveCount(0);await expect(page.locator('.music2')).toHaveAttribute('data-page','playing');
 });
 test('a ready local Music Assistant shows a setup QR and connects TuneBox with the local address prefilled',async({page})=>{
  await page.route('**/api/device',async r=>{const b=r.request().postDataJSON();if(b.command==='local-ma-status')return r.fulfill({json:{simulated:false,capacity:{eligible:true,reasons:[]},dockerAvailable:true,installing:false,job:{phase:'ready'}}});return r.continue();});

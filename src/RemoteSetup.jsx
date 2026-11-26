@@ -33,7 +33,7 @@ export function RemoteWizard({snapshot,offline=false,onClose,onComplete}){
 export function RemotePanel({snapshot,offline=false,onPair}){
  const device=useDeviceUpdates(),token=device.info?.controlToken,[state,setState]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[forget,setForget]=useState(null);
  const phones=Number(snapshot.remoteControl?.phones)||0;
- useEffect(()=>{let live=true;setupApi('/api/remote/phones').then(v=>{if(live){setState(v);setError('');}}).catch(e=>{if(live)setError(e.message);});return()=>{live=false;};},[phones]);
+ useEffect(()=>{let live=true;setupApi('/api/remote/phones').then(v=>{if(live){setState(v);setError('');}}).catch(e=>{if(live)setError(e.message);});return()=>{live=false;};},[phones,snapshot.remoteControl?.revision]);
  async function remove(target){setBusy(true);setError('');try{setState(await setupApi('/api/remote/forget',token,target==='all'?{all:true}:{id:target.id}));}catch(e){setError(e.message);}finally{setBusy(false);setForget(null);}}
  return <div className="remote-panel" aria-busy={busy}>
   <p>{tr('Pause, skip, search music and change the volume from your phone. No app is needed.')}</p>

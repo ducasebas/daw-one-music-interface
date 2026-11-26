@@ -1,3 +1,5 @@
+import {SongRadio} from './SongRadio.jsx';
+import {TrackText} from './TrackText.jsx';
 import {tr,translateFormat} from "../shared/i18n.js";
 import { panelProfile } from "../shared/display.js";
 import { WallControls, SleepSurface } from "./WallExperience.jsx";
@@ -31,7 +33,7 @@ import {KeyboardField} from './TouchKeyboard.jsx';
 import {settingsSections} from '../shared/interface.js';
 import {Rooms} from './Rooms.jsx';
 import {BluetoothPairing} from './BluetoothReceiver.jsx';
-import {NowPlayingBackdrop,NowPlayingWidgets} from './NowPlayingExtras.jsx';
+import {NowPlayingBackdrop,NowPlayingWidgets,HeaderClock} from './NowPlayingExtras.jsx';
 import {PartySheet} from './PartySheet.jsx';
 import {LocalControl} from './LocalControl.jsx';
 
@@ -254,19 +256,23 @@ export function MusicShell({
     update('keepPlaying',next);
     if(deviceUpdates?.info?.controlToken)saveSetupPreferences(deviceUpdates.info.controlToken,{prefs:{keepPlaying:next}}).catch(()=>{update('keepPlaying',!next);setMessage('Keep playing could not be changed. Try again.');});
   }
+  const visualizerWorking=useRef(false),[visualizerPending,setVisualizerPending]=useState(false);
   async function toggleVisualizer(){
+    if(visualizerWorking.current)return;visualizerWorking.current=true;setVisualizerPending(true);
+    try{
     const next=prefs.visualizer==='off'?'spectrum':prefs.visualizer==='spectrum'?'meters':'off';
     update('artwork','cover');
     if(next!=='off'&&!offline){
       try{
-        const r=await fetch('/api/audio?watch=1');if(!r.ok)throw Error();const audio=await r.json();
+        const r=await fetch('/api/audio?watch=1',{signal:AbortSignal.timeout(5000)});if(!r.ok)throw Error();const audio=await r.json();
         if(!audio.configured){setSettingsPage(14);go('settings');return;}
-        if(!audio.enabled){const enabled=await fetch('/api/audio/settings',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':deviceUpdates?.info?.controlToken||''},body:JSON.stringify({enabled:true})});if(!enabled.ok)throw Error();}
+        if(!audio.enabled){const enabled=await fetch('/api/audio/settings',{method:'POST',headers:{'Content-Type':'application/json','X-TuneBox-Control':deviceUpdates?.info?.controlToken||''},body:JSON.stringify({enabled:true}),signal:AbortSignal.timeout(5000)});if(!enabled.ok)throw Error();}
       }catch{setMessage('Audio analysis is unavailable. Open Audio settings.');return;}
     }
     update('visualizer',next);
     // Keep the choice on TuneBox too; otherwise the next preferences update from the server restores the old mode.
-    if(wall&&!offline&&deviceUpdates?.info?.controlToken)saveSetupPreferences(deviceUpdates.info.controlToken,{prefs:{visualizer:next,artwork:'cover'}}).catch(()=>{});
+    if(wall&&!offline&&deviceUpdates?.info?.controlToken)await saveSetupPreferences(deviceUpdates.info.controlToken,{prefs:{visualizer:next,artwork:'cover'}}).catch(()=>{setMessage('Visualizer preference could not be saved.');});
+    }finally{visualizerWorking.current=false;setVisualizerPending(false);}
   }
   const sample = tracks.filter((t) =>
     `${t.title} ${t.artist} ${t.album}`
@@ -321,7 +327,7 @@ export function MusicShell({
       data-header={autoHideHeader&&headerHidden?"hidden":"shown"}
       data-header-mode={autoHideHeader?"auto":"fixed"}
       data-header-layout={overlayHeader?"overlay":"flow"}
-      data-performance={prefs.lowPower ? "pi3" : "standard"}
+      data-performance={prefs.presentationProfile||(prefs.lowPower?"pi3":"standard")}
       data-skin={
         presets.some((p) => p.id === theme.id) ? theme.id : "reference-dark"
       }
@@ -363,6 +369,7 @@ export function MusicShell({
             </button>
           ))}
         </nav>
+        {prefs.headerClock!==false&&<HeaderClock label={tr('Clock')} timeZone={snapshot.preferences?.clock?.timeZone} hour12={snapshot.preferences?.clock?.hour12===true}/>}
         <NetworkStatus snapshot={snapshot} offline={offline} />
         {wall && <WallControls snapshot={snapshot} offline={offline} prefs={prefs} updates={deviceUpdates} security={security}
           onSleep={sleep}
@@ -713,28 +720,27 @@ export function MusicShell({
                 {tr(simulated ? "SIMULATIE" : "MUSIC ASSISTANT")} /{tr(" ")}
                 {tr(playback.playerName || "TuneBox")}
               </small>
-              <h2 title={shown.title}>{shown.title}</h2>
-              <p>
-                {shown.artist} <span>— {shown.album}</span>
-              </p>
-              <PlaybackSeekControl playback={playback} duration={current.duration} disabled={!control||!current.duration||prefs.seekEnabled===false||(!simulated&&!['seek','queue_seek'].some(c=>playback.capabilities?.includes(c)))} onSeek={value=>command({type:'seek',position:value})}/>
+              <TrackText as="h2" text={shown.title} kind="title"/>
+              <TrackText text={shown.artist} kind="artist"/>
+              <TrackText text={shown.album} kind="album"/>
+              <PlaybackSeekControl active={startupReady&&device.displayAwake!==false&&!sleeping} playback={playback} duration={current.duration} disabled={!control||!current.duration||prefs.seekEnabled===false||(!simulated&&!['seek','queue_seek'].some(c=>playback.capabilities?.includes(c)))} onSeek={value=>command({type:'seek',position:value})}/>
             </div>
             <aside>
-              <div className="m2-artwork-controls">{(video||snapshot.videoConfigured!==false)&&<button
+              <div className="m2-artwork-controls"><SongRadio snapshot={snapshot} offline={offline} onSnapshot={setSnapshot}/>{(video||snapshot.videoConfigured!==false)&&<button
                 disabled={prefs.lowPower}
                 aria-pressed={video}
                 onClick={() => update('artwork',video?'cover':'video')}
               >
                 <Icon name="film" size={16} />{tr(" ")}
-                {tr(prefs.lowPower ? "Video uit · Pi 3 modus" : "Video Artwork")}
+                {tr(prefs.lowPower ? prefs.presentationProfile==='smooth'?"Video off · Smooth graphics":"Video uit · Pi 3 modus" : "Video Artwork")}
               </button>}
-              <button aria-label={tr("Switch visualizer")} onClick={toggleVisualizer}>{tr("Visualizer ")}{tr(prefs.visualizer==="off"?"uit":prefs.visualizer==="meters"?"meters":"spectrum")}</button></div>
+              <button className={prefs.visualizer==="off"?"visualizer-invite":""} aria-label={tr("Switch visualizer")} disabled={visualizerPending} aria-busy={visualizerPending} onClick={toggleVisualizer}><Icon name="visualizer" size={26} className={visualizerPending?"is-spinning":""}/>{tr(visualizerPending?"Opening visualizer…":prefs.visualizer==="off"?"Turn on visualizer":prefs.visualizer==="meters"?"Meters":"Spectrum")}</button></div>
               {video ? (
                 <div className="m2-video">
                   <VideoArtwork snapshot={snapshot} prefs={prefs} offline={offline} onConfigure={()=>{setSettingsPage(16);go('settings');}}/>
                 </div>
               ) : prefs.visualizer!=="off" ? (
-                <AudioVisualizer timing={prefs.timing} timeline={playback} mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline} awake={startupReady&&device.displayAwake!==false&&!sleeping} paused={!playback.playing||playback.muted===true}/>
+                <AudioVisualizer sensitivity={prefs.visualizerSensitivity} response={prefs.visualizerResponse} lowPower={prefs.lowPower} timing={prefs.timing} timeline={playback} mode={prefs.visualizer} bands={prefs.visualizerBands} offline={offline} awake={startupReady&&device.displayAwake!==false&&!sleeping} paused={!playback.playing||playback.muted===true}/>
               ) : wall ? null : (
                 <SkinPanel
                   skin={
@@ -755,7 +761,7 @@ export function MusicShell({
       {party&&<PartySheet snapshot={snapshot} onClose={()=>setParty(false)} onRooms={()=>go('rooms')}/>}
       <BluetoothPairing state={snapshot.bluetooth}/>
       {snapshot.playerBlocked&&page!=='settings'&&<div className="player-blocked" role="alert"><div><strong>{tr('Local player stopped: automatic power setup is blocked')}</strong><span>{tr('Last attempt')}: {tr(snapshot.playerBlocked.reason)}</span><span>{tr('Repair power setup, or turn off “Keep these settings after restart”, in Sensors.')}</span></div><button onClick={()=>{setSettingsPage(17);go('settings');}}>{tr('Open Sensors')}</button></div>}
-      {page!=='settings'&&<LocalControl snapshot={snapshot} token={deviceUpdates?.info?.controlToken} onSnapshot={setSnapshot} offline={offline}/>}
+      {page!=='settings'&&<LocalControl showDialog={startupReady} snapshot={snapshot} token={deviceUpdates?.info?.controlToken} onSnapshot={setSnapshot} offline={offline}/>}
       <footer className="m2-player">
         {!(wall&&page==='playing')&&(
         <button

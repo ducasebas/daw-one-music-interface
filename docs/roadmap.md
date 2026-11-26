@@ -1,5 +1,11 @@
 # Roadmap after GUI 3.9.2 (owner feedback, 19 November 2026)
 
+## Queued separately: native higher sample rates
+
+The current interface update does not change the DAC/I²S driver, Squeezelite arguments or Music Assistant output format. The TAS5825M accepts up to 32-bit/192 kHz input, but the pinned manufacturer driver (`ac10e740533bd1330aa210ddd227d51bbcb6607d`, `tas58xx.c` DAI definition) advertises only 48 kHz and S32_LE. Squeezelite itself supports higher rates. First read the installed driver's actual ALSA capabilities and current `hw_params`; then review driver clocks and the DSP processing flow before a separate driver candidate. Prefer native source rates; forcing every source to 192 kHz does not add detail. Keep the owner's player drop-in and channel gains untouched. Physical playback, stability and DSP acceptance remain required.
+
+Primary references: [TI TAS5825M datasheet](https://www.ti.com/lit/ds/symlink/tas5825m.pdf), [pinned driver](https://github.com/sonocotta/tas5805m-driver-for-raspbian/blob/ac10e740533bd1330aa210ddd227d51bbcb6607d/tas58xx.c#L1557-L1566), [Squeezelite manual](https://ralph-irving.github.io/squeezelite.html).
+
 Owner feedback after installing 3.9.1/3.9.2, split into separately testable and publishable updates. Each update still needs the owner's explicit publication approval (see `AGENTS.md`). Build one update per session: "Build 3.10 POLISH per docs/roadmap.md".
 
 ## Owner decisions (19 November 2026)

@@ -1,3 +1,4 @@
+import {UpdateRestart} from './UpdateRestart.jsx';
 import {tr} from "../shared/i18n.js";
 import React,{createContext,useContext,useEffect,useRef,useState,useCallback,useMemo} from 'react';
 import {updatePhases} from '../shared/update-settings.js';
@@ -16,7 +17,7 @@ export function DeviceUpdatesProvider({children}){
   const requestGeneration=++generation;
   controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),4000);
   try{const response=await fetch('/api/updates',{cache:'no-store',signal:controller.signal});if(!response.ok)throw Error();const next={...await response.json(),offline:false};if(active&&requestGeneration===generation){latest.current=next;const json=JSON.stringify(next);if(json!==serialized.current){serialized.current=json;setInfo(next);}}}
-  catch{if(active&&requestGeneration===generation){serialized.current='';setInfo(old=>old?.offline?old:{...old,offline:true});}}finally{clearTimeout(timeout);if(active&&requestGeneration===generation)timer=setTimeout(read,performance.now()<fastUntil.current||updatePhases.includes(latest.current?.status)?1000:document.hidden?10000:latest.current?.manager?.configured?3000:10000);}
+  catch{if(active&&requestGeneration===generation){serialized.current='';setInfo(old=>old?.offline?old:{...old,offline:true});}}finally{clearTimeout(timeout);if(active&&requestGeneration===generation)timer=setTimeout(read,performance.now()<fastUntil.current||(updatePhases.includes(latest.current?.status)||['waiting','await-screen','countdown','rebooting'].includes(latest.current?.restart?.phase))?1000:document.hidden?10000:latest.current?.manager?.configured?3000:10000);}
  };refreshRef.current=()=>{clearTimeout(timer);controller?.abort();read();};const visible=()=>{if(!document.hidden)refreshRef.current();};document.addEventListener('visibilitychange',visible);read();return()=>{active=false;clearTimeout(timer);controller?.abort();document.removeEventListener('visibilitychange',visible);};},[]);
  const refresh=useCallback(()=>{fastUntil.current=performance.now()+60000;refreshRef.current();},[]);
  const action=useCallback(async(command,args={})=>{
@@ -46,7 +47,7 @@ export function GlobalUpdateProgress(){
   }
  },[critical,info?.status,info?.offline,info?.manager?.simulated,info?.manager?.progressDisplay]);
  const active=['downloading','verifying','preparing','installing','restarting','checking-health','rolling-back'].includes(info?.status);
- return active?<UpdateSheet info={info}/>:null;
+ return active?<UpdateSheet info={info}/>:<UpdateRestart info={info}/>;
 }
 /** Full-screen update sheet: progress, time, what's new and what to expect, over the blurred interface. */
 export function UpdateSheet({info}){

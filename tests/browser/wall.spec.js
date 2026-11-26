@@ -51,6 +51,7 @@ test('clock fills the rest view; a quick touch only hints, holding wakes it, and
  const after=await(await page.request.get('/api/state')).json();expect(after.playback.playing).toBe(before.playback.playing);expect(after.device.amplifierEnabled).toBe(before.device.amplifierEnabled);
 });
 test('timeout saves on the backend and survives reload; all rest modes remain available',async({page})=>{
+ test.setTimeout(60000); // Six complete save/rest/hold-to-wake journeys; each assertion keeps its own timeout.
  await settings(page,'Display');await page.getByLabel('Screen timeout',{exact:true}).selectOption('600');await page.getByRole('button',{name:'Save',exact:true}).click();await expect(page.locator('[data-saved="true"]')).toBeVisible();
  expect((await(await page.request.get('/api/display')).json()).settings.timeoutSeconds).toBe(600);
  await page.reload();await settings(page,'Display');await expect(page.getByLabel('Screen timeout',{exact:true})).toHaveValue('600');
