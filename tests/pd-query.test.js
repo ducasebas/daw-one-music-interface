@@ -33,7 +33,7 @@ test('fresh discovery returns the offered capacity separately from the unchanged
  assert.equal(s.pdProfileQualified,false);assert.equal(f.files.has(settingsPath),false);
 });
 test('stale, rejected and malformed discovery cannot claim a queried source or queue a PDO request',async()=>{
- for(const patch of [{status:'ready'},{requestId:'b'.repeat(32)},{observedAt:9999},{sourceCapabilitiesQueried:false},{pd:{...discovered().pd,volts:5}},{pd:{...discovered().pd,responseCode:0}},{pd:{...discovered().pd,profiles:[]}}]){
+ for(const patch of [{status:'ready'},{requestId:'b'.repeat(32)},{observedAt:9999},{sourceCapabilitiesQueried:false},{pd:{...discovered().pd,status:'changing'}},{pd:{...discovered().pd,responseCode:0}},{pd:{...discovered().pd,profiles:[]}}]){
   const f=fixture({result:{...discovered(),...patch}});await assert.rejects(f.api.discover(),/not confirmed/);assert.equal(f.calls.length,1);assert.equal(f.files.has(settingsPath),false);
  }
  const f=fixture({result:{...discovered(),status:'error',error:'The PD controller rejected the source-capability query'},serviceFails:true});await assert.rejects(f.api.discover(),/rejected/);assert.equal(f.calls.length,1);

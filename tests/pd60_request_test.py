@@ -51,7 +51,14 @@ class OfferedProfileNegotiationTests(unittest.TestCase):
             events=[]
             with self.assertRaises(ValueError):self.request([original.frame(offered=amps)],amps,events)
             self.assertEqual(events,[])
-        with self.assertRaises(ValueError):self.request([original.frame(volts=5,offered=3)])
+    def test_upgrade_from_15v_to_20v_60w_succeeds(self):
+        events=[]
+        result=self.request([original.frame(volts=15,amps=3,offered=3,response=1),
+                             original.frame(volts=15,amps=3,offered=3,response=1),
+                             original.frame(volts=20,amps=3,offered=3,response=1),
+                             original.frame(volts=20,amps=3,offered=3,response=1)],3,events)
+        self.assertEqual(result,dict(volts=20,amps=3,watts=60,requested=True))
+        self.assertEqual(events,['intent','request'])
 
 class OfferedProfileWorkerTests(unittest.TestCase):
     def setUp(self):

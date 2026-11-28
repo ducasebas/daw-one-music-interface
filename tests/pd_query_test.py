@@ -34,16 +34,24 @@ class SourceQueryTests(unittest.TestCase):
         self.assertEqual(pd.offered_20v(value), dict(volts=20, amps=3, watts=60))
         self.assertEqual(value['amps'], 1.25)  # Active contract is still 25W.
 
-    def test_non_20v_rail_never_sends_even_the_query(self):
-        for value in [original.frame(volts=5), original.frame(volts=15), dict(status='changing'), dict(status='detached')]:
+    def test_inactive_rail_never_sends_even_the_query(self):
+        for value in [dict(status='changing'), dict(status='detached')]:
             events = []
             with self.subTest(value=value), self.assertRaises(ValueError): self.refresh([value], events)
             self.assertEqual(events, [])
 
-    def test_nonresponse_rejection_or_voltage_change_stops_after_one_query(self):
+    def test_15v_rail_can_query_and_discover_offered_20v_profile(self):
+        before = original.frame(volts=15, amps=3, offered=3, response=1)
+        events = []
+        result = self.refresh([before, before, before], events)
+        self.assertEqual(result['volts'], 15)
+        self.assertEqual(pd.offered_20v(result), dict(volts=20, amps=3, watts=60))
+        self.assertEqual(events, ['durable-query', 'Get_SRC_Cap'])
+
+    def test_nonresponse_rejection_or_disconnect_stops_after_one_query(self):
         initial = original.frame(response=1)
         for after in [original.frame(), original.frame(response=3), original.frame(response=4), original.frame(response=5),
-                      original.frame(volts=5), dict(status='detached'), dict(status='changing'),
+                      dict(status='detached'), dict(status='changing'),
                       original.frame(offered=1.25, response=1)]:
             events = []
             with self.subTest(after=after), self.assertRaises(ValueError): self.refresh([initial, after], events)

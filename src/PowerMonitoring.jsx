@@ -57,7 +57,7 @@ export function PowerMonitoring({power,offline=false,onDirty,actionsRef,pending=
  const token=device?.info?.controlToken,live=usePowerReadings(power,offline),queried=usePowerReadings(discovered,offline);
  const pd=queried&&queried.observedAt>(live?.pd?.observedAt??live?.observedAt??0)?queried:live?.pd,profile=offeredPdProfile(pd);
  const supportedProfile=profile&&(info?.profileRequestSupported||info?.negotiationSupported&&profile.amps===5);
- const canDiscover=info?.sourceDiscoverySupported&&pd?.status==='active'&&pd.volts===20;
+ const canDiscover=info?.sourceDiscoverySupported&&pd?.status==='active';
  const profileChanged=!!setup&&(!profile||profile.amps!==setup.amps);
  useEffect(()=>{const id=++generation.current;let live=true;
   if(offline||!token)return()=>{live=false;generation.current++;};
@@ -98,7 +98,7 @@ export function PowerMonitoring({power,offline=false,onDirty,actionsRef,pending=
   let current=info;try{current=await device.action('power-status');setInfo(current);}catch{}
   if(!current?.supported){setError('Power monitoring needs the complete device update.');return;}
   if(!current.sourceDiscoverySupported){if(supportedProfile)setSetup({...profile});else setError(current.negotiationSupported?'This helper supports 100 W only. Complete the device update to set up a lower offered profile.':'Complete the device update to install power setup.');return;}
-  if(!canDiscover){setError(pd?.status!=='active'?'The power contract is not readable right now. Check that HUSB238 reading is on and the adapter is connected.':'The adapter is not delivering 20 V at the moment, so the offers cannot be checked.');return;}
+  if(!canDiscover){setError('The power contract is not readable right now. Check that HUSB238 reading is on and the adapter is connected.');return;}
   savingRef.current=true;setDiscovering(true);
   try{
    const value=await device.action('power-discover-20v',{stopOthers:true}),target=offeredPdProfile(value.discoveredPd);if(value.stopped?.length)setStopped(value.stopped);
