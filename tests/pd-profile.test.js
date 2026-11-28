@@ -20,7 +20,8 @@ function fixture({result=proof(),savedProof,failStartup=false,context=state()}={
 test('the observed 25W active / 60W offered source selects an honest 60W target',()=>{
  const pd={status:'active',volts:20,amps:1.25,profiles:[{volts:5,amps:3},{volts:20,amps:3}]};
  assert.deepEqual(offeredPdProfile(pd),{volts:20,amps:3,watts:60});
- for(const change of [{status:'changing'},{volts:5},{profiles:[]},{profiles:[{volts:20,amps:1.25}]},{profiles:[{volts:20,amps:'3'}]}])assert.equal(offeredPdProfile({...pd,...change}),null);
+ assert.deepEqual(offeredPdProfile({...pd,volts:15,amps:3}),{volts:20,amps:3,watts:60});
+ for(const change of [{status:'changing'},{profiles:[]},{profiles:[{volts:20,amps:1.25}]},{profiles:[{volts:20,amps:'3'}]}])assert.equal(offeredPdProfile({...pd,...change}),null);
 });
 test('only fixed-20V offered-current candidates can enter the request protocol',()=>{
  for(const amps of pdRequestAmps)assert.deepEqual(validateRequest({command:'power-request-20v',args:{...args,amps,cable5AVerified:amps>3}}).args,{...args,amps,cable5AVerified:amps>3});

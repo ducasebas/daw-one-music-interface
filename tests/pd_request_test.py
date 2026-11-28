@@ -61,8 +61,8 @@ class PdNegotiationTests(unittest.TestCase):
         result = self.request([frame(amps=5)], lambda: self.fail('no request needed'), lambda: self.fail('no intent needed'))
         self.assertFalse(result['requested'])
 
-    def test_lower_voltage_or_lower_offered_current_never_sends_request(self):
-        for value in [frame(volts=5), frame(volts=15), frame(offered=3), dict(status='detached'), dict(status='changing')]:
+    def test_inactive_supply_or_lower_offered_current_never_sends_request(self):
+        for value in [frame(offered=3), dict(status='detached'), dict(status='changing')]:
             with self.subTest(value=value), self.assertRaises(ValueError):
                 self.request([value], lambda: self.fail('must not request'))
 

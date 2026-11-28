@@ -85,16 +85,16 @@ def is_contract(value, amps):
 def check_source(value, amps=5):
     if type(amps) not in (int, float) or amps not in REQUEST_AMPS:
         raise ValueError('Unsupported 20 V power profile')
-    if value.get('status') != 'active' or value.get('volts') != 20:
-        raise ValueError('The supply must already have an active 20 V contract')
+    if value.get('status') != 'active':
+        raise ValueError('The supply must have an active USB-PD contract')
     if not any(p.get('volts') == 20 and p.get('amps') == amps for p in value.get('profiles', [])):
         raise ValueError('The connected supply and cable do not offer a 20 V / 5 A profile' if amps == 5 else
                          'The selected 20 V power profile is no longer offered; reopen power setup')
 
 
 def offered_20v(value):
-    if value.get('status') != 'active' or value.get('volts') != 20:
-        raise ValueError('The supply must already have an active 20 V contract')
+    if value.get('status') != 'active':
+        raise ValueError('The supply must have an active USB-PD contract')
     profiles = [p for p in value.get('profiles', []) if p.get('volts') == 20]
     if (len(profiles) != 1 or type(profiles[0].get('amps')) not in (int, float)
             or profiles[0]['amps'] not in REQUEST_AMPS):
@@ -111,8 +111,8 @@ def refresh_source(read, send_query, before_query=lambda: None,
     code is useful readback, but cannot prove that an unchanged offer was stale.
     """
     value = read_husb238(read)
-    if value.get('status') != 'active' or value.get('volts') != 20:
-        raise ValueError('The supply must already have an active 20 V contract')
+    if value.get('status') != 'active':
+        raise ValueError('The supply must have an active USB-PD contract')
     before_query()  # An interrupted query must not be repeated at every boot.
     send_query()
     deadline, previous = clock()+4, None
@@ -123,8 +123,8 @@ def refresh_source(read, send_query, before_query=lambda: None,
             raise ValueError('The PD controller rejected the source-capability query')
         if value.get('status') == 'changing':
             previous = None
-        elif value.get('status') != 'active' or value.get('volts') != 20:
-            raise ValueError('The 20 V rail changed during source discovery; no power request was sent')
+        elif value.get('status') != 'active':
+            raise ValueError('The PD contract changed during source discovery; no power request was sent')
         elif value.get('responseCode') == 1:
             offered_20v(value)
             if previous == value:
