@@ -1,9 +1,9 @@
 /** Bump this release ID for every user-visible release; it is compiled into the UI. */
 export const release = Object.freeze({
-  id: "2026.11.25-flow.1",
-  label: "GUI 3.17.0 · FLOW",
+  id: "2026.11.28-pd-upgrade.1",
+  label: "GUI 3.17.1 · PD UPGRADE",
   /** Shown on TuneBox when this update is offered. Keep it short and user-facing. */
-  notes: "Transparent, roomier header. Larger floating widgets and song text, a header clock, recommended smooth graphics and a smoother seek bar. Visualizer sensitivity and response, lighter meter analysis, song radio and named phones in Party mode. Read-only audio diagnostics and clearer playback recovery. Successful updates show a restart countdown. Higher DAC sample rates remain a separate driver update.",
+  notes: "Allows 20 V USB-PD discovery and upgrades from active lower-voltage contracts (such as 15 V).",
 });
 /** "GUI 3.10.0 · POLISH" → "Polish · GUI 3.10.0": the update name first, then the version. */
 export function releaseTitle(value = release) {
